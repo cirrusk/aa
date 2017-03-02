@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.myAcademy.service.impl.LmsMyTestMapper">
+	
+	<select id="selectLmsTest" parameterType="reqBox" resultType="egovMap">
+		/* selectLmsTest */
+		SELECT 
+			A.COURSENAME AS TESTNAME
+			, CASE WHEN GETDATE() <![CDATA[ > ]]> A.ENDDATE THEN 'END' 
+					WHEN GETDATE() <![CDATA[ < ]]> A.STARTDATE THEN 'READY'
+					ELSE 'ING' 
+				END TESTSTATUS
+			, DBO.F_LMS_DATETYPE(A.ENDDATE,'5') AS ENDDATE
+			, DBO.F_LMS_DATETYPE(A.ENDDATE,'1') AS NOTICEDATE
+			, B.LIMITTIME
+			, B.LIMITTIME * 60 AS LIMITTIMESECOND
+			, B.TESTTYPE 
+			, (SELECT COURSENAME FROM LMSCOURSE WHERE COURSEID = #{courseid} ) AS COURSENAME
+			, ISNULL((SELECT SUM(TESTCOUNT) FROM LMSTESTSUBMIT WHERE COURSEID = A.COURSEID AND ANSWERTYPE IN ('1','2')),0) AS OBJECTCOUNT
+			, ISNULL((SELECT SUM(TESTCOUNT) FROM LMSTESTSUBMIT WHERE COURSEID = A.COURSEID AND ANSWERTYPE = '3'),0) AS SUBJECTCOUNT
+			, (SELECT COUNT(*) FROM LMSTESTANSWER WHERE COURSEID = A.COURSEID AND UID = #{uid} ) AS ANSWERCOUNT
+			, (SELECT ISNULL(MAX(ANSWERSEQ),1) FROM LMSTESTANSWER WHERE COURSEID = A.COURSEID AND UID = #{uid} AND ( CONVERT(VARCHAR(8000), SUBJECTANSWER) <![CDATA[ <> ]]> '' OR OBJECTANSWER <![CDATA[ <> ]]> '' ) ) AS ANSWERSEQ
+			, (SELECT STUDYFLAG FROM LMSSTUDENT WHERE COURSEID = A.COURSEID AND UID = #{uid}) AS STUDYFLAG
+			, (SELECT CASE WHEN ISNULL(FINISHDATE,'') = '' THEN 'N' ELSE 'Y' END FROM LMSSTUDENT WHERE COURSEID = A.COURSEID AND UID = #{uid}) AS SUBMITFLAG
+		FROM LMSCOURSE A INNER JOIN LMSTEST B
+		ON A.COURSEID = B.COURSEID
+		WHERE A.COURSEID = #{stepcourseid}
+	</select>
+	
+	<select id="selectLmsTestSubmitTestPoolList" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			AAAA.TESTPOOLID
+			, AAAA.TESTPOINT
+		FROM (
+			SELECT
+				AAA.*
+			FROM (
+				SELECT
+				  AA.TESTPOOLID
+				  , BB.TESTPOINT
+				  , BB.TESTCOUNT
+				  ,  ROW_NUMBER() OVER (ORDER BY NEWID()) AS ROW_NUM
+				FROM LMSTESTPOOL AA INNER JOIN (
+					SELECT 
+						A.ANSWERTYPE
+						, A.TESTCOUNT
+						, A.TESTPOINT
+						, B.CATEGORYID
+					FROM LMSTESTSUBMIT A INNER JOIN LMSCOURSE B
+					ON A.COURSEID = B.COURSEID
+					WHERE A.COURSEID = #{stepcourseid}
+					AND A.ANSWERTYPE = '1'
+				) BB
+				ON AA.CATEGORYID = BB.CATEGORYID
+				AND AA.ANSWERTYPE = BB.ANSWERTYPE
+			) AAA
+			WHERE AAA.ROW_NUM <![CDATA[ <= ]]> AAA.TESTCOUNT
+			
+			UNION
+			
+			SELECT
+				AAA.*
+			FROM (
+				SELECT
+				  AA.TESTPOOLID
+				  , BB.TESTPOINT
+				  , BB.TESTCOUNT
+				  ,  ROW_NUMBER() OVER (ORDER BY NEWID()) AS ROW_NUM
+				FROM LMSTESTPOOL AA INNER JOIN (
+					SELECT 
+						A.ANSWERTYPE
+						, A.TESTCOUNT
+						, A.TESTPOINT
+						, B.CATEGORYID
+					FROM LMSTESTSUBMIT A INNER JOIN LMSCOURSE B
+					ON A.COURSEID = B.COURSEID
+					WHERE A.COURSEID = #{stepcourseid}
+					AND A.ANSWERTYPE = '2'
+				) BB
+				ON AA.CATEGORYID = BB.CATEGORYID
+				AND AA.ANSWERTYPE = BB.ANSWERTYPE
+			) AAA
+			WHERE AAA.ROW_NUM <![CDATA[ <= ]]> AAA.TESTCOUNT
+			
+			UNION
+			
+			SELECT
+				AAA.*
+			FROM (
+				SELECT
+				  AA.TESTPOOLID
+				  , BB.TESTPOINT
+				  , BB.TESTCOUNT
+				  ,  ROW_NUMBER() OVER (ORDER BY NEWID()) AS ROW_NUM
+				FROM LMSTESTPOOL AA INNER JOIN (
+					SELECT 
+						A.ANSWERTYPE
+						, A.TESTCOUNT
+						, A.TESTPOINT
+						, B.CATEGORYID
+					FROM LMSTESTSUBMIT A INNER JOIN LMSCOURSE B
+					ON A.COURSEID = B.COURSEID
+					WHERE A.COURSEID = #{stepcourseid}
+					AND A.ANSWERTYPE = '3'
+				) BB
+				ON AA.CATEGORYID = BB.CATEGORYID
+				AND AA.ANSWERTYPE = BB.ANSWERTYPE
+			) AAA
+			WHERE AAA.ROW_NUM <![CDATA[ <= ]]> AAA.TESTCOUNT
+		) AAAA
+		ORDER BY NEWID()
+	</select>
+	
+	<insert id="insertLmsTestAnswer" parameterType="reqBox">
+		/* insertLmsTestAnswer */
+		INSERT INTO LMSTESTANSWER (
+			COURSEID
+			, UID
+			, ANSWERSEQ
+			, TESTPOOLID
+			, TESTPOOLPOINT
+			, SUBJECTANSWER
+			, OBJECTANSWER
+			, POINT
+		) VALUES (
+			#{stepcourseid}
+			, #{uid}
+			, #{answerseq}
+			, #{testpoolid}
+			, #{testpoolpoint}
+			, ''
+			, ''
+			, 0
+		)
+	</insert>
+	
+	<update id="updateLmsMyTestInit" parameterType="reqBox">
+		/* updateLmsTestInit */
+		UPDATE LMSSTUDENT SET
+			STUDYFLAG = 'Y'
+			, STUDYDATE = GETDATE()
+			, TESTFLAG = CASE WHEN ISNULL((SELECT SUM(TESTCOUNT) FROM LMSTESTSUBMIT WHERE COURSEID = #{stepcourseid} AND ANSWERTYPE = '3'),0) <![CDATA[ > ]]> 0 THEN 'N' ELSE 'Y' END
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+		AND ISNULL(STUDYFLAG,'') <![CDATA[ <> ]]> 'Y'
+	</update>
+	
+	<update id="updateLmsTestAnswer" parameterType="reqBox">
+		/* updateLmsTestAnswer */
+		UPDATE LMSTESTANSWER SET
+			SUBJECTANSWER = #{subjectanswer}
+			, OBJECTANSWER = #{objectanswer}
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+		AND ANSWERSEQ = #{answerseq}
+	</update>
+	
+	<update id="updateLmsTestAnswerPoint" parameterType="reqBox">
+		/* updateLmsTestAnswerPoint */
+		UPDATE A
+		SET 
+			A.POINT = A.TESTPOOLPOINT
+		FROM LMSTESTANSWER A INNER JOIN LMSTESTPOOL B
+		ON A.TESTPOOLID = B.TESTPOOLID
+		AND A.OBJECTANSWER = B.OBJECTANSWER
+		WHERE A.COURSEID = #{stepcourseid}
+		AND A.UID = #{uid}
+		AND B.ANSWERTYPE IN ('1','2')
+	</update>
+
+	<update id="updateLmsStudentPoint" parameterType="reqBox">
+		/* updateLmsStudentPoint */
+		UPDATE LMSSTUDENT SET
+			OBJECTPOINT = ISNULL((
+				SELECT 
+					SUM(ISNULL(A.POINT,0))
+				FROM LMSTESTANSWER A INNER JOIN LMSTESTPOOL B
+				ON A.TESTPOOLID = B.TESTPOOLID
+				WHERE A.COURSEID = #{stepcourseid}
+				AND A.UID = #{uid}
+				AND B.ANSWERTYPE IN ('1','2')
+			),0)
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+	</update>
+	
+	<update id="updateLmsStudentFinish" parameterType="reqBox">
+		/* updateLmsStudentFinish */
+		UPDATE LMSSTUDENT SET
+			FINISHDATE = GETDATE()
+			, FINISHFLAG = CASE WHEN FINISHFLAG = 'Y' THEN 'Y' ELSE 
+				ISNULL((
+					SELECT
+						CASE WHEN A.PASSPOINT <![CDATA[ <= ]]> ISNULL(B.SUBJECTPOINT,0) + ISNULL(B.OBJECTPOINT,0) THEN 'Y' ELSE 'N' END
+					FROM LMSTEST A INNER JOIN LMSSTUDENT B
+					ON A.COURSEID = B.COURSEID
+					WHERE A.COURSEID = #{stepcourseid}
+					AND B.UID = #{uid}
+				),'N') END
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+	</update>
+	
+	<update id="updateLmsStudentFinish2" parameterType="reqBox">
+		/* updateLmsStudentFinish2 */
+		UPDATE LMSSTUDENT SET
+			FINISHDATE = GETDATE()
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+	</update>
+	
+	<select id="selectLmsTestAnswerList" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			A.ANSWERSEQ
+			, A.TESTPOOLPOINT
+			, CASE WHEN B.ANSWERTYPE IN ('1','2') THEN A.OBJECTANSWER ELSE A.SUBJECTANSWER END ANSWER
+			, B.TESTPOOLID  
+			, B.TESTPOOLNAME
+			, B.TESTPOOLNOTE
+			, B.ANSWERTYPE
+			, CASE WHEN B.ANSWERTYPE IN ('1','2') THEN '객관식' ELSE '주관식' END ANSWERTYPENAME 
+			, B.TESTPOOLIMAGE
+			, B.TESTPOOLIMAGENOTE
+		FROM LMSTESTANSWER A INNER JOIN LMSTESTPOOL B
+		ON A.TESTPOOLID = B.TESTPOOLID
+		WHERE A.COURSEID = #{stepcourseid}
+		AND A.UID = #{uid}
+		ORDER BY A.ANSWERSEQ ASC
+	</select>
+	
+	<select id="selectLmsTestAnswerSampleList" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			A.ANSWERSEQ
+			, B.TESTPOOLID
+			, B.TESTPOOLANSWERSEQ AS SAMPLENO
+			, B.TESTPOOLANSWERNAME AS SAMPLENAME
+		FROM LMSTESTANSWER A INNER JOIN LMSTESTPOOLANSWER B
+		ON A.TESTPOOLID = B.TESTPOOLID
+		WHERE A.COURSEID = #{stepcourseid}
+		AND A.UID = #{uid}
+		ORDER BY A.ANSWERSEQ ASC
+	</select>
+	
+	<select id="selectLmsTestLimitTime" parameterType="reqBox" resultType="int">
+		SELECT 
+			CASE WHEN DATEDIFF(s, GETDATE(), C.ENDDATE) > (B.LIMITTIME * 60) THEN (B.LIMITTIME * 60) ELSE DATEDIFF(s, GETDATE(), C.ENDDATE) END
+			  - DATEDIFF(s, CASE WHEN ISNULL(A.STUDYDATE,'') = '' THEN GETDATE() ELSE A.STUDYDATE END, GETDATE()) AS LIMITTIMESECOND
+		FROM LMSSTUDENT A INNER JOIN LMSTEST B
+		ON A.COURSEID = B.COURSEID INNER JOIN LMSCOURSE C
+		ON B.COURSEID = C.COURSEID
+		WHERE A.COURSEID = #{stepcourseid}
+		AND A.UID = #{uid}
+	</select>
+	
+	<select id="selectLmsTestStudent" parameterType="reqBox" resultType="String">
+		SELECT
+			ISNULL(TESTFLAG,'N') AS TESTFLAG 
+		FROM LMSSTUDENT
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+	</select>
+	
+</mapper>

@@ -1,0 +1,338 @@
+@charset "utf-8";
+/* ---------------------------------------
+	Description : popup
+	Author	: netive
+	--------------------------------------- */
+
+#pbPopWrap{padding:30px; position:relative;}
+#pbPopHeader{background:url(/_ui/desktop/images/common/bg_popup.gif) no-repeat 0 bottom; height:42px;}
+#pbPopHeader.bgSizeL{background:url(/_ui/desktop/images/common/bg_popup_sizel.gif) no-repeat 0 bottom;}
+#pbPopHeader.bgSizeL2{background:url(/_ui/desktop/images/common/bg_popup_sizel2.gif) no-repeat 0 bottom;}
+#pbPopHeader.bgMove{background:url(/_ui/desktop/images/common/bg_popup_sizelmov.gif) no-repeat 0 bottom;}
+#pbPopContent{padding-top:30px;}
+
+.scrollNone{overflow:hidden;}
+
+.btnPopClose{position:absolute; right:30px; top:31px;}
+.btnPopPrint{position:absolute; right:74px; top:32px;}
+
+#pbPopWrap .btnPopPrint.pPrint { right:70px; top:30px; }
+
+#pbPopContent .agreeBoxYN{border-bottom:1px solid #e3e3e3; padding-bottom:13px;}
+#pbPopContent .agreeBox{padding:12px 15px 13px 14px;}
+#pbPopContent h2{font-size:14px; font-weight:bold; color:#444; background:url(/_ui/desktop/images/common/bul_dot.gif) no-repeat 0 5px; padding:0 0 0 10px; margin-top:0; line-height:normal;}
+#pbPopContent .tabWrap{margin-top:0;}
+#pbPopContent .tabWrapLogical h2{background:none;}
+#pbPopContent .h2{margin-top:0; margin-bottom:0;}
+
+
+/* 스마트메뉴설정 */
+.pbLayerWrap .smartMenu .guideTxt{padding:0 0 0 10px;background:url(/_ui/desktop/images/common/bul_dot3.gif) no-repeat 0 4px;color:#444;}
+.pbLayerWrap .smartMenu .menuList{overflow:hidden;width:100%;padding-top:10px;}
+.pbLayerWrap .smartMenu .menuList li{float:left; width:180px; padding:12px 0 0 0;}
+.pbLayerWrap .smartMenu .menuList li input[type="checkbox"] + label{margin:0;}
+
+#pbPopHeader h1{display:inline-block; float:left;}
+#pbPopHeader h1 img{float:left;}
+#pbPopHeader span.stit{float:left; display:inline-block; margin-left:13px; padding-top:3px; padding-left:11px; color:#444; font-size:16px; line-height:22px; vertical-align:middle; background:url(/_ui/desktop/images/common/bg_popheadline.gif) no-repeat 0 5px;}
+#pbPopHeader span.snsLink{float:left;margin-left:20px;}
+
+#pbPopContent .hWrapLineN .requiredTbl{bottom:3px;}
+
+/* 회원가입 안내문 */
+.agreeSelect{padding:0 0 20px 0; margin-bottom:30px; position:relative; top:0; left:0;}
+.agreeSelect li a.tit{display:block; font-weight:bold; color:#444; width:340px; background:url(/_ui/desktop/images/common/bul_arrow.gif) no-repeat 0 0; padding:0 0 7px 17px;}
+.agreeSelect li.no1 a.tit{position:absolute; left:0px; top:0px;}
+.agreeSelect li.no2 a.tit{position:absolute; left:340px; top:0px;}
+.agreeSelect li.no3 a.tit{position:absolute; left:0px; top:23px;}
+.agreeSelect li.no4 a.tit{position:absolute; left:340px; top:23px;}
+.agreeSelect li.no5 a.tit{position:absolute; left:0px; top:47px;}
+.agreeSelect li.no6 a.tit{position:absolute; left:340px; top:47px;}
+.agreeSelect li.no7 a.tit{position:absolute; left:0px; top:69px;}
+#pbPopContent .agTabCont{padding-top:100px;}
+.agTabCont .agreeBox{height:250px;}
+#pbPopContent .agTabCont h2{border-top:1px solid #e3e3e3; padding-top:20px; background-position:0 24px;}
+#pbPopContent .agTabCont h2 span{color:#0a70d3;}
+.agreeSelect a{color:#444;}
+.agreeSelect a:hover{color:#0a70d3; text-decoration:underline;}
+.agreeSelect li.on a{color:#0a70d3;}
+
+/* AP안내 레이어팝업 */
+.agreeSelect.apList li{width:auto; margin-right:25px;}
+
+.ints p:first-child{margin-top:0;}
+.popResult{overflow:hidden; margin-top:10px;}
+.popResult li{float:left; width:50%; text-align:center;}
+.popResult li:first-child{width:49.5%;}
+.popResult li:first-child strong, .popResult li:first-child span{border-left:0;}
+.popResult li strong{display:block; padding:12px 0 7px 0; background:#f1f1f1; color:#444; border-top:2px solid #9e9e9e; border-left:1px solid #d5d5d5;  border-bottom:1px solid #d5d5d5;}
+.popResult li span{display:block; padding:12px 0 7px 0; border-left:1px solid #e3e3e3; border-bottom:1px solid #e3e3e3;}
+.popResult + p{margin:15px 0 30px 0; /*padding:0 0 30px 0; border-bottom:1px solid #e3e3e3;*/}
+
+.PopNoResult{margin:15px 0 30px 0; padding:15px 0 13px 0;  text-align:center; border-bottom:1px solid #e3e3e3; border-top:1px solid #e3e3e3;}
+
+.popAuthOk{clear:both; border-top:1px solid #e2e2e2;  border-bottom:1px solid #e2e2e2; text-align:center; font-size:14px; color:#444; padding:20px 0 16px 0; margin-top:15px;}
+.popAuthOk span{color:#0a70d3;}
+.popAuthOk strong{display:inline-block; height:21px; background:url(/_ui/desktop/images/common/ico_authp_ok.gif) no-repeat 0 0; padding:4px 0 0 32px;}
+
+.btnLine{padding-bottom:30px; margin-bottom:30px; border-bottom:1px solid #e3e3e3;}
+
+/*우편번호 찾기*/
+#pbPopWrap.juso{padding:14px 20px 20px;}
+#pbPopContent.juso{padding-top:0;}
+.jusoSearch{overflow:hidden; padding-top:10px; max-width:730px}
+#pbPopContent.juso h2{background:none; padding:0; line-height:0;}
+
+.jusoMask{display:none; position:absolute; z-index:9000; top:0; right:0; bottom:0; left:0; background:#000; opacity:0.3; filter:alpha(opacity=30) !important; -moz-opacity:0.3; -khtml-opacity: 0.3;}
+.jusoResult{width:100%; height:30px; padding:5px; background-color:#fafafa;border:1px solid #e5e5e5;}
+.jusoResultNone{height:30px; background-color:#fafafa;border:1px solid #e5e5e5;}
+.jusoResultNone > p{text-align:center; margin-top:40px;}
+
+.jusoSearch strong{display:block; color:#3e424d; background:url(/_ui/desktop/images/common/bul_dot3.gif) no-repeat 0 3px; margin-top:16px; padding:0 0 5px 7px;color:#444;}
+.jusoSearch .txt{padding-bottom:5px;}
+
+.jusoSearch fieldset{border:1px solid #e5e5e5; background-color:#fafafa; padding:10px 14px;}
+.jusoSearch fieldset p{padding-top:5px;}
+.jusoSearch fieldset p.fc{padding-top:0;}
+.jusoSearch p.required{font-size:11px; color:#1874cd; background:none;}
+.jusoSearch fieldset p.btn{text-align:center; padding-top:10px;}
+.jusoSearch fieldset em{display:block; font-size:11px; color:#444;  text-align:center;}
+.jusoSearch fieldset label{display:inline-block; width:60px; padding-top:5px; color:#444;}
+.jusoSearch fieldset label.widthFree{width:auto; padding:5px 5px 0 10px;}
+.jusoSearch fieldset input+input{margin-left:5px;}
+.jusoSearch fieldset .required strong{display:inline; padding:0; background:none;}
+
+.jusoWrapL h3, .jusoWrapR h3{padding-top:0;}
+.jusoWrapL, .jusoWrapR{/* width:336px;*/ width:336px; position:relative;}
+.jusoWrapL div.jusoInner, .jusoWrapR div.jusoInner{border:1px solid #dddee1; height:514px; padding:1px 19px 0; position:relative;}
+.jusoSearch .btnWrapC{position:absolute; left:0; right:0; bottom:20px;}
+.jusoWrapL{float:left;}
+.jusoWrapR{float:right;}
+
+.jusoConfirm{border:1px solid #e5e5e5; border-bottom:none; background-color:#fafafa;}
+.jusoConfirm dt{font-weight:bold; color:#444; padding:14px 0 0 14px;}
+.jusoConfirm dd{border-bottom:1px solid #e5e5e5; padding:0 0 24px 14px;}
+
+#pbPopContent .hWrapLineN + .tblInput{margin-top:10px;}
+#uiAddrAdd{display:none;}
+
+/* AP안내 */
+.tabList{border-bottom:1px solid #e3e3e3; overflow:hidden; padding:0 0 20px 20px; margin-bottom:28px;}
+.tabList li{font-weight:bold; color:#444; float:left; margin-right:25px;background:url(/_ui/desktop/images/common/bul_arrow2.gif) no-repeat 0 0; padding:0 0 7px 17px;}
+.tabList li.on{background-position:0 -39px;}
+.tabList a{color:#444;}
+.tabList a:hover{text-decoration:underline;}
+.tabList li.on a{color:#da001a;}
+
+/* 카드사 혜택 */
+.cardList{border-bottom:1px solid #e3e3e3; overflow:hidden; padding:0 0 20px 20px; margin-bottom:28px;}
+.cardList li{font-weight:bold; color:#444; float:left; width:150px;background:url(/_ui/desktop/images/common/bul_arrow2.gif) no-repeat 0 0; padding:0 0 7px 17px;}
+.cardList li.on{background-position:0 -39px;}
+.cardList a{color:#444;}
+.cardList a:hover{text-decoration:underline;}
+.cardList li.on a{color:#da001a;}
+
+.tabInfoWrap{color:#444;}
+.tabInfoWrap .txtHead{display:block; padding:0 0 10px 12px; font-size:14px; background:url(/_ui/desktop/images/common/bul_dot.gif) 0 4px no-repeat;}
+.tabInfoWrap .title{display:block; padding-left:9px; background:url(/_ui/desktop/images/common/bul_dot3.gif) 0 4px no-repeat; margin-top:15px;}
+.tabInfoWrap .title span{font-weight:normal;}
+.tabInfoWrap .apPhoto{overflow:hidden;}
+.tabInfoWrap .apPhoto .photoZ{float:left; width:200px;}
+.tabInfoWrap .apPhoto .photoZ img{width:200px;height:140px;}
+.tabInfoWrap .apPhoto .addr{float:right; width:325px;}
+.tabInfoWrap .apPhoto .addr .title{margin-top:0;}
+.tabInfoWrap dl dt{margin-top:8px;}
+.tabInfoWrap dl dd{line-height:20px; padding:2px 0 0 10px; color:#666;}
+.tabInfoWrap .scroll{height:150px;overflow-y:auto;padding-top:5px;}
+
+
+.tabInfoWrap .addrDL{overflow:hidden}
+.tabInfoWrap .addrDL p{padding-left:33px; text-indent:-33px; line-height:170%; margin-bottom:3px}
+.tabInfoWrap .addrDL p img{vertical-align:middle}
+
+.tabInfoWrap .txtPara{line-height:20px; padding-left:13px;}
+.tabInfoWrap .listDotFS.cdBenefit{margin:21px 0 0 13px; color:#444;}
+.tabInfoWrap .listDotFS.cdBenefit li span{display:block; font-size:11px; color:#666; padding-left:60px;}
+
+.tabInfoWrap .scroll .info { color:#666; line-height:170%;   }
+.tabInfoWrap .scroll .info li { margin-top:2px; padding:0 0 0 10px; background:url(/_ui/desktop/images/common/bul_dashed_terms.gif) 0 2px no-repeat; }
+.tabInfoWrap .scroll .info li p { margin-top:2px;  }
+.tabInfoWrap .scroll .info li p em { margin-top:2px; }
+.tabInfoWrap .scroll .stit { display:block; margin-top:5px; }
+
+/* 영수증 출력 팝업 */
+#pbPopWrap.receiptPrint{padding:0; background:#d6e2f6;}
+#pbPopWrap.receiptPrint #pbPopContent{padding:0;}
+#pbPopWrap.receiptPrint .btnWrapC{padding:0 0 15px;}
+#pbPopWrap.receiptPrint .salesTicket,
+#pbPopWrap.receiptPrint .receipt{width:360px; margin:0 auto;}
+
+/* 신용카드영수증 출력 */
+.salesTicket{width:361px; height:611px; font-size:12px; position:relative; background:url(/_ui/desktop/images/content/bg_salesTicket.gif) no-repeat;}
+.salesTicket .salesTicketTit{display:block; font-size:14px;padding:20px 30px 0 0; text-align:right;}
+.salesTicket dt, .salesTicket dd, .salesTicket em{position:absolute;}
+.salesTicket dt span{display:block;font-weight:normal; margin-top:4px; letter-spacing:-1px;font-size:11px;color:#444;}
+.salesTicket dd{font-weight: bold; color:#0066cc;}
+.salesTicket .cardreaderNumT{top:67px;left:43px;}/*단말기번호*/
+.salesTicket .cardreaderNumV{top:83px;left:43px;}
+.salesTicket .cardTypeT{top:108px; left:43px;}/*카드종류*/
+.salesTicket .cardTypeV{top:124px; left:43px;}
+.salesTicket .cardNoT{top:149px; left:43px;}/*카드번호*/
+.salesTicket .cardNoV{top:165px; left:43px; font-weight:bold;}
+.salesTicket .expiryDateT{top:149px;left:189px;}/*유효기간*/
+.salesTicket .expiryDateV{top:165px;left:189px;}
+.salesTicket .dateT{top:189px; left:43px;}/*거래일시*/
+.salesTicket .dateV{top:205px; left:43px;}
+.salesTicket .cancelDateT{top:189px;left:189px;}/*취소일시*/
+.salesTicket .cancelDateV{top:205px;left:189px;}
+.salesTicket .dealTypeT{top:231px; left:43px;}/*거래유형*/
+.salesTicket .dealTypeV{top:246px; left:43px;}
+.salesTicket .productNameT{top:231px; left:189px;}/*품명*/
+.salesTicket .productNameV{top:246px; left:189px;}
+.salesTicket .quotaT{top:271px; left:43px;}/*결제방법*/
+.salesTicket .quotaV{top:288px; left:43px;}
+.salesTicket .amountT{top:280px; left:105px;}/*금액*/
+.salesTicket .amountV{top:288px; right:26px; font-family:Tahoma,"Trebuchet MS",Arial,"Sans-serif"; font-weight:bold;letter-spacing:11px;}
+.salesTicket .vatT{top:312px; left:105px;}/*세금*/
+.salesTicket .vatV{top:312px; right:26px; font-family:Tahoma,"Trebuchet MS",Arial,"Sans-serif"; font-weight:bold;letter-spacing:11px;}
+.salesTicket .serviceChargeT{top:340px; left:100px;}/*봉사료*/
+.salesTicket .serviceChargeV{top:340px; right:26px; font-family:Tahoma,"Trebuchet MS",Arial,"Sans-serif"; font-weight:bold;letter-spacing:11px;}
+.salesTicket .totalT{top:365px; left:105px;}/*합계*/
+.salesTicket .totalV{top:365px; right:26px; font-family:Tahoma,"Trebuchet MS",Arial,"Sans-serif"; font-weight:bold;letter-spacing:11px;}
+.salesTicket .ceoNameT{top:391px; left:43px;}/*대표자명*/
+.salesTicket .ceoNameV{top:407px; left:43px;}
+.salesTicket .approvalNumT{top:391px; left:105px;}/*승인번호*/
+.salesTicket .approvalNumV{top:407px; left:105px;}
+.salesTicket .franchiseNameT{top:432px; left:43px;}/*가맹점명*/
+.salesTicket .franchiseNameV{top:449px; left:43px;}
+.salesTicket .storeNameT{top:432px; left:189px;}/*상점명*/
+.salesTicket .storeNameV{top:449px; left:189px;}
+.salesTicket .addrT{top:474px; left:43px;}/*주소*/
+.salesTicket .addrV{top:491px; left:43px;}
+.salesTicket .franchiseNumT{top:515px; left:43px;}/*가맹점번호*/
+.salesTicket .franchiseNumV{top:531px; left:43px;}
+.salesTicket .licenseeNumT{top:515px; left:189px;}/*사업자번호*/
+.salesTicket .licenseeNumV{top:531px; left:189px;}
+.salesTicket .telT{top:556px; left:43px;}/*문의전화*/
+.salesTicket .telV{top:574px; left:43px;}
+
+
+/*현금영수증 출력*/
+.receipt{width:361px; height:633px; font-size:12px; position:relative;}
+.receipt.type01{height:633px; background:url(/_ui/desktop/images/content/bg_receipt01.gif) no-repeat;}
+.receipt .receiptTit{padding:20px 30px 0 0; text-align:right;}
+.receipt .receiptTit strong{display:block; font-size:14px;}
+.receipt dt, .receipt dd, .receipt em{position:absolute;}
+.receipt dt span{display:block;font-weight:normal; margin-top:4px; letter-spacing:-1px;font-size:11px;}
+.receipt dd{font-weight: bold; color:#0066cc;}
+
+.receipt .consumerNumT{top:67px; left:43px;} /*소비자 신원 확인*/
+.receipt .consumerNumV{top:83px; left:43px;}
+.receipt .consumerT{top:108px; left:43px;} /*소비자 결제정보*/
+.receipt .consumerV{top:124px; left:43px;}
+.receipt .dateT{top:149px; left:43px;} /*거래일자*/
+.receipt .dateV{top:165px; left:43px;}
+.receipt .cancleT{top:149px; left:192px;} /*취소일자*/
+.receipt .cancleV{top:165px; left:192px;}
+.receipt .dealTypeT{top:190px; left:43px;} /*결제구분*/
+.receipt .dealTypeV{top:206px; left:43px;}
+.receipt .corpT{top:190px; left:189px;} /*현금영수증 사업자*/
+.receipt .corpV{top:206px; left:189px;}
+.receipt .proT{top:231px; left:43px;} /*품명*/
+.receipt .proV{top:248px; left:43px;}
+.receipt .approvalNumT{top:231px; left:189px; letter-spacing:-1px;} /*승인번호*/
+.receipt .approvalNumV{top:248px; left:189px;}
+.receipt .amountT{top:275px; left:43px; text-align:center; line-height:1.0em; display:inline-block;} /*금액*/
+.receipt .amountV{top:291px; right:25px; font-family:Tahoma,"Trebuchet MS",Arial,"Sans-serif"; letter-spacing:15px;}
+.receipt .vatT{top:316px; left:43px; text-align:center; line-height:1.0em;} /*부가세*/
+.receipt .vatV{top:323px; right:25px; font-family:Tahoma,"Trebuchet MS",Arial,"Sans-serif"; letter-spacing:15px;}
+.receipt .tipT{top:358px; left:43px; text-align:center; line-height:1.0em;} /*봉사료*/
+.receipt .tipV{top:363px; right:25px; font-family:Tahoma,"Trebuchet MS",Arial,"Sans-serif"; letter-spacing:15px;}
+.receipt .totalT{top:398px; left:43px; text-align:center; line-height:1.0em;} /*합계*/
+.receipt .totalV{top:403px; right:25px; font-family:Tahoma,"Trebuchet MS",Arial,"Sans-serif"; letter-spacing:15px;}
+.receipt .licenseeNumT{top:439px; left:43px;} /*현금영수증 발행사*/
+.receipt .licenseeNumV{top:455px; left:43px;}
+.receipt .ceoT{top:439px; left:191px;} /*대표자 */
+.receipt .ceoV{top:455px; left:191px;}
+.receipt .telT{top:480px; left:43px;} /*전화번호*/
+.receipt .telV{top:497px; left:43px;}
+.receipt .vendorT{top:480px; left:191px;} /*공급자 사업자등록번호*/
+.receipt .vendorV{top:497px; left:191px;}
+.receipt .addressT{top:521px; left:43px;} /*주소*/
+.receipt .addressV{top:536px; left:43px;}
+.receipt .noticeT{top:563px; left:43px; letter-spacing:-0.5px;}
+
+/*제품소식*/
+.imgVisual{text-align: center; padding: 0 0 30px;}
+.imgVisual img{width: 660px;}
+
+/* 제품 퀵뷰 */
+#pbPopContent .prodInfo{margin-top:-30px;}
+#pbPopContent .prodInfo h2{margin:0; padding:18px 10px 16px 10px; font-size:20px; border-bottom:1px solid #e3e3e3; line-height:100% !important; letter-spacing:-1px; color:#444; background:none;}
+#pbPopContent .prodInfo .photoWrap{width:358px;}
+#pbPopContent .photoWrap .photo{margin-left:23px;}
+
+/* table */
+#pbPopContent dl.inlineStyleTop{margin-top:0;}
+#pbPopContent dl.inlineStyleTop dt{margin-left:35px;}
+#pbPopContent dl.inlineStyleTop dt:first-child{margin-left:0;}
+#pbPopContent dl.infoSectionDot dd em{font-weight:normal;} /* 비지니스 팝업 */
+
+.tblBtmInfo{margin-top:-1px; padding:20px 0 15px 0; color:#444; border-top:1px solid #b9b9b9; border-bottom:1px solid #b9b9b9; background:#fafafa; text-align:center;}
+
+/* 동영상 */
+.popMovie{width:100%;/*background:#eee;*/text-align: center;}/* 브랜드 이야기 - 유튜브 기준 */
+.popMovie iframe{}
+
+/* 검색 */
+.popSearchNo{overflow:hidden; text-align:center;}
+
+.noHead #pbPopContent{overflow:hidden;}
+.popInfoTxt{text-align:center; font-size:14px; color:#444;}
+
+.helpSch h2 { margin:30px 0 14px 0 !important; }
+.helpSch h2:first-child { margin-top:0 !important; }
+.helpSch p { margin-top:20px; padding-left:15px; text-indent:-15px; line-height:18px; }
+.helpSch img { display:block; line-height:0; font-size:0; }
+.helpSch p + p { margin-top:5px; }
+.helpSch ul { margin:5px 0 0 15px; padding-left:15px; text-indent:-15px; line-height:18px; }
+
+ /* 비지니스 팝업 */
+#pbPopContent.numTitlePop p{line-height:20px;}
+#pbPopContent.numTitlePop h2:first-child,  #pbPopContent.numTitlePop h3:first-child{margin-top:0;}
+#pbPopContent.numTitlePop h2, #pbPopContent.numTitlePop h3{margin:25px 0 9px 0; padding:0; background:none; line-height:0; font-size:0;}
+#pbPopContent.numTitlePop h2 + p{margin:12px 0 9px 0;}
+#pbPopContent.numTitlePop h3.num{margin:13px 0 5px 0; padding:0; line-height:16px; font-size:12px;}
+
+.popInfoDot{margin-top:10px; line-height:20px;}
+.popInfoDot dt{margin-top:10px; padding:0 0 5px 9px; font-weight:bold; color:#444; background:url("/_ui/desktop/images/common/bul_dot3.gif") no-repeat 0 6px;}
+.popInfoDot dt:first-child{margin-top:0;}
+.popInfoDot dd{margin-left:10px;}
+.popInfoDot span.block{display:block;}
+
+#pbPopContent .certificateBiz{border:1px solid #ddd}
+
+.pbLayerContent .reservTerms .agreeBox{height:213px;}
+
+.popTxt{line-height:20px;}
+
+.emailTemp{padding:20px 0 10px 0;}
+.emailTemp p.link{margin:10px 0;padding:10px 10px 8px 10px;border:1px solid #e3e3e3;}
+.emailTemp p.link a{text-decoration:underline;}
+.emailTemp p.sendInfo{margin-top:15px;font-size:11px;line-height:16px;}
+
+.fileUp{margin:30px 0 0 0;text-align:center;}
+.fileUp label{padding-right:5px;font-weight:bold;color:#444;}
+.fileUp input[type="file"]{width:480px;}
+.fileUp p.listDot{width:430px;margin:10px auto;text-align:left;}
+
+/* cashbag */
+.cashTxt { padding:18px 0 40px 133px; color:#444; line-height:20px; background:url("/_ui/desktop/images/content/img_w040700040.gif") no-repeat 0 5px;  }
+.cashTxt strong { display:block; }
+
+.cashPtBox { margin:0; padding:20px 0 18px 0; text-align:center; color:#444; }
+.cashPtBox .okPoint { margin-top:17px;  }
+.cashPtBox .okPoint strong { display:inline-block; padding:0 22px; background:url("/_ui/desktop/images/common/bg_bar.gif") no-repeat 100% 1px; }
+.cashPtBox .okPoint strong + strong { background:none; padding-left:20px; }
+.chgPt { margin-top:20px; text-align:center; color:#444; }
+.chgPt .txt { font-weight:bold; padding-right:5px; }

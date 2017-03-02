@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.reservation.roominfo.service.impl.RoomInfoMapper">
+	
+	<!-- 시설 예약 정보 목록 조회 -->
+	<select id="roomInfoList" parameterType="reqBox" resultType="dataBox">
+		SELECT BB.* FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY AA.PURCHASEDATE DESC) AS ROW_NUM, AA.* FROM(
+				SELECT
+					  MAX(A.PURCHASEDATE) AS PURCHASEDATE
+					, MAX(A.FULLPURCHASEDATE) AS FULLPURCHASEDATE
+					, MAX(A.RSVSEQ) AS RSVSEQ
+					, A.TYPENAME
+					, A.PPNAME
+					, A.ROOMSEQ
+					, A.ROOMNAME
+					, COUNT(*) AS ROOMRSVTOTALCOUNNT
+					, SUM(
+						CASE A.CANCELCODE
+							WHEN 'B02' THEN 0
+							ELSE 1
+						END
+					) AS CANCELCODECOUNT
+					/* , A.VIRTUALPURCHASENUMBER */
+					, CASE WHEN SUBSTRING(A.VIRTUALPURCHASENUMBER, 1,4) = 'TEMP' 
+	                    THEN NULL
+	                    ELSE A.VIRTUALPURCHASENUMBER
+              		  END AS VIRTUALPURCHASENUMBER
+				FROM (
+					SELECT /* DISTINCT */
+						  CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) AS PURCHASEDATE
+						, A.PURCHASEDATE AS FULLPURCHASEDATE  
+						, E.TYPENAME
+						, C.PPNAME
+						, A.ROOMSEQ
+						, B.ROOMNAME
+						, A.RSVSEQ
+						, A.CANCELCODE
+						/* , F.VIRTUALPURCHASENUMBER */
+						, CASE WHEN F.VIRTUALPURCHASENUMBER IS NULL
+		                       THEN  CONCAT ('TEMP_', ROW_NUMBER() OVER(ORDER BY A.ROOMSEQ))
+		                       ELSE F.VIRTUALPURCHASENUMBER
+		                  END AS VIRTUALPURCHASENUMBER
+					FROM
+						RSVRESERVATIONINFO A
+					INNER JOIN RSVROOMINFO B
+						ON(A.ROOMSEQ = B.ROOMSEQ
+							AND A.ACCOUNT = #{account}
+							AND A.RSVTYPECODE = 'R01')
+					INNER JOIN RSVPPINFO C
+						ON (A.PPSEQ = C.PPSEQ)
+					INNER JOIN RSVTYPEINFO E
+						ON(A.TYPESEQ = E.TYPESEQ)
+					LEFT OUTER JOIN RSVPURCHASEINFO F
+						ON(A.RSVSEQ = F.RSVSEQ)
+					WHERE 1=1
+					<if test="searchStrYear != null and !searchStrYear.equals('')">
+						AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &gt;= CONCAT(#{searchStrYear}, #{searchStrMonth}, '01')
+					</if>
+					<if test="searchEndYear != null and !searchEndYear.equals('')">
+						AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &lt;= DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATETIME, CONCAT(#{searchEndYear}, #{searchEndMonth}, '01'))))
+					</if>
+					<if test='searchStrDateMobile != null and !searchStrDateMobile.equals("")'>
+						AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &gt;= CONCAT(#{searchStrYear}, #{searchStrMonth}, '01')
+					</if>
+					<if test='searchEndDateMobile != null and !searchEndDateMobile.equals("")'>
+						AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &lt;= DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATETIME, CONCAT(#{searchEndYear}, #{searchEndMonth}, '01'))))
+					</if>
+					<if test="searchPpSeq != null and !searchPpSeq.equals('')">
+						AND A.PPSEQ = #{searchPpSeq}
+					</if>
+					<if test="searchRoomTypeArray != null and !searchRoomTypeArray.equals('')">
+						AND A.TYPESEQ IN
+						<foreach collection="searchRoomTypeArray" item="item" index="index" open="(" close=")" separator=",">
+							#{item}
+						</foreach>
+					</if>
+				) AS A
+				/* GROUP BY A.PURCHASEDATE, A.VIRTUALPURCHASENUMBER, A.TYPENAME, A.PPNAME, A.ROOMSEQ, A.ROOMNAME, A.FULLPURCHASEDATE */
+				GROUP BY A.VIRTUALPURCHASENUMBER, A.TYPENAME, A.PPNAME, A.ROOMSEQ, A.ROOMNAME
+			) AS AA
+		) AS BB
+		WHERE ROW_NUM BETWEEN ((#{pageIndex} -1) * #{rowPerPage} +1) AND (#{pageIndex} * #{rowPerPage})
+		ORDER BY BB.FULLPURCHASEDATE DESC
+	</select>
+	
+	<!-- 시설 예약정보 카운트 -->
+	<select id="roomInfoListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*) AS TOTAL_CNT FROM(
+				SELECT
+					  MAX(A.PURCHASEDATE) AS PURCHASEDATE
+					, MAX(A.FULLPURCHASEDATE) AS FULLPURCHASEDATE
+					, A.TYPENAME
+					, A.PPNAME
+					, A.ROOMSEQ
+					, A.ROOMNAME
+					, COUNT(*) AS ROOMRSVTOTALCOUNNT
+					, SUM(
+						CASE A.CANCELCODE
+							WHEN 'B02' THEN 0
+							ELSE 1
+						END
+					) AS CANCELCODECOUNT
+					, CASE WHEN SUBSTRING(A.VIRTUALPURCHASENUMBER, 1,4) = 'TEMP'
+						   THEN NULL
+						   ELSE A.VIRTUALPURCHASENUMBER
+						   END AS VIRTUALPURCHASENUMBER
+				FROM (
+					SELECT /* DISTINCT */
+						  CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) AS PURCHASEDATE
+						, A.PURCHASEDATE AS FULLPURCHASEDATE
+						, E.TYPENAME
+						, C.PPNAME
+						, A.ROOMSEQ
+						, B.ROOMNAME
+						, A.RSVSEQ
+						, A.CANCELCODE
+						, CASE WHEN F.VIRTUALPURCHASENUMBER IS NULL
+							   THEN  CONCAT ('TEMP_', ROW_NUMBER() OVER(ORDER BY A.ROOMSEQ))
+							   ELSE F.VIRTUALPURCHASENUMBER
+							   END AS VIRTUALPURCHASENUMBER
+					FROM
+						RSVRESERVATIONINFO A
+						INNER JOIN RSVROOMINFO B
+						ON(A.ROOMSEQ = B.ROOMSEQ
+							AND A.ACCOUNT = #{account}
+							AND A.RSVTYPECODE = 'R01')
+						INNER JOIN RSVPPINFO C
+						ON (A.PPSEQ = C.PPSEQ)
+						INNER JOIN RSVTYPEINFO E
+						ON(A.TYPESEQ = E.TYPESEQ)
+						LEFT OUTER JOIN RSVPURCHASEINFO F
+						ON(A.RSVSEQ = F.RSVSEQ)
+					WHERE 1=1
+					<if test="searchStrYear != null and !searchStrYear.equals('')">
+						AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &gt;= CONCAT(#{searchStrYear}, #{searchStrMonth}, '01')
+					</if>
+					<if test="searchEndYear != null and !searchEndYear.equals('')">
+						AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &lt;= DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATETIME, CONCAT(#{searchEndYear}, #{searchEndMonth}, '01'))))
+					</if>
+					<if test='searchStrDateMobile != null and !searchStrDateMobile.equals("")'>
+						AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &gt;= CONCAT(#{searchStrYear}, #{searchStrMonth}, '01')
+					</if>
+					<if test='searchEndDateMobile != null and !searchEndDateMobile.equals("")'>
+						AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &lt;= DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATETIME, CONCAT(#{searchEndYear}, #{searchEndMonth}, '01'))))
+					</if>
+					<if test="searchPpSeq != null and !searchPpSeq.equals('')">
+						AND A.PPSEQ = #{searchPpSeq}
+					</if>
+					<if test="searchRoomTypeArray != null and !searchRoomTypeArray.equals('')">
+						AND A.TYPESEQ IN
+						<foreach collection="searchRoomTypeArray" item="item" index="index" open="(" close=")" separator=",">
+							#{item}
+						</foreach>
+					</if>
+				) AS A
+			/* GROUP BY A.PURCHASEDATE, A.VIRTUALPURCHASENUMBER, A.TYPENAME, A.PPNAME, A.ROOMSEQ, A.ROOMNAME */
+			GROUP BY A.VIRTUALPURCHASENUMBER, A.TYPENAME, A.PPNAME, A.ROOMSEQ, A.ROOMNAME
+		) AS AA
+	</select>
+	
+	<!-- 시설 예약 정보 상세 조회 -->
+	<select id="roomInfoDetailList" parameterType="reqBox" resultType="egovMap">
+		SELECT DISTINCT
+			  A.PPSEQ
+			, D.PPNAME
+			, A.TYPESEQ
+			, E.TYPENAME
+			, A.ROOMSEQ
+			, C.ROOMNAME
+			, A.RSVSEQ
+			, A.RESERVATIONDATE
+			, F.CODENAME AS RESERVATIONWEEKDAY
+			, B.SESSIONNAME
+			, B.STARTDATETIME
+			, B.ENDDATETIME
+			, A.PAYMENTAMOUNT
+			, Format(GETDATE(), N'yyyyMMdd') AS GETTODAY
+			/* 시간 비교해서 예약완료 (or 결제완료)건은 사용완료 표시 */
+			, CASE 
+				WHEN (A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07') 
+					AND CONCAT(A.RESERVATIONDATE, B.STARTDATETIME) &lt;= CONCAT(CONVERT(VARCHAR(8), GETDATE(), 112), DATEPART(HH, GETDATE()), DATEPART(MI, GETDATE()))
+				THEN 'P06'
+				ELSE A.PAYMENTSTATUSCODE
+			END AS PAYMENTSTATUSCODE
+			, CASE 
+				WHEN (A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07') 
+					AND CONCAT(A.RESERVATIONDATE, B.STARTDATETIME) &lt;= CONCAT(CONVERT(VARCHAR(8), GETDATE(), 112), DATEPART(HH, GETDATE()), DATEPART(MI, GETDATE()))
+				THEN '사용완료'
+				WHEN A.PAYMENTSTATUSCODE = 'P03' AND CONVERT(VARCHAR(8), A.RESERVATIONDATE, 112) = CONVERT(VARCHAR(8), A.CANCELDATETIME, 112)
+				THEN '당일취소'
+				ELSE G.CODENAME
+			END AS PAYMENTSTATUSNAME
+			, A.CANCELDATETIME
+			, A.STANDBYNUMBER
+			, ISNULL(H.TYPECODE, 'N') AS TYPECODE
+			, J.CANCELPENALTY
+			, ISNULL(K.REFUNDAMOUNT, 0) AS REFUNDAMOUNT
+			, A.ACCOUNT
+			, L.NAME
+			, CONVERT(VARCHAR(10), A.PURCHASEDATE, 120) AS PURCHASEDATE
+			<if test='virtualpurchasenumber != null and !virtualpurchasenumber.equals("")'>
+			, ISNULL(I.CARDNAME, '삼성카드') AS CARDNAME
+			, I.VIRTUALPURCHASENUMBER
+			</if>
+		FROM
+			RSVRESERVATIONINFO A
+			LEFT OUTER JOIN RSVROOMSESSIONINFO B
+			ON(A.RSVSESSIONSEQ = B.RSVSESSIONSEQ)
+			INNER JOIN RSVROOMINFO C
+			ON(A.ROOMSEQ = C.ROOMSEQ)
+			INNER JOIN RSVPPINFO D
+			ON(A.PPSEQ = D.PPSEQ)
+			INNER JOIN RSVTYPEINFO E
+			ON(A.TYPESEQ = E.TYPESEQ)
+			LEFT OUTER JOIN COMMONCODE F
+			ON(F.CODEMASTERSEQ = 'WK1'
+				AND B.SETWEEK = F.COMMONCODESEQ)
+			LEFT OUTER JOIN COMMONCODE G
+			ON(G.CODEMASTERSEQ = 'PM1'
+				AND A.PAYMENTSTATUSCODE = G.COMMONCODESEQ)
+			LEFT OUTER JOIN (
+				SELECT
+					CASE 
+						/* 요리명장 예약인 경우 */
+						WHEN A.COOKMASTERCODE = 'R01'
+							AND (									
+								SELECT DISTINCT 
+									B.TYPECODE 
+								FROM 
+									RSVROOMPENALTYMAP A 
+									INNER JOIN RSVPENALTYSETTING B 
+									ON(A.PENALTYSEQ = B.PENALTYSEQ 
+										AND B.STATUSCODE = 'B01' 
+										AND A.ROOMSEQ = #{roomseq}
+										AND B.TYPECODE = 'P03')
+							) = 'P03'
+						THEN 'C'
+						/*요리명장 예약이 아니고 유료예약인 경우*/
+						WHEN A.COOKMASTERCODE = 'R02'
+							AND A.PAYMENTAMOUNT IS NOT NULL 
+							AND A.PAYMENTAMOUNT != 0
+							AND (
+								SELECT DISTINCT 
+									B.TYPEDETAILCODE 
+								FROM 
+									RSVROOMPENALTYMAP A 
+									INNER JOIN RSVPENALTYSETTING B 
+									ON(A.PENALTYSEQ = B.PENALTYSEQ 
+										AND B.STATUSCODE = 'B01' 
+										AND A.ROOMSEQ = #{roomseq}
+										AND B.TYPECODE = 'P01'
+										AND B.TYPEDETAILCODE = 'P01'
+										AND B.APPLYTYPECODE = 'P01')
+							) IS NOT NULL
+						THEN 'P'
+						/*요리명장 예약이 아니고 무료예약인 경우*/
+						WHEN A.COOKMASTERCODE = 'R02'
+							AND (A.PAYMENTAMOUNT IS NULL 
+								OR A.PAYMENTAMOUNT = 0)
+							AND (
+								SELECT DISTINCT 
+									B.TYPEDETAILCODE 
+								FROM 
+									RSVROOMPENALTYMAP A 
+									INNER JOIN RSVPENALTYSETTING B 
+									ON(A.PENALTYSEQ = B.PENALTYSEQ 
+										AND B.STATUSCODE = 'B01' 
+										AND A.ROOMSEQ = #{roomseq}
+										AND B.TYPECODE = 'P01'
+										AND B.TYPEDETAILCODE = 'P01'
+										AND B.APPLYTYPECODE = 'P02')
+							) IS NOT NULL
+						THEN 'F'
+						ELSE NULL
+					END AS TYPECODE
+					, A.RSVSEQ
+				FROM RSVRESERVATIONINFO A
+					LEFT OUTER JOIN RSVPURCHASEINFO B
+					ON(A.RSVSEQ = B.RSVSEQ
+						AND A.ACCOUNT = #{account}
+						AND A.ROOMSEQ = #{roomseq}
+						AND B.VIRTUALPURCHASENUMBER = #{virtualpurchasenumber})
+				WHERE CONVERT(VARCHAR, A.PURCHASEDATE, 112) = #{purchasedate}
+					AND CONVERT(VARCHAR, A.PURCHASEDATE, 112) != CONVERT(VARCHAR, GETDATE(), 112)
+				) H
+				ON(A.RSVSEQ = H.RSVSEQ AND C.STATUSCODE = 'B01')
+				<if test='virtualpurchasenumber != null and !virtualpurchasenumber.equals("")'>
+				LEFT OUTER JOIN RSVPURCHASEINFO I
+				ON(A.RSVSEQ = I.RSVSEQ)
+				</if>
+				LEFT OUTER JOIN (
+					SELECT
+						A.RSVSEQ
+						, CONCAT('(취소수수료는 ', C.APPLYTYPEVALUE , '% 제외 후 환불)') AS CANCELPENALTY
+					FROM RSVRESERVATIONINFO A
+						INNER JOIN RSVPURCHASEINFO B
+						ON(A.RSVSEQ = B.RSVSEQ
+							AND A.ACCOUNT = #{account}
+							AND A.ROOMSEQ = #{roomseq}
+							AND CONVERT(VARCHAR, A.PURCHASEDATE, 112) = #{purchasedate}
+							AND B.VIRTUALPURCHASENUMBER = #{virtualpurchasenumber})
+						INNER JOIN RSVPENALTYHISTORY C
+						ON(A.RSVSEQ = C.RSVSEQ
+							AND C.APPLYTYPECODE = 'P01')
+				) J
+				ON(A.RSVSEQ = J.RSVSEQ)
+				LEFT OUTER JOIN RSVITEMBACKINFO K
+				ON(A.RSVSEQ = K.RSVSEQ)
+				INNER JOIN MEMBER L
+				ON(A.ACCOUNT = L.UID)
+		WHERE
+			CONVERT(VARCHAR, A.PURCHASEDATE, 112) = #{purchasedate}
+			AND A.ROOMSEQ = #{roomseq}
+			AND A.ACCOUNT = #{account}
+			<if test='virtualpurchasenumber != null and !virtualpurchasenumber.equals("")'>
+			AND I.VIRTUALPURCHASENUMBER = #{virtualpurchasenumber}
+			</if>
+			<if test='virtualpurchasenumber != null and virtualpurchasenumber.equals("") and !rsvseq.equals("")'>
+			AND A.RSVSEQ = #{rsvseq}
+			</if>
+	</select>
+	
+<!-- 	<update id="changePartnertAjax" parameterType="reqBox"> -->
+<!-- 		UPDATE RSVRESERVATIONINFO -->
+<!-- 		 	SET -->
+<!-- 				  PARTNERTYPECODE = #{partnerTypeCode} -->
+<!-- 				, UPDATEUSER = #{account} -->
+<!-- 				, UPDATEDATE = GETDATE() -->
+<!-- 		WHERE RSVSEQ = #{rsvseq} -->
+<!-- 	</update> -->
+
+	<!-- 시설 예약정보 조회 (단일건) -->
+	<select id="roomInfoRsvInfo" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			A.RSVSEQ
+			, A.RSVTYPECODE
+			, A.ACCOUNT
+			, CONVERT(VARCHAR(10), A.PAYMENTDATE, 120) AS PAYMENTDATE
+			, CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120) AS RESERVATIONDATE
+			, A.TYPESEQ
+			, A.PPSEQ
+			, C.PPNAME
+			, A.ROOMSEQ
+			, E.ROOMNAME
+			, CONVERT(VARCHAR(19), CONVERT(DATETIME, A.CANCELDATETIME), 120) AS CANCELDATETIME
+			, A.PAYMENTOPTIONCODE
+			, A.PAYMENTAMOUNT
+			, A.RSVSEQ
+			, D.SESSIONNAME
+			, D.STARTDATETIME
+			, D.ENDDATETIME
+			, D.PRICE
+			, D.DISCOUNTPRICE
+			, D.QUEENPRICE
+			, D.QUEENDISCOUNTPRICE
+			, A.PAYMENTAMOUNT
+			, CONVERT(VARCHAR(10), CONVERT(DATETIME, A.PURCHASEDATE), 120) AS PURCHASEDATE
+			, B.CARDTRACENUMBER
+			, B.VIRTUALPURCHASENUMBER
+			, B.REGULARPURCHASENUMBER
+			, B.SKU
+			, B.PRICE
+			, F.REFUNDCHARGE
+			, F.REFUNDAMOUNT
+			, F.REFUNDDATETIME
+		FROM
+			RSVRESERVATIONINFO A
+        LEFT OUTER JOIN RSVPURCHASEINFO B
+          ON(A.RSVSEQ = B.RSVSEQ)
+        LEFT OUTER JOIN RSVITEMBACKINFO F
+          ON(A.RSVSEQ = F.RSVSEQ)
+		INNER JOIN RSVPPINFO C
+		  ON(A.PPSEQ = C.PPSEQ)
+		INNER JOIN RSVROOMSESSIONINFO D
+		  ON(A.RSVSESSIONSEQ = D.RSVSESSIONSEQ)          
+		INNER JOIN RSVROOMINFO E
+		  ON(A.ROOMSEQ = E.ROOMSEQ)
+        WHERE A.RSVSEQ = convert(int, #{rsvseq})
+	</select>	
+	
+	<!-- 시설 패널티 조회 -->
+	<select id="searchRoomPenaltyList" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			  A.ROOMSEQ
+			, B.PENALTYSEQ
+			, C.TYPECODE
+			, C.APPLYTYPECODE
+			, C.APPLYTYPEVALUE
+		FROM RSVROOMINFO A
+			INNER JOIN RSVROOMPENALTYMAP B
+				ON(A.ROOMSEQ = B.ROOMSEQ)
+			INNER JOIN RSVPENALTYSETTING C
+				ON(B.PENALTYSEQ = C.PENALTYSEQ)
+		WHERE A.ROOMSEQ = #{roomseq}
+			AND C.TYPECODE = 'P01'
+	</select>
+	
+	<!-- 시설 일반 유료 패널티 조회 -->
+	<select id="searchRoomPayPenalty" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			  A.ROOMSEQ
+			, B.PENALTYSEQ
+			, C.TYPECODE
+			, C.TYPEVALUE
+			, C.APPLYTYPECODE
+			, C.APPLYTYPEVALUE
+		FROM RSVROOMINFO A
+			INNER JOIN RSVROOMPENALTYMAP B
+			ON(A.ROOMSEQ = B.ROOMSEQ
+				AND A.ROOMSEQ = #{roomseq})
+			INNER JOIN RSVPENALTYSETTING C
+			ON(B.PENALTYSEQ = C.PENALTYSEQ
+				AND C.TYPECODE = 'P01'
+				AND C.TYPEDETAILCODE = 'P01'
+				AND C.APPLYTYPECODE = 'P01')
+	</select>
+	
+	<!-- 시설 일반 무료 패널티 조회 -->
+	<select id="searchRoomFreePenalty" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			  A.ROOMSEQ
+			, B.PENALTYSEQ
+			, C.TYPECODE
+			, C.APPLYTYPECODE
+			, C.APPLYTYPEVALUE
+		FROM RSVROOMINFO A
+			INNER JOIN RSVROOMPENALTYMAP B
+			ON(A.ROOMSEQ = B.ROOMSEQ
+				AND A.ROOMSEQ = #{roomseq})
+			INNER JOIN RSVPENALTYSETTING C
+			ON(B.PENALTYSEQ = C.PENALTYSEQ
+				AND C.TYPECODE = 'P01'
+				AND C.TYPEDETAILCODE = 'P01'
+				AND C.APPLYTYPECODE = 'P02')
+	</select>
+	
+	<!-- 시설 요리명장 무료 패널티 조회 -->
+	<select id="searchRoomCookFreePenalty" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			  A.ROOMSEQ
+			, B.PENALTYSEQ
+			, C.TYPECODE
+			, C.APPLYTYPECODE
+			, C.APPLYTYPEVALUE
+		FROM RSVROOMINFO A
+			INNER JOIN RSVROOMPENALTYMAP B
+			ON(A.ROOMSEQ = B.ROOMSEQ
+				AND A.ROOMSEQ = #{roomseq})
+			INNER JOIN RSVPENALTYSETTING C
+			ON(B.PENALTYSEQ = C.PENALTYSEQ
+				AND C.TYPECODE = 'P03')
+	</select>
+	
+	<!-- 사용자 패널티 부여 -->
+	<insert id="insertRoomPenaltyHistory" parameterType="map">
+		INSERT INTO RSVPENALTYHISTORY(
+			  ACCOUNT
+			, RSVSEQ
+			, PENALTYSEQ
+			, APPLYTYPECODE
+			, APPLYTYPEVALUE
+			, REASON
+			, GRANTDATE
+			, PENALTYSTATUSCODE
+			, STATUSCODE
+			, INSERTUSER
+			, INSERTDATE
+		)VALUES(
+			  #{account}
+			, #{rsvseq}
+			, #{penaltyseq}
+			, #{applytypecode}
+			, #{applytypevalue}
+			, #{reason}
+			, CONVERT(VARCHAR, GETDATE(),112)
+			, 'B01'
+			, 'B01'
+			, #{account}
+			, GETDATE()
+		)
+	</insert>
+	
+	<!-- 예약 정보 취소 처리 -->
+	<update id="updateRoomCancelCodeAjax" parameterType="reqBox">
+		UPDATE RSVRESERVATIONINFO with(updlock)
+		 	SET
+				  CANCELCODE = 'B01'
+				, PAYMENTSTATUSCODE = 'P03'
+				, CANCELDATETIME = GETDATE()
+				, UPDATEUSER = #{account}
+				, UPDATEDATE = GETDATE()
+		WHERE RSVSEQ = #{rsvseq}
+	</update>
+	
+	<!-- 시설 예약 환불 내역 조회 -->
+	<select id="roomInfoRsvPaybackInfo" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			  A.ACCOUNT
+			, CONVERT(VARCHAR(10), A.PAYMENTDATE, 120) AS PAYMENTDATE
+			, CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120) AS RESERVATIONDATE
+			, A.TYPESEQ
+			, B.TYPENAME
+			, A.PPSEQ
+			, C.PPNAME
+			, A.ROOMSEQ
+			, E.ROOMNAME
+			, A.RSVSESSIONSEQ
+			, D.SESSIONNAME
+			, D.STARTDATETIME
+			, D.ENDDATETIME
+			, CONVERT(VARCHAR(19), CONVERT(DATETIME, A.CANCELDATETIME), 120) AS CANCELDATETIME
+			, A.PAYMENTOPTIONCODE
+			, A.PAYMENTAMOUNT
+			, A.RSVSEQ
+			, F.REFUNDCHARGE
+			, F.REFUNDAMOUNT
+			, ISNULL(G.APPLYTYPEVALUE, 0) AS APPLYTYPEVALUE
+			, H.VIRTUALPURCHASENUMBER
+			, I.NAME
+		FROM
+			RSVRESERVATIONINFO A
+			INNER JOIN RSVTYPEINFO B
+			ON(A.TYPESEQ = B.TYPESEQ
+				AND RSVSEQ = #{rsvseq})
+			INNER JOIN RSVPPINFO C
+			ON(A.PPSEQ = C.PPSEQ)
+			INNER JOIN RSVROOMSESSIONINFO D
+			ON(A.RSVSESSIONSEQ = D.RSVSESSIONSEQ)
+			INNER JOIN RSVROOMINFO E
+			ON(A.ROOMSEQ = E.ROOMSEQ)
+			LEFT OUTER JOIN RSVITEMBACKINFO F
+			ON(A.RSVSEQ = F.RSVSEQ)
+			LEFT OUTER JOIN RSVPENALTYHISTORY G
+			ON(A.RSVSEQ = G.RSVSEQ)
+			LEFT OUTER JOIN RSVPURCHASEINFO H
+			ON(A.RSVSEQ = H.RSVSEQ)
+			INNER JOIN MEMBER I
+			ON(A.ACCOUNT = I.UID)
+	</select>
+	
+	<!-- rsvseq로 동일 reservationdate와 동일 rsvsessionseq가 standbynumber 1인 경우 조회 -->
+	<select id="selectRoomWaitingInfo" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			RSVSEQ
+		FROM
+			RSVRESERVATIONINFO A WITH(NOLOCK)
+			INNER JOIN (
+				SELECT 
+					  RESERVATIONDATE
+					, RSVSESSIONSEQ
+				FROM 
+					RSVRESERVATIONINFO WITH(NOLOCK)
+				WHERE
+					RSVSEQ = CONVERT(int, #{rsvseq})
+			) B
+			ON(A.RESERVATIONDATE = B.RESERVATIONDATE
+				AND A.RSVSESSIONSEQ = B.RSVSESSIONSEQ
+				AND A.STANDBYNUMBER = 1
+				AND A.CANCELCODE = 'B02')
+	</select>
+	
+	<!-- 예약 대기자 예약 완료로 업데이트 -->
+	<update id="updateRoomWaitingInfo" parameterType="reqBox">
+		update RSVRESERVATIONINFO SET
+			  STANDBYNUMBER = 0
+			, PAYMENTSTATUSCODE = 'P02'
+			, UPDATEUSER = #{account}
+			, UPDATEDATE = GETDATE()
+		WHERE RSVSEQ = #{rsvseq}
+	</update>
+	
+	<!-- 대기자 예약 취소(삭제) -->
+	<delete id="deleteRoomReservation" parameterType="reqBox">
+		DELETE FROM RSVRESERVATIONINFO 
+		WHERE RSVSEQ = #{rsvseq}
+	</delete>
+	
+	<!-- 모바일_현재달~3개월후 마지막날 조회 -->
+	<select id="searchThreeMonthRoom" parameterType="reqBox" resultType="egovMap">
+		SELECT 
+			  CONVERT(VARCHAR(10), DATEADD(MM, DATEDIFF(M, 0, GETDATE())-2, 0), 121) AS STRDATE
+			, CONVERT(VARCHAR(10), DATEADD(S,-1,DATEADD(MM, DATEDIFF(M, 0, GETDATE())+1, 0)), 121) AS ENDDATE
+	</select>
+	
+	<!-- 해당 예약건에 적용될 취소 수수료 패널티 조회 -->
+	<select id="roomInfoRsvPayCancelPenalty" parameterType="reqBox" resultType="egovMap">
+		SELECT 
+			C.APPLYTYPEVALUE
+		FROM 
+			RSVRESERVATIONINFO A
+			INNER JOIN RSVROOMPENALTYMAP B
+			ON(A.ROOMSEQ = B.ROOMSEQ
+				AND A.ROOMSEQ = #{roomseq}
+				AND A.RSVSEQ = #{rsvseq})
+			INNER JOIN RSVPENALTYSETTING C 
+			ON(B.PENALTYSEQ = C.PENALTYSEQ
+				AND C.TYPECODE = 'P01'
+				AND C.TYPEDETAILCODE = 'P01'
+				AND C.APPLYTYPECODE = 'P01')
+		WHERE
+			CONVERT(VARCHAR(8), CONVERT(DATETIME, A.RESERVATIONDATE) - CONVERT(INT, C.TYPEVALUE), 112) &lt;  CONVERT(VARCHAR(8), GETDATE(), 112)
+	</select>
+	
+	<!-- 해당 예약건에 적용될 취소 수수료 패널티 조회 -->
+	<select id="roomInfoRsvFreeCancelPenalty" parameterType="reqBox" resultType="egovMap">
+		SELECT 
+			C.APPLYTYPEVALUE
+		FROM 
+			RSVRESERVATIONINFO A
+			INNER JOIN RSVROOMPENALTYMAP B
+			ON(A.ROOMSEQ = B.ROOMSEQ
+				AND A.ROOMSEQ = #{roomseq}
+				AND A.RSVSEQ = #{rsvseq})
+			INNER JOIN RSVPENALTYSETTING C 
+			ON(B.PENALTYSEQ = C.PENALTYSEQ
+				AND C.TYPECODE = 'P01'
+				AND C.TYPEDETAILCODE = 'P01'
+				AND C.APPLYTYPECODE = 'P02')
+		WHERE
+			CONVERT(VARCHAR(8), CONVERT(DATETIME, A.RESERVATIONDATE) - CONVERT(INT, C.TYPEVALUE), 112) &lt;  CONVERT(VARCHAR(8), GETDATE(), 112)
+	</select>
+	
+	<!-- 해당 예약건에 적용될 취소 수수료 패널티 조회 -->
+	<select id="roomInfoRsvCookFreeCancelPenalty" parameterType="reqBox" resultType="egovMap">
+		SELECT 
+			C.APPLYTYPEVALUE
+		FROM 
+			RSVRESERVATIONINFO A
+			INNER JOIN RSVROOMPENALTYMAP B
+			ON(A.ROOMSEQ = B.ROOMSEQ
+				AND A.ROOMSEQ = #{roomseq}
+				AND A.RSVSEQ = #{rsvseq})
+			INNER JOIN RSVPENALTYSETTING C 
+			ON(B.PENALTYSEQ = C.PENALTYSEQ
+				AND C.TYPECODE = 'P03'
+				AND C.TYPEDETAILCODE = 'P01')
+		WHERE
+			CONVERT(VARCHAR(8), CONVERT(DATETIME, A.RESERVATIONDATE) - CONVERT(INT, C.TYPEVALUE), 112) &lt;  CONVERT(VARCHAR(8), GETDATE(), 112)
+	</select>
+	
+	
+	<select id="selectCountItemBackInfo" parameterType="reqBox" resultType="java.lang.Integer">
+<!-- 		SELECT -->
+<!-- 			COUNT(*) AS CNT -->
+<!-- 		FROM RSVITEMBACKINFO -->
+<!-- 		WHERE RSVSEQ = #{rsvseq} -->
+<!-- local : PK__RSVITEMB__BCBA61AEE1556F22 -->
+<!-- dev : PK__RSVITEMB__BCBA61AE3147F4AF -->
+<!-- qa : PK__RSVITEMB__BCBA61AE23860000 -->
+		SELECT COUNT(*) AS CNT 
+		FROM RSVITEMBACKINFO <!-- with (index(PK__RSVITEMB__BCBA61AE23860000)) --> 
+		WHERE RSVSEQ = convert(int, #{rsvseq})
+	</select>
+	
+	<!-- 반품 정보 등록 -->
+	<insert id="insertItemBackInfo" parameterType="reqBox">
+		INSERT INTO RSVITEMBACKINFO (
+			  RSVSEQ
+			, ACCOUNT
+			, REFUNDDATETIME
+			, REFUNDCHARGE
+			, REFUNDAMOUNT
+			, INSERTUSER
+			, INSERTDATE
+			, UPDATEUSER
+			, UPDATEDATE
+		) VALUES (
+			  #{rsvseq}
+			, #{account}
+			, GETDATE()
+			, #{refundcharge}
+			, #{paymentamount}
+			, #{account}
+			, GETDATE()
+			, NULL
+			, NULL
+		)
+	</insert>
+</mapper>

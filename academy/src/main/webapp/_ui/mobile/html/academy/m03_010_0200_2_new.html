@@ -1,0 +1,165 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>통합교육신청현황 - ABN Korea</title>
+<link rel="stylesheet" href="/_ui/mobile/common/css/academy_default.css" />
+<script src="/_ui/mobile/common/js/jquery-1.8.3.min.js"></script>
+<script src="/_ui/mobile/common/js/pbCommonAcademy.js"></script>
+<script src="/_ui/mobile/common/js/owl.carousel.js"></script>
+<script src="/_ui/mobile/common/js/pbLayerPopup.js"></script>
+</head>
+<body class="uiGnbM3">
+<div id="pbSkipNavi"><a href="#pbContent">본문 바로가기</a><a href="#uiAllMenuOpen">전체메뉴 바로가기</a><a href="#pbGnb">주메뉴 바로가기</a></div>
+<div id="pbWrap">
+	<!-- header --><header id="pbHeader">header include</header><!-- //header -->
+	<!-- container -->
+	<div id="pbContainer">
+		<!-- pageLocation -->
+		<div id="pageLocation">
+			/mobile/html/pl_academy.html include
+		</div>
+		<!-- //pageLocation -->
+		
+		<!-- content ##iframe start## -->
+		<section id="pbContent" class="academyWrap">
+			
+			<div class="tabWrap">
+				<span class="hide">탭 메뉴</span>
+				<ul class="tabDepth1 tNum2">
+					<li><a href="#none">캘린더보기</a></li>
+					<li class="on"><strong>교육목록</strong></li>
+				</ul>
+			</div>
+			<!-- search -->	
+			<div class="toggleBox acToggleBox on">
+				<h2 class="tggTit"><a href="#none">조건검색</a></h2>
+				<div class="tggCnt">
+					<div class="srcBox">
+						<div class="inputSel">
+							<label for="edukind">교육종류</label>
+							<span>
+								<select id="edukind" title="교육종류 선택">
+									<option>전체</option>
+									<option>정규과정</option>
+									<option>오프라인강의</option>
+									<option>라이브교육</option>
+								</select>
+							</span>
+						</div>
+						<div class="inputSel">
+							<label for="edustate">나의현황</label>
+							<span>
+								<select id="edustate" title="상태 선택">
+									<option>전체</option>
+									<option>교육대기</option>
+									<option>진행중</option>
+									<option>완료</option>
+									<option>미완료</option>
+									<option>취소</option>
+								</select>
+							</span>
+						</div>
+						<!-- 20161107 -->
+						<div class="inputSel">
+							<label for="edudate">교육일</label>
+							<span class="tablecell">
+								<span class="fl">	
+									<select title="교육일 시작년" class="year">
+										<option>2016</option>
+									</select>
+									<select title="교육일 시작월"  class="month">
+										<option>01</option>
+									</select>
+								</span>
+								<span class="center">~</span>
+								<span class="fr">
+									<select title="교육일 종료년"  class="year">
+										<option>2016</option>
+									</select>
+									<select title="교육일 종료월" class="month">
+										<option>01</option>
+									</select>
+								</span>
+							</span>
+							
+							<!-- <span>
+								<span><input type="date" id="edudate" title="교육일 시작일" value="2016-07-25" /></span>
+								<span>~</span>
+								<span><input type="date" title="교육일 종료일"  value="2016-08-25" /></span>
+							</span>
+							 -->
+						</div>
+						<!-- //20161107 -->
+						<div class="inputSel">
+							<label for="eduname">교육명</label>
+							<span><input type="text" id="eduname" title="교육명" /></span>
+						</div>
+					</div>
+					
+					<div class="btnWrap aNumb2">
+						<span><a href="#" class="btnBasicGNL">조회</a></span>
+						<span><a href="#" class="btnBasicGL">초기화</a></span>
+					</div>
+				</div>
+
+			</div>
+			<!-- //search -->
+
+			<div class="acSubWrap">
+				<!-- 데이타 없을 때 -->
+				<dl class="eduSummary">
+					<dd><div class="nodata">신청내역이 없습니다.<!-- 조회결과가 없습니다. --></div></dd>
+				</dl>
+				<!-- //데이타 없을 때 -->
+				<!-- 20161010 타이틀 전체 링크 수정 -->
+				<dl class="eduSummary">
+					<dt><a href="#none"><strong>뉴트리라이트 건강영양 아카데미 4기</strong>
+						<span class="btn">상세보기</span>
+						</a>
+					</dt>
+					<dd>
+						<div><span class="tit">교육일</span>2016년 7월 7일(목) ~ 2016년 8월 30일(월)</div>
+						<div><span class="tit">교육종류</span>정규과정</div>
+						<div><span class="tit">나의현황</span>진행중</div><!-- 2017-02-06 수정 -->
+					</dd>
+				</dl>
+				<dl class="eduSummary">
+					<dt><a href="#none"><strong>하이드라 쿠션으로 더욱 빛나는 한여름밤의 꿀~ 피부</strong>
+						<span class="category">아티스트리 교육</span>
+						<img src="/_ui/mobile/images/academy/amwaygo_flag_mob.png" alt="AmwayGo!" class="flag" />
+						<span class="btn">상세보기</span>
+						</a>
+					</dt>
+					<dd>
+						<div><span class="tit">교육일</span>2016년 7월 30일(수)</div>
+						<div><span class="tit">교육종류</span>라이브교육</div>
+						<div><span class="tit">나의현황</span>진행중</div><!-- 2017-02-06 수정 -->
+					</dd>
+				</dl>
+				<dl class="eduSummary">
+					<dt><a href="#none"><strong>[강서AP] Class for a Better Life</strong>
+						<img src="/_ui/mobile/images/academy/amwaygo_flag_mob.png" alt="AmwayGo!" class="flag" />
+						<span class="btn">상세보기</span>
+						</a>
+					</dt>
+					<dd>
+						<div><span class="tit">교육일</span>2016년 7월 1일(금)</div>
+						<div><span class="tit">교육종류</span>오프라인강의</div>
+						<div><span class="tit">나의현황</span>완료</div><!-- 2017-02-06 수정 -->
+						<div><span class="tit">좌석번호</span><strong class="fcR">B001</strong></div>
+					</dd>
+				</dl>
+				
+				<a href="#none" class="listMore"><span>20개 더보기</span></a>
+			</div>
+				
+		</section>
+		<!-- content ##iframe end## -->
+	</div>
+	<!-- container -->
+	<!-- footer -->footer include<!-- //footer -->
+</div>
+</body>
+</html>

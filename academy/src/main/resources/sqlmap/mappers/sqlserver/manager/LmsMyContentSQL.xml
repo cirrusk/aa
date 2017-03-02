@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.myAcademy.service.impl.LmsMyContentMapper">
+	
+	<sql id="selectLmsMyContentCondition">
+	FROM LMSCOURSECONDITION
+	WHERE 1 = 1
+		AND ( GETDATE() BETWEEN STARTDATE AND ENDDATE  )
+		AND ( ABOTYPECODE = '' OR ABOTYPEABOVE  <![CDATA[ <= ]]> CONVERT(INT, #{abotypeorder}) )
+		AND ( PINCODE = '' OR CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER )
+		AND ( BONUSCODE = '' OR CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER )
+		AND ( AGECODE = '' OR CONVERT(INT, #{ageorder}) BETWEEN AGEABOVE AND AGEUNDER )
+		AND ( LOACODE = '' OR LOACODE LIKE '%' + #{loacode}  + '%' )
+		AND ( DIACODE = '' OR DIACODE LIKE '%' + #{diacode} + '%' )
+		AND ( TARGETCODE = '' OR (TARGETMEMBER LIKE '%' + #{uid} + '%' AND CONVERT(VARCHAR(15), #{uid} ) != '' ) )
+		AND ( CUSTOMERCODE = '' OR CUSTOMERCODE = #{customercode} )
+		AND ( CONSECUTIVECODE = '' OR CONSECUTIVECODE = #{consecutivecode} )
+		AND ( BUSINESSSTATUSCODE = '' OR BUSINESSSTATUSCODE IN (#{businessstatuscode1},#{businessstatuscode2},#{businessstatuscode3},#{businessstatuscode4}) )
+	</sql>
+	
+	<sql id="selectLmsMyContentWhere">
+		<if test='searchcoursetype.equals("")'>
+			AND B.COURSETYPE IN ('O','D')
+		</if>
+		<if test='!searchcoursetype.equals("")'>
+			AND B.COURSETYPE = #{searchcoursetype}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchtype.equals("t")'>
+		 		AND B.COURSENAME LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchtype.equals("c")'>
+		 		AND B.COURSECONTENT LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchtype.equals("M")'>
+		 		AND ( B.COURSENAME LIKE '%' + #{searchtext} + '%' OR B.COURSECONTENT LIKE '%' + #{searchtext} + '%' )
+		 	</if>
+		</if>
+	</sql>
+
+	<select id="selectLmsSaveLogCount" parameterType="reqBox" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM LMSSAVELOG A INNER JOIN LMSCOURSE B
+		ON A.COURSEID = B.COURSEID INNER JOIN LMSCATEGORY C
+		ON B.CATEGORYID = C.CATEGORYID LEFT OUTER JOIN LMSSTUDENT E
+		ON A.COURSEID = E.COURSEID
+		AND A.UID = E.UID
+		WHERE A.SAVETYPE = #{savetype}
+		AND A.UID = #{uid}
+		AND B.COURSEID IN (
+			SELECT COURSEID 
+				<include refid="selectLmsMyContentCondition" />
+				AND CONDITIONTYPE = '1'
+		)		
+		<if test='savetype.equals("1")'>
+		AND DATEADD(MONTH,-3,GETDATE()) <![CDATA[ <= ]]> A.SAVEDATE
+		</if>
+		AND B.USEFLAG = 'Y'
+		AND B.OPENFLAG = 'Y'
+		<if test='savetype.equals("1")'>
+		AND E.FINISHFLAG = 'Y'
+		</if>
+		AND C.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+		<include refid="selectLmsMyContentWhere" />
+	</select>
+
+	<select id="selectLmsSaveLogList" parameterType="reqBox" resultType="egovMap">
+	/* LmsMyContentSQL.xml selectLmsSaveLogList */
+		SELECT
+			  AAA.COURSEID
+     		, AAA.CATEGORYID
+     		, AAA.CATEGORYNAME
+     		, AAA.COURSETYPE
+     		, AAA.COURSECONTENT 
+       	    , AAA.DATATYPE
+       	    , AAA.COURSEIMAGE
+     		, AAA.COURSEIMAGENOTE
+     		, AAA.LIKECOUNT
+     		, AAA.SAVEDATE
+     		, AAA.SAVETYPE
+     		, AAA.FINISHFLAG
+   			, AAA.REQUESTFLAG
+			, DBO.F_LMS_TIME_FORMAT(AAA.PLAYTIME, 'en') AS PLAYTIME
+			, DBO.F_LMS_LIKECNT(AAA.LIKECOUNT, '1') AS LIKECNT
+			, AAA.COURSENAME
+			, DBO.F_LMS_COURSETYPENAME(AAA.COURSETYPE) AS COURSETYPENAME
+			, ISNULL((SELECT SAVETYPE FROM LMSSAVELOG WHERE COURSEID = AAA.COURSEID AND UID = #{uid} AND SAVETYPE = '2'),'0') AS SAVETYPECHECK
+			, (SELECT COUNT(*) FROM LMSVIEWLOG WHERE VIEWTYPE='2' AND UID=#{uid} AND COURSEID = AAA.COURSEID) AS MYLIKECNT
+			, CASE WHEN AAA.COURSETYPE = 'O' OR AAA.COURSETYPE = 'D' THEN ISNULL(AAA.FINISHFLAG,'N')
+				ELSE ISNULL(AAA.REQUESTFLAG,'N')  
+				END AS VIEWFLAG		
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY A.SAVEDATE DESC) AS ROW_NUM
+				, B.COURSEID
+	     		, B.CATEGORYID
+	     		, C.CATEGORYNAME
+	     		, B.COURSETYPE
+	     		, B.COURSENAME
+			    , B.COURSECONTENT 
+	       	    , B.DATATYPE
+	       	    , B.PLAYTIME
+	     		, B.COURSEIMAGE
+	     		, B.COURSEIMAGENOTE
+	     		, B.LIKECOUNT
+	     		, A.SAVEDATE
+	     		, A.SAVETYPE
+	     		, E.FINISHFLAG
+    				, E.REQUESTFLAG
+			FROM LMSSAVELOG A INNER JOIN LMSCOURSE B
+			ON A.COURSEID = B.COURSEID INNER JOIN LMSCATEGORY C
+			ON B.CATEGORYID = C.CATEGORYID LEFT OUTER JOIN LMSSTUDENT E 
+			ON A.COURSEID = E.COURSEID
+			AND A.UID = E.UID
+			WHERE A.SAVETYPE = #{savetype}
+			AND A.UID = #{uid}
+			AND B.COURSEID IN (
+				SELECT COURSEID 
+					<include refid="selectLmsMyContentCondition" />
+					AND CONDITIONTYPE = '1'
+			)	
+			<if test='savetype.equals("1")'>
+			AND DATEADD(MONTH,-3,GETDATE()) <![CDATA[ <= ]]> A.SAVEDATE
+			</if>
+			AND B.USEFLAG = 'Y'
+			AND B.OPENFLAG = 'Y'
+			<if test='savetype.equals("1")'>
+			AND E.FINISHFLAG = 'Y'
+			</if>
+			AND C.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+			<include refid="selectLmsMyContentWhere" />
+		) AAA	
+		WHERE AAA.ROW_NUM BETWEEN ((#{pageIndex} -1) * #{rowPerPage} +1) AND (#{pageIndex} * #{rowPerPage})	
+	</select>
+	
+	<delete id="deleteLmsSaveLog" parameterType="reqBox">
+		DELETE FROM LMSSAVELOG 
+		WHERE COURSEID = #{courseid}
+  		AND UID = #{uid}
+  		AND SAVETYPE = #{savetype}
+	</delete>
+	
+</mapper>

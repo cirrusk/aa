@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.eduResource.service.impl.LmsEduResourceMapper">
+
+	<!-- 서칭 권한 공통 조회조건 -->
+	<sql id="selectLmsCourseConditionSearch">
+		FROM LMSCOURSECONDITION 
+		WHERE 1 = 1
+			AND ( ABOTYPECODE = '' OR ABOTYPEABOVE  <![CDATA[ <= ]]> CONVERT(INT, #{abotypeorder}) )
+			AND ( PINCODE = '' OR CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER )
+			AND ( BONUSCODE = '' OR CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER )
+			AND ( AGECODE = '' OR CONVERT(INT, #{ageorder}) BETWEEN AGEABOVE AND AGEUNDER )
+			AND ( LOACODE = '' OR LOACODE LIKE '%' + #{loacode}  + '%' )
+			AND ( DIACODE = '' OR DIACODE LIKE '%' + #{diacode} + '%' )
+			AND ( GETDATE() BETWEEN STARTDATE AND ENDDATE  )
+			AND ( TARGETCODE = '' OR (TARGETMEMBER LIKE '%' + #{uid} + '%' AND CONVERT(VARCHAR(15), #{uid} ) != '' ) )
+	</sql>
+	
+	<select id="selectEduResourceListCount" parameterType="reqBox" resultType="int">
+		/* LmsEduResourceSQL.xml -- selectEduResourceListCount - 교육자료 총건수 */
+		SELECT COUNT(*) AS TOTAL_CNT
+		FROM LMSCOURSE B
+            INNER JOIN LMSCATEGORY C 
+        		ON ( B.CATEGORYID = C.CATEGORYID )
+		WHERE B.USEFLAG = 'Y'
+			AND B.OPENFLAG = 'Y' 
+			AND B.COURSEID IN (
+				SELECT COURSEID 
+				<include refid="selectLmsCourseConditionSearch" />
+				AND CONDITIONTYPE = #{conditiontype}
+			)
+		<choose>
+	    	<when test='categoryid != null and !categoryid.equals("")'>
+			AND B.CATEGORYID = #{categoryid} 
+				/* 2016-10-06. 
+				   카테고리고리분류 단계별로 처리 로직 반영시 사용. 
+				   단, 카테고리 메뉴는 1단계이므로 하위단계로 1단계 CATEGORYID를 가져오는 로직 추가 필요.
+				   		2,3단계 상세보기시 메뉴위치는 '신규' 으로 표시 되므로 ...
+				   	같이사용 : LmsMainController.lmsAuthViewDataEvent() 에서 주석처리함.
+			AND B.CATEGORYID IN (
+					SELECT CATEGORYID 
+					FROM LMSCATEGORY 
+					WHERE CATEGORYID = '#categoryid' 		-- 분류 1단계
+					  OR (CATEGORYUPID = '#categoryid' AND CATEGORYLEVEL = 2 )  -- 분류 2단계 
+					  OR (CATEGORYUPID IN (SELECT CATEGORYID FROM LMSCATEGORY WHERE CATEGORYUPID = '#categoryid' AND CATEGORYLEVEL = 2)
+								  AND CATEGORYLEVEL = 3)  			-- 분류 3단계
+					) 
+				 */
+	    	</when>
+	    	<otherwise>
+			AND C.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+	    	</otherwise>
+		</choose>
+		<if test='coursetype != null and !coursetype.equals("")'>
+            AND B.COURSETYPE = #{coursetype} 
+		</if>
+		<if test='datatype != null and !datatype.equals("")'>
+        	AND B.DATATYPE = #{datatype} 
+        </if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("t")'>
+		    AND B.COURSENAME LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("c")'>
+		    AND B.COURSECONTENT LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("w")'>
+		    AND B.SEARCHWORD LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("M")'>
+		    AND ( B.COURSENAME LIKE '%' + #{searchTxt} + '%' OR B.COURSECONTENT LIKE '%' + #{searchTxt} + '%' OR B.SEARCHWORD LIKE '%' + #{searchTxt} + '%' )
+		</if>
+	</select>
+	
+	<select id="selectEduResourceList" parameterType="reqBox" resultType="egovMap">
+		/* LmsEduResourceSQL.xml -- selectEduResourceList - 교육자료 */
+		SELECT BB.COURSEID
+     		, BB.CATEGORYID
+     		, BB.CATEGORYNAME
+     		, BB.COMPLIANCEFLAG
+     		, BB.COURSETYPE
+     		, BB.COURSETYPENAME
+			, BB.COURSENAME
+		    , BB.COURSECONTENT
+       	    , BB.DATATYPE
+     		, BB.PLAYTIME 
+     		, BB.COURSEIMAGE
+     		, BB.COURSEIMAGENOTE
+     		, BB.SNSFLAG
+     		, BB.MODIFYDATE
+     		, BB.REGISTRANTDATE
+     		, BB.FINISHFLAG
+     		, BB.SAVETYPE
+			, DBO.F_LMS_LIKECNT(BB.LIKECOUNT, '1' ) AS LIKECNT
+		    , DBO.F_LMS_LIKECNT(BB.LIKECOUNT, '2' ) AS LIKECOUNT
+		    , DBO.F_LMS_LIKECNT(BB.VIEWCOUNT, '1' ) AS VIEWCNT
+		    , DBO.F_LMS_LIKECNT(BB.VIEWCOUNT, '2' ) AS VIEWCOUNT
+		    , (SELECT COUNT(*) FROM LMSVIEWLOG WHERE VIEWTYPE='2' AND UID=#{uid} AND COURSEID = BB.COURSEID) AS MYLIKECNT
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY B.${sortOrderColumn} ${sortOrderType}, B.REGISTRANTDATE DESC, B.COURSEID DESC ) AS ROW_NUM 
+				, B.COURSEID
+	     		, B.CATEGORYID
+	     		, C.CATEGORYNAME
+	     		, C.COMPLIANCEFLAG
+	     		, B.COURSETYPE
+	     		, DBO.F_LMS_COURSETYPENAME(B.COURSETYPE) AS COURSETYPENAME
+				, B.COURSENAME
+			    , B.COURSECONTENT
+	       	    , B.DATATYPE
+	     		, DBO.F_LMS_TIME_FORMAT(B.PLAYTIME, 'en') AS PLAYTIME 
+	     		, B.COURSEIMAGE
+	     		, B.COURSEIMAGENOTE
+	     		, B.SNSFLAG
+	     		, B.LIKECOUNT
+	     		, B.VIEWCOUNT
+	     		, DBO.F_LMS_DATETYPE(B.MODIFYDATE, '') AS MODIFYDATE
+	     		, DBO.F_LMS_DATETYPE(B.REGISTRANTDATE, '') AS REGISTRANTDATE
+	     		, E.FINISHFLAG
+	     		, F.SAVETYPE
+			FROM LMSCOURSE B
+	            INNER JOIN LMSCATEGORY C 
+					ON ( B.CATEGORYID = C.CATEGORYID )
+				LEFT OUTER JOIN LMSSTUDENT E 
+					ON ( B.COURSEID = E.COURSEID
+						AND E.UID = #{uid} )
+				LEFT OUTER JOIN LMSSAVELOG F 
+					ON ( B.COURSEID = F.COURSEID
+						AND F.UID = #{uid}
+						AND F.SAVETYPE = '2' )
+			WHERE B.USEFLAG = 'Y'
+				AND B.OPENFLAG = 'Y' 
+				AND B.COURSEID IN (
+					SELECT COURSEID 
+					<include refid="selectLmsCourseConditionSearch" />
+					AND CONDITIONTYPE = #{conditiontype}
+				)
+		<choose>
+	    	<when test='categoryid != null and !categoryid.equals("")'>
+			AND B.CATEGORYID = #{categoryid} 
+			
+			/* 카테고리고리분류 단계별로 처리 로직 반영시 사용. 
+			AND B.CATEGORYID IN (
+					SELECT CATEGORYID 
+					FROM LMSCATEGORY 
+					WHERE CATEGORYID = '#categoryid' 		-- 분류 1단계
+					  OR (CATEGORYUPID = '#categoryid' AND CATEGORYLEVEL = 2 )  -- 분류 2단계 
+					  OR (CATEGORYUPID IN (SELECT CATEGORYID FROM LMSCATEGORY WHERE CATEGORYUPID = '#categoryid' AND CATEGORYLEVEL = 2)
+								  AND CATEGORYLEVEL = 3)  			-- 분류 3단계
+					) 
+			 */
+	    	</when>
+	    	<otherwise>
+			AND C.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+	    	</otherwise>
+		</choose>
+		<if test='coursetype != null and !coursetype.equals("")'>
+            AND B.COURSETYPE = #{coursetype} 
+		</if>
+		<if test='datatype != null and !datatype.equals("")'>
+        	AND B.DATATYPE = #{datatype} 
+        </if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("t")'>
+		    AND B.COURSENAME LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("c")'>
+		    AND B.COURSECONTENT LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("w")'>
+		    AND B.SEARCHWORD LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("M")'>
+		    AND ( B.COURSENAME LIKE '%' + #{searchTxt} + '%' OR B.COURSECONTENT LIKE '%' + #{searchTxt} + '%' )
+		</if>
+		) BB
+		WHERE ROW_NUM BETWEEN ((#{pageIndex} -1) * #{rowPerPage} +1) AND (#{pageIndex} * #{rowPerPage})
+	</select>
+
+	<select id="selectEduResourceView" parameterType="reqBox" resultType="egovMap">
+		/* LmsEduResourceSQL.xml -- selectEduResourceView - 교육자료 상세보기 */
+	    SELECT B.COURSEID
+	        , B.CATEGORYID
+	        , C.CATEGORYNAME
+	        , C.COMPLIANCEFLAG
+	        , B.COURSENAME 
+	        , B.COURSECONTENT 
+	        , B.DATATYPE
+	        , DBO.F_LMS_TIME_FORMAT(B.PLAYTIME, 'kr') AS PLAYTIME 
+	        , B.COURSEIMAGE
+	        , B.COURSEIMAGENOTE
+	        , B.SNSFLAG
+	        , DBO.F_LMS_LIKECNT(B.LIKECOUNT, '1' ) AS LIKECNT
+	        , DBO.F_LMS_LIKECNT(B.VIEWCOUNT, '2' ) AS VIEWCOUNT
+	        , DBO.F_LMS_DATETYPE(B.MODIFYDATE, '') AS MODIFYDATE 
+	        , DBO.F_LMS_DATETYPE(B.REGISTRANTDATE, '') AS REGISTRANTDATE
+	        , G.PCLINK
+	        , G.MOBILELINK
+	        , G.FILELINK
+	        , G.FILEDOWN
+	        , F.SAVETYPE
+	        , (SELECT COUNT(*) FROM LMSVIEWLOG WHERE VIEWTYPE='2' AND UID=#{uid} AND COURSEID = B.COURSEID) AS MYLIKECNT
+	    FROM LMSCOURSE B
+	        INNER JOIN LMSCATEGORY C 
+	            ON ( B.CATEGORYID = C.CATEGORYID )
+	        INNER JOIN LMSDATA G
+	            ON ( B.COURSEID = G.COURSEID )
+	        LEFT OUTER JOIN LMSSAVELOG F 
+	            ON ( B.COURSEID = F.COURSEID
+	                AND F.UID = #{uid}
+	                AND F.SAVETYPE = '2' )
+		WHERE B.USEFLAG = 'Y'
+		AND B.OPENFLAG != 'N'
+		<if test='conditioncheck != null and conditioncheck.equals("Y")'> 
+		AND B.COURSEID IN (
+	        SELECT COURSEID 
+	        <include refid="selectLmsCourseConditionSearch" />
+			AND CONDITIONTYPE = #{conditiontype}
+		)
+		</if>
+		AND B.COURSEID = #{courseid} 
+	</select>
+
+	<select id="selectEduResourceViewPrevNext" parameterType="reqBox" resultType="egovMap">
+		/* LmsEduResourceSQL.xml -- selectEduResourceViewPrevNext - 교육자료 상세보기 이전,다음 항목 */
+	    SELECT TOP 1
+	          B.COURSEID
+	        , B.CATEGORYID
+	        , B.COURSENAME
+	        , B.DATATYPE 
+	        , DBO.F_LMS_TIME_FORMAT(B.PLAYTIME, 'en') AS PLAYTIME 
+	        , B.COURSEIMAGE
+	        , B.COURSEIMAGENOTE
+	    FROM LMSCOURSE B
+	        INNER JOIN LMSCATEGORY C 
+	            ON ( B.CATEGORYID = C.CATEGORYID )
+	    WHERE B.USEFLAG = 'Y'
+			AND B.OPENFLAG = 'Y' 
+			AND B.COURSEID IN (
+		        SELECT COURSEID 
+		        <include refid="selectLmsCourseConditionSearch" />
+				AND CONDITIONTYPE = #{conditiontype}
+			)
+		<choose>
+	    	<when test='categoryid != null and !categoryid.equals("")'>
+				AND B.CATEGORYID = #{categoryid} 
+				
+				/* 카테고리고리분류 단계별로 처리 로직 반영시 사용. 
+				AND B.CATEGORYID IN (
+						SELECT CATEGORYID 
+						FROM LMSCATEGORY 
+						WHERE CATEGORYID = '#categoryid' 		-- 분류 1단계
+						  OR (CATEGORYUPID = '#categoryid' AND CATEGORYLEVEL = 2 )  -- 분류 2단계 
+						  OR (CATEGORYUPID IN (SELECT CATEGORYID FROM LMSCATEGORY WHERE CATEGORYUPID = '#categoryid' AND CATEGORYLEVEL = 2)
+									  AND CATEGORYLEVEL = 3)  			-- 분류 3단계
+						) 
+				 */
+	    	</when>
+	    	<otherwise>
+			AND C.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+	    	</otherwise>
+		</choose>
+		<if test='coursetype != null and !coursetype.equals("")'>
+	       AND B.COURSETYPE = #{coursetype} 
+	    </if>
+	    <if test='datatype != null and !datatype.equals("")'>
+	       AND B.DATATYPE = #{datatype} 
+	    </if>
+	    <if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("t")'>
+	       AND B.COURSENAME LIKE '%' + #{searchTxt} + '%'
+	    </if>
+	    <if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("c")'>
+	       AND B.COURSECONTENT LIKE '%' + #{searchTxt} + '%'
+	    </if>
+	    <if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("w")'>
+	       AND B.SEARCHWORD LIKE '%' + #{searchTxt} + '%'
+	    </if>
+	    <if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("M")'>
+	       AND ( B.COURSENAME LIKE '%' + #{searchTxt} + '%' OR B.COURSECONTENT LIKE '%' + #{searchTxt} + '%' )
+	    </if>
+	    <choose>
+	    	<when test='sPrevNext != null and !sPrevNext.equals("prev")'>
+	       AND B.COURSEID <![CDATA[ > ]]> #{courseid}
+	    ORDER BY B.${sortColumn} ASC, B.REGISTRANTDATE ASC, B.COURSEID ASC
+	    	</when>
+	    	<otherwise>
+	       AND B.COURSEID <![CDATA[ < ]]> #{courseid}
+	    ORDER BY B.${sortColumn} DESC, B.REGISTRANTDATE DESC, B.COURSEID DESC
+	    	</otherwise>
+		</choose>
+	</select>
+	
+	<select id="selectEduResourceViewPrevNextList" parameterType="reqBox" resultType="egovMap">
+		/* LmsEduResourceSQL.xml -- selectEduResourcePrevNextList - 교육자료 */
+		SELECT BB.*
+		FROM (	
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY B.${sortColumn} DESC, B.REGISTRANTDATE DESC, B.COURSEID DESC ) AS ROWNUM 
+				, B.COURSEID
+				, B.COURSENAME
+			    , B.COURSECONTENT
+	       	    , B.DATATYPE
+	     		, DBO.F_LMS_TIME_FORMAT(B.PLAYTIME, 'en') AS PLAYTIME 
+	     		, B.COURSEIMAGE
+	     		, B.COURSEIMAGENOTE
+	     		, B.LIKECOUNT
+	     		, B.VIEWCOUNT
+			FROM LMSCOURSE B
+	            INNER JOIN LMSCATEGORY C 
+					ON ( B.CATEGORYID = C.CATEGORYID )
+			WHERE B.USEFLAG = 'Y'
+				AND B.OPENFLAG = 'Y' 
+				AND B.COURSEID IN (
+					SELECT COURSEID 
+					<include refid="selectLmsCourseConditionSearch" />
+					AND CONDITIONTYPE = #{conditiontype}
+				)
+			<choose>
+		    	<when test='categoryid != null and !categoryid.equals("")'>
+				AND B.CATEGORYID = #{categoryid} 
+		    	</when>
+		    	<otherwise>
+				AND C.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+		    	</otherwise>
+			</choose>
+			<if test='coursetype != null and !coursetype.equals("")'>
+	            AND B.COURSETYPE = #{coursetype} 
+			</if>
+			<if test='datatype != null and !datatype.equals("")'>
+	        	AND B.DATATYPE = #{datatype} 
+	        </if>
+			<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("t")'>
+			    AND B.COURSENAME LIKE '%' + #{searchTxt} + '%'
+			</if>
+			<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("c")'>
+			    AND B.COURSECONTENT LIKE '%' + #{searchTxt} + '%'
+			</if>
+			<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("w")'>
+			    AND B.SEARCHWORD LIKE '%' + #{searchTxt} + '%'
+			</if>
+			<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("M")'>
+			    AND ( B.COURSENAME LIKE '%' + #{searchTxt} + '%' OR B.COURSECONTENT LIKE '%' + #{searchTxt} + '%' )
+			</if>
+		) BB
+		<if test='sPrevNext.equals("current")'>
+		WHERE BB.COURSEID = #{courseid}
+		</if>
+		<if test='sPrevNext.equals("prev")'>
+		WHERE BB.ROWNUM = CONVERT(INT,#{rownum}) - 1
+		</if>
+		<if test='sPrevNext.equals("next")'>
+		WHERE BB.ROWNUM = CONVERT(INT,#{rownum}) + 1
+		</if>
+	</select>
+
+</mapper>

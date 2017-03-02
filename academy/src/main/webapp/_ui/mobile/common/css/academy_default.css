@@ -1,0 +1,9 @@
+@charset "utf-8";
+/* ---------------------------------------
+	Description : 비즈니스(교육장예약, 교육비), 아카데미
+	Author		: netive
+	Version: 	: 2016.05 ECM 1.5 AI
+  --------------------------------------- */
+@import url('layout.css');
+@import url('academy_common.css'); /* 아카데미 공통 */
+@import url('academy_content.css'); /* 아카데미 컨텐츠 */

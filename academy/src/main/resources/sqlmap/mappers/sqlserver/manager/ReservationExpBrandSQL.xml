@@ -1,0 +1,2949 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.reservation.expBrand.service.impl.ExpBrandMapper">
+
+    <select id="searchBrandPpInfo" parameterType="reqBox" resultType="egovMap">
+        SELECT 
+              PPSEQ
+            , PPNAME
+            , (
+                SELECT 
+                    ISNULL(MAX(TYPESEQ), 0) AS TYPESEQ
+                FROM RSVTYPEINFO
+                WHERE TYPENAME LIKE CONCAT('%','브랜드', '%')
+                    AND STATUSCODE = 'B01'
+            )AS TYPESEQ
+        FROM RSVPPINFO
+        WHERE PPNAME LIKE CONCAT('%','분당', '%')
+            AND STATUSCODE = 'B01'
+    </select>
+    
+    <!-- 체험 정보 마스터 테이블에서 등록된 브랜드 체험의  카테고리값 조회 -->
+    <select id="searchCategoryTypeList" parameterType="reqBox" resultType="egovMap">
+        SELECT    DISTINCT
+                  CATEGORYTYPE2
+                , CASE
+                    WHEN CATEGORYTYPE3 = '' THEN 'N'
+                    WHEN CATEGORYTYPE3 IS NULL THEN 'N'
+                    WHEN DATALENGTH(CATEGORYTYPE3) = 0 THEN 'N'
+                    ELSE CATEGORYTYPE3
+                END AS CATEGORYTYPE3
+        FROM RSVEXPINFO
+        WHERE CATEGORYTYPE1 = 'E03'
+            AND STATUSCODE ='B01'
+    </select>
+    
+    <!-- 해당 날짜의 얘약 가능한 프로그램 리스트 -->
+    <select id="searchBrandProgramList" parameterType="reqBox" resultType="egovMap">
+       /** RSVFLAG:화면단에서 예약마감, 예약가능, 예약대기 판단 하는 flag */
+        SELECT * FROM(
+            SELECT DISTINCT
+                  AA.EXPSEQ
+                , AA.SETDATE
+                , AA.CATEGORYTYPE1
+                , AA.CATEGORYTYPE2
+                , AA.CATEGORYTYPE3
+                , AA.PRODUCTNAME
+                , AA.STARTDATE
+                , AA.ENDDATE
+                , AA.PREPARATION
+                , AA.ORDERNUMBER
+                , AA.WEEKDAY
+                , AA.EXPSESSIONSEQ
+                , AA.WEEK
+                , AA.RSVFLAG
+                , AA.ACCOUNTTYPE
+                , AA.SESSION
+                , AA.CATEGORYTYPE2NAME
+                , AA.CATEGORYTYPE3NAME
+                , AA.ACCOUNTTYPENAME
+                , AA.STARTDATETIME
+                , AA.ENDDATETIME
+                , AA.PPSEQ
+                , AA.SEATCOUNT1
+                , AA.SEATCOUNT2
+                , AA.SESSIONSTARTDAY
+                , AA.SESSIONENDDAY
+                , AA.SETTYPECODE
+                , AA.WORKTYPECODE
+                , CONCAT(#{getYear}, #{getMonth},#{getDay}) AS IDVALUE
+            FROM(
+                SELECT   
+                      AA.EXPSEQ
+                    , AA.SETTYPECODE
+                    , AA.WORKTYPECODE
+                    , AA.SETDATE
+                    , AA.CATEGORYTYPE1
+                    , AA.CATEGORYTYPE2
+                    , AA.CATEGORYTYPE3
+                    , AA.PRODUCTNAME
+                    , AA.STARTDATE
+                    , AA.ENDDATE
+                    , AA.PREPARATION
+                    , AA.ORDERNUMBER
+                    , AA.WEEKDAY
+                    , AA.EXPSESSIONSEQ
+                    , AA.WEEK
+                    , MAX(AA.RSVFLAG)AS RSVFLAG
+                    , AA.ACCOUNTTYPE
+                    , AA.SESSION
+                    , AA.CATEGORYTYPE2NAME
+                    , AA.CATEGORYTYPE3NAME
+                    , AA.ACCOUNTTYPENAME
+                    , AA.STARTDATETIME
+                    , AA.ENDDATETIME
+                    , AA.PPSEQ 
+                    , AA.SEATCOUNT1
+                    , AA.SEATCOUNT2
+                    , BB.SESSIONSTARTDAY
+                    , BB.SESSIONENDDAY
+                FROM (
+                    SELECT 
+                          A.EXPSEQ
+                        , A.CATEGORYTYPE1
+                        , A.CATEGORYTYPE2
+                        , ISNULL(A.CATEGORYTYPE3, 'N')AS CATEGORYTYPE3
+                        , A.PRODUCTNAME
+                        , A.STARTDATE
+                        , A.ENDDATE
+                        , A.PREPARATION
+                        , A.PPSEQ
+                        , A.SEATCOUNT1
+                        , A.SEATCOUNT2
+                        , C.ORDERNUMBER
+                        , C.SETDATE
+                        , C.SETTYPECODE
+                        , C.WORKTYPECODE
+                        , CASE DATEPART (WEEKDAY, #{getYear}+#{getMonth}+#{getDay})
+                            WHEN '1' THEN '(일)'
+                            WHEN '2' THEN '(월)'
+                            WHEN '3' THEN '(화)'
+                            WHEN '4' THEN '(수)'
+                            WHEN '5' THEN '(목)'
+                            WHEN '6' THEN '(금)'
+                            ELSE '(토)'
+                          END AS WEEKDAY
+                        , C.EXPSESSIONSEQ
+                        , D.WEEK
+                        , ISNULL(B.RSVFLAG, 100) as RSVFLAG
+                        , #{accounttype} AS ACCOUNTTYPE
+                        , STARTDATETIME
+                        , ENDDATETIME
+                        , SUBSTRING(STARTDATETIME, 1,2 ) +':'+SUBSTRING(STARTDATETIME, 3,4 ) + '~' +SUBSTRING(ENDDATETIME, 1,2 ) +':'+SUBSTRING(ENDDATETIME, 3,4 ) AS SESSION
+                        ,CASE A.CATEGORYTYPE2 
+                            WHEN 'E0301' THEN '브랜드 셀렉트'
+                            WHEN 'E0302' THEN '브랜드 믹스'
+                            WHEN 'E0303' THEN '브랜드 투어'
+                            ELSE '맞춤식 체험'
+                          END AS CATEGORYTYPE2NAME
+                        ,CASE ISNULL(A.CATEGORYTYPE3, 'N')
+                            WHEN 'E030101' THEN '뉴트리라이트 (영양편)'
+                            WHEN 'E030102' THEN '뉴트리라이트 (운동편)'
+                            WHEN 'E030103' THEN '아티스트리 (스킨케어)'
+                            WHEN 'E030104' THEN '아티스트리 (메이크업)'
+                            WHEN 'E030105' THEN '홈리빙'
+                            WHEN 'E030106' THEN '퀸쿡'
+                            ELSE 'N'
+                          END AS CATEGORYTYPE3NAME
+                        ,CASE #{accounttype}
+                            WHEN 'A01' THEN '개별'
+                            ELSE '그룹'
+                          END AS ACCOUNTTYPENAME
+                    FROM RSVEXPINFO A
+                        LEFT OUTER JOIN RSVEXPSESSIONINFO C
+                            ON(A.EXPSEQ = C.EXPSEQ AND A.CATEGORYTYPE1 = 'E03' AND A.STATUSCODE='B01' AND C.STATUSCODE = 'B01')
+                        LEFT OUTER JOIN( /** 해당일자 예약자 조회 */
+                            SELECT
+                                  A.RSVSEQ
+                                , A.RESERVATIONDATE
+                                , A.EXPSEQ
+                                , A.EXPSESSIONSEQ
+                                , ISNULL(B.RSVFLAG, 100) AS RSVFLAG
+                            FROM RSVRESERVATIONINFO A
+                                INNER JOIN(
+                                    SELECT  
+                                           RESERVATIONDATE
+                                        , EXPSEQ
+                                        , EXPSESSIONSEQ
+                                        , MAX(ISNULL(STANDBYNUMBER, 0)) AS STANDBYNUMBER
+                                        , RSVFLAG
+                                    FROM (
+                                            SELECT A.RSVTYPECODE
+                                                 , A.EXPSEQ
+                                                 , A.RESERVATIONDATE
+                                                 , A.TYPESEQ
+                                                 , A.STANDBYNUMBER
+                                                 , CASE
+                                                      WHEN A.STANDBYNUMBER = 1 OR (A.ADMINFIRSTCODE = 'R01' AND A.CANCELCODE = 'B02') THEN 300
+                                                      WHEN B.SEATCOUNT &gt; C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 100
+                                                      WHEN B.SEATCOUNT &lt; C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 300
+                                                      WHEN B.SEATCOUNT = C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 200
+                                                      WHEN A.STANDBYNUMBER = 0 AND A.CANCELCODE = 'B01' AND A.ACCOUNTTYPE != 'A01' THEN 100
+                                                      WHEN (A.STANDBYNUMBER = 0 OR A.STANDBYNUMBER IS NULL )AND A.CANCELCODE = 'B02' AND A.ACCOUNTTYPE != 'A01' THEN 200
+                                                      ELSE 100
+                                                   END AS RSVFLAG
+                                                 , A.CANCELCODE
+                                                 , A.EXPSESSIONSEQ
+                                                 , A.ACCOUNTTYPE
+                                            FROM RSVRESERVATIONINFO A
+                                            INNER JOIN RSVEXPINFO B ON (A.EXPSEQ = B.EXPSEQ)
+                                            LEFT OUTER JOIN (
+                                                 SELECT RESERVATIONDATE
+                                                      , EXPSESSIONSEQ
+                                                      , SUM(CASE 
+                                                               WHEN ACCOUNTTYPE = 'A01' THEN VISITNUMBER
+                                                               ELSE 0
+                                                            END) AS VISITNUMBER
+                                                 FROM RSVRESERVATIONINFO 
+                                                 WHERE STANDBYNUMBER = 0 
+                                                   AND EXPSESSIONSEQ IS NOT NULL
+                                                   AND CANCELCODE = 'B02'
+                                                   AND RESERVATIONDATE = #{getYear}+#{getMonth}+#{getDay}
+                                                 GROUP BY RESERVATIONDATE, EXPSESSIONSEQ, CANCELCODE) C
+                                            ON(A.RESERVATIONDATE = C.RESERVATIONDATE
+                                            AND A.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                                            WHERE A.TYPESEQ = #{typeseq}
+                                              AND A.CANCELCODE = 'B02'
+                                              <if test='categorytype3 == "N" and categorytype3.equals("N")'>
+												AND B.CATEGORYTYPE2 = #{categorytype2}
+											</if>
+											<if test='categorytype3 != "N" and !categorytype3.equals("N")'>
+												AND B.CATEGORYTYPE3 = #{categorytype3}
+											</if>
+                                              AND A.RESERVATIONDATE = #{getYear}+#{getMonth}+#{getDay}
+                                        ) A
+                                    GROUP BY 
+                                          RESERVATIONDATE
+                                        , EXPSEQ
+                                        , EXPSESSIONSEQ
+                                        , RSVFLAG
+                                )AS B
+                                ON(A.RESERVATIONDATE = B.RESERVATIONDATE 
+                                    AND A.EXPSESSIONSEQ = B.EXPSESSIONSEQ)
+                            WHERE A.RESERVATIONDATE = #{getYear}+#{getMonth}+#{getDay}
+                                AND TYPESEQ = #{typeseq}
+                        )AS B 
+                            ON(C.EXPSESSIONSEQ = B.EXPSESSIONSEQ)
+                        INNER JOIN(
+                            SELECT    DISTINCT
+                              EXPSEQ
+                            , TYPESEQ
+                            FROM RSVEXPTYPEMAP
+                        )AS F
+                            ON(A.EXPSEQ = F.EXPSEQ)
+                        INNER JOIN ( /** 마지막주 일요일 판별  */
+                            SELECT
+                                CASE
+                                    WHEN DATEPART(WEEKDAY, #{getYear}+#{getMonth}+#{getDay}) = '1' 
+                                        AND CONCAT(#{getYear}, #{getMonth}, #{getDay}) = CONVERT(VARCHAR, DATEADD(dd, -1 *(datepart(dw, CONVERT(VARCHAR, DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0, #{getYear}+#{getMonth} + '01')+1,0)),112))-1),
+                                        CONVERT(VARCHAR, DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0, #{getYear}+#{getMonth} + '01')+1,0)),112)),112)
+                                            AND (
+                                                    SELECT COUNT(*) AS LASTSUNDAY
+                                                    FROM RSVEXPINFO A
+                                                    INNER JOIN RSVEXPSESSIONINFO B
+                                                        ON(A.EXPSEQ = B.EXPSEQ AND A.STATUSCODE = 'B01')
+                                                    WHERE A.CATEGORYTYPE1 = 'E03'
+                                                    AND SETWEEK = 'W08'
+                                            ) !='0' THEN 'W08'/** 브랜드 카테고리중 마지막주 일요일이 있을 경우 W08 반환 */
+                                    WHEN DATEPART(WEEKDAY, #{getYear}+#{getMonth}+#{getDay}) = '2' THEN 'W02'
+                                    WHEN DATEPART(WEEKDAY, #{getYear}+#{getMonth}+#{getDay}) = '3' THEN 'W03'
+                                    WHEN DATEPART(WEEKDAY, #{getYear}+#{getMonth}+#{getDay}) = '4' THEN 'W04'
+                                    WHEN DATEPART(WEEKDAY, #{getYear}+#{getMonth}+#{getDay}) = '5' THEN 'W05'
+                                    WHEN DATEPART(WEEKDAY, #{getYear}+#{getMonth}+#{getDay}) = '6' THEN 'W06'
+                                    WHEN DATEPART(WEEKDAY, #{getYear}+#{getMonth}+#{getDay}) = '7' THEN 'W07'
+                                    ELSE 'W01'
+                                END AS WEEK
+                        ) AS D
+                            ON(C.SETWEEK = D.WEEK OR CONCAT(#{getYear}, #{getMonth}, #{getDay}) = C.SETDATE)
+                        LEFT OUTER join RSVBRANDCATEGORY G
+                            ON(A.CATEGORYTYPE1  = G.CATEGORYTYPE1 AND A.CATEGORYTYPE2 = G.CATEGORYTYPE2 AND A.CATEGORYTYPE3 = G.CATEGORYTYPE3)
+                    WHERE A.CATEGORYTYPE1 = 'E03'
+                ) AS AA
+                INNER JOIN( /** 사용자 핀 조건에 맞는 세션 조회*/
+                    SELECT 
+                          B.EXPSESSIONSEQ
+                        , B.SETDATE
+                        , MIN(CASE C.PERIODTYPECODE
+                                /*일별*/
+                                WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.STARTDAY), GETDATE()), 112)
+                                /*월별*/
+                                WHEN 'P03' THEN CONVERT(VARCHAR(8), GETDATE() + 1, 112)
+                          END) AS SESSIONSTARTDAY
+                        , MAX(CASE C.PERIODTYPECODE
+                                /*일별*/
+                                WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE()), 112)
+                                /*월별*/
+                                WHEN 'P03' 
+                                    THEN 
+                                        /* TO-BE 시작 */
+                                        <![CDATA[
+                                        CASE 
+                                            /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                            WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                            THEN 
+                                                CASE 
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                    ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                END
+                                            /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                            WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                            THEN
+                                                CASE 
+                                                    WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) < DBO.F_FT_CODENAME()    /* alscure */
+                                                    THEN 
+                                                        CASE 
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                            ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                        END
+                                                    ELSE 
+                                                        CASE 
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                            ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                        END
+                                                END
+                                            /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                            ELSE 
+                                                CASE 
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                    ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                END
+                                        END
+                                        ]]>
+                                        /* TO-BE 끝 */
+                          END) AS SESSIONENDDAY
+                    FROM RSVEXPINFO A 
+                        INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) E
+                            ON(A.EXPSEQ = E.EXPSEQ AND A.STATUSCODE='B01')
+                        INNER JOIN RSVEXPSESSIONINFO B 
+                            ON(
+                                A.EXPSEQ = B.EXPSEQ 
+                                AND A.PPSEQ = #{ppseq}
+                                AND B.STATUSCODE = 'B01'
+                            ) 
+                        INNER JOIN RSVEXPROLE C
+                            ON(B.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                        INNER JOIN (
+                        /* 핀, 지역, 나이 */
+                            SELECT 
+                                  CZ.EXPSESSIONSEQ
+                                , CZ.PINTREATRANGE
+                                , CZ.CITYTREATCODE
+                                , CZ.AGETREATCODE
+                                , CZ.GROUPSEQ
+                            FROM RSVEXPINFO AZ 
+                                INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) GZ
+                                    ON(AZ.EXPSEQ = GZ.EXPSEQ)
+                                INNER JOIN RSVEXPSESSIONINFO BZ 
+                                    ON(
+                                        AZ.EXPSEQ = BZ.EXPSEQ 
+                                        AND AZ.PPSEQ = #{ppseq}
+                                        AND BZ.STATUSCODE = 'B01'
+                                        AND ISNULL(BZ.WORKTYPECODE, 'S01') = 'S01'
+                                    ) 
+                                INNER JOIN RSVEXPROLE CZ
+                                    ON(BZ.EXPSESSIONSEQ = CZ.EXPSESSIONSEQ)
+                                LEFT OUTER JOIN V_TARGETCODE_NONMEM DZ
+                                    ON(
+                                        CZ.PINTREATRANGE = DZ.TARGETCODESEQ
+                                        AND DZ.TARGETMASTERSEQ = 'PINCODE'
+                                    )
+                                LEFT OUTER JOIN TARGETCODE EZ
+                                    ON(
+                                        CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                                        AND EZ.TARGETMASTERSEQ = 'AGECODE'
+                                    )
+                            WHERE
+                                /*핀, 지역, 나이 */
+                                (
+                                    DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                    AND CZ.CITYTREATCODE IS NOT NULL
+                                    AND CZ.CITYTREATCODE != ''
+                                    AND EZ.TARGETCODEORDER IS NOT NULL
+                                    AND EZ.TARGETCODEORDER != ''
+                                    AND CZ.CITYTREATCODE = #{citygroupcode}
+                                    AND EZ.TARGETCODEORDER &gt;= #{infoage}
+                                )
+                                /* 핀, 지역 */
+                                OR(
+                                    DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                    AND (
+                                        CZ.CITYTREATCODE IS NULL
+                                        OR CZ.CITYTREATCODE = ''
+                                    )
+                                    AND EZ.TARGETCODEORDER IS NULL
+                                    AND EZ.TARGETCODEORDER != ''
+                                    AND CZ.CITYTREATCODE = #{citygroupcode}
+                                )
+                                /* 핀, 나이 */
+                                OR (
+                                    DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                    AND CZ.CITYTREATCODE IS NOT NULL
+                                    AND CZ.CITYTREATCODE != ''
+                                    AND (
+                                        EZ.TARGETCODEORDER IS NULL
+                                        OR EZ.TARGETCODEORDER = ''
+                                    )
+                                    AND EZ.TARGETCODEORDER &gt;= #{infoage}
+                                )
+                                /* 핀 */
+                                OR (
+                                    DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                    AND (
+                                        CZ.CITYTREATCODE IS NULL
+                                        OR CZ.CITYTREATCODE = ''
+                                    )
+                                    AND (
+                                        EZ.TARGETCODEORDER IS NULL
+                                        OR EZ.TARGETCODEORDER = ''
+                                    )
+                                )
+                                /* 특정그룹 */
+                                OR (CZ.GROUPSEQ IN (
+                                                    SELECT 
+                                                        A.GROUPSEQ 
+                                                    FROM 
+                                                        RSVROLEGROUP A
+                                                        INNER JOIN RSVROLETARGET B
+                                                        ON (A.GROUPSEQ = B.GROUPSEQ
+                                                            AND B.STATUSCODE = 'B01'
+                                                            AND B.ABONO = #{account})
+                                                    ))
+								<if test='categorytype3 == "N" and categorytype3.equals("N")'>
+									AND AZ.CATEGORYTYPE2 = #{categorytype2}
+								</if>
+								<if test='categorytype3 != "N" and !categorytype3.equals("N")'>
+									AND AZ.CATEGORYTYPE3 = #{categorytype3}
+								</if>
+                        ) D
+                        ON(
+                            D.EXPSESSIONSEQ = B.EXPSESSIONSEQ
+                            AND C.PINTREATRANGE = D.PINTREATRANGE
+                            AND C.CITYTREATCODE = D.CITYTREATCODE
+                            AND C.AGETREATCODE = D.AGETREATCODE
+                            AND C.GROUPSEQ = D.GROUPSEQ
+                        )
+					WHERE 1=1
+					<if test='categorytype3 == "N" and categorytype3.equals("N")'>
+						AND A.CATEGORYTYPE2 = #{categorytype2}
+					</if>
+					<if test='categorytype3 != "N" and !categorytype3.equals("N")'>
+						AND A.CATEGORYTYPE3 = #{categorytype3}
+					</if>
+                    GROUP BY B.EXPSESSIONSEQ, B.SETDATE
+                ) BB
+                    ON(AA.EXPSESSIONSEQ = BB.EXPSESSIONSEQ OR AA.SETDATE = BB.SETDATE)
+                WHERE 
+                    AA.PPSEQ = #{ppseq}
+                    AND BB.SESSIONSTARTDAY &lt;= CONCAT(#{getYear}, #{getMonth}, #{getDay})
+                    AND BB.SESSIONENDDAY &gt;= CONCAT(#{getYear}, #{getMonth}, #{getDay})
+                    AND CONCAT(#{getYear}, #{getMonth}, #{getDay}) BETWEEN AA.STARTDATE AND AA.ENDDATE
+                    
+                    <if test='accounttype == "A01" or categorytype3.equals("A01")'>
+                        AND REPLACE(ISNULL(AA.SEATCOUNT1,''),' ', '') &lt;&gt; ''
+                    </if>
+                    
+                    <if test='accounttype != "A01" and !categorytype3.equals("A01")'>
+                        AND REPLACE(ISNULL(AA.SEATCOUNT2,''),' ', '') &lt;&gt; ''
+                    </if>
+                    
+                    <if test='categorytype3 == "N" and categorytype3.equals("N")'>
+                        AND AA.CATEGORYTYPE2 = #{categorytype2}
+                    </if>
+                    <if test='categorytype3 != "N" and !categorytype3.equals("N")'>
+                        AND AA.CATEGORYTYPE3 = #{categorytype3}
+                    </if>
+                GROUP BY  AA.EXPSEQ
+                        , AA.CATEGORYTYPE1
+                        , AA.CATEGORYTYPE2
+                        , AA.CATEGORYTYPE3
+                        , AA.PRODUCTNAME
+                        , AA.STARTDATE
+                        , AA.STARTDATE
+                        , AA.ENDDATE
+                        , AA.PREPARATION
+                        , AA.PPSEQ
+                        , AA.ORDERNUMBER
+                        , AA.SETDATE
+                        , AA.SETTYPECODE
+                        , AA.WORKTYPECODE
+                        , AA.WEEKDAY
+                        , AA.EXPSESSIONSEQ
+                        , AA.WEEK
+                        , AA.ACCOUNTTYPE
+                        , AA.STARTDATETIME
+                        , AA.ENDDATETIME
+                        , AA.SESSION
+                        , AA.CATEGORYTYPE2NAME
+                        , AA.CATEGORYTYPE3NAME
+                        , AA.ACCOUNTTYPENAME
+                        , AA.SEATCOUNT1
+                        , AA.SEATCOUNT2
+                        , BB.SESSIONSTARTDAY
+                        , BB.SESSIONENDDAY
+                )AA
+            )X
+            WHERE X.EXPSEQ NOT IN( /** 휴무일 세션을 가지고 있는 expseq는 제외 */
+                SELECT EXPSEQ FROM RSVEXPSESSIONINFO WHERE WORKTYPECODE = 'S02' AND SETDATE = #{getYear}+#{getMonth}+#{getDay}
+            )
+            ORDER BY X.EXPSEQ ASC, X.SETTYPECODE DESC, X.WORKTYPECODE DESC
+    </select>
+    
+    <!-- 카테고리 2 리스트 -->
+    <select id="searchBrandCategoryType2" parameterType="reqBox" resultType="egovMap">
+            SELECT
+                  A.CATEGORYTYPE2
+                , B.CATEGORYNAME2 AS CATEGORYTYPE2NAME
+            FROM RSVEXPINFO A
+                INNER JOIN RSVBRANDCATEGORY B
+                    ON(
+                        A.CATEGORYTYPE1 = B.CATEGORYTYPE1 
+                        AND A.CATEGORYTYPE2 = B.CATEGORYTYPE2 
+                        AND A.CATEGORYTYPE3 = B.CATEGORYTYPE3
+                    )
+            WHERE A.CATEGORYTYPE1 = 'E03'
+                AND A.STATUSCODE = 'B01'
+            GROUP BY A.CATEGORYTYPE2, CATEGORYNAME2
+            ORDER BY A.CATEGORYTYPE2
+    </select>
+    
+    <!-- 해당 카테고리 1, 2에 해당되는 카테고리 3조회(브랜드 체험소개 팝업 사용 & 프로그램 먼저선텍 페이지 사용) -->
+    <select id="searchBrandCategoryType3" parameterType="reqBox" resultType="egovMap">
+            SELECT
+                  A.CATEGORYTYPE3
+                , B.CATEGORYNAME3 AS CATEGORYTYPE3NAME
+                , B.CATEGORYNAME2 AS CATEGORYTYPE2NAME
+            FROM RSVEXPINFO A
+                INNER JOIN RSVBRANDCATEGORY B
+                    ON(A.CATEGORYTYPE1 = B.CATEGORYTYPE1 AND A.CATEGORYTYPE2 = B.CATEGORYTYPE2 AND A.CATEGORYTYPE3 = B.CATEGORYTYPE3)
+            WHERE A.CATEGORYTYPE2 = #{categorytype2}
+                AND A.PPSEQ = #{ppseq}
+                AND A.STATUSCODE = 'B01'
+            GROUP BY A.CATEGORYTYPE3, B.CATEGORYNAME2, B.CATEGORYNAME3
+            ORDER BY A.CATEGORYTYPE3
+    </select>
+    
+    <!-- 해당 카테고리 1,2 에 해당 하는 프로그램 타이틀 조회(브랜드 체험소개 팝업 사용 & 프로그램 먼저선텍 페이지 사용) -->
+    <select id="searchBrandProductList" parameterType="reqBox" resultType="egovMap">
+        SELECT
+              A.EXPSEQ
+            , A.PPSEQ
+            , A.CATEGORYTYPE1
+            , A.CATEGORYTYPE2
+            , A.CATEGORYTYPE3
+            , A.PRODUCTNAME
+            , ISNULL(CONVERT(VARCHAR, A.FILEKEY1), 'N') AS FILEKEY1
+            , ISNULL(CONVERT(VARCHAR, A.FILEKEY2), 'N') AS FILEKEY2
+            , ISNULL(CONVERT(VARCHAR, A.FILEKEY3), 'N') AS FILEKEY3
+            , ISNULL(CONVERT(VARCHAR, A.FILEKEY4), 'N') AS FILEKEY4
+            , ISNULL(CONVERT(VARCHAR, A.FILEKEY5), 'N') AS FILEKEY5
+            , ISNULL(CONVERT(VARCHAR, A.FILEKEY6), 'N') AS FILEKEY6
+            , ISNULL(CONVERT(VARCHAR, A.FILEKEY7), 'N') AS FILEKEY7
+            , ISNULL(CONVERT(VARCHAR, A.FILEKEY8), 'N') AS FILEKEY8
+            , CASE #{categorytype3}
+                WHEN B.CATEGORYTYPE3 THEN (CASE WHEN B.CATEGORYNAME3 = '' THEN 'N'WHEN B.CATEGORYNAME3 IS NULL THEN 'N' ELSE B.CATEGORYNAME3 END)
+                ELSE 'N' 
+             END AS CATEGORYTYPE3NAME
+            , CASE #{categorytype2} 
+                WHEN B.CATEGORYTYPE2 THEN B.CATEGORYNAME2
+                ELSE ''
+             END AS CATEGORYTYPE2NAME
+        FROM RSVEXPINFO A
+            INNER JOIN RSVBRANDCATEGORY B
+                ON(A.CATEGORYTYPE1 = B.CATEGORYTYPE1 AND A.CATEGORYTYPE2 = B.CATEGORYTYPE2)
+        WHERE A.CATEGORYTYPE1 = 'E03' 
+            AND A.PPSEQ = #{ppseq}
+            AND A.CATEGORYTYPE2 = #{categorytype2} 
+            AND A.STATUSCODE = 'B01'
+        <if test="categorytype3 != null and !categorytype3.equals('') and !categorytype3.equals('N')">
+            AND A.CATEGORYTYPE3 = #{categorytype3}
+            AND B.CATEGORYTYPE3 = #{categorytype3}
+        </if>
+    </select>
+    
+    <!-- 프로그램 상세 정보(브랜드 체험 소개 팝업 사용) -->
+    <select id="searchBrandProductDetail" parameterType="reqBox" resultType="egovMap">
+            SELECT
+                  B.EXPSEQ
+                , B.CATEGORYTYPE1
+                , B.CATEGORYTYPE2
+                , B.CATEGORYTYPE3
+                , B.PRODUCTNAME
+                , B.INTRO
+                , B.[CONTENT]
+                , CASE
+                    WHEN REPLACE(ISNULL(b.SEATCOUNT2,''),' ', '') &lt;&gt; '' THEN  CONVERT(VARCHAR, B.SEATCOUNT2) + ' (그룹)'
+                    ELSE CONVERT(VARCHAR, B.SEATCOUNT1) + ' (개인)'
+                  END AS SEATCOUNT
+                , CONVERT(VARCHAR, B.USETIME) AS USETIME
+                , CASE
+                    WHEN LEN(B.USETIMENOTE) = 0  OR B.USETIMENOTE IS NULL THEN NULL
+                    ELSE B.USETIMENOTE
+                  END USETIMENOTE
+                , B.[ROLE]
+                , B.ROLENOTE
+                , B.PREPARATION
+                , ISNULL(B.NOTE1, 'N') AS NOTE1
+                , ISNULL(B.TIME1, 'N') AS TIME1
+                , ISNULL(B.NOTE2, 'N') AS NOTE2
+                , ISNULL(B.TIME2, 'N') AS TIME2
+                , ISNULL(B.TIME3, 'N') AS TIME3
+                , ISNULL(B.NOTE3, 'N') AS NOTE3
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY1), 'N') AS FILEKEY1
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY2), 'N') AS FILEKEY2
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY3), 'N') AS FILEKEY3
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY4), 'N') AS FILEKEY4
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY5), 'N') AS FILEKEY5
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY6), 'N') AS FILEKEY6
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY7), 'N') AS FILEKEY7
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY8), 'N') AS FILEKEY8
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY9), 'N') AS FILEKEY9
+                , ISNULL(CONVERT(VARCHAR, B.FILEKEY10), 'N') AS FILEKEY10
+            FROM  RSVEXPINFO B
+            WHERE CATEGORYTYPE1 = 'E03' 
+            AND B.PPSEQ = #{ppseq}
+            AND B.CATEGORYTYPE2 = #{categorytype2}
+            <if test="categorytype3 != null and !categorytype3.equals('')"> 
+                AND B.CATEGORYTYPE3 = #{categorytype3}
+            </if>
+            AND B.EXPSEQ = #{expseq}
+    </select>
+    
+    <!-- 프로그램 상세 정보(브랜드 체험 소개 팝업(맞춤식 체험) 사용) -->
+    <select id="searchBrandJointProductDetail" parameterType="reqBox" resultType="egovMap">
+            SELECT
+                  EXPSEQ
+                , CATEGORYTYPE1
+                , CATEGORYTYPE2
+                , CATEGORYTYPE3
+                , PRODUCTNAME
+                , INTRO
+                , [CONTENT]
+                , CASE
+                    WHEN REPLACE(ISNULL(SEATCOUNT2,''),' ', '') &lt;&gt; '' THEN  CONVERT(VARCHAR, SEATCOUNT2) + ' (그룹)'
+                    ELSE CONVERT(VARCHAR, SEATCOUNT1) + '(개인)'
+                  END AS SEATCOUNT
+                , CONVERT(VARCHAR, USETIME) AS USETIME
+                , USETIMENOTE
+                , ROLENOTE
+                , PREPARATION
+                , ISNULL(NOTE1, 'N') AS NOTE1
+                , ISNULL(TIME1, 'N') AS TIME1
+                , ISNULL(NOTE2, 'N') AS NOTE2
+                , ISNULL(TIME2, 'N') AS TIME2
+                , ISNULL(NOTE3, 'N') AS NOTE3
+                , ISNULL(TIME3, 'N') AS TIME3
+                , FILEKEY
+            FROM RSVEXPINFO 
+            WHERE CATEGORYTYPE1 = 'E03' 
+            AND PPSEQ = #{ppseq}
+            AND CATEGORYTYPE2 = #{categorytype2}
+            <if test="categorytype3 != null and !categorytype3.equals('')"> 
+                AND CATEGORYTYPE3 = #{categorytype3}
+            </if>
+            AND EXPSEQ = #{expseq}
+    </select>
+    
+    <!-- 일자 별로 예약 가능 여부 리스트 -->
+    <select id="searchRsvAbleSessionList" parameterType="reqBox" resultType="egovMap">
+        SELECT  /**RSVFLAG : 화면단에서 예약 마감, 예약대기, 예약가능 판단하는 flag / 브랜드 체험_날짜먼저 선택 캘린더에 들어가는  세션 정보*/
+            X.YMD
+            , X.[MONTH]
+            , X.[DAY]
+            , X.WEEKDAY
+            , X.EXPSESSIONSEQ AS EXPSESSIONSEQ
+            , X.SETTYPECODE
+            , X.WORKTYPECODE
+            , X.STANDBYNUMBER
+            , X.RSVFLAG
+            , X.SEATCOUNT1
+            , X.SEATCOUNT2
+            , X.STARTDATE
+            , X.ENDDATE
+            , X.SESSIONSTARTDAY
+            , X.SESSIONENDDAY
+            , X.EXPSEQ
+            , X.RSVEXPSESSIONSEQ AS RSVEXPSESSIONSEQ
+        FROM( 
+            SELECT 
+                  AA.YMD
+                , AA.[MONTH]
+                , AA.[DAY]
+                , AA.WEEKDAY
+                , AA.KRWEEKDAY
+                , AA.EXPSESSIONSEQ AS EXPSESSIONSEQ
+                , AA.SETTYPECODE
+                , AA.WORKTYPECODE
+                , AA.ORDERNUMBER
+                , MAX(AA.STANDBYNUMBER) AS STANDBYNUMBER
+                , MAX(aa.RSVFLAG) AS RSVFLAG
+                , AA.SEATCOUNT1
+                , AA.SEATCOUNT2
+                , AA.STARTDATE
+                , AA.ENDDATE
+                , AA.RSVEXPSESSIONSEQ AS RSVEXPSESSIONSEQ
+                , BB.SESSIONSTARTDAY
+                , BB.SESSIONENDDAY 
+                , AA.EXPSEQ
+            FROM (
+            SELECT /** 브랜드 체험 세션 조회, 마지막주 일요일, 우선운영일 조회 */
+                  A.YMD
+                , A.MONTH
+                , A.DAY
+                , CASE A.WEEKDAY
+                    WHEN '1' THEN 'W01'
+                    WHEN '2' THEN 'W02'
+                    WHEN '3' THEN 'W03'
+                    WHEN '4' THEN 'W04'
+                    WHEN '5' THEN 'W05'
+                    WHEN '6' THEN 'W06'
+                    WHEN '7' THEN 'W07'
+                    ELSE 'W08'
+                  END AS WEEKDAY
+                , CASE A.WEEKDAY
+                    WHEN 1 THEN '일'
+                    WHEN 2 THEN '월'
+                    WHEN 3 THEN '화'
+                    WHEN 4 THEN '수'
+                    WHEN 5 THEN '목'
+                    WHEN 6 THEN '금'
+                    ELSE '토'
+                  END AS KRWEEKDAY
+                , B.EXPSESSIONSEQ
+                , B.SETTYPECODE
+                , B.WORKTYPECODE
+                , B.ORDERNUMBER
+                , C.STANDBYNUMBER
+                , ISNULL(C.RSVFLAG, 100) AS RSVFLAG
+                , B.SEATCOUNT1
+                , B.SEATCOUNT2
+                , B.STARTDATE
+                , B.ENDDATE
+                , B.EXPSEQ
+                , C.EXPSESSIONSEQ AS RSVEXPSESSIONSEQ
+            FROM (
+                SELECT
+                      CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')), 112) AS YMD
+                    , DATEPART(MM, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS MONTH
+                    , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS DAY
+                    , DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS WEEKDAY
+                FROM
+                    MASTER..SPT_VALUES
+                WHERE 
+                    TYPE = 'P' 
+                    AND NUMBER &gt;= 0
+                    AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')))
+            ) A
+                LEFT OUTER JOIN (
+                    SELECT DISTINCT
+                          B.SETTYPECODE
+                        , B.WORKTYPECODE
+                        , CASE B.SETWEEK
+                            WHEN 'W01' THEN 1
+                            WHEN 'W02' THEN 2
+                            WHEN 'W03' THEN 3
+                            WHEN 'W04' THEN 4
+                            WHEN 'W05' THEN 5
+                            WHEN 'W06' THEN 6
+                            WHEN 'W07' THEN 7
+                            ELSE NULL
+                        END AS SETWEEK
+                        , B.SETDATE
+                        , B.ORDERNUMBER
+                        , B.EXPSESSIONSEQ
+                        , A.SEATCOUNT1
+                        , A.SEATCOUNT2
+                        , A.STARTDATE
+                        , A.ENDDATE
+                        , A.EXPSEQ
+                    FROM
+                        RSVEXPINFO A
+                        INNER JOIN RSVEXPSESSIONINFO B
+                        ON(A.EXPSEQ = B.EXPSEQ
+                            AND B.STATUSCODE = 'B01' AND A.STATUSCODE = 'B01' AND A.CATEGORYTYPE1 ='E03')
+                        INNER JOIN RSVPPINFO C
+                        ON(A.PPSEQ = C.PPSEQ
+                            AND C.PPSEQ = #{ppSeq})
+                        INNER JOIN RSVEXPTYPEMAP D
+                        ON(A.EXPSEQ = D.EXPSEQ)
+                        INNER JOIN RSVTYPEINFO E
+                        ON(D.TYPESEQ = E.TYPESEQ
+                            AND E.TYPESEQ = #{typeseq})
+                    WHERE A.PPSEQ = #{ppSeq}
+                 ) B
+                ON(A.YMD = B.SETDATE
+                    OR A.WEEKDAY = B.SETWEEK)
+                LEFT OUTER JOIN (
+                    SELECT A.RSVTYPECODE
+                         , A.RESERVATIONDATE
+                         , A.STANDBYNUMBER
+                         , CASE
+                              WHEN A.STANDBYNUMBER = 1 OR (A.ADMINFIRSTCODE = 'R01' AND A.CANCELCODE = 'B02') THEN 300
+                              WHEN B.SEATCOUNT &gt; C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 100
+                              WHEN B.SEATCOUNT = C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 200
+                              WHEN A.STANDBYNUMBER = 0 AND A.CANCELCODE = 'B01' AND A.ACCOUNTTYPE != 'A01' THEN 100
+                              WHEN (A.STANDBYNUMBER = 0 OR A.STANDBYNUMBER IS NULL) AND A.CANCELCODE = 'B02' AND A.ACCOUNTTYPE != 'A01' THEN 200
+                              ELSE 100
+                           END AS RSVFLAG
+                         , A.CANCELCODE
+                         , A.EXPSESSIONSEQ
+                         , A.ACCOUNTTYPE
+                    FROM RSVRESERVATIONINFO A
+                    INNER JOIN RSVEXPINFO B
+                    ON(A.EXPSEQ = B.EXPSEQ)
+                    LEFT OUTER JOIN (
+                         SELECT RESERVATIONDATE
+                              , EXPSESSIONSEQ
+                              , SUM(CASE 
+                                       WHEN ACCOUNTTYPE = 'A01' THEN VISITNUMBER
+                                       ELSE 0
+                                    END) AS VISITNUMBER
+                         FROM RSVRESERVATIONINFO 
+                         WHERE STANDBYNUMBER = 0 
+                           AND EXPSESSIONSEQ IS NOT NULL
+                         GROUP BY RESERVATIONDATE, EXPSESSIONSEQ, CANCELCODE) C
+                    ON(A.RESERVATIONDATE = C.RESERVATIONDATE
+                    AND A.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                    WHERE A.TYPESEQ = #{typeseq}
+                ) C
+                ON(C.RSVTYPECODE = 'R02'
+                    AND A.YMD = C.RESERVATIONDATE
+                    AND B.EXPSESSIONSEQ = C.EXPSESSIONSEQ
+                    AND C.CANCELCODE = 'B02')
+            UNION
+            SELECT
+                  A.YMD
+                , A.MONTH
+                , A.DAY
+                , CASE A.WEEKDAY
+                    WHEN '1' THEN 'W01'
+                    WHEN '2' THEN 'W02'
+                    WHEN '3' THEN 'W03'
+                    WHEN '4' THEN 'W04'
+                    WHEN '5' THEN 'W05'
+                    WHEN '6' THEN 'W06'
+                    WHEN '7' THEN 'W07'
+                    ELSE 'W08'
+                  END AS WEEKDAY
+                , '일' AS KRWEEKDAY
+                , B.EXPSESSIONSEQ
+                , B.SETTYPECODE
+                , B.WORKTYPECODE
+                , B.ORDERNUMBER
+                , C.STANDBYNUMBER
+                , ISNULL(C.RSVFLAG, 100) AS RSVFLAG
+                , B.SEATCOUNT1
+                , B.SEATCOUNT2
+                , B.STARTDATE
+                , B.ENDDATE
+                , B.EXPSEQ
+                , C.EXPSESSIONSEQ AS RSVEXPSESSIONSEQ
+            FROM (
+                SELECT
+                      CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')), 112) AS YMD
+                    , DATEPART(MM, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS MONTH
+                    , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS DAY
+                    , CASE
+                        WHEN DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) > DATEPART(DD, DATEADD(MM, 1, CONVERT(DATETIME, CONCAT(#{getYear}, #{getMonth}, '01')))-8) 
+                            AND DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) = 1
+                        THEN 8
+                        ELSE DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')))
+                    END AS WEEKDAY
+                FROM
+                    MASTER..SPT_VALUES
+                WHERE 
+                    TYPE = 'P' 
+                    AND NUMBER &gt;= 0
+                    AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')))
+                ) A
+                LEFT OUTER JOIN (
+                    SELECT DISTINCT
+                          B.SETTYPECODE
+                        , B.WORKTYPECODE
+                        , A.STARTDATE, A.ENDDATE
+                        , CASE B.SETWEEK
+                            WHEN 'W01' THEN 1
+                            WHEN 'W02' THEN 2
+                            WHEN 'W03' THEN 3
+                            WHEN 'W04' THEN 4
+                            WHEN 'W05' THEN 5
+                            WHEN 'W06' THEN 6
+                            WHEN 'W07' THEN 7
+                            WHEN 'W08' THEN 8
+                            ELSE NULL
+                        END AS SETWEEK
+                        , B.SETDATE
+                        , B.ORDERNUMBER
+                        , B.EXPSESSIONSEQ
+                        , A.SEATCOUNT1
+                        , A.SEATCOUNT2
+                        , A.EXPSEQ
+                    FROM
+                        RSVEXPINFO A
+                        INNER JOIN RSVEXPSESSIONINFO B
+                        ON(A.EXPSEQ = B.EXPSEQ
+                            AND B.STATUSCODE = 'B01' AND A.CATEGORYTYPE1 ='E03')
+                        INNER JOIN RSVPPINFO C
+                        ON(A.PPSEQ = C.PPSEQ
+                            AND C.PPSEQ = #{ppSeq})
+                        INNER JOIN RSVEXPTYPEMAP D
+                        ON(A.EXPSEQ = D.EXPSEQ)
+                        INNER JOIN RSVTYPEINFO E
+                        ON(D.TYPESEQ = E.TYPESEQ
+                            AND E.TYPESEQ = #{typeseq})
+                    WHERE A.PPSEQ = #{ppSeq}
+                ) B
+                ON(A.YMD = B.SETDATE
+                    OR A.WEEKDAY = B.SETWEEK)
+                LEFT OUTER JOIN (
+                    SELECT A.RSVTYPECODE
+                         , A.RESERVATIONDATE
+                         , A.STANDBYNUMBER
+                         , CASE
+                              WHEN A.STANDBYNUMBER = 1 OR (A.ADMINFIRSTCODE = 'R01' AND A.CANCELCODE = 'B02') THEN 300
+                              WHEN B.SEATCOUNT &gt; C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 100
+                              WHEN B.SEATCOUNT = C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 200
+                              WHEN A.STANDBYNUMBER = 0 AND A.CANCELCODE = 'B01' AND A.ACCOUNTTYPE != 'A01' THEN 100
+                              WHEN (A.STANDBYNUMBER = 0 OR A.STANDBYNUMBER IS NULL) AND A.CANCELCODE = 'B02' AND A.ACCOUNTTYPE != 'A01' THEN 200
+                              ELSE 100
+                           END AS RSVFLAG
+                         , A.CANCELCODE
+                         , A.EXPSESSIONSEQ
+                         , A.ACCOUNTTYPE
+                    FROM RSVRESERVATIONINFO A
+                    INNER JOIN RSVEXPINFO B
+                    ON(A.EXPSEQ = B.EXPSEQ)
+                    LEFT OUTER JOIN (
+                         SELECT RESERVATIONDATE
+                              , EXPSESSIONSEQ
+                              , SUM(CASE 
+                                       WHEN ACCOUNTTYPE = 'A01' THEN VISITNUMBER
+                                       ELSE 0
+                                    END) AS VISITNUMBER
+                         FROM RSVRESERVATIONINFO 
+                         WHERE STANDBYNUMBER = 0 
+                           AND EXPSESSIONSEQ IS NOT NULL
+                         GROUP BY RESERVATIONDATE, EXPSESSIONSEQ, CANCELCODE) C
+                    ON(A.RESERVATIONDATE = C.RESERVATIONDATE
+                    AND A.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                    WHERE A.TYPESEQ = #{typeseq}
+                ) C
+                ON(C.RSVTYPECODE = 'R02'
+                    AND A.YMD = C.RESERVATIONDATE
+                    AND B.EXPSESSIONSEQ = C.EXPSESSIONSEQ
+                    AND C.CANCELCODE = 'B02')
+                WHERE B.SETWEEK = 8
+        ) AA
+        INNER MERGE JOIN( /** 핀조건에 맞는 세션 조회 */
+            SELECT 
+                  B.EXPSESSIONSEQ
+                , MIN(CASE C.PERIODTYPECODE
+                    /*일별*/
+                    WHEN 'P01' 
+                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.STARTDAY), GETDATE()), 112)
+                    /*월별*/
+                    WHEN 'P03' 
+                    THEN CONVERT(VARCHAR(8), GETDATE() + 1, 112)
+                  END) AS SESSIONSTARTDAY
+                , MAX(CASE C.PERIODTYPECODE
+                    /*일별*/
+                    WHEN 'P01' 
+                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE()), 112)
+                    /*월별*/
+                    WHEN 'P03' 
+                    THEN 
+                            /* TO-BE 시작 */
+                            <![CDATA[
+                            CASE 
+                                /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                THEN 
+                                    CASE 
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                    END
+                                /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                THEN
+                                    CASE 
+                                        WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) < DBO.F_FT_CODENAME()    /* alscure */
+                                        THEN 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                        ELSE 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                    END
+                                /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                ELSE 
+                                    CASE 
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                    END
+                            END
+                            ]]>
+                            /* TO-BE 끝 */
+                END) AS SESSIONENDDAY
+            FROM RSVEXPINFO A 
+                INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) E
+                    ON(A.EXPSEQ = E.EXPSEQ  AND A.CATEGORYTYPE1 ='E03')
+                INNER JOIN RSVEXPSESSIONINFO B 
+                    ON(A.EXPSEQ = B.EXPSEQ 
+                        AND A.PPSEQ = #{ppSeq}
+                        AND B.STATUSCODE = 'B01' ) 
+                INNER JOIN RSVEXPROLE C
+                    ON(B.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                INNER JOIN (
+                    /* 핀, 지역, 나이 */
+                    SELECT 
+                          CZ.EXPSESSIONSEQ
+                        , CZ.PINTREATRANGE
+                        , CZ.CITYTREATCODE
+                        , CZ.AGETREATCODE
+                        , CZ.GROUPSEQ
+                    FROM 
+                        RSVEXPINFO AZ 
+                        INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) GZ
+                        ON(AZ.EXPSEQ = GZ.EXPSEQ AND AZ.CATEGORYTYPE1 ='E03')
+                        INNER JOIN RSVEXPSESSIONINFO BZ 
+                        ON(AZ.EXPSEQ = BZ.EXPSEQ 
+                            AND AZ.PPSEQ = #{ppSeq}
+                            AND BZ.STATUSCODE = 'B01' ) 
+                        INNER JOIN RSVEXPROLE CZ
+                        ON(BZ.EXPSESSIONSEQ = CZ.EXPSESSIONSEQ)
+                        LEFT OUTER JOIN V_TARGETCODE_NONMEM DZ
+                        ON(CZ.PINTREATRANGE = DZ.TARGETCODESEQ
+                            AND DZ.TARGETMASTERSEQ = 'PINCODE')
+                        LEFT OUTER JOIN TARGETCODE EZ
+                        ON(CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                            AND EZ.TARGETMASTERSEQ = 'AGECODE')
+            WHERE
+                /*핀, 지역, 나이 */
+                (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                    AND CZ.CITYTREATCODE IS NOT NULL
+                    AND CZ.CITYTREATCODE != ''
+                    AND EZ.TARGETCODEORDER IS NOT NULL
+                    AND EZ.TARGETCODEORDER != ''
+                    AND CZ.CITYTREATCODE = #{citygroupcode}
+                    AND EZ.TARGETCODEORDER &lt;= #{infoage})
+                /* 핀, 지역 */
+                OR(DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                    AND (EZ.TARGETCODEORDER IS NULL
+                        OR EZ.TARGETCODEORDER = '')
+                    AND CZ.CITYTREATCODE IS NOT NULL
+                    AND CZ.CITYTREATCODE != ''
+                    AND CZ.CITYTREATCODE = #{citygroupcode})
+                /* 핀, 나이 */
+                OR (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                    AND EZ.TARGETCODEORDER IS NOT NULL
+                    AND EZ.TARGETCODEORDER != ''
+                    AND (CZ.CITYTREATCODE IS NULL
+                        OR CZ.CITYTREATCODE = '')
+                    AND EZ.TARGETCODEORDER &lt;= #{infoage})
+                /* 핀 */
+                OR (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                    AND (CZ.CITYTREATCODE IS NULL
+                        OR CZ.CITYTREATCODE = '')
+                    AND (EZ.TARGETCODEORDER IS NULL
+                        OR EZ.TARGETCODEORDER = ''))
+                /* 특정그룹 */
+                OR (CZ.GROUPSEQ IN (
+                                    SELECT 
+                                        A.GROUPSEQ 
+                                    FROM 
+                                        RSVROLEGROUP A
+                                        INNER JOIN RSVROLETARGET B
+                                        ON (A.GROUPSEQ = B.GROUPSEQ
+                                            AND B.STATUSCODE = 'B01'
+                                            AND B.ABONO = #{account})
+                                    ))
+            ) D
+            ON(D.EXPSESSIONSEQ = B.EXPSESSIONSEQ
+                AND C.PINTREATRANGE = D.PINTREATRANGE
+                AND C.CITYTREATCODE = D.CITYTREATCODE
+                AND C.AGETREATCODE = D.AGETREATCODE
+                AND C.GROUPSEQ = D.GROUPSEQ)
+            GROUP BY B.EXPSESSIONSEQ
+        ) BB
+        ON(AA.EXPSESSIONSEQ = BB.EXPSESSIONSEQ
+            AND AA.YMD &gt;= BB.SESSIONSTARTDAY
+            AND AA.YMD &lt;= BB.SESSIONENDDAY
+            AND AA.SETTYPECODE IS NOT NULL)
+        WHERE 
+            AA.STARTDATE &lt;= #{getYear} + #{getMonth} + '01'
+            AND AA.ENDDATE &gt;= CONVERT(VARCHAR, DATEADD(S,-1,DATEADD(MM, DATEDIFF(M,0, #{getYear} + #{getMonth}  + '01')+1,0)),112)
+            AND AA.STARTDATE &lt;= #{getYear} + #{getMonth}  + '01'
+            AND AA.ENDDATE &gt;= CONVERT(VARCHAR, DATEADD(S,-1,DATEADD(MM, DATEDIFF(M,0, #{getYear} + #{getMonth}  + '01')+1,0)),112)
+            AND BB.SESSIONSTARTDAY IS NOT NULL AND BB.SESSIONENDDAY IS NOT NULL
+        GROUP BY 
+                AA.YMD
+            , AA.[MONTH]
+            , AA.[DAY]
+            , AA.WEEKDAY
+            , AA.KRWEEKDAY
+            , AA.EXPSESSIONSEQ
+            , AA.SETTYPECODE
+            , AA.WORKTYPECODE
+            , AA.ORDERNUMBER
+            , AA.SEATCOUNT1
+            , AA.SEATCOUNT2
+            , AA.STARTDATE
+            , AA.ENDDATE
+            , BB.SESSIONSTARTDAY
+            , BB.SESSIONENDDAY 
+      , AA.EXPSEQ    
+      , AA.RSVEXPSESSIONSEQ
+    ) X
+        ORDER BY X.YMD ASC, X.EXPSEQ ASC, X.WORKTYPECODE DESC, X.WEEKDAY DESC
+    </select>
+    
+    <!-- 프로그램 먼저 선택 페이지_예약가능일 리스트  -->
+    <select id="searchRsvProgramAbleSessionList" parameterType="reqBox" resultType="egovMap">
+        /** 프로그램 먼저 선택 페이지_예약가능일 리스트 */
+        SELECT DISTINCT 
+              A.GETYMD
+            , SUBSTRING(CONVERT(VARCHAR, DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,CONCAT(#{getYear}, #{getMonth}, '01'))+1,0)),112), 7, 2) AS GETLASTDAY
+            , REPLICATE('0', 2 - DATALENGTH(CONVERT(VARCHAR,GETDAY)))+CONVERT(VARCHAR,GETDAY) AS GETDAY
+            , A.WEEK
+            , ISNULL(B.RSVSESSIONCNT, 0) AS RSVSESSIONCNT /* 해당일자(해당요일)의 대기자가 있는 총 세션의 수  */
+            , ISNULL(C.TOTALSESSIONCNT, 0) TOTALSESSIONCNT
+            , ISNULL(C.TOTALSESSIONCNT, 0) - ISNULL(B.RSVSESSIONCNT, 0)  RSVSESSIONTOTALCNT
+            , CONVERT(VARCHAR, GETDATE(), 112) AS GETTODAY
+            , C.SETDATE
+            , C.WORKTYPECODE
+            , C.SETTYPECODE
+            , SEATCOUNT1
+            , SEATCOUNT2
+            , C.STARTDATE
+            , C.ENDDATE
+        FROM( /** 마지막주 일요일 판별  */
+            SELECT
+                  CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')), 112) AS GETYMD
+                , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS GETDAY
+                , CASE 
+                    WHEN DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) = '1'
+                        AND CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')), 112) = CONVERT(VARCHAR, DATEADD(dd, -1 *(datepart(dw, CONVERT(VARCHAR, DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0, #{getYear} + #{getMonth} + '01')+1,0)),112))-1),
+                        CONVERT(VARCHAR, DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0, #{getYear} + #{getMonth} + '01')+1,0)),112)),112)
+                            AND (
+                                SELECT COUNT(*) AS LASTSUNDAY
+                                FROM RSVEXPSESSIONINFO
+                                WHERE EXPSEQ = #{expseq} 
+                                AND SETWEEK = 'W08'
+                                AND STATUSCODE ='B01'
+                            ) !='0' THEN 'W08' /** 해당 expseq에 마지막주 일요일이 있을 경우 W08반환 */
+                    WHEN DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) = '2' THEN 'W02'
+                    WHEN DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) = '3' THEN 'W03'
+                    WHEN DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) = '4' THEN 'W04'
+                    WHEN DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) = '5' THEN 'W05'
+                    WHEN DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) = '6' THEN 'W06'
+                    WHEN DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) = '7' THEN 'W07'
+                    ELSE 'W01'
+                  END AS WEEK
+            FROM MASTER..SPT_VALUES AS A
+            WHERE TYPE = 'P' 
+                AND NUMBER &gt;= 0
+                AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')))
+        ) AS A
+        LEFT OUTER JOIN( /** 예약자 조회 */
+            SELECT SUM(CASE
+                          WHEN A.ADMINFIRSTCODE = 'R01' AND A.CANCELCODE = 'B02' THEN 1
+                          ELSE ISNULL(A.STANDBYNUMBER, 0)
+                       END) AS RSVSESSIONCNT /* 대기자가 있거나 관리자예약인 것들만 SUM [해당 요일의 총 세션 개수 - 대기자가 있거나 관리자예약 세션 ]*/
+                , A.RESERVATIONDATE
+            FROM RSVRESERVATIONINFO A
+                INNER JOIN RSVEXPSESSIONINFO B
+                    ON(A.EXPSESSIONSEQ = B.EXPSESSIONSEQ)
+            WHERE A.PPSEQ = #{ppSeq}
+                AND A.TYPESEQ = #{typeseq}
+                AND A.EXPSEQ = #{expseq}
+                AND B.STATUSCODE = 'B01'
+                AND A.RESERVATIONDATE BETWEEN #{getYear} + #{getMonth}+ '01' AND CONVERT(VARCHAR, DATEADD(S,-1,DATEADD(MM, DATEDIFF(M,0, #{getYear} + #{getMonth} + '01')+1,0)),112)
+            GROUP BY A.RESERVATIONDATE
+        )AS B
+            ON(A.GETYMD = B.RESERVATIONDATE)
+        LEFT OUTER JOIN( /** 세션 조회 */
+            SELECT 
+                  SUM(AA.TOTALSESSIONCNT) AS TOTALSESSIONCNT
+                , AA.SETWEEK
+                , AA.SESSIONSTARTDAY
+                , AA.SESSIONENDDAY
+                , AA.EXPSEQ
+                , AA.SETTYPECODE
+                , AA.SETDATE
+                , AA.WORKTYPECODE
+                , AA.SEATCOUNT1
+                , AA.SEATCOUNT2
+                , AA.STARTDATE, AA.ENDDATE
+            FROM(
+                SELECT 
+                      CASE
+                        WHEN A.SETWEEK IS NOT NULL THEN ISNULL(COUNT(A.SETWEEK), 0)
+                        ELSE ISNULL(COUNT(A.SETDATE), 0)
+                      END AS TOTALSESSIONCNT
+                    , A.EXPSEQ
+                    , A.SETWEEK
+                    , D.SESSIONSTARTDAY
+                    , D.SESSIONENDDAY 
+                    , A.EXPSESSIONSEQ
+                    , A.SETTYPECODE
+                    , A.SETDATE
+                    , A.WORKTYPECODE
+                    , B.SEATCOUNT1
+                    , B.SEATCOUNT2
+                    , B.STARTDATE, B.ENDDATE
+                FROM RSVEXPSESSIONINFO A
+                    LEFT OUTER JOIN RSVEXPINFO B
+                        ON(A.EXPSEQ = B.EXPSEQ AND B.EXPSEQ = #{expseq})
+                    INNER JOIN( 
+                        SELECT 
+                              MIN( 
+                                CASE C.PERIODTYPECODE 
+                                    /*일별*/ 
+                                    WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.STARTDAY), GETDATE()), 112)
+                                    /*월별*/ 
+                                    WHEN 'P03' THEN CONVERT(VARCHAR(8), GETDATE() + 1, 112)
+                              END) AS SESSIONSTARTDAY 
+                            , MAX( 
+                                CASE C.PERIODTYPECODE 
+                                    WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE()), 112)
+                                    WHEN 'P03' 
+                                        THEN
+                                            /* TO-BE 시작 */
+                                            <![CDATA[
+                                            CASE 
+                                                /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                                WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                                THEN 
+                                                    CASE 
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                    END
+                                                /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                                WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                                THEN
+                                                    CASE 
+                                                        WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) < DBO.F_FT_CODENAME()    /* alscure */
+                                                        THEN 
+                                                            CASE 
+                                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                            END
+                                                        ELSE 
+                                                            CASE 
+                                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                            END
+                                                    END
+                                                /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                                ELSE 
+                                                    CASE 
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                    END
+                                            END
+                                            ]]>
+                                            /* TO-BE 끝 */
+                              END) AS SESSIONENDDAY 
+                            , A.EXPSEQ 
+                        FROM RSVEXPINFO A 
+                            INNER JOIN RSVEXPSESSIONINFO B 
+                                ON(A.EXPSEQ = B.EXPSEQ AND B.STATUSCODE = 'B01' AND A.EXPSEQ = #{expseq}) 
+                            INNER JOIN RSVEXPROLE C 
+                                ON(B.EXPSESSIONSEQ = C.EXPSESSIONSEQ AND B.EXPSEQ = #{expseq})
+                             INNER JOIN( /* 핀, 지역, 나이 */
+                                SELECT 
+                                      CZ.EXPSESSIONSEQ
+                                    , AZ.EXPSEQ
+                                    , CZ.PINTREATRANGE
+                                    , CZ.CITYTREATCODE
+                                    , CZ.AGETREATCODE
+                                    , CZ.GROUPSEQ
+                                FROM RSVEXPINFO AZ 
+                                    INNER JOIN RSVEXPSESSIONINFO BZ 
+                                        ON(AZ.EXPSEQ = BZ.EXPSEQ 
+                                            AND AZ.EXPSEQ = #{expseq}
+                                            AND BZ.STATUSCODE = 'B01' 
+                                        ) 
+                                    INNER JOIN RSVEXPROLE CZ
+                                        ON(BZ.EXPSESSIONSEQ = CZ.EXPSESSIONSEQ)
+                                    LEFT OUTER JOIN V_TARGETCODE_NONMEM DZ
+                                        ON(CZ.PINTREATRANGE = DZ.TARGETCODESEQ
+                                            AND DZ.TARGETMASTERSEQ = 'PINCODE')
+                                        LEFT OUTER JOIN TARGETCODE EZ
+                                        ON(CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                                            AND EZ.TARGETMASTERSEQ = 'AGECODE')
+                                        LEFT OUTER JOIN (                    
+                                            SELECT /* 예약자의 기본정보 */
+                                                UID AS ACCOUNT,
+                                                NAME AS ACCOUNTNAME,
+                                                PINNO,
+                                                PIN_VALUE AS PINVALUE,
+                                                REGIONNAME,
+                                                CITYNAME,
+                                                AGE,
+                                                SSN,
+                                                CITYGROUPCODE
+                                            FROM (
+                                                SELECT
+                                                    X.UID,
+                                                    X.NAME,
+                                                    X.PINNO,
+                                                    X.PIN_VALUE,
+                                                    X.REGIONNAME,
+                                                    X.CITYNAME,
+                                                    X.AGE,
+                                                    X.SSN,
+                                                    CASE 
+                                                        WHEN NULL != Y2.CITYGROUPCODE 
+                                                        THEN Y2.CITYGROUPCODE 
+                                                        ELSE Y.CITYGROUPCODE
+                                                    END AS CITYGROUPCODE,
+                                                    ROW_NUMBER() OVER(ORDER BY Y.MAPPINGSEQ DESC) AS NUMB
+                                                FROM (
+                                                    /* 기본정보 */
+                                                    SELECT
+                                                        M.UID,
+                                                        M.NAME,
+                                                        M.PINNO,
+                                                        ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+                                                        M.REGIONNAME,
+                                                        M.CITYNAME,
+                                                        M.AGE,
+                                                        M.SSN,
+                                                        N.REGIONCODE AS REGION_ALL_CODE,
+                                                        G.REGIONCODE,
+                                                        G.CITYCODE
+                                                    FROM (
+                                                        /* 개인정보 */
+                                                        SELECT
+                                                            A.UID,
+                                                            A.NAME,
+                                                            A.GROUPS AS PINNO,
+                                                            B.TARGETCODEORDER AS PIN_VALUE,
+                                                            SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+                                                            SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+                                                            CASE WHEN A.SSN = '999000'
+                                                                THEN 100
+                                                                ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+                                                            END AS AGE,
+                                                            SUBSTRING(A.SSN,1,6) AS SSN
+                                                        FROM 
+                                                            MEMBER A
+                                                            LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+                                                            ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+                                                        WHERE A.UID = #{account}/* parameter1:account:7480002 */
+                                                    ) M
+                                                    
+                                                    LEFT OUTER JOIN (
+                                                        /* 행정구역단위 비교 */
+                                                        SELECT
+                                                            REGIONCODE,
+                                                            REGIONNAME,
+                                                            SHORTNAME
+                                                        FROM RSVREGIONINFO
+                                                    ) N
+                                                    ON (M.REGIONNAME = N.SHORTNAME)
+                                                    LEFT OUTER JOIN (
+                                                        /* 도시단위 비교 */
+                                                        SELECT
+                                                            A.REGIONCODE,
+                                                            A.SHORTNAME,
+                                                            B.CITYCODE,
+                                                            B.CITYNAME
+                                                        FROM 
+                                                            RSVREGIONINFO A
+                                                            INNER JOIN RSVCITYINFO B
+                                                            ON (A.REGIONCODE = B.REGIONCODE)
+                                                        ) G
+                                                    ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+                                                ) X
+                                            LEFT OUTER JOIN RSVCITYGROUPMAP Y /* 행정구역단위 GROUPCODE */
+                                                ON (X.REGION_ALL_CODE = Y.REGIONCODE)
+                                            INNER JOIN RSVCITYGROUPMASTER YM
+                                                ON (Y.CITYGROUPCODE = YM.CITYGROUPCODE AND YM.STATUSCODE = 'B01')
+                                            LEFT OUTER JOIN RSVCITYGROUPMAP Y2 /* 도시단위 GROUPCODE */
+                                                ON (X.REGIONCODE = Y2.REGIONCODE AND X.CITYCODE = Y2.CITYCODE)
+                                            INNER JOIN RSVCITYGROUPMASTER Y2M
+                                                ON (Y.CITYGROUPCODE = Y2M.CITYGROUPCODE AND Y2M.STATUSCODE = 'B01')
+                                        ) T
+                                        WHERE NUMB = 1
+                                    ) FZ
+                                ON(1=1)
+                                WHERE
+                                    /*핀, 지역, 나이 */
+                                    (DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                                        AND CZ.CITYTREATCODE IS NOT NULL
+                                        AND CZ.CITYTREATCODE != ''
+                                        AND EZ.TARGETCODEORDER IS NOT NULL
+                                        AND EZ.TARGETCODEORDER != ''
+                                        AND CZ.CITYTREATCODE = FZ.CITYGROUPCODE
+                                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                                    /* 핀, 지역 */
+                                    OR(DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                                        AND (CZ.CITYTREATCODE IS NULL
+                                            OR CZ.CITYTREATCODE = '')
+                                        AND EZ.TARGETCODEORDER IS NULL
+                                        AND EZ.TARGETCODEORDER != ''
+                                        AND CZ.CITYTREATCODE = FZ.CITYGROUPCODE)
+                                    /* 핀, 나이 */
+                                    OR (DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                                        AND CZ.CITYTREATCODE IS NOT NULL
+                                        AND CZ.CITYTREATCODE != ''
+                                        AND (EZ.TARGETCODEORDER IS NULL
+                                            OR EZ.TARGETCODEORDER = '')
+                                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                                    /* 핀 */
+                                    OR (DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                                        AND (CZ.CITYTREATCODE IS NULL
+                                            OR CZ.CITYTREATCODE = '')
+                                        AND (EZ.TARGETCODEORDER IS NULL
+                                            OR EZ.TARGETCODEORDER = ''))
+                                    /* 특정그룹 */
+                                    OR (CZ.GROUPSEQ IN (
+                                                        SELECT 
+                                                            A.GROUPSEQ 
+                                                        FROM 
+                                                            RSVROLEGROUP A
+                                                            INNER JOIN RSVROLETARGET B
+                                                            ON (A.GROUPSEQ = B.GROUPSEQ
+                                                                AND B.STATUSCODE = 'B01'
+                                                                AND B.ABONO = #{account})
+                                                        ))
+                            )D
+                            ON(D.EXPSESSIONSEQ = B.EXPSESSIONSEQ
+                                AND C.PINTREATRANGE = D.PINTREATRANGE
+                                AND C.CITYTREATCODE = D.CITYTREATCODE
+                                AND C.AGETREATCODE = D.AGETREATCODE
+                                AND C.GROUPSEQ = D.GROUPSEQ)
+                        GROUP BY A.EXPSEQ
+                    )AS D 
+                        ON(B.EXPSEQ = D.EXPSEQ) 
+                WHERE B.PPSEQ = #{ppSeq}
+                    AND A.STATUSCODE = 'B01'
+                    AND B.STATUSCODE = 'B01'
+                    AND (A.WORKTYPECODE = 'S01' OR A.WORKTYPECODE IS NULL)
+                GROUP BY A.SETWEEK, D.SESSIONSTARTDAY, D.SESSIONENDDAY , A.EXPSESSIONSEQ , A.SETTYPECODE, A.SETDATE, A.WORKTYPECODE, A.EXPSEQ, B.SEATCOUNT1, B.SEATCOUNT2, B.STARTDATE, B.ENDDATE 
+            ) AA
+             GROUP BY  AA.SETWEEK
+                    , AA.SESSIONSTARTDAY
+                    , AA.SESSIONENDDAY
+                    , AA.EXPSEQ
+                    , AA.SETTYPECODE
+                    , AA.SETDATE
+                    , AA.WORKTYPECODE
+                    , AA.SEATCOUNT1
+                    , AA.SEATCOUNT2
+                    , AA.STARTDATE, AA.ENDDATE
+        )AS C
+        ON(
+            A.GETYMD &gt;= C.SESSIONSTARTDAY
+            AND A.getymd &lt;= C.SESSIONENDDAY
+            AND (A.WEEK = C.SETWEEK
+            OR A.GETYMD = C.SETDATE)
+        )
+        WHERE A.GETYMD BETWEEN STARTDATE AND ENDDATE
+        ORDER BY A.GETYMD, C.SETTYPECODE DESC
+    </select>
+    
+    <!-- 프로그램 먼저 선택 페이지_해당일의 예약 가능 세션 리스트 -->
+    <select id="searchProgramSessionList" parameterType="reqBox" resultType="egovMap">
+        SELECT 
+              AA.YMD
+            , CASE DATEPART (WEEKDAY, AA.YMD)
+                WHEN '1' THEN '(일)'
+                WHEN '2' THEN '(월)'
+                WHEN '3' THEN '(화)'
+                WHEN '4' THEN '(수)'
+                WHEN '5' THEN '(목)'
+                WHEN '6' THEN '(금)'
+                ELSE '(토)'
+              END AS KORWEEK
+            , CONCAT(#{getYear}, '-', #{getMonth}, '-', #{getDay}) AS SETDATEFORMAT
+            , AA.WEEK
+            , AA.EXPSEQ
+            , AA.CATEGORYTYPE1
+            , AA.CATEGORYTYPE2
+            , CONCAT(SUBSTRING(AA.STARTDATETIME, 1, 2), ':', SUBSTRING(AA.STARTDATETIME, 3, 2), '~', SUBSTRING(AA.ENDDATETIME, 1, 2), ':', SUBSTRING(AA.ENDDATETIME, 3, 2)) AS SESSIONTIME
+            , AA.CATEGORYTYPE3
+            , AA.PRODUCTNAME
+            , AA.STARTDATETIME
+            , AA.ENDDATETIME
+            , AA.EXPSESSIONSEQ
+            , MAX(AA.RSVFLAG) AS RSVFLAG
+            , AA.SETWEEK
+            , AA.SETDATE
+            , AA.WORKTYPECODE
+            , AA.SETTYPECODE
+            , AA.SESSIONSTARTDAY
+            , AA.SESSIONENDDAY
+            , AA.SEATCOUNT1
+            , AA.SEATCOUNT2
+        FROM(
+            SELECT 
+                  A.YMD
+                , A.WEEK
+                , B.EXPSEQ
+                , B.CATEGORYTYPE1
+                , B.CATEGORYTYPE2
+                , B.CATEGORYTYPE3
+                , B.PRODUCTNAME
+                , B.STARTDATETIME
+                , B.ENDDATETIME
+                , C.CANCELCODE
+                , C.STANDBYNUMBER
+                , C.ACCOUNTTYPE
+                , B.EXPSESSIONSEQ
+                , B.SETWEEK, B.SETDATE, B.WORKTYPECODE, B.SETTYPECODE , B.SESSIONSTARTDAY, B.SESSIONENDDAY
+                , ISNULL(C.RSVFLAG, 100) AS RSVFLAG
+                , B.SEATCOUNT1
+                , B.SEATCOUNT2
+            FROM( /** 마지막주 일요일 판별  */
+                SELECT 
+                      CONCAT(#{getYear}, #{getMonth}, #{getDay}) AS YMD
+                    , CASE
+                        WHEN DATEPART(WEEKDAY, CONCAT(#{getYear}, #{getMonth}, #{getDay})) = '1' 
+                            AND CONCAT(#{getYear}, #{getMonth}, #{getDay}) = CONVERT(VARCHAR, DATEADD(dd, -1 *(datepart(dw, CONVERT(VARCHAR, DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0, #{getYear} + #{getMonth} + '01')+1,0)),112))-1),
+                            CONVERT(VARCHAR, DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,#{getYear} + #{getMonth} + '01')+1,0)),112)),112) 
+                                AND (
+                                    SELECT COUNT(*) AS LASTSUNDAY
+                                    FROM RSVEXPSESSIONINFO 
+                                    WHERE EXPSEQ = #{expseq}
+                                    AND SETWEEK = 'W08' 
+                                    AND  STATUSCODE ='B01'
+                                ) != 0 THEN 'W08'
+                        WHEN DATEPART(WEEKDAY, CONCAT(#{getYear}, #{getMonth}, #{getDay})) = '2' THEN 'W02'
+                        WHEN DATEPART(WEEKDAY, CONCAT(#{getYear}, #{getMonth}, #{getDay})) = '3' THEN 'W03'
+                        WHEN DATEPART(WEEKDAY, CONCAT(#{getYear}, #{getMonth}, #{getDay})) = '4' THEN 'W04'
+                        WHEN DATEPART(WEEKDAY, CONCAT(#{getYear}, #{getMonth}, #{getDay})) = '5' THEN 'W05'
+                        WHEN DATEPART(WEEKDAY, CONCAT(#{getYear}, #{getMonth}, #{getDay})) = '6' THEN 'W06'
+                        WHEN DATEPART(WEEKDAY, CONCAT(#{getYear}, #{getMonth}, #{getDay})) = '7' THEN 'W07'
+                        ELSE 'W01'
+                      END AS WEEK
+            ) AS A 
+                INNER JOIN( /** 세션 조회  */
+                    SELECT 
+                          A.EXPSEQ
+                        , A.CATEGORYTYPE1
+                        , A.CATEGORYTYPE2
+                        , A.CATEGORYTYPE3
+                        , A.PRODUCTNAME
+                        , B.EXPSESSIONSEQ
+                        , B.STARTDATETIME
+                        , B.ENDDATETIME
+                        , B.SETWEEK
+                        , B.SETDATE
+                        , B.WORKTYPECODE
+                        , B.SETTYPECODE
+                        , A.SEATCOUNT1
+                        , A.SEATCOUNT2
+                        , MIN(CASE C.PERIODTYPECODE
+                            /*일별*/
+                            WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.STARTDAY), GETDATE()), 112)
+                            /*월별*/ WHEN 'P03' THEN CONVERT(VARCHAR(8), GETDATE() + 1, 112)
+                          END) AS SESSIONSTARTDAY
+                        , MAX(CASE C.PERIODTYPECODE
+                            /*일별*/
+                            WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE()), 112)
+                            /*월별*/
+                            WHEN 'P03' 
+                                THEN 
+                                    /* TO-BE 시작 */
+                                    <![CDATA[
+                                    CASE 
+                                        /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                        WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                        THEN 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                        /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                        WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                        THEN
+                                            CASE 
+                                                WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) < DBO.F_FT_CODENAME()    /* alscure */
+                                                THEN 
+                                                    CASE 
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                    END
+                                                ELSE 
+                                                    CASE 
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                    END
+                                            END
+                                        /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                        ELSE 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                    END
+                                    ]]>
+                                    /* TO-BE 끝 */
+                          END) AS SESSIONENDDAY
+                    FROM RSVEXPINFO A
+                        INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) E
+                            ON(A.EXPSEQ = E.EXPSEQ)
+                        INNER JOIN RSVEXPSESSIONINFO B
+                            ON(
+                                A.EXPSEQ = B.EXPSEQ
+                                AND A.PPSEQ = #{ppseq}
+                                AND B.STATUSCODE = 'B01'
+                            )
+                        INNER JOIN RSVEXPROLE C
+                            ON(
+                                B.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                        INNER JOIN(
+                            /* 핀, 지역, 나이 */
+                            SELECT 
+                                  CZ.EXPSESSIONSEQ
+                                , CZ.PINTREATRANGE
+                                , CZ.CITYTREATCODE
+                                , CZ.AGETREATCODE
+                                , CZ.GROUPSEQ
+                            FROM RSVEXPINFO AZ 
+                                INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) GZ
+                                    ON(AZ.EXPSEQ = GZ.EXPSEQ)
+                                INNER JOIN RSVEXPSESSIONINFO BZ 
+                                    ON(
+                                        AZ.EXPSEQ = BZ.EXPSEQ 
+                                        AND AZ.PPSEQ = #{ppseq}
+                                        AND BZ.STATUSCODE = 'B01'
+                                    ) 
+                                INNER JOIN RSVEXPROLE CZ
+                                    ON(BZ.EXPSESSIONSEQ = CZ.EXPSESSIONSEQ)
+                                LEFT OUTER JOIN V_TARGETCODE_NONMEM DZ
+                                    ON(
+                                        CZ.PINTREATRANGE = DZ.TARGETCODESEQ
+                                        AND DZ.TARGETMASTERSEQ = 'PINCODE'
+                                    )
+                                LEFT OUTER JOIN TARGETCODE EZ
+                                    ON(
+                                        CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                                        AND EZ.TARGETMASTERSEQ = 'AGECODE'
+                                    )
+                                LEFT OUTER JOIN (
+                                    SELECT /* 예약자의 기본정보 */
+                                        UID AS ACCOUNT,
+                                        NAME AS ACCOUNTNAME,
+                                        PINNO,
+                                        PIN_VALUE AS PINVALUE,
+                                        REGIONNAME,
+                                        CITYNAME,
+                                        AGE,
+                                        SSN,
+                                        COOKMASTER,
+                                        COOKMASTERCODE,
+                                        CITYGROUPCODE
+                                    FROM (
+                                        SELECT
+                                            X.UID,
+                                            X.NAME,
+                                            X.PINNO,
+                                            X.PIN_VALUE,
+                                            X.REGIONNAME,
+                                            X.CITYNAME,
+                                            X.AGE,
+                                            X.SSN,
+                                            CASE 
+                                                WHEN ISNULL(X.COOKMASTERCODE, '') != ''
+                                                THEN 'true'
+                                                ELSE 'false'
+                                            END AS COOKMASTER,
+                                            ISNULL(X.COOKMASTERCODE, '') AS COOKMASTERCODE,
+                                            CASE 
+                                                WHEN NULL != Y2.CITYGROUPCODE 
+                                                THEN Y2.CITYGROUPCODE 
+                                                ELSE Y.CITYGROUPCODE
+                                            END AS CITYGROUPCODE,
+                                            ROW_NUMBER() OVER(ORDER BY Y.MAPPINGSEQ DESC) AS NUMB
+                                        FROM (
+                                            /* 기본정��� */
+                                            SELECT
+                                                M.UID,
+                                                M.NAME,
+                                                M.PINNO,
+                                                ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+                                                M.REGIONNAME,
+                                                M.CITYNAME,
+                                                M.AGE,
+                                                M.SSN,
+                                                CM.GROUPSEQ AS COOKMASTERCODE,
+                                                N.REGIONCODE AS REGION_ALL_CODE,
+                                                G.REGIONCODE,
+                                                G.CITYCODE
+                                            FROM (
+                                            /* 개인정보 */
+                                                SELECT
+                                                    A.UID,
+                                                    A.NAME,
+                                                    A.GROUPS AS PINNO,
+                                                    B.TARGETCODEORDER AS PIN_VALUE,
+                                                    SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+                                                    SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+                                                    CASE WHEN A.SSN = '999000'
+                                                    THEN 100
+                                                    ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+                                                    END AS AGE,
+                                                    SUBSTRING(A.SSN,1,6) AS SSN
+                                                FROM MEMBER A
+                                                    LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+                                                    ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+                                                WHERE A.UID = #{account}/* parameter1:account:7480002 */
+                                            ) M
+                                            LEFT OUTER JOIN (
+                                                /* 요리명장 */
+                                                SELECT
+                                                    MAX(A.GROUPSEQ) AS GROUPSEQ,
+                                                    B.ABONO
+                                                FROM RSVROLEGROUP A
+                                                    INNER JOIN RSVROLETARGET B
+                                                    ON (A.GROUPSEQ = B.GROUPSEQ)
+                                                WHERE B.STATUSCODE = 'B01'
+                                                    AND A.COOKMASTERCODE = 'C01'
+                                                GROUP BY B.ABONO
+                                            ) CM
+                                                ON (M.UID = CM.ABONO)
+                                            LEFT OUTER JOIN (
+                                                /* 행정구역단위 비교 */
+                                                SELECT
+                                                    REGIONCODE,
+                                                    REGIONNAME,
+                                                    SHORTNAME
+                                                FROM RSVREGIONINFO
+                                            ) N
+                                                ON (M.REGIONNAME = N.SHORTNAME)
+                                            LEFT OUTER JOIN (
+                                                /* 도시단위 비교 */
+                                                SELECT
+                                                    A.REGIONCODE,
+                                                    A.SHORTNAME,
+                                                    B.CITYCODE,
+                                                    B.CITYNAME
+                                                FROM RSVREGIONINFO A
+                                                    INNER JOIN RSVCITYINFO B
+                                                        ON (A.REGIONCODE = B.REGIONCODE)
+                                            ) G
+                                            ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+                                        ) X
+                                        LEFT OUTER JOIN RSVCITYGROUPMAP Y /* 행정구역단위 GROUPCODE */
+                                            ON (X.REGION_ALL_CODE = Y.REGIONCODE)
+                                        INNER JOIN RSVCITYGROUPMASTER YM
+                                            ON (Y.CITYGROUPCODE = YM.CITYGROUPCODE AND YM.STATUSCODE = 'B01')
+                                        LEFT OUTER JOIN RSVCITYGROUPMAP Y2 /* 도시단위 GROUPCODE */
+                                            ON (X.REGIONCODE = Y2.REGIONCODE AND X.CITYCODE = Y2.CITYCODE)
+                                        INNER JOIN RSVCITYGROUPMASTER Y2M
+                                            ON (Y.CITYGROUPCODE = Y2M.CITYGROUPCODE AND Y2M.STATUSCODE = 'B01')
+                                    ) T
+                                    WHERE NUMB = 1
+                                ) FZ
+                                ON(1=1)
+                            WHERE
+                            /*핀, 지역, 나이 */
+                            (DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                            AND CZ.CITYTREATCODE IS NOT NULL
+                            AND CZ.CITYTREATCODE != ''
+                            AND EZ.TARGETCODEORDER IS NOT NULL
+                            AND EZ.TARGETCODEORDER != ''
+                            AND CZ.CITYTREATCODE = FZ.CITYGROUPCODE
+                            AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                            /* 핀, 지역 */
+                            OR(DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                            AND (CZ.CITYTREATCODE IS NULL
+                            OR CZ.CITYTREATCODE = '')
+                            AND EZ.TARGETCODEORDER IS NULL
+                            AND EZ.TARGETCODEORDER != ''
+                            AND CZ.CITYTREATCODE = FZ.CITYGROUPCODE)
+                            /* 핀, 나이 */
+                            OR (DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                            AND CZ.CITYTREATCODE IS NOT NULL
+                            AND CZ.CITYTREATCODE != ''
+                            AND (EZ.TARGETCODEORDER IS NULL
+                            OR EZ.TARGETCODEORDER = '')
+                            AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                            /* 핀 */
+                            OR (DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                            AND (CZ.CITYTREATCODE IS NULL
+                            OR CZ.CITYTREATCODE = '')
+                            AND (EZ.TARGETCODEORDER IS NULL
+                            OR EZ.TARGETCODEORDER = ''))
+                            /* 특정그룹 */
+                            OR (CZ.GROUPSEQ IN (
+                                                SELECT 
+                                                    A.GROUPSEQ 
+                                                FROM 
+                                                    RSVROLEGROUP A
+                                                    INNER JOIN RSVROLETARGET B
+                                                    ON (A.GROUPSEQ = B.GROUPSEQ
+                                                        AND B.STATUSCODE = 'B01'
+                                                        AND B.ABONO = #{account})
+                                                ))
+                        ) D
+                        ON(
+                            D.EXPSESSIONSEQ = B.EXPSESSIONSEQ
+                            AND C.PINTREATRANGE = D.PINTREATRANGE
+                            AND C.CITYTREATCODE = D.CITYTREATCODE
+                            AND C.AGETREATCODE = D.AGETREATCODE
+                            AND C.GROUPSEQ = D.GROUPSEQ
+                            AND A.EXPSEQ = #{expseq}
+                        )
+                    GROUP BY
+                          A.EXPSEQ
+                        , A.CATEGORYTYPE1
+                        , A.CATEGORYTYPE2
+                        , A.CATEGORYTYPE3
+                        , A.PRODUCTNAME
+                        , B.EXPSESSIONSEQ
+                        , B.STARTDATETIME
+                        , B.ENDDATETIME
+                        , B.SETWEEK
+                        , B.SETDATE
+                        , B.WORKTYPECODE
+                        , B.SETTYPECODE
+                        , A.SEATCOUNT1
+                        , A.SEATCOUNT2
+            ) AS B
+                ON(A.YMD &gt;= B.SESSIONSTARTDAY AND A.YMD &lt;= B.SESSIONENDDAY AND (A.YMD = B.SETDATE OR A.WEEK = B.SETWEEK))
+            LEFT OUTER JOIN (
+                SELECT 
+                      A.CANCELCODE
+                    , A.RESERVATIONDATE
+                    , A.TYPESEQ
+                    , A.EXPSESSIONSEQ
+                    , A.STANDBYNUMBER
+                    , A.ACCOUNTTYPE
+                    , CASE
+                          WHEN A.STANDBYNUMBER = 1 OR (A.ADMINFIRSTCODE = 'R01' AND A.CANCELCODE = 'B02') THEN 300/** 화면단에서 예약 마감, 예약 대기, 예약가능 판단 하기위한  flag */
+                          WHEN B.SEATCOUNT &gt; C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 100
+                          WHEN B.SEATCOUNT = C.VISITNUMBER AND A.ACCOUNTTYPE = 'A01' THEN 200
+                          WHEN A.STANDBYNUMBER = 0 AND A.CANCELCODE = 'B01' AND A.ACCOUNTTYPE != 'A01' THEN 100
+                          WHEN (A.STANDBYNUMBER = 0 OR A.STANDBYNUMBER IS NULL)AND A.CANCELCODE = 'B02' AND A.ACCOUNTTYPE != 'A01' THEN 200
+                          ELSE 100
+                      END AS RSVFLAG
+                    FROM RSVRESERVATIONINFO A
+                    INNER JOIN RSVEXPINFO B
+                    ON(A.EXPSEQ = B.EXPSEQ)
+                    LEFT OUTER JOIN (
+                         SELECT RESERVATIONDATE
+                              , EXPSESSIONSEQ
+                              , SUM(CASE 
+                                       WHEN ACCOUNTTYPE = 'A01' THEN VISITNUMBER
+                                       ELSE 0
+                                    END) AS VISITNUMBER
+                         FROM RSVRESERVATIONINFO 
+                         WHERE STANDBYNUMBER = 0 
+                           AND EXPSESSIONSEQ IS NOT NULL
+                         GROUP BY RESERVATIONDATE, EXPSESSIONSEQ, CANCELCODE) C
+                    ON(A.RESERVATIONDATE = C.RESERVATIONDATE
+                    AND A.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                WHERE TYPESEQ = #{typeseq}
+            )AS C
+             ON(A.YMD = C.RESERVATIONDATE AND B.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+        )AS AA
+        GROUP BY 
+              AA.YMD
+            , AA.WEEK
+            , AA.EXPSEQ
+            , AA.CATEGORYTYPE1
+            , AA.CATEGORYTYPE2
+            , AA.CATEGORYTYPE3
+            , AA.PRODUCTNAME
+            , AA.STARTDATETIME
+            , AA.ENDDATETIME
+            , AA.EXPSESSIONSEQ
+            , AA.SETWEEK, AA.SETDATE, AA.WORKTYPECODE, AA.SETTYPECODE , AA.SESSIONSTARTDAY,  AA.SESSIONENDDAY
+            , AA.SEATCOUNT1
+            , AA.SEATCOUNT2
+        ORDER BY  AA.SETTYPECODE DESC
+    </select>
+    
+    <select id="searchExpBrandProgramKey" parameterType="reqBox" resultType="egovMap">
+            SELECT
+                  A.CATEGORYTYPE3
+                , B.CATEGORYNAME3
+                , B.FILEKEY
+                , C.UPLOADSEQ
+                , C.REALFILENAME
+                , C.STOREFILENAME
+                , C.FILEFULLURL
+                , C.FILEEXT
+            FROM RSVEXPINFO A
+                LEFT OUTER JOIN RSVBRANDCATEGORY B
+                    ON(A.CATEGORYTYPE3 = B.CATEGORYTYPE3 AND B.STATUSCODE = 'B01')
+                LEFT OUTER JOIN FILEMANAGEMENT C
+                    ON(B.FILEKEY = C.FILEKEY AND (C.WORK = 'RESERVATION' OR C.WORK = 'RSVBRAND'))
+            WHERE  B.CATEGORYTYPE3 = #{categorytype3}
+                AND A.STATUSCODE = 'B01'
+                <if test="categorytype3 == null or categorytype3.equals('')"> 
+                    AND B.FILEKEY IS NOT NULL 
+                    AND B.FILEKEY != 0
+                </if>
+            GROUP BY
+                  A.CATEGORYTYPE3
+                , B.CATEGORYNAME3
+                , B.FILEKEY
+                , C.FILEKEY
+                , C.UPLOADSEQ
+                , C.REALFILENAME
+                , C.STOREFILENAME
+                , C.FILEFULLURL
+                , C.FILEEXT
+    </select>
+    
+    <select id="brandNextYearMonth" parameterType="reqBox" resultType="egovMap">
+        SELECT
+              DATEPART(YY, DATEADD(MM, NUMBER, GETDATE())) AS YEAR
+            , DATEPART(MM, DATEADD(MM, NUMBER, GETDATE())) AS MONTH
+            , #{pinvalue} AS TARGETCODEORDER  
+            , CASE DATEPART(MM, DATEADD(MM, NUMBER, GETDATE()))
+                 WHEN 1 THEN 'jan'
+                 WHEN 2 THEN 'feb'
+                 WHEN 3 THEN 'mar'
+                 WHEN 4 THEN 'apr'
+                 WHEN 5 THEN 'may'
+                 WHEN 6 THEN 'june'
+                 WHEN 7 THEN 'july'
+                 WHEN 8 THEN 'aug'
+                 WHEN 9 THEN 'sep'
+                 WHEN 10 THEN 'oct'
+                 WHEN 11 THEN 'nov'
+                 ELSE 'dec'
+              END AS ENGMONTH
+        FROM MASTER..SPT_VALUES
+        WHERE TYPE = 'P' 
+            AND NUMBER &gt;= 0
+            AND NUMBER &lt; (
+                SELECT 
+                    ISNULL(MAX(
+                        CASE 
+                            WHEN C.PERIODTYPECODE = 'P01' THEN DATEDIFF(MM, GETDATE(), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE())) + 1
+                            WHEN C.PERIODTYPECODE = 'P03' THEN 
+                                                              CASE
+                                                              WHEN C.STARTDAY &lt; DATEPART(DAY, GETDATE()) THEN C.ENDMONTH + 1
+                                                              ELSE C.ENDMONTH
+                                                              END
+                        END
+                    ), '1') AS NUMBER
+                FROM RSVEXPINFO A
+                    INNER JOIN RSVEXPSESSIONINFO B
+                        ON(
+                            A.EXPSEQ = B.EXPSEQ 
+                            AND B.STATUSCODE = 'B01'
+                            AND A.EXPSEQ = #{expseq}
+                        )
+                    INNER JOIN RSVEXPROLE C
+                        ON(B.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                    INNER JOIN(
+                        SELECT 
+                              CZ.EXPSESSIONSEQ
+                            , CZ.PINTREATRANGE
+                            , CZ.CITYTREATCODE
+                            , CZ.AGETREATCODE
+                            , CZ.GROUPSEQ
+                        FROM RSVEXPINFO AZ
+                            INNER JOIN RSVEXPSESSIONINFO BZ
+                                ON(
+                                    AZ.EXPSEQ = BZ.EXPSEQ
+                                    AND AZ.EXPSEQ = #{expseq}
+                                    AND BZ.STATUSCODE = 'B01'
+                                )
+                            INNER JOIN RSVEXPROLE CZ
+                                ON(BZ.EXPSESSIONSEQ = CZ.EXPSESSIONSEQ)
+                            LEFT OUTER JOIN V_TARGETCODE_NONMEM DZ
+                                ON(
+                                    CZ.PINTREATRANGE = DZ.TARGETCODESEQ
+                                    AND DZ.TARGETMASTERSEQ = 'PINCODE'
+                                    )
+                            LEFT OUTER JOIN TARGETCODE EZ
+                                ON(
+                                    CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                                    AND EZ.TARGETCODESEQ = 'AGECODE'
+                                )
+                            LEFT OUTER JOIN (
+                                SELECT /* 예약자의 기본정보 */
+                                    UID AS ACCOUNT,
+                                    NAME AS ACCOUNTNAME,
+                                    PINNO,
+                                    PIN_VALUE AS PINVALUE,
+                                    REGIONNAME,
+                                    CITYNAME,
+                                    AGE,
+                                    SSN,
+                                    COOKMASTER,
+                                    COOKMASTERCODE,
+                                    CITYGROUPCODE
+                                FROM (
+                                    SELECT
+                                        X.UID,
+                                        X.NAME,
+                                        X.PINNO,
+                                        X.PIN_VALUE,
+                                        X.REGIONNAME,
+                                        X.CITYNAME,
+                                        X.AGE,
+                                        X.SSN,
+                                        CASE 
+                                            WHEN ISNULL(X.COOKMASTERCODE, '') != ''
+                                            THEN 'true'
+                                            ELSE 'false'
+                                        END AS COOKMASTER,
+                                        ISNULL(X.COOKMASTERCODE, '') AS COOKMASTERCODE,
+                                        CASE 
+                                            WHEN NULL != Y2.CITYGROUPCODE 
+                                            THEN Y2.CITYGROUPCODE 
+                                            ELSE Y.CITYGROUPCODE
+                                        END AS CITYGROUPCODE,
+                                        ROW_NUMBER() OVER(ORDER BY Y.MAPPINGSEQ DESC) AS NUMB
+                                    FROM (
+                                        /* 기본정보 */
+                                        SELECT
+                                            M.UID,
+                                            M.NAME,
+                                            M.PINNO,
+                                            ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+                                            M.REGIONNAME,
+                                            M.CITYNAME,
+                                            M.AGE,
+                                            M.SSN,
+                                            CM.GROUPSEQ AS COOKMASTERCODE,
+                                            N.REGIONCODE AS REGION_ALL_CODE,
+                                            G.REGIONCODE,
+                                            G.CITYCODE
+                                        FROM (
+                                            /* 개인정보 */
+                                            SELECT
+                                                A.UID,
+                                                A.NAME,
+                                                A.GROUPS AS PINNO,
+                                                B.TARGETCODEORDER AS PIN_VALUE,
+                                                SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+                                                SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+                                                CASE WHEN A.SSN = '999000'
+                                                    THEN 100
+                                                    ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+                                                END AS AGE,
+                                                SUBSTRING(A.SSN,1,6) AS SSN
+                                            FROM 
+                                                MEMBER A
+                                                LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+                                                ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+                                            WHERE A.UID = #{account} /* parameter1:account:7480002 */ 
+                                        ) M
+                                        LEFT OUTER JOIN (
+                                            /* 요리명장 */
+                                            SELECT
+                                                MAX(A.GROUPSEQ) AS GROUPSEQ,
+                                                B.ABONO
+                                            FROM 
+                                                RSVROLEGROUP A
+                                                INNER JOIN RSVROLETARGET B
+                                                ON (A.GROUPSEQ = B.GROUPSEQ)
+                                            WHERE 
+                                                B.STATUSCODE = 'B01'
+                                                AND A.COOKMASTERCODE = 'C01'
+                                            GROUP BY B.ABONO
+                                        ) CM
+                                        ON (M.UID = CM.ABONO)
+                                        LEFT OUTER JOIN (
+                                            /* 행정구역단위 비교 */
+                                            SELECT
+                                                REGIONCODE,
+                                                REGIONNAME,
+                                                SHORTNAME
+                                            FROM RSVREGIONINFO
+                                        ) N
+                                        ON (M.REGIONNAME = N.SHORTNAME)
+                                        LEFT OUTER JOIN (
+                                            /* 도시단위 비교 */
+                                            SELECT
+                                                A.REGIONCODE,
+                                                A.SHORTNAME,
+                                                B.CITYCODE,
+                                                B.CITYNAME
+                                            FROM 
+                                                RSVREGIONINFO A
+                                                INNER JOIN RSVCITYINFO B
+                                                ON (A.REGIONCODE = B.REGIONCODE)
+                                            ) G
+                                        ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+                                    ) X
+                                        LEFT OUTER JOIN RSVCITYGROUPMAP Y /* 행정구역단위 GROUPCODE */
+                                            ON (X.REGION_ALL_CODE = Y.REGIONCODE)
+                                        INNER JOIN RSVCITYGROUPMASTER YM
+                                            ON (Y.CITYGROUPCODE = YM.CITYGROUPCODE AND YM.STATUSCODE = 'B01')
+                                        LEFT OUTER JOIN RSVCITYGROUPMAP Y2 /* 도시단위 GROUPCODE */
+                                            ON (X.REGIONCODE = Y2.REGIONCODE AND X.CITYCODE = Y2.CITYCODE)
+                                        INNER JOIN RSVCITYGROUPMASTER Y2M
+                                            ON (Y.CITYGROUPCODE = Y2M.CITYGROUPCODE AND Y2M.STATUSCODE = 'B01')
+                                ) T
+                                WHERE NUMB = 1
+                            ) FZ
+                                ON(1=1)
+                                WHERE 
+                                    /*핀, 지역, 나이 */
+                                    (DZ.TARGETCODEORDER &lt;= FZ.PINVALUE
+                                        AND CZ.CITYTREATCODE IS NOT NULL
+                                        AND CZ.CITYTREATCODE != ''
+                                        AND EZ.TARGETCODEORDER IS NOT NULL
+                                        AND EZ.TARGETCODEORDER != ''
+                                        AND CZ.CITYTREATCODE = FZ.CITYGROUPCODE
+                                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                                    /* 핀, 지역 */
+                                    OR(DZ.TARGETCODEORDER  &lt;= FZ.PINVALUE
+                                        AND (CZ.CITYTREATCODE IS NULL
+                                            OR CZ.CITYTREATCODE = '')
+                                        AND EZ.TARGETCODEORDER IS NULL
+                                        AND EZ.TARGETCODEORDER != ''
+                                        AND CZ.CITYTREATCODE = FZ.CITYGROUPCODE)
+                                    /* 핀, 나이 */
+                                    OR (DZ.TARGETCODEORDER  &lt;= FZ.PINVALUE
+                                        AND CZ.CITYTREATCODE IS NOT NULL
+                                        AND CZ.CITYTREATCODE != ''
+                                        AND (EZ.TARGETCODEORDER IS NULL
+                                            OR EZ.TARGETCODEORDER = '')
+                                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                                    /* 핀 */
+                                    OR (DZ.TARGETCODEORDER  &lt;= FZ.PINVALUE
+                                        AND (CZ.CITYTREATCODE IS NULL
+                                            OR CZ.CITYTREATCODE = '')
+                                        AND (EZ.TARGETCODEORDER IS NULL
+                                            OR EZ.TARGETCODEORDER = ''))
+                                    /* 특정그룹 */
+                                    OR (CZ.GROUPSEQ IN (
+                                                        SELECT 
+                                                            A.GROUPSEQ 
+                                                        FROM 
+                                                            RSVROLEGROUP A
+                                                            INNER JOIN RSVROLETARGET B
+                                                            ON (A.GROUPSEQ = B.GROUPSEQ
+                                                                AND B.STATUSCODE = 'B01'
+                                                                AND B.ABONO = #{account})
+                                                        ))
+                         )D
+                        ON(D.EXPSESSIONSEQ = B.EXPSESSIONSEQ
+                            AND C.PINTREATRANGE = D.PINTREATRANGE
+                            AND C.CITYTREATCODE = D.CITYTREATCODE
+                            AND C.AGETREATCODE = D.AGETREATCODE
+                            AND C.GROUPSEQ = D.GROUPSEQ)
+                 )
+    </select>
+    
+    <!-- 브랜드 체험_날짜 먼저 선택 휴무일 조회  -->
+    <select id="searchBrandCalenderHoliDay" parameterType="reqBox" resultType="egovMap">
+        /** 브랜드 체험_날짜 먼저 선택 휴무일 조회  */
+        /** 핀 조건에 맞는 세션 모두가 휴무일  이면 휴무일로 표현을 해야하며, 한개라도 휴무일이 아닐경우 휴무일 표현을 하지 않는다.*/
+        /** XXX.SETDATECNT[핀조건에 만족하는 체험 종류의 휴무일 count] = YYY.EXPSEQCNT[핀 조건에 만족하는 세션 count] 만족시 휴무일*/
+        SELECT 
+              XXX.SETDATECNT as SETDATECNT
+            , ISNULL(SUBSTRING(XXX.SETDATE, 7,2), 'N') AS SETDATE
+            , YYY.EXPSEQCNT
+            , DATEPART(DD, GETDATE()) AS GETTODAY
+        FROM ( 
+            SELECT 
+                  COUNT(*) AS SETDATECNT
+                , SETDATE
+            FROM( 
+                SELECT DISTINCT 
+                      XX.EXPSEQ
+                    , YY.SETTYPECODE
+                    , YY.WORKTYPECODE
+                    , YY.SETDATE 
+                FROM( 
+                    SELECT DISTINCT /** 브랜드 체험 세션 조회 */
+                        AA.EXPSEQ 
+                    FROM ( 
+                        SELECT 
+                             CASE A.WEEKDAY 
+                                WHEN '1' THEN 'W01' 
+                                WHEN '2' THEN 'W02' 
+                                WHEN '3' THEN 'W03' 
+                                WHEN '4' THEN 'W04' 
+                                WHEN '5' THEN 'W05' 
+                                WHEN '6' THEN 'W06' 
+                                WHEN '7' THEN 'W07' 
+                                ELSE 'W08' 
+                              END AS WEEKDAY 
+                            , B.EXPSESSIONSEQ 
+                            , B.SETTYPECODE 
+                            , B.STARTDATE 
+                            , B.SETDATE 
+                            , B.ENDDATE 
+                            , B.EXPSEQ 
+                        FROM ( 
+                            SELECT 
+                                  CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')), 112) AS YMD 
+                                , DATEPART(MM, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS MONTH 
+                                , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS DAY 
+                                , DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS WEEKDAY 
+                            FROM MASTER..SPT_VALUES 
+                            WHERE TYPE = 'P' 
+                                AND NUMBER &gt;= 0 
+                                AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) 
+                        ) A 
+                        LEFT OUTER JOIN ( 
+                            SELECT DISTINCT 
+                                   B.SETTYPECODE 
+                                , CASE B.SETWEEK 
+                                    WHEN 'W01' THEN 1 
+                                    WHEN 'W02' THEN 2 
+                                    WHEN 'W03' THEN 3 
+                                    WHEN 'W04' THEN 4 
+                                    WHEN 'W05' THEN 5 
+                                    WHEN 'W06' THEN 6 
+                                    WHEN 'W07' THEN 7 
+                                    ELSE NULL 
+                                  END AS SETWEEK 
+                                , B.SETDATE 
+                                , B.ORDERNUMBER 
+                                , B.EXPSESSIONSEQ 
+                                , A.SEATCOUNT1 
+                                , A.SEATCOUNT2 
+                                , A.STARTDATE 
+                                , A.ENDDATE 
+                                , A.EXPSEQ 
+                            FROM RSVEXPINFO A 
+                                INNER JOIN RSVEXPSESSIONINFO B 
+                                    ON(
+                                        A.EXPSEQ = B.EXPSEQ 
+                                        AND B.STATUSCODE = 'B01' AND A.CATEGORYTYPE1 ='E03'
+                                    ) 
+                                INNER JOIN RSVPPINFO C 
+                                    ON(A.PPSEQ = C.PPSEQ AND C.PPSEQ = #{ppSeq}) 
+                                INNER JOIN RSVEXPTYPEMAP D 
+                                    ON(A.EXPSEQ = D.EXPSEQ) 
+                                INNER JOIN RSVTYPEINFO E 
+                                    ON(D.TYPESEQ = E.TYPESEQ AND E.TYPESEQ = #{typeseq}) 
+                            WHERE A.PPSEQ = #{ppSeq}
+                        ) B 
+                            ON(A.YMD = B.SETDATE OR A.WEEKDAY = B.SETWEEK) 
+                        LEFT OUTER JOIN RSVRESERVATIONINFO C 
+                            ON(
+                                C.RSVTYPECODE = 'R02' 
+                                AND A.YMD = C.RESERVATIONDATE 
+                                AND B.EXPSESSIONSEQ = C.EXPSESSIONSEQ 
+                                AND C.CANCELCODE = 'B02'
+                            ) 
+                    ) AA 
+                    LEFT OUTER JOIN( 
+                        SELECT /** 핀 조건에 만족하는 세션 조회 */
+                              B.EXPSESSIONSEQ 
+                            , MIN(CASE C.PERIODTYPECODE 
+                                /*일별*/ 
+                                WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.STARTDAY), GETDATE()), 112) 
+                                /*월별*/ 
+                                WHEN 'P03' THEN CONVERT(VARCHAR(8), GETDATE() + 1, 112) 
+                              END) AS SESSIONSTARTDAY 
+                            , MAX(CASE C.PERIODTYPECODE 
+                                /*일별*/ 
+                                WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE()), 112) 
+                                /*월별*/ 
+                                WHEN 'P03'
+                                    THEN 
+                                        /* TO-BE 시작 */
+                                        <![CDATA[
+                                        CASE 
+                                            /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                            WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                            THEN 
+                                                CASE 
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                    ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                END
+                                            /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                            WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                            THEN
+                                                CASE 
+                                                    WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) < DBO.F_FT_CODENAME()    /* alscure */
+                                                    THEN 
+                                                        CASE 
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                            ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                        END
+                                                    ELSE 
+                                                        CASE 
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                            WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                            THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                            ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                        END
+                                                END
+                                            /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                            ELSE 
+                                                CASE 
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                    WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                    THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                    ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                END
+                                        END
+                                        ]]>
+                                        /* TO-BE 끝 */ 
+                                END) AS SESSIONENDDAY 
+                        FROM RSVEXPINFO A 
+                            INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) E 
+                                ON(A.EXPSEQ = E.EXPSEQ  AND A.CATEGORYTYPE1 ='E03') 
+                            INNER JOIN RSVEXPSESSIONINFO B 
+                                ON(A.EXPSEQ = B.EXPSEQ 
+                                AND A.PPSEQ = #{ppSeq}
+                                AND B.STATUSCODE = 'B01' ) 
+                            INNER JOIN RSVEXPROLE C 
+                                ON(B.EXPSESSIONSEQ = C.EXPSESSIONSEQ) 
+                            INNER JOIN ( 
+                                    /* 핀, 지역, 나이 */ 
+                                    SELECT 
+                                          CZ.EXPSESSIONSEQ 
+                                        , CZ.PINTREATRANGE 
+                                        , CZ.CITYTREATCODE 
+                                        , CZ.AGETREATCODE 
+                                        , CZ.GROUPSEQ 
+                                    FROM RSVEXPINFO AZ 
+                                        INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) GZ 
+                                            ON(AZ.EXPSEQ = GZ.EXPSEQ AND AZ.CATEGORYTYPE1 ='E03') 
+                                        INNER JOIN RSVEXPSESSIONINFO BZ 
+                                            ON(AZ.EXPSEQ = BZ.EXPSEQ 
+                                                AND AZ.PPSEQ = #{ppSeq}
+                                                AND BZ.STATUSCODE = 'B01' ) 
+                                        INNER JOIN RSVEXPROLE CZ 
+                                            ON(BZ.EXPSESSIONSEQ = CZ.EXPSESSIONSEQ) 
+                                        LEFT OUTER JOIN V_TARGETCODE_NONMEM DZ 
+                                            ON(CZ.PINTREATRANGE = DZ.TARGETCODESEQ 
+                                            AND DZ.TARGETMASTERSEQ = 'PINCODE') 
+                                        LEFT OUTER JOIN TARGETCODE EZ 
+                                            ON(CZ.AGETREATCODE = EZ.TARGETCODESEQ 
+                                            AND EZ.TARGETMASTERSEQ = 'AGECODE') 
+                                WHERE
+                                    /*핀, 지역, 나이 */ 
+                                    (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                    AND CZ.CITYTREATCODE IS NOT NULL 
+                                    AND CZ.CITYTREATCODE != '' 
+                                    AND EZ.TARGETCODEORDER IS NOT NULL 
+                                    AND EZ.TARGETCODEORDER != '' 
+                                    AND CZ.CITYTREATCODE = #{citygroupcode}
+                                    AND EZ.TARGETCODEORDER &lt;= #{infoage})
+                                    /* 핀, 지역 */ 
+                                    OR(DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                    AND (EZ.TARGETCODEORDER IS NULL 
+                                    OR EZ.TARGETCODEORDER = '') 
+                                    AND CZ.CITYTREATCODE IS NOT NULL 
+                                    AND CZ.CITYTREATCODE != '' 
+                                    AND CZ.CITYTREATCODE = #{citygroupcode})
+                                    /* 핀, 나이 */ 
+                                    OR (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                    AND EZ.TARGETCODEORDER IS NOT NULL 
+                                    AND EZ.TARGETCODEORDER != '' 
+                                    AND (CZ.CITYTREATCODE IS NULL 
+                                    OR CZ.CITYTREATCODE = '') 
+                                    AND EZ.TARGETCODEORDER &lt;= #{infoage})
+                                    /* 핀 */ 
+                                    OR (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                    AND (CZ.CITYTREATCODE IS NULL 
+                                    OR CZ.CITYTREATCODE = '') 
+                                    AND (EZ.TARGETCODEORDER IS NULL 
+                                    OR EZ.TARGETCODEORDER = '')) 
+                                    /* 특정그룹 */ 
+                                    OR (CZ.GROUPSEQ IN ( 
+                                    SELECT 
+                                    A.GROUPSEQ 
+                                    FROM 
+                                    RSVROLEGROUP A 
+                                    INNER JOIN RSVROLETARGET B 
+                                    ON (A.GROUPSEQ = B.GROUPSEQ 
+                                    AND B.STATUSCODE = 'B01' 
+                                    AND B.ABONO = #{account}) 
+                                    )) 
+                        ) D 
+                        ON(D.EXPSESSIONSEQ = B.EXPSESSIONSEQ 
+                        AND C.PINTREATRANGE = D.PINTREATRANGE 
+                        AND C.CITYTREATCODE = D.CITYTREATCODE 
+                        AND C.AGETREATCODE = D.AGETREATCODE 
+                        AND C.GROUPSEQ = D.GROUPSEQ) 
+                        GROUP BY B.EXPSESSIONSEQ 
+                    ) BB 
+                        ON(AA.EXPSESSIONSEQ = BB.EXPSESSIONSEQ 
+                        AND AA.SETTYPECODE IS NOT NULL) 
+                    WHERE AA.STARTDATE &lt;= #{getYear} + #{getMonth} + '01' 
+                        AND AA.ENDDATE &gt;= CONVERT(VARCHAR, DATEADD(S,-1,DATEADD(MM, DATEDIFF(M,0, #{getYear} + #{getMonth}  + '01')+1,0)),112)
+                        AND AA.STARTDATE &lt;= #{getYear} + #{getMonth}  + '01' 
+                        AND AA.ENDDATE &gt;= CONVERT(VARCHAR, DATEADD(S,-1,DATEADD(MM, DATEDIFF(M,0, #{getYear} + #{getMonth}  + '01')+1,0)),112)
+                        AND BB.SESSIONSTARTDAY IS NOT NULL AND BB.SESSIONENDDAY IS NOT NULL 
+                ) XX 
+                INNER JOIN RSVEXPSESSIONINFO YY 
+                    ON(XX.EXPSEQ  = YY.EXPSEQ) 
+                WHERE YY.WORKTYPECODE ='S02' 
+                    AND SUBSTRING(YY.SETDATE, 1, 6 ) = #{getYear} + #{getMonth}
+            ) ZZ 
+            GROUP BY SETDATE 
+        ) XXX 
+        INNER JOIN( 
+            SELECT /** 핀 조건에 만족하는 세션 count 조회 */
+                COUNT(*) AS EXPSEQCNT 
+            FROM( 
+                SELECT DISTINCT 
+                      AA.EXPSEQ 
+                FROM ( 
+                    SELECT 
+                         CASE A.WEEKDAY 
+                            WHEN '1' THEN 'W01' 
+                            WHEN '2' THEN 'W02' 
+                            WHEN '3' THEN 'W03' 
+                            WHEN '4' THEN 'W04' 
+                            WHEN '5' THEN 'W05' 
+                            WHEN '6' THEN 'W06' 
+                            WHEN '7' THEN 'W07' 
+                            ELSE 'W08' 
+                          END AS WEEKDAY 
+                        , B.EXPSESSIONSEQ 
+                        , B.SETTYPECODE 
+                        , B.STARTDATE 
+                        , B.SETDATE 
+                        , B.ENDDATE 
+                        , B.EXPSEQ 
+                    FROM ( 
+                        SELECT 
+                              CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01')), 112) AS YMD 
+                            , DATEPART(MM, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS MONTH 
+                            , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS DAY 
+                            , DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) AS WEEKDAY 
+                        FROM MASTER..SPT_VALUES 
+                        WHERE TYPE = 'P' 
+                        AND NUMBER &gt;= 0 
+                        AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{getYear}, #{getMonth}, '01'))) 
+                    ) A 
+                    LEFT OUTER JOIN ( 
+                        SELECT DISTINCT /** 핀조건에 만족 하는 브랜드체험 예약 휴무일 , 휴무일의 count 조회 */
+                              B.SETTYPECODE 
+                            , CASE B.SETWEEK 
+                                WHEN 'W01' THEN 1 
+                                WHEN 'W02' THEN 2 
+                                WHEN 'W03' THEN 3 
+                                WHEN 'W04' THEN 4 
+                                WHEN 'W05' THEN 5 
+                                WHEN 'W06' THEN 6 
+                                WHEN 'W07' THEN 7 
+                                ELSE NULL 
+                            END AS SETWEEK 
+                            , B.SETDATE 
+                            , B.ORDERNUMBER 
+                            , B.EXPSESSIONSEQ 
+                            , A.SEATCOUNT1 
+                            , A.SEATCOUNT2 
+                            , A.STARTDATE 
+                            , A.ENDDATE 
+                            , A.EXPSEQ 
+                        FROM RSVEXPINFO A 
+                            INNER JOIN RSVEXPSESSIONINFO B 
+                                ON(A.EXPSEQ = B.EXPSEQ 
+                                AND B.STATUSCODE = 'B01' AND A.CATEGORYTYPE1 ='E03') 
+                            INNER JOIN RSVPPINFO C 
+                                ON(A.PPSEQ = C.PPSEQ 
+                                AND C.PPSEQ = #{ppSeq}) 
+                            INNER JOIN RSVEXPTYPEMAP D 
+                                ON(A.EXPSEQ = D.EXPSEQ) 
+                            INNER JOIN RSVTYPEINFO E 
+                                ON(D.TYPESEQ = E.TYPESEQ 
+                                AND E.TYPESEQ = #{typeseq}) 
+                        WHERE A.PPSEQ = #{ppSeq} 
+                     ) B 
+                    ON(A.YMD = B.SETDATE OR A.WEEKDAY = B.SETWEEK) 
+                    LEFT OUTER JOIN RSVRESERVATIONINFO C 
+                        ON(C.RSVTYPECODE = 'R02' 
+                        AND A.YMD = C.RESERVATIONDATE 
+                        AND B.EXPSESSIONSEQ = C.EXPSESSIONSEQ 
+                        AND C.CANCELCODE = 'B02') 
+                ) AA 
+                LEFT OUTER JOIN( 
+                    SELECT 
+                          B.EXPSESSIONSEQ 
+                        , MIN(CASE C.PERIODTYPECODE 
+                                /*일별*/ 
+                                WHEN 'P01' 
+                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.STARTDAY), GETDATE()), 112) 
+                                /*월별*/ 
+                                WHEN 'P03' 
+                                THEN CONVERT(VARCHAR(8), GETDATE() + 1, 112) 
+                          END) AS SESSIONSTARTDAY 
+                        , MAX(CASE C.PERIODTYPECODE 
+                            /*일별*/ 
+                            WHEN 'P01' THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE()), 112) 
+                            /*월별*/ 
+                            WHEN 'P03' 
+                                THEN 
+                                    /* TO-BE 시작 */
+                                    <![CDATA[
+                                    CASE 
+                                        /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                        WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                        THEN 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                        /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                        WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                        THEN
+                                            CASE 
+                                                WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) < DBO.F_FT_CODENAME()    /* alscure */
+                                                THEN 
+                                                    CASE 
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                    END
+                                                ELSE 
+                                                    CASE 
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                                    END
+                                            END
+                                        /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                        ELSE 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                    END
+                                    ]]>
+                                    /* TO-BE 끝 */ 
+                            END) AS SESSIONENDDAY 
+                    FROM RSVEXPINFO A 
+                        INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) E 
+                            ON(A.EXPSEQ = E.EXPSEQ  AND A.CATEGORYTYPE1 ='E03') 
+                        INNER JOIN RSVEXPSESSIONINFO B 
+                            ON(A.EXPSEQ = B.EXPSEQ 
+                                AND A.PPSEQ = #{ppSeq}
+                                AND B.STATUSCODE = 'B01' ) 
+                        INNER JOIN RSVEXPROLE C 
+                            ON(B.EXPSESSIONSEQ = C.EXPSESSIONSEQ) 
+                        INNER JOIN ( 
+                        /* 핀, 지역, 나이 */ 
+                        SELECT 
+                              CZ.EXPSESSIONSEQ 
+                            , CZ.PINTREATRANGE 
+                            , CZ.CITYTREATCODE 
+                            , CZ.AGETREATCODE 
+                            , CZ.GROUPSEQ 
+                        FROM RSVEXPINFO AZ 
+                            INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) GZ 
+                                ON(AZ.EXPSEQ = GZ.EXPSEQ AND AZ.CATEGORYTYPE1 ='E03') 
+                            INNER JOIN RSVEXPSESSIONINFO BZ 
+                                ON(AZ.EXPSEQ = BZ.EXPSEQ 
+                                AND AZ.PPSEQ = #{ppSeq}
+                                AND BZ.STATUSCODE = 'B01' ) 
+                            INNER JOIN RSVEXPROLE CZ 
+                                ON(BZ.EXPSESSIONSEQ = CZ.EXPSESSIONSEQ) 
+                            LEFT OUTER JOIN V_TARGETCODE_NONMEM DZ 
+                                ON(CZ.PINTREATRANGE = DZ.TARGETCODESEQ 
+                                    AND DZ.TARGETMASTERSEQ = 'PINCODE') 
+                                    LEFT OUTER JOIN TARGETCODE EZ 
+                                ON(CZ.AGETREATCODE = EZ.TARGETCODESEQ 
+                                    AND EZ.TARGETMASTERSEQ = 'AGECODE') 
+                            WHERE
+                                /*핀, 지역, 나이 */ 
+                                (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                AND CZ.CITYTREATCODE IS NOT NULL 
+                                AND CZ.CITYTREATCODE != '' 
+                                AND EZ.TARGETCODEORDER IS NOT NULL 
+                                AND EZ.TARGETCODEORDER != '' 
+                                AND CZ.CITYTREATCODE = #{citygroupcode}
+                                AND EZ.TARGETCODEORDER &lt;= #{infoage})
+                                /* 핀, 지역 */ 
+                                OR(DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                AND (EZ.TARGETCODEORDER IS NULL 
+                                OR EZ.TARGETCODEORDER = '') 
+                                AND CZ.CITYTREATCODE IS NOT NULL 
+                                AND CZ.CITYTREATCODE != '' 
+                                AND CZ.CITYTREATCODE = #{citygroupcode})
+                                /* 핀, 나이 */ 
+                                OR (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                AND EZ.TARGETCODEORDER IS NOT NULL 
+                                AND EZ.TARGETCODEORDER != '' 
+                                AND (CZ.CITYTREATCODE IS NULL 
+                                OR CZ.CITYTREATCODE = '') 
+                                AND EZ.TARGETCODEORDER &lt;= #{infoage})
+                                /* 핀 */ 
+                                OR (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                AND (CZ.CITYTREATCODE IS NULL 
+                                OR CZ.CITYTREATCODE = '') 
+                                AND (EZ.TARGETCODEORDER IS NULL 
+                                OR EZ.TARGETCODEORDER = '')) 
+                                /* 특정그룹 */ 
+                                OR (CZ.GROUPSEQ IN ( 
+                                SELECT 
+                                A.GROUPSEQ 
+                                FROM 
+                                RSVROLEGROUP A 
+                                INNER JOIN RSVROLETARGET B 
+                                ON (A.GROUPSEQ = B.GROUPSEQ 
+                                AND B.STATUSCODE = 'B01' 
+                                AND B.ABONO = #{account}) 
+                                )) 
+                        ) D 
+                            ON(D.EXPSESSIONSEQ = B.EXPSESSIONSEQ 
+                            AND C.PINTREATRANGE = D.PINTREATRANGE 
+                            AND C.CITYTREATCODE = D.CITYTREATCODE 
+                            AND C.AGETREATCODE = D.AGETREATCODE 
+                            AND C.GROUPSEQ = D.GROUPSEQ) 
+                            GROUP BY B.EXPSESSIONSEQ 
+                    ) BB 
+                    ON(AA.EXPSESSIONSEQ = BB.EXPSESSIONSEQ 
+                    AND AA.SETTYPECODE IS NOT NULL) 
+                    WHERE 
+                    AA.STARTDATE &lt;= #{getYear} + #{getMonth} + '01' 
+                    AND AA.ENDDATE &gt;= CONVERT(VARCHAR, DATEADD(S,-1,DATEADD(MM, DATEDIFF(M,0, #{getYear} + #{getMonth}  + '01')+1,0)),112)
+                    AND BB.SESSIONSTARTDAY IS NOT NULL AND BB.SESSIONENDDAY IS NOT NULL 
+                  ) Y 
+            ) YYY 
+            ON(XXX.SETDATECNT = YYY.EXPSEQCNT)
+    </select>
+    
+    <select id="brandCalenderNextYearMonth" parameterType="reqBox" resultType="egovMap">
+        SELECT
+               DATEPART(YY, DATEADD(MM, NUMBER, GETDATE())) AS YEAR
+            , DATEPART(MM, DATEADD(MM, NUMBER, GETDATE())) AS MONTH
+            , FORMAT(GETDATE(), 'dd') AS TODAYPOP
+            , #{pinvalue} AS TARGETCODEORDER 
+            , CASE DATEPART(MM, DATEADD(MM, NUMBER, GETDATE()))
+                WHEN 1 THEN 'jan'
+                WHEN 2 THEN 'feb'
+                WHEN 3 THEN 'mar'
+                WHEN 4 THEN 'apr'
+                WHEN 5 THEN 'may'
+                WHEN 6 THEN 'june'
+                WHEN 7 THEN 'july'
+                WHEN 8 THEN 'aug'
+                WHEN 9 THEN 'sep'
+                WHEN 10 THEN 'oct'
+                WHEN 11 THEN 'nov'
+                ELSE 'dec'
+              END AS ENGMONTH
+        FROM
+            MASTER..SPT_VALUES
+        WHERE TYPE = 'P' 
+            AND NUMBER &gt;= 0
+            AND NUMBER &lt; ISNULL(
+                (
+                    SELECT 
+                        MAX(
+                            CASE C.PERIODTYPECODE
+                            /*일별*/
+                            WHEN 'P01' THEN DATEDIFF(MM, GETDATE(), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE())) + 1
+                            /*월별*/
+                            WHEN 'P03' THEN 
+							/* TO-BE 조건 시작 */
+							<![CDATA[
+							CASE
+								/*월기준 시작일이 오늘날짜보다 작은경우*/
+								WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+								THEN C.ENDMONTH + 1
+								/*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+								WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+								THEN
+									CASE
+										WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) > DBO.F_FT_CODENAME()    /* alscure */
+										THEN C.ENDMONTH + 1
+										ELSE C.ENDMONTH
+									END
+								/*월기준 시작일이 오늘날짜보다 큰경우*/
+								ELSE C.ENDMONTH
+							END
+							]]>
+							/* TO-BE 조건 끝 */
+                                        
+                            END) AS NUMBER
+                    FROM RSVEXPINFO A 
+                        INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) E
+                            ON(A.EXPSEQ = E.EXPSEQ)
+                        INNER JOIN RSVEXPSESSIONINFO B 
+                            ON(
+                                A.EXPSEQ = B.EXPSEQ 
+                                AND A.PPSEQ = #{ppseq}
+                                AND B.STATUSCODE = 'B01'
+                            ) 
+                        INNER JOIN RSVEXPROLE C
+                            ON(B.EXPSESSIONSEQ = C.EXPSESSIONSEQ)
+                        INNER JOIN (
+                            /* 핀, 지역, 나이 */
+                            SELECT 
+                                  CZ.EXPSESSIONSEQ
+                                , CZ.PINTREATRANGE
+                                , CZ.CITYTREATCODE
+                                , CZ.AGETREATCODE
+                                , CZ.GROUPSEQ
+                            FROM RSVEXPINFO AZ 
+                                INNER JOIN (SELECT DISTINCT EXPSEQ FROM RSVEXPTYPEMAP WHERE TYPESEQ = #{typeseq}) GZ
+                                    ON(AZ.EXPSEQ = GZ.EXPSEQ)
+                                INNER JOIN RSVEXPSESSIONINFO BZ 
+                                    ON(
+                                        AZ.EXPSEQ = BZ.EXPSEQ 
+                                        AND AZ.PPSEQ = #{ppseq}
+                                        AND BZ.STATUSCODE = 'B01'
+                                    ) 
+                                    INNER JOIN RSVEXPROLE CZ
+                                        ON(BZ.EXPSESSIONSEQ = CZ.EXPSESSIONSEQ)
+                                    LEFT OUTER JOIN V_TARGETCODE_NONMEM DZ
+                                        ON(
+                                            CZ.PINTREATRANGE = DZ.TARGETCODESEQ
+                                            AND DZ.TARGETMASTERSEQ = 'PINCODE'
+                                        )
+                                    LEFT OUTER JOIN TARGETCODE EZ
+                                        ON(
+                                            CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                                            AND EZ.TARGETMASTERSEQ = 'AGECODE'
+                                        )
+                                    WHERE
+                                        /*핀, 지역, 나이 */
+                                        (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                        AND CZ.CITYTREATCODE IS NOT NULL
+                                        AND CZ.CITYTREATCODE != ''
+                                        AND EZ.TARGETCODEORDER IS NOT NULL
+                                        AND EZ.TARGETCODEORDER != ''
+                                        AND CZ.CITYTREATCODE = #{citygroupcode}
+                                        AND EZ.TARGETCODEORDER &gt;= #{infoage})
+                                        /* 핀, 지역 */
+                                        OR(DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                        AND (CZ.CITYTREATCODE IS NULL
+                                        OR CZ.CITYTREATCODE = '')
+                                        AND EZ.TARGETCODEORDER IS NULL
+                                        AND EZ.TARGETCODEORDER != ''
+                                        AND CZ.CITYTREATCODE = #{citygroupcode})
+                                        /* 핀, 나이 */
+                                        OR (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                        AND CZ.CITYTREATCODE IS NOT NULL
+                                        AND CZ.CITYTREATCODE != ''
+                                        AND (EZ.TARGETCODEORDER IS NULL
+                                        OR EZ.TARGETCODEORDER = '')
+                                        AND EZ.TARGETCODEORDER &gt;= #{infoage})
+                                        /* 핀 */
+                                        OR (DZ.TARGETCODEORDER &lt;= #{pinvalue}
+                                        AND (CZ.CITYTREATCODE IS NULL
+                                        OR CZ.CITYTREATCODE = '')
+                                        AND (EZ.TARGETCODEORDER IS NULL
+                                        OR EZ.TARGETCODEORDER = ''))
+                                        /* 특정그룹 */
+                                        OR (CZ.GROUPSEQ IN (
+                                                            SELECT 
+                                                                A.GROUPSEQ 
+                                                            FROM 
+                                                                RSVROLEGROUP A
+                                                                INNER JOIN RSVROLETARGET B
+                                                                ON (A.GROUPSEQ = B.GROUPSEQ
+                                                                    AND B.STATUSCODE = 'B01'
+                                                                    AND B.ABONO = #{account})
+                                                            ))
+                                        ) D
+                                        ON(D.EXPSESSIONSEQ = B.EXPSESSIONSEQ
+                                            AND C.PINTREATRANGE = D.PINTREATRANGE
+                                            AND C.CITYTREATCODE = D.CITYTREATCODE
+                                            AND C.AGETREATCODE = D.AGETREATCODE
+                                            AND C.GROUPSEQ = D.GROUPSEQ)    
+            ), 1)
+    </select>
+
+    <!-- 브랜드체험 개인 예약 형태 체크 -->
+    <select id="expBrandRsvPersonCheck" parameterType="reqBox" resultType="String">
+        /* 브랜드 체험 개인 예약 시 프로그램 남은 정원 조회 하여 
+        * 1. 대기자가 없고 예약하려는 인원수가 남은 정원수보다 작거나 같을때 0
+        * 2. 대기자가 없고 예약하려는 인원수가 남은 정원수보다 클때 1
+        * param - reservationdate, expsessionseq,
+        * 조건으로 standbynumber을 세팅한다.
+        * */
+        SELECT 
+               CASE 
+                  WHEN (B.SEATCOUNT - A.VISITNUMBERCHECK) = 0
+                  THEN 1
+                  WHEN (B.SEATCOUNT - A.VISITNUMBERCHECK) &gt; 0
+                  THEN 0
+                  WHEN (B.SEATCOUNT - A.VISITNUMBERCHECK) &lt; 1
+                  THEN 1
+               END CNT
+        FROM (
+              SELECT EXPSEQ
+                   , RESERVATIONDATE
+                   , EXPSESSIONSEQ
+                   , SUM(CASE 
+                             WHEN ACCOUNTTYPE = 'A01' THEN VISITNUMBER
+                             ELSE 0
+                         END) AS VISITNUMBERCHECK
+                   , CASE 
+                         WHEN #{partnerTypeCode} = 'R03' THEN 1 -- 동반인 없음
+                         ELSE 2
+                     END AS VISITNUMBER
+              FROM RSVRESERVATIONINFO 
+              WHERE STANDBYNUMBER = 0
+                AND EXPSESSIONSEQ IS NOT NULL
+                AND CANCELCODE = 'B02'
+              GROUP BY EXPSEQ, RESERVATIONDATE, EXPSESSIONSEQ, STANDBYNUMBER, CANCELCODE) A
+        INNER JOIN RSVEXPINFO B 
+        ON(A.EXPSEQ = B.EXPSEQ)
+        WHERE A.RESERVATIONDATE = #{reservationDate}
+          AND A.EXPSESSIONSEQ = #{expsessionseq}
+    </select>
+</mapper>

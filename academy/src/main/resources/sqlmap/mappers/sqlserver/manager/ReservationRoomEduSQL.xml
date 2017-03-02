@@ -1,0 +1,1784 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.reservation.roomEdu.service.impl.RoomEduMapper">
+
+    <!-- 시설 예약에 대한  키값 조회 -->
+    <select id="searchRsvRoomTypeSeq" parameterType="reqBox" resultType="egovMap">
+        SELECT ISNULL(MAX(TYPESEQ), 0) AS TYPESEQ
+        FROM RSVTYPEINFO
+        WHERE TYPENAME LIKE CONCAT('%',#{rsvTypeName}, '%')
+            AND STATUSCODE = 'B01'
+    </select>
+    
+    <!-- 해당 시설 예약 타입 PP 조회 -->
+    <select id="ppRsvRoomCodeList" parameterType="reqBox" resultType="egovMap">
+         SELECT 
+              D.TYPESEQ
+            , B.PPSEQ
+            , B.PPNAME
+        FROM RSVROOMINFO A
+            INNER JOIN RSVPPINFO B
+                ON(A.PPSEQ = B.PPSEQ
+                    AND A.STATUSCODE = 'B01'
+                    AND B.STATUSCODE = 'B01')
+            INNER JOIN RSVROOMTYPEMAP C
+                ON(A.ROOMSEQ = C.ROOMSEQ)
+            INNER JOIN RSVTYPEINFO D
+                ON(C.TYPESEQ = D.TYPESEQ)
+        WHERE D.TYPESEQ = #{typeseq}
+        GROUP BY D.TYPESEQ, B.PPSEQ, B.PPNAME, B.ORDERNUMBER
+        ORDER BY B.ORDERNUMBER
+    </select>
+    
+    <!-- 예약자 최근 예약 pp 정보 조회 -->
+    <select id="searchLastRsvRoomPp" parameterType="reqBox" resultType="String">
+        SELECT
+            A.PPSEQ
+        FROM RSVRESERVATIONINFO A
+        INNER JOIN(
+            SELECT max(RSVSEQ) AS RSVSEQ
+            FROM RSVRESERVATIONINFO
+            WHERE ACCOUNT = #{account}
+        ) AS B
+        ON(A.RSVSEQ = B.RSVSEQ)
+    </select>
+    
+    <!-- 교육장 예약 해당 pp의 시설(룸) 목록 조회 -->
+    <select id="rsvRoomInfoList" parameterType="reqBox" resultType="egovMap">
+        SELECT DISTINCT
+              DATEPART(YY, GETDATE()) AS YEAR
+            , DATEPART(MM, GETDATE()) AS MONTH   
+            , C.ROOMSEQ
+            , C.ROOMNAME
+            , C.SEATCOUNT
+        FROM
+            RSVTYPEINFO A
+            INNER JOIN RSVROOMTYPEMAP B
+            ON(A.TYPESEQ = #{typeseq}
+                AND A.TYPESEQ = B.TYPESEQ)
+            INNER JOIN RSVROOMINFO C
+            ON(C.PPSEQ = #{ppseq}
+                AND B.ROOMSEQ = C.ROOMSEQ
+                AND C.STATUSCODE = 'B01')
+    </select>
+    
+    <!-- 해당 시설의 정원, 이용시간, 예약자격, 부대시설 등을 조회 -->
+    <select id="roomEduRsvRoomDetailInfo" parameterType="reqBox" resultType="egovMap">
+        SELECT DISTINCT
+              B.PPNAME
+            , A.ROOMNAME
+            , A.INTRO
+            , A.SEATCOUNT
+            , A.USETIME
+            , A.ROLE
+            , A.ROLENOTE
+            , A.FACILITY
+            , A.FILEKEY1
+            , A.FILEKEY2
+            , A.FILEKEY3
+            , A.FILEKEY4
+            , A.FILEKEY5
+            , A.FILEKEY6
+            , A.FILEKEY7
+            , A.FILEKEY8
+            , A.FILEKEY9
+            , A.FILEKEY10
+        FROM RSVROOMINFO A
+            INNER JOIN RSVPPINFO B
+            ON(A.PPSEQ = B.PPSEQ)
+            INNER JOIN RSVROOMTYPEMAP C
+            ON(A.ROOMSEQ = C.ROOMSEQ)
+            INNER JOIN RSVTYPEINFO D
+            ON(C.TYPESEQ = D.TYPESEQ)
+        WHERE A.ROOMSEQ = #{roomseq}
+    </select>
+    
+    <!-- 해당월의 캘린더  -->
+    <select id="roomEduCalendar" parameterType="reqBox" resultType="egovMap">
+        SELECT
+              CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')), 112) AS YMD
+            , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS DAY
+            , DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS WEEKDAY
+            , CASE DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')))
+                WHEN 1 THEN 'weekSun'
+                WHEN 2 THEN 'weekMon'
+                WHEN 3 THEN 'weekTue'
+                WHEN 4 THEN 'weekWed'
+                WHEN 5 THEN 'weekThur'
+                WHEN 6 THEN 'weekFri'
+                ELSE 'weekSat'
+            END ENGWEEKDAY
+        FROM
+            MASTER..SPT_VALUES
+        WHERE 
+            TYPE = 'P' 
+            AND NUMBER &gt;= 0
+            AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{year}, #{month}, '01')))
+    </select>
+    
+    <!-- 년, 월  조회(jsp에서 클래스 명으로 사용) -->
+    <select id="roomEduYearMonth" parameterType="reqBox" resultType="egovMap">
+    	/* ReservationRoomEduSQL.roomEduYearMonth */
+        SELECT
+              DATEPART(YY, DATEADD(MM, NUMBER, GETDATE())) AS YEAR
+            , DATEPART(MM, DATEADD(MM, NUMBER, GETDATE())) AS MONTH
+            , CASE DATEPART(MM, DATEADD(MM, NUMBER, GETDATE()))
+                WHEN 1 THEN 'jan'
+                WHEN 2 THEN 'feb'
+                WHEN 3 THEN 'mar'
+                WHEN 4 THEN 'apr'
+                WHEN 5 THEN 'may'
+                WHEN 6 THEN 'june'
+                WHEN 7 THEN 'july'
+                WHEN 8 THEN 'aug'
+                WHEN 9 THEN 'sep'
+                WHEN 10 THEN 'oct'
+                WHEN 11 THEN 'nov'
+                ELSE 'dec'
+            END AS ENGMONTH
+        FROM
+            MASTER..SPT_VALUES
+        WHERE 
+            TYPE = 'P' 
+            AND NUMBER &gt;= 0
+            AND NUMBER &lt; ISNULL((
+                                SELECT 
+                                    MAX(
+                                        CASE C.PERIODTYPECODE
+                                            /*일별*/
+                                            WHEN 'P01' 
+                                            THEN DATEDIFF(MM, GETDATE(), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE())) + 1
+                                            /*월별*/
+                                            WHEN 'P03' 
+                                            THEN
+                                                /* TO-BE 조건 시작 */
+                                                <![CDATA[
+                                                CASE
+                                                    /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                                    WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                                    THEN C.ENDMONTH + 1
+                                                    /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                                    WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                                    THEN
+                                                        CASE 
+                                                            WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) > DBO.F_FT_CODENAME()    /* alscure */
+                                                            THEN C.ENDMONTH + 1
+                                                            ELSE C.ENDMONTH
+                                                        END
+                                                    /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                                    ELSE C.ENDMONTH
+                                                END
+                                                ]]>
+                                                /* TO-BE 조건 끝 */
+                                                
+                                        END) AS NUMBER
+                                FROM 
+                                    RSVROOMINFO A 
+                                    INNER JOIN RSVROOMSESSIONINFO B 
+                                    ON(A.ROOMSEQ = B.ROOMSEQ 
+                                        AND A.ROOMSEQ = #{roomseq} 
+                                        AND B.STATUSCODE = 'B01' ) 
+                                    INNER JOIN RSVROOMROLE C
+                                    ON(B.RSVSESSIONSEQ = C.RSVSESSIONSEQ)
+                                    INNER JOIN (
+                                        /* 핀, 지역, 나이 */
+                                        SELECT 
+                                              CZ.RSVSESSIONSEQ
+                                            , CZ.PINTREATRANGE
+                                            , CZ.CITYTREATCODE
+                                            , CZ.AGETREATCODE
+                                            , CZ.GROUPSEQ
+                                        FROM 
+                                            RSVROOMINFO AZ 
+                                            INNER JOIN RSVROOMSESSIONINFO BZ 
+                                            ON(AZ.ROOMSEQ = BZ.ROOMSEQ 
+                                                AND AZ.ROOMSEQ = #{roomseq}
+                                                AND BZ.STATUSCODE = 'B01' ) 
+                                            INNER JOIN RSVROOMROLE CZ
+                                            ON(BZ.RSVSESSIONSEQ = CZ.RSVSESSIONSEQ)
+                                            LEFT OUTER JOIN TARGETCODE EZ
+                                            ON(CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                                                AND EZ.TARGETMASTERSEQ = 'AGECODE')
+                                            LEFT OUTER JOIN (                    
+                                                SELECT /* 예약자의 기본정보 */
+                                                    UID AS ACCOUNT,
+                                                    NAME AS ACCOUNTNAME,
+                                                    PINNO,
+                                                    PIN_VALUE AS PINVALUE,
+                                                    REGIONNAME,
+                                                    CITYNAME,
+                                                    AGE,
+                                                    SSN,
+                                                    COOKMASTER,
+                                                    COOKMASTERCODE,
+                                                    REGION_ALL_CODE,
+                                                    REGIONCODE,
+                                                    CITYCODE
+                                                FROM (
+                                                    SELECT
+                                                        X.UID,
+                                                        X.NAME,
+                                                        X.PINNO,
+                                                        X.PIN_VALUE,
+                                                        X.REGIONNAME,
+                                                        X.CITYNAME,
+                                                        X.AGE,
+                                                        X.SSN,
+                                                        CASE 
+                                                            WHEN ISNULL(X.COOKMASTERCODE, '') != ''
+                                                            THEN 'true'
+                                                            ELSE 'false'
+                                                        END AS COOKMASTER,
+                                                        ISNULL(X.COOKMASTERCODE, '') AS COOKMASTERCODE,
+                                                        X.REGION_ALL_CODE,
+                                                        X.REGIONCODE,
+                                                        X.CITYCODE
+                                                    FROM (
+                                                        /* 기본정보 */
+                                                        SELECT
+                                                            M.UID,
+                                                            M.NAME,
+                                                            M.PINNO,
+                                                            ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+                                                            M.REGIONNAME,
+                                                            M.CITYNAME,
+                                                            M.AGE,
+                                                            M.SSN,
+                                                            CM.GROUPSEQ AS COOKMASTERCODE,
+                                                            N.REGIONCODE AS REGION_ALL_CODE,
+                                                            G.REGIONCODE,
+                                                            G.CITYCODE
+                                                        FROM (
+                                                            /* 개인정보 */
+                                                            SELECT
+                                                                A.UID,
+                                                                A.NAME,
+                                                                A.GROUPS AS PINNO,
+                                                                B.TARGETCODEORDER AS PIN_VALUE,
+                                                                SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+                                                                SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+                                                                CASE WHEN A.SSN = '999000'
+                                                                    THEN 100
+                                                                    ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+                                                                END AS AGE,
+                                                                SUBSTRING(A.SSN,1,6) AS SSN
+                                                            FROM 
+                                                                MEMBER A
+                                                                LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+                                                                ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+                                                            WHERE A.UID = #{account}/* parameter1:account:7480002 */
+                                                        ) M
+                                                        LEFT OUTER JOIN (
+                                                            /* 요리명장 */
+                                                            SELECT
+                                                                MAX(A.GROUPSEQ) AS GROUPSEQ,
+                                                                B.ABONO
+                                                            FROM 
+                                                                RSVROLEGROUP A
+                                                                INNER JOIN RSVROLETARGET B
+                                                                ON (A.GROUPSEQ = B.GROUPSEQ)
+                                                            WHERE 
+                                                                B.STATUSCODE = 'B01'
+                                                                AND A.COOKMASTERCODE = 'C01'
+                                                            GROUP BY B.ABONO
+                                                        ) CM
+                                                        ON (M.UID = CM.ABONO)
+                                                        LEFT OUTER JOIN (
+                                                            /* 행정구역단위 비교 */
+                                                            SELECT
+                                                                REGIONCODE,
+                                                                REGIONNAME,
+                                                                SHORTNAME
+                                                            FROM RSVREGIONINFO
+                                                        ) N
+                                                        ON (M.REGIONNAME = N.SHORTNAME)
+                                                        LEFT OUTER JOIN (
+                                                            /* 도시단위 비교 */
+                                                            SELECT
+                                                                A.REGIONCODE,
+                                                                A.SHORTNAME,
+                                                                B.CITYCODE,
+                                                                B.CITYNAME
+                                                            FROM 
+                                                                RSVREGIONINFO A
+                                                                INNER JOIN RSVCITYINFO B
+                                                                ON (A.REGIONCODE = B.REGIONCODE)
+                                                            ) G
+                                                        ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+                                                    ) X
+                                            ) T
+                                        ) FZ
+                                    ON(1=1)
+                                WHERE
+                                    /*핀, 지역, 나이 */
+                                    ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                                        AND CZ.CITYTREATCODE IS NOT NULL
+                                        AND CZ.CITYTREATCODE != ''
+                                        AND EZ.TARGETCODEORDER IS NOT NULL
+                                        AND EZ.TARGETCODEORDER != ''
+                                        AND (CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE CITYCODE = FZ.CITYCODE)
+                                            OR CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE REGIONCODE = FZ.REGION_ALL_CODE))
+                                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                                    /* 핀, 지역 */
+                                    OR((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                                        AND (EZ.TARGETCODEORDER IS NULL
+                                            OR EZ.TARGETCODEORDER = '')
+                                        AND CZ.CITYTREATCODE IS NOT NULL
+                                        AND CZ.CITYTREATCODE != ''
+                                        AND (CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE CITYCODE = FZ.CITYCODE)
+                                            OR CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE REGIONCODE = FZ.REGION_ALL_CODE))
+                                        )
+                                    /* 핀, 나이 */
+                                    OR ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                                        AND EZ.TARGETCODEORDER IS NOT NULL
+                                        AND EZ.TARGETCODEORDER != ''
+                                        AND (CZ.CITYTREATCODE IS NULL
+                                            OR CZ.CITYTREATCODE = '')
+                                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                                    /* 핀 */
+                                    OR ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                                        AND (CZ.CITYTREATCODE IS NULL
+                                            OR CZ.CITYTREATCODE = '')
+                                        AND (EZ.TARGETCODEORDER IS NULL
+                                            OR EZ.TARGETCODEORDER = ''))
+                                    /* 특정그룹 */
+                                    OR (CZ.GROUPSEQ IN (
+                                                        SELECT 
+                                                            A.GROUPSEQ 
+                                                        FROM 
+                                                            RSVROLEGROUP A
+                                                            INNER JOIN RSVROLETARGET B
+                                                            ON (A.GROUPSEQ = B.GROUPSEQ
+                                                                AND B.STATUSCODE = 'B01'
+                                                                AND B.ABONO = #{account})
+                                                        ))
+                                ) D
+                                ON(D.RSVSESSIONSEQ = B.RSVSESSIONSEQ
+                                    AND C.PINTREATRANGE = D.PINTREATRANGE
+                                    AND C.CITYTREATCODE = D.CITYTREATCODE
+                                    AND C.AGETREATCODE = D.AGETREATCODE
+                                    AND C.GROUPSEQ = D.GROUPSEQ)
+                            ), 1)
+    </select>
+    
+    <!-- 오늘 날짜 조회 -->
+    <select id="roomEduToday" resultType="egovMap">
+        SELECT CONVERT(VARCHAR, GETDATE(), 112) AS YMD
+    </select>
+    
+    <!-- 날짜별 예약 정보(남은예약카운트, 예약마감 유무, 휴무일) 조회 -->
+    <select id="roomEduReservationInfoList" parameterType="reqBox" resultType="egovMap">
+        SELECT
+            AA.*,
+            BB.SESSIONSTARTDAY AS SESSIONSTARTDAY,
+            BB.SESSIONENDDAY AS SESSIONENDDAY 
+        FROM (
+            SELECT
+                  A.YMD
+                , A.WEEKDAY
+                , B.WORKTYPECODE
+                , B.STARTDATE ,B.ENDDATE /* junny */
+                , CASE 
+                    WHEN A.YMD BETWEEN B.STARTDATE AND B.ENDDATE 
+                    THEN B.SETTYPECODE
+                    ELSE NULL
+                END AS SETTYPECODE
+                , B.RSVSESSIONSEQ
+                , CASE 
+                    WHEN C.RESERVATIONDATE IS NULL
+                    THEN 0
+                    ELSE 1
+                END AS RSVCNT
+                , C.STANDBYNUMBER
+                , B.ORDERNUMBER AS TEMP1
+                , B.SETTYPECODE AS TEMP2
+                , 0 AS TEMP
+                , C.ADMINFIRSTCODE
+            FROM (
+                SELECT
+                    CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')), 112) AS YMD
+                    , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS DAY
+                    , DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS WEEKDAY
+                FROM
+                    MASTER..SPT_VALUES
+                WHERE 
+                    TYPE = 'P' 
+                    AND NUMBER &gt;= 0
+                    AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{year}, #{month}, '01')))
+                ) A
+                LEFT OUTER JOIN (
+                    SELECT DISTINCT
+                          B.RSVSESSIONSEQ
+                        , B.ORDERNUMBER
+                        , A.STARTDATE
+                        , A.ENDDATE
+                        , B.SETTYPECODE
+                        , B.WORKTYPECODE
+                        , B.SETDATE
+                        , CASE B.SETWEEK
+                            WHEN 'W01' THEN 1
+                            WHEN 'W02' THEN 2
+                            WHEN 'W03' THEN 3
+                            WHEN 'W04' THEN 4
+                            WHEN 'W05' THEN 5
+                            WHEN 'W06' THEN 6
+                            WHEN 'W07' THEN 7
+                            ELSE NULL
+                        END AS SETWEEK
+                    FROM
+                        RSVROOMINFO A
+                        INNER JOIN RSVROOMSESSIONINFO B
+                        ON(A.ROOMSEQ = B.ROOMSEQ
+                            AND A.ROOMSEQ = #{roomseq}
+                            AND B.STATUSCODE = 'B01')
+                ) B
+                ON(A.YMD = B.SETDATE
+                    OR A.WEEKDAY = B.SETWEEK)
+                LEFT OUTER JOIN RSVRESERVATIONINFO C
+                ON(A.YMD = C.RESERVATIONDATE
+                    AND B.RSVSESSIONSEQ = C.RSVSESSIONSEQ
+                    AND C.RSVTYPECODE = 'R01'
+                    AND C.CANCELCODE = 'B02')
+            UNION
+            SELECT DISTINCT
+                  A.YMD
+                  , A.WEEKDAY
+                , B.WORKTYPECODE
+                , B.STARTDATE ,B.ENDDATE /* junny */
+                , CASE 
+                    WHEN A.YMD BETWEEN B.STARTDATE AND B.ENDDATE 
+                    THEN B.SETTYPECODE
+                    ELSE NULL
+                END AS SETTYPECODE
+                , B.RSVSESSIONSEQ
+                , CASE 
+                    WHEN C.RESERVATIONDATE IS NULL
+                    THEN 0
+                    ELSE 1
+                END AS RSVCNT
+                , C.STANDBYNUMBER
+                , B.ORDERNUMBER AS TEMP1
+                , B.SETTYPECODE AS TEMP2
+                , 1 AS TEMP
+                , C.ADMINFIRSTCODE
+            FROM (
+                    SELECT
+                        CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')), 112) AS YMD
+                        , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS DAY
+                        , CASE
+                            WHEN DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) &gt; 
+                                    DATEPART(DD, DATEADD(MM, 1, CONVERT(DATETIME, CONCAT(#{year}, #{month}, '01')))-8) 
+                                AND DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) = 1
+                            THEN 8
+                            ELSE DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')))
+                        END AS WEEKDAY
+                    FROM
+                        MASTER..SPT_VALUES
+                    WHERE 
+                        TYPE = 'P' 
+                        AND NUMBER &gt;= 0
+                        AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{year}, #{month}, '01')))
+                ) A
+                LEFT OUTER JOIN (
+                    SELECT
+                          B.RSVSESSIONSEQ
+                        , B.ORDERNUMBER
+                        , A.STARTDATE
+                        , A.ENDDATE
+                        , B.SETTYPECODE
+                        , B.WORKTYPECODE
+                        , B.SETDATE
+                        , CASE B.SETWEEK
+                            WHEN 'W01' THEN 1
+                            WHEN 'W02' THEN 2
+                            WHEN 'W03' THEN 3
+                            WHEN 'W04' THEN 4
+                            WHEN 'W05' THEN 5
+                            WHEN 'W06' THEN 6
+                            WHEN 'W07' THEN 7
+                            WHEN 'W08' THEN 8
+                            ELSE NULL
+                        END AS SETWEEK
+                    FROM
+                        RSVROOMINFO A
+                        INNER JOIN RSVROOMSESSIONINFO B
+                        ON(A.ROOMSEQ = B.ROOMSEQ
+                            AND A.ROOMSEQ = #{roomseq}
+                            AND B.STATUSCODE = 'B01'
+                            AND B.SETWEEK = 'W08')
+                ) B
+                ON(A.YMD = B.SETDATE
+                    OR A.WEEKDAY = B.SETWEEK)
+                LEFT OUTER JOIN RSVRESERVATIONINFO C
+                ON(A.YMD = C.RESERVATIONDATE
+                    AND B.RSVSESSIONSEQ = C.RSVSESSIONSEQ
+                    AND C.RSVTYPECODE = 'R01'
+                    AND C.CANCELCODE = 'B02')
+                WHERE A.WEEKDAY = 8
+            ) AA
+            INNER JOIN (
+                SELECT 
+                    B.RSVSESSIONSEQ
+                    , MIN(CASE C.PERIODTYPECODE
+                        /*일별*/
+                        WHEN 'P01' 
+                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.STARTDAY), GETDATE()), 112)
+                        /*월별*/
+                        WHEN 'P03' 
+                        THEN CONVERT(VARCHAR(8), GETDATE() + 1, 112)
+                    END) AS SESSIONSTARTDAY
+                    , MAX(CASE C.PERIODTYPECODE
+                        /*일별*/
+                        WHEN 'P01' 
+                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE()), 112)
+                        /*월별*/
+                        WHEN 'P03' 
+                        THEN 
+                            /* TO-BE 시작 */
+							<![CDATA[
+                            CASE 
+                                /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                THEN 
+                                    CASE 
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                    END
+                                /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                THEN
+                                    CASE 
+                                        WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) < DBO.F_FT_CODENAME()    /* alscure */
+                                        THEN 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                        ELSE 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                    END
+                                /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                ELSE 
+                                    CASE 
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                    END
+                            END
+							]]>
+                            /* TO-BE 끝 */
+                             
+                    END) AS SESSIONENDDAY
+                FROM 
+                    RSVROOMINFO A 
+                    INNER JOIN RSVROOMSESSIONINFO B 
+                    ON(A.ROOMSEQ = B.ROOMSEQ 
+                        AND A.ROOMSEQ = #{roomseq} 
+                        AND B.STATUSCODE = 'B01' ) 
+                    INNER JOIN RSVROOMROLE C
+                    ON(B.RSVSESSIONSEQ = C.RSVSESSIONSEQ)
+                    INNER JOIN (
+                        /* 핀, 지역, 나이 */
+                        SELECT 
+                              CZ.RSVSESSIONSEQ
+                            , CZ.PINTREATRANGE
+                            , CZ.CITYTREATCODE
+                            , CZ.AGETREATCODE
+                            , CZ.GROUPSEQ
+                        FROM 
+                            RSVROOMINFO AZ 
+                            INNER JOIN RSVROOMSESSIONINFO BZ 
+                            ON(AZ.ROOMSEQ = BZ.ROOMSEQ 
+                                AND AZ.ROOMSEQ = #{roomseq}
+                                AND BZ.STATUSCODE = 'B01' ) 
+                            INNER JOIN RSVROOMROLE CZ
+                            ON(BZ.RSVSESSIONSEQ = CZ.RSVSESSIONSEQ)
+                            LEFT OUTER JOIN TARGETCODE EZ
+                            ON(CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                                AND EZ.TARGETMASTERSEQ = 'AGECODE')
+                            LEFT OUTER JOIN (                    
+                                SELECT /* 예약자의 기본정보 */
+                                    UID AS ACCOUNT,
+                                    NAME AS ACCOUNTNAME,
+                                    PINNO,
+                                    PIN_VALUE AS PINVALUE,
+                                    REGIONNAME,
+                                    CITYNAME,
+                                    AGE,
+                                    SSN,
+                                    COOKMASTER,
+                                    COOKMASTERCODE,
+                                    REGION_ALL_CODE,
+                                    REGIONCODE,
+                                    CITYCODE
+                                FROM (
+                                    SELECT
+                                        X.UID,
+                                        X.NAME,
+                                        X.PINNO,
+                                        X.PIN_VALUE,
+                                        X.REGIONNAME,
+                                        X.CITYNAME,
+                                        X.AGE,
+                                        X.SSN,
+                                        CASE 
+                                            WHEN ISNULL(X.COOKMASTERCODE, '') != ''
+                                            THEN 'true'
+                                            ELSE 'false'
+                                        END AS COOKMASTER,
+                                        ISNULL(X.COOKMASTERCODE, '') AS COOKMASTERCODE,
+                                        X.REGION_ALL_CODE,
+                                        X.REGIONCODE,
+                                        X.CITYCODE
+                                    FROM (
+                                        /* 기본정보 */
+                                        SELECT
+                                            M.UID,
+                                            M.NAME,
+                                            M.PINNO,
+                                            ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+                                            M.REGIONNAME,
+                                            M.CITYNAME,
+                                            M.AGE,
+                                            M.SSN,
+                                            CM.GROUPSEQ AS COOKMASTERCODE,
+                                            N.REGIONCODE AS REGION_ALL_CODE,
+                                            G.REGIONCODE,
+                                            G.CITYCODE
+                                        FROM (
+                                            /* 개인정보 */
+                                            SELECT
+                                                A.UID,
+                                                A.NAME,
+                                                A.GROUPS AS PINNO,
+                                                B.TARGETCODEORDER AS PIN_VALUE,
+                                                SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+                                                SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+                                                CASE WHEN A.SSN = '999000'
+                                                    THEN 100
+                                                    ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+                                                END AS AGE,
+                                                SUBSTRING(A.SSN,1,6) AS SSN
+                                            FROM 
+                                                MEMBER A
+                                                LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+                                                ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+                                            WHERE A.UID = #{account}/* parameter1:account:7480002 */
+                                        ) M
+                                        LEFT OUTER JOIN (
+                                            /* 요리명장 */
+                                            SELECT
+                                                MAX(A.GROUPSEQ) AS GROUPSEQ,
+                                                B.ABONO
+                                            FROM 
+                                                RSVROLEGROUP A
+                                                INNER JOIN RSVROLETARGET B
+                                                ON (A.GROUPSEQ = B.GROUPSEQ)
+                                            WHERE 
+                                                B.STATUSCODE = 'B01'
+                                                AND A.COOKMASTERCODE = 'C01'
+                                            GROUP BY B.ABONO
+                                        ) CM
+                                        ON (M.UID = CM.ABONO)
+                                        LEFT OUTER JOIN (
+                                            /* 행정구역단위 비교 */
+                                            SELECT
+                                                REGIONCODE,
+                                                REGIONNAME,
+                                                SHORTNAME
+                                            FROM RSVREGIONINFO
+                                        ) N
+                                        ON (M.REGIONNAME = N.SHORTNAME)
+                                        LEFT OUTER JOIN (
+                                            /* 도시단위 비교 */
+                                            SELECT
+                                                A.REGIONCODE,
+                                                A.SHORTNAME,
+                                                B.CITYCODE,
+                                                B.CITYNAME
+                                            FROM 
+                                                RSVREGIONINFO A
+                                                INNER JOIN RSVCITYINFO B
+                                                ON (A.REGIONCODE = B.REGIONCODE)
+                                            ) G
+                                        ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+                                    ) X
+                            ) T
+                        ) FZ
+                    ON(1=1)
+                WHERE
+                    /*핀, 지역, 나이 */
+                    ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                        AND CZ.CITYTREATCODE IS NOT NULL
+                        AND CZ.CITYTREATCODE != ''
+                        AND EZ.TARGETCODEORDER IS NOT NULL
+                        AND EZ.TARGETCODEORDER != ''
+                        AND (CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE CITYCODE = FZ.CITYCODE)
+                            OR CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE REGIONCODE = FZ.REGION_ALL_CODE))
+                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                    /* 핀, 지역 */
+                    OR((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                        AND (EZ.TARGETCODEORDER IS NULL
+                            OR EZ.TARGETCODEORDER = '')
+                        AND CZ.CITYTREATCODE IS NOT NULL
+                        AND CZ.CITYTREATCODE != ''
+                        AND (CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE CITYCODE = FZ.CITYCODE)
+                            OR CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE REGIONCODE = FZ.REGION_ALL_CODE))
+                        )
+                    /* 핀, 나이 */
+                    OR ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                        AND EZ.TARGETCODEORDER IS NOT NULL
+                        AND EZ.TARGETCODEORDER != ''
+                        AND (CZ.CITYTREATCODE IS NULL
+                            OR CZ.CITYTREATCODE = '')
+                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                    /* 핀 */
+                    OR ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                        AND (CZ.CITYTREATCODE IS NULL
+                            OR CZ.CITYTREATCODE = '')
+                        AND (EZ.TARGETCODEORDER IS NULL
+                            OR EZ.TARGETCODEORDER = ''))
+                    /* 특정그룹 */
+                    OR (CZ.GROUPSEQ IN (
+                                        SELECT 
+                                            A.GROUPSEQ 
+                                        FROM 
+                                            RSVROLEGROUP A
+                                            INNER JOIN RSVROLETARGET B
+                                            ON (A.GROUPSEQ = B.GROUPSEQ
+                                                AND B.STATUSCODE = 'B01'
+                                                AND B.ABONO = #{account})
+                                        ))
+                ) D
+                ON(D.RSVSESSIONSEQ = B.RSVSESSIONSEQ
+                    AND C.PINTREATRANGE = D.PINTREATRANGE
+                    AND C.CITYTREATCODE = D.CITYTREATCODE
+                    AND C.AGETREATCODE = D.AGETREATCODE
+                    AND C.GROUPSEQ = D.GROUPSEQ)
+                GROUP BY B.RSVSESSIONSEQ
+                UNION ALL
+                /* 공휴일 추가 */
+                SELECT
+              	    H.RSVSESSIONSEQ,
+              	    CONCAT(#{year}, '0101'),
+              	    CONCAT(#{year}, '1231')
+              	FROM RSVROOMSESSIONINFO H
+              	WHERE H.SETDATE LIKE CONCAT(#{year}, #{month}, '__')
+              	AND H.WORKTYPECODE = 'S02'
+            ) BB
+            ON(AA.RSVSESSIONSEQ = BB.RSVSESSIONSEQ
+                AND AA.YMD &gt;= BB.SESSIONSTARTDAY
+                AND AA.YMD &lt;= BB.SESSIONENDDAY)
+            WHERE AA.YMD BETWEEN AA.STARTDATE AND AA.ENDDATE /* junny */
+        ORDER BY AA.YMD ASC, AA.TEMP1 ASC, AA.TEMP2 DESC, AA.WORKTYPECODE DESC, AA.WEEKDAY DESC
+    </select>
+    
+    <!-- 선택 날짜에 세션 시간 상세보기 -->
+    <select id="roomEduSeesionList" parameterType="reqBox" resultType="egovMap">
+        SELECT AA.* FROM (
+            SELECT DISTINCT
+                A.YMD,
+                A.YEAR,
+                A.MONTH,
+                A.DAY,
+                A.WEEKDAY,
+                A.KRWEEKDAY,
+                B.RSVSESSIONSEQ,
+                B.ORDERNUMBER,
+                B.SETTYPECODE,
+                B.WORKTYPECODE,
+                B.STARTDATE,
+                B.ENDDATE,
+                B.SESSIONNAME,
+                B.STARTDATETIME,
+                B.ENDDATETIME,
+                B.SESSIONTIME,
+                B.SETDATE,
+                B.SETWEEK,
+                /* B.PRICE, */
+                CONVERT(NUMERIC, (B.PRICE + B.PRICE/10)) AS PRICE,
+                /* B.DISCOUNTPRICE, */
+                CONVERT(NUMERIC, (B.DISCOUNTPRICE + B.DISCOUNTPRICE/10)) AS DISCOUNTPRICE,
+                /* B.QUEENPRICE */
+                CONVERT(NUMERIC, (B.QUEENPRICE + B.QUEENPRICE/10)) AS QUEENPRICE,
+                /* B.QUEENDISCOUNTPRICE */
+                CONVERT(NUMERIC, (B.QUEENDISCOUNTPRICE + B.QUEENDISCOUNTPRICE/10)) AS QUEENDISCOUNTPRICE,
+                C.PAYMENTSTATUSCODE,
+                C.STANDBYNUMBER,
+                0 AS TEMP,
+                C.ADMINFIRSTCODE
+            FROM
+                    (SELECT
+                          CONCAT(#{year}, #{month}, #{day}) AS YMD
+                        , DATEPART(YY, CONCAT(#{year}, #{month}, #{day})) AS YEAR
+                        , DATEPART(MM, CONCAT(#{year}, #{month}, #{day})) AS MONTH
+                        , DATEPART(DD, CONCAT(#{year}, #{month}, #{day})) AS DAY
+                        , DATEPART(DW, CONCAT(#{year}, #{month}, #{day})) AS WEEKDAY
+                        , CASE DATEPART(DW, CONCAT(#{year}, #{month}, #{day}))
+                            WHEN 1 THEN '일'
+                            WHEN 2 THEN '월'
+                            WHEN 3 THEN '화'
+                            WHEN 4 THEN '수'
+                            WHEN 5 THEN '목'
+                            WHEN 6 THEN '금'
+                            ELSE '토'
+                        END AS KRWEEKDAY) A
+                LEFT OUTER JOIN 
+                    (SELECT
+                        B.RSVSESSIONSEQ,
+                        B.ORDERNUMBER,
+                        A.STARTDATE,
+                        A.ENDDATE,
+                        B.SETTYPECODE,
+                        B.WORKTYPECODE,
+                        B.SESSIONNAME,
+                        B.STARTDATETIME,
+                        B.ENDDATETIME,
+                        CONCAT(SUBSTRING(B.STARTDATETIME, 1, 2), ':', SUBSTRING(B.STARTDATETIME, 3, 2), '~', SUBSTRING(B.ENDDATETIME, 1, 2), ':', SUBSTRING(B.ENDDATETIME, 3, 2)) AS SESSIONTIME,
+                        B.SETDATE,
+                        CASE B.SETWEEK
+                            WHEN 'W01' THEN 1
+                            WHEN 'W02' THEN 2
+                            WHEN 'W03' THEN 3
+                            WHEN 'W04' THEN 4
+                            WHEN 'W05' THEN 5
+                            WHEN 'W06' THEN 6
+                            WHEN 'W07' THEN 7
+                            WHEN 'W08' THEN 8
+                            ELSE NULL
+                        END AS SETWEEK,
+                        B.PRICE,
+                        B.DISCOUNTPRICE,
+                        B.QUEENPRICE,
+                        B.QUEENDISCOUNTPRICE
+                    FROM
+                        RSVROOMINFO A
+                        INNER JOIN RSVROOMSESSIONINFO B
+                        ON(A.ROOMSEQ = B.ROOMSEQ
+                            AND A.ROOMSEQ = #{roomseq}
+                            AND B.STATUSCODE = 'B01')
+                ) B
+                ON(A.YMD = B.SETDATE
+                    OR A.WEEKDAY = B.SETWEEK)
+                LEFT OUTER JOIN RSVRESERVATIONINFO C
+                ON(A.YMD = C.RESERVATIONDATE
+                    AND B.RSVSESSIONSEQ = C.RSVSESSIONSEQ
+                    AND C.RSVTYPECODE = 'R01'
+                    AND C.CANCELCODE = 'B02')
+            UNION
+            SELECT DISTINCT
+                A.YMD,
+                A.YEAR,
+                A.MONTH,
+                A.DAY,
+                A.WEEKDAY,
+                A.KRWEEKDAY,
+                B.RSVSESSIONSEQ,
+                B.ORDERNUMBER,
+                B.SETTYPECODE,
+                B.WORKTYPECODE,
+                B.STARTDATE,
+                B.ENDDATE,
+                B.SESSIONNAME,
+                B.STARTDATETIME,
+                B.ENDDATETIME,
+                B.SESSIONTIME,
+                B.SETDATE,
+                B.SETWEEK,
+                /* B.PRICE, */
+                CONVERT(NUMERIC, (B.PRICE + B.PRICE/10)) AS PRICE,
+                /* B.DISCOUNTPRICE, */
+                CONVERT(NUMERIC, (B.DISCOUNTPRICE + B.DISCOUNTPRICE/10)) AS DISCOUNTPRICE,
+                /* B.QUEENPRICE */
+                CONVERT(NUMERIC, (B.QUEENPRICE + B.QUEENPRICE/10)) AS QUEENPRICE,
+                /* B.QUEENDISCOUNTPRICE */
+                CONVERT(NUMERIC, (B.QUEENDISCOUNTPRICE + B.QUEENDISCOUNTPRICE/10)) AS QUEENDISCOUNTPRICE,
+                C.PAYMENTSTATUSCODE,
+                C.STANDBYNUMBER,
+                1 AS TEMP,
+                C.ADMINFIRSTCODE
+            FROM
+                    (SELECT
+                          CONCAT(#{year}, #{month}, #{day}) AS YMD
+                        , DATEPART(YY, CONCAT(#{year}, #{month}, #{day})) AS YEAR
+                        , DATEPART(MM, CONCAT(#{year}, #{month}, #{day})) AS MONTH
+                        , DATEPART(DD, CONCAT(#{year}, #{month}, #{day})) AS DAY
+                        , CASE
+                            WHEN DATEPART(DD, CONCAT(#{year}, #{month}, #{day})) &gt; 
+                                    DATEPART(DD, DATEADD(MM, 1, CONVERT(DATETIME, CONCAT(#{year}, #{month}, '01')))-8) 
+                                AND DATEPART(DW, CONCAT(#{year}, #{month}, #{day})) = 1
+                            THEN 8
+                            ELSE DATEPART(DW, CONCAT(#{year}, #{month}, #{day}))
+                        END AS WEEKDAY
+                        , CASE DATEPART(DW, CONCAT(#{year}, #{month}, #{day}))
+                            WHEN 1 THEN '일'
+                            WHEN 2 THEN '월'
+                            WHEN 3 THEN '화'
+                            WHEN 4 THEN '수'
+                            WHEN 5 THEN '목'
+                            WHEN 6 THEN '금'
+                            ELSE '토'
+                        END AS KRWEEKDAY) A
+                LEFT OUTER JOIN 
+                    (SELECT
+                        B.RSVSESSIONSEQ,
+                        B.ORDERNUMBER,
+                        A.STARTDATE,
+                        A.ENDDATE,
+                        B.SETTYPECODE,
+                        B.WORKTYPECODE,
+                        B.SESSIONNAME,
+                        B.STARTDATETIME,
+                        B.ENDDATETIME,
+                        CONCAT(SUBSTRING(B.STARTDATETIME, 1, 2), ':', SUBSTRING(B.STARTDATETIME, 3, 2), '~', SUBSTRING(B.ENDDATETIME, 1, 2), ':', SUBSTRING(B.ENDDATETIME, 3, 2)) AS SESSIONTIME,
+                        B.SETDATE,
+                        CASE B.SETWEEK
+                            WHEN 'W01' THEN 1
+                            WHEN 'W02' THEN 2
+                            WHEN 'W03' THEN 3
+                            WHEN 'W04' THEN 4
+                            WHEN 'W05' THEN 5
+                            WHEN 'W06' THEN 6
+                            WHEN 'W07' THEN 7
+                            WHEN 'W08' THEN 8
+                            ELSE NULL
+                        END AS SETWEEK,
+                        B.PRICE,
+                        B.DISCOUNTPRICE,
+                        B.QUEENPRICE,
+                        B.QUEENDISCOUNTPRICE
+                    FROM
+                        RSVROOMINFO A
+                        INNER JOIN RSVROOMSESSIONINFO B
+                        ON(A.ROOMSEQ = B.ROOMSEQ
+                            AND A.ROOMSEQ = #{roomseq}
+                            AND B.STATUSCODE = 'B01')
+                ) B
+                ON(A.YMD = B.SETDATE
+                    OR A.WEEKDAY = B.SETWEEK)
+                LEFT OUTER JOIN RSVRESERVATIONINFO C
+                ON(A.YMD = C.RESERVATIONDATE
+                    AND B.RSVSESSIONSEQ = C.RSVSESSIONSEQ
+                    AND C.RSVTYPECODE = 'R01'
+                    AND C.CANCELCODE = 'B02')
+            WHERE A.WEEKDAY = 8 ) AA
+            INNER JOIN (
+                SELECT 
+                    B.RSVSESSIONSEQ
+                    , MIN(CASE C.PERIODTYPECODE
+                        /*일별*/
+                        WHEN 'P01' 
+                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.STARTDAY), GETDATE()), 112)
+                        /*월별*/
+                        WHEN 'P03' 
+                        THEN CONVERT(VARCHAR(8), GETDATE() + 1, 112)
+                    END) AS SESSIONSTARTDAY
+                    , MAX(CASE C.PERIODTYPECODE
+                        /*일별*/
+                        WHEN 'P01' 
+                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), GETDATE()), 112)
+                        /*월별*/
+                        WHEN 'P03' 
+                        THEN
+                            /* TO-BE 시작 */
+							<![CDATA[
+                            CASE 
+                                /*월기준 시작일이 오늘날짜보다 작은경우*/
+                                WHEN C.STARTDAY < DATEPART(DD, GETDATE())
+                                THEN 
+                                    CASE 
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                    END
+                                /*월기준 시작일이 오늘날짜와 같을때 10시 비교*/
+                                WHEN C.STARTDAY = DATEPART(DD, GETDATE())
+                                THEN
+                                    CASE 
+                                        WHEN CAST(CONVERT(VARCHAR(2),GETDATE(),108) AS INT) < DBO.F_FT_CODENAME()    /* alscure */
+                                        THEN 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                        ELSE 
+                                            CASE 
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                                WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                                THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                                ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH), DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                            END
+                                    END
+                                /*월기준 시작일이 오늘날짜보다 큰경우*/
+                                ELSE 
+                                    CASE 
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '1'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 1, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '2'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 2, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '3'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 3, 112)
+                                        WHEN C.ENDDAY = '31' AND DATEPART(DD, DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE())))) = '4'
+                                        THEN CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))) - 4, 112)
+                                        ELSE CONVERT(VARCHAR(8), DATEADD(DD, CONVERT(INT, C.ENDDAY), DATEADD(MM, CONVERT(INT, C.ENDMONTH) - 1, DATEADD(DD, -(DAY(GETDATE())), GETDATE()))), 112)
+                                    END
+                            END
+							]]>
+                            /* TO-BE 끝 */
+                    END) AS SESSIONENDDAY
+                FROM 
+                    RSVROOMINFO A 
+                    INNER JOIN RSVROOMSESSIONINFO B 
+                    ON(A.ROOMSEQ = B.ROOMSEQ 
+                        AND A.ROOMSEQ = #{roomseq} 
+                        AND B.STATUSCODE = 'B01' ) 
+                    INNER JOIN RSVROOMROLE C
+                    ON(B.RSVSESSIONSEQ = C.RSVSESSIONSEQ)
+                    INNER JOIN (
+                        /* 특정그룹, 핀, 지역, 나이 */
+                        SELECT 
+                              CZ.RSVSESSIONSEQ
+                            , CZ.PINTREATRANGE
+                            , CZ.CITYTREATCODE
+                            , CZ.AGETREATCODE
+                            , CZ.GROUPSEQ
+                        FROM 
+                            RSVROOMINFO AZ 
+                            INNER JOIN RSVROOMSESSIONINFO BZ 
+                            ON(AZ.ROOMSEQ = BZ.ROOMSEQ 
+                                AND AZ.ROOMSEQ = #{roomseq}
+                                AND BZ.STATUSCODE = 'B01' ) 
+                            INNER JOIN RSVROOMROLE CZ
+                            ON(BZ.RSVSESSIONSEQ = CZ.RSVSESSIONSEQ)
+                            LEFT OUTER JOIN TARGETCODE EZ
+                            ON(CZ.AGETREATCODE = EZ.TARGETCODESEQ
+                                AND EZ.TARGETMASTERSEQ = 'AGECODE')
+                            LEFT OUTER JOIN (                    
+                                SELECT /* 예약자의 기본정보 */
+                                    UID AS ACCOUNT,
+                                    NAME AS ACCOUNTNAME,
+                                    PINNO,
+                                    PIN_VALUE AS PINVALUE,
+                                    REGIONNAME,
+                                    CITYNAME,
+                                    AGE,
+                                    SSN,
+                                    COOKMASTER,
+                                    COOKMASTERCODE,
+                                    REGION_ALL_CODE,
+                                    REGIONCODE,
+                                    CITYCODE
+                                FROM (
+                                    SELECT
+                                        X.UID,
+                                        X.NAME,
+                                        X.PINNO,
+                                        X.PIN_VALUE,
+                                        X.REGIONNAME,
+                                        X.CITYNAME,
+                                        X.AGE,
+                                        X.SSN,
+                                        CASE 
+                                            WHEN ISNULL(X.COOKMASTERCODE, '') != ''
+                                            THEN 'true'
+                                            ELSE 'false'
+                                        END AS COOKMASTER,
+                                        ISNULL(X.COOKMASTERCODE, '') AS COOKMASTERCODE,
+                                        X.REGION_ALL_CODE,
+                                        X.REGIONCODE,
+                                        X.CITYCODE
+                                    FROM (
+                                        /* 기본정보 */
+                                        SELECT
+                                            M.UID,
+                                            M.NAME,
+                                            M.PINNO,
+                                            ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+                                            M.REGIONNAME,
+                                            M.CITYNAME,
+                                            M.AGE,
+                                            M.SSN,
+                                            CM.GROUPSEQ AS COOKMASTERCODE,
+                                            N.REGIONCODE AS REGION_ALL_CODE,
+                                            G.REGIONCODE,
+                                            G.CITYCODE
+                                        FROM (
+                                            /* 개인정보 */
+                                            SELECT
+                                                A.UID,
+                                                A.NAME,
+                                                A.GROUPS AS PINNO,
+                                                B.TARGETCODEORDER AS PIN_VALUE,
+                                                SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+                                                SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+                                                CASE WHEN A.SSN = '999000'
+                                                    THEN 100
+                                                    ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+                                                END AS AGE,
+                                                SUBSTRING(A.SSN,1,6) AS SSN
+                                            FROM 
+                                                MEMBER A
+                                                LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+                                                ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+                                            WHERE A.UID = #{account}/* parameter1:account:7480002 */
+                                        ) M
+                                        LEFT OUTER JOIN (
+                                            /* 요리명장 */
+                                            SELECT
+                                                MAX(A.GROUPSEQ) AS GROUPSEQ,
+                                                B.ABONO
+                                            FROM 
+                                                RSVROLEGROUP A
+                                                INNER JOIN RSVROLETARGET B
+                                                ON (A.GROUPSEQ = B.GROUPSEQ)
+                                            WHERE 
+                                                B.STATUSCODE = 'B01'
+                                                AND A.COOKMASTERCODE = 'C01'
+                                            GROUP BY B.ABONO
+                                        ) CM
+                                        ON (M.UID = CM.ABONO)
+                                        LEFT OUTER JOIN (
+                                            /* 행정구역단위 비교 */
+                                            SELECT
+                                                REGIONCODE,
+                                                REGIONNAME,
+                                                SHORTNAME
+                                            FROM RSVREGIONINFO
+                                        ) N
+                                        ON (M.REGIONNAME = N.SHORTNAME)
+                                        LEFT OUTER JOIN (
+                                            /* 도시단위 비교 */
+                                            SELECT
+                                                A.REGIONCODE,
+                                                A.SHORTNAME,
+                                                B.CITYCODE,
+                                                B.CITYNAME
+                                            FROM 
+                                                RSVREGIONINFO A
+                                                INNER JOIN RSVCITYINFO B
+                                                ON (A.REGIONCODE = B.REGIONCODE)
+                                            ) G
+                                        ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+                                    ) X
+                            ) T
+                        ) FZ
+                    ON(1=1)
+                WHERE
+                    /*핀, 지역, 나이 */
+                    ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                        AND CZ.CITYTREATCODE IS NOT NULL
+                        AND CZ.CITYTREATCODE != ''
+                        AND EZ.TARGETCODEORDER IS NOT NULL
+                        AND EZ.TARGETCODEORDER != ''
+                        AND (CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE CITYCODE = FZ.CITYCODE)
+                            OR CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE REGIONCODE = FZ.REGION_ALL_CODE))
+                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                    /* 핀, 지역 */
+                    OR((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                        AND (EZ.TARGETCODEORDER IS NULL
+                            OR EZ.TARGETCODEORDER = '')
+                        AND CZ.CITYTREATCODE IS NOT NULL
+                        AND CZ.CITYTREATCODE != ''
+                        AND (CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE CITYCODE = FZ.CITYCODE)
+                            OR CZ.CITYTREATCODE IN (SELECT CITYGROUPCODE FROM RSVCITYGROUPMAP WHERE REGIONCODE = FZ.REGION_ALL_CODE))
+                        )
+                    /* 핀, 나이 */
+                    OR ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                        AND EZ.TARGETCODEORDER IS NOT NULL
+                        AND EZ.TARGETCODEORDER != ''
+                        AND (CZ.CITYTREATCODE IS NULL
+                            OR CZ.CITYTREATCODE = '')
+                        AND EZ.TARGETCODEORDER &gt;= FZ.AGE)
+                    /* 핀 */
+                    OR ((SELECT TARGETCODEORDER FROM V_TARGETCODE_NONMEM WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ = CZ.PINTREATRANGE) &lt;= FZ.PINVALUE
+                        AND (CZ.CITYTREATCODE IS NULL
+                            OR CZ.CITYTREATCODE = '')
+                        AND (EZ.TARGETCODEORDER IS NULL
+                            OR EZ.TARGETCODEORDER = ''))
+                    /* 특정그룹 */
+                    OR (CZ.GROUPSEQ IN (
+                                        SELECT 
+                                            A.GROUPSEQ 
+                                        FROM 
+                                            RSVROLEGROUP A
+                                            INNER JOIN RSVROLETARGET B
+                                            ON (A.GROUPSEQ = B.GROUPSEQ
+                                                AND B.STATUSCODE = 'B01'
+                                                AND B.ABONO = #{account})
+                                        ))
+                ) D
+                ON(D.RSVSESSIONSEQ = B.RSVSESSIONSEQ
+                    AND C.PINTREATRANGE = D.PINTREATRANGE
+                    AND C.CITYTREATCODE = D.CITYTREATCODE
+                    AND C.AGETREATCODE = D.AGETREATCODE
+                    AND C.GROUPSEQ = D.GROUPSEQ)
+                GROUP BY B.RSVSESSIONSEQ
+            ) BB
+            ON(AA.RSVSESSIONSEQ = BB.RSVSESSIONSEQ
+                AND AA.YMD &gt;= BB.SESSIONSTARTDAY
+                AND AA.YMD &lt;= BB.SESSIONENDDAY)
+        ORDER BY AA.YMD ASC, AA.WEEKDAY DESC, AA.ORDERNUMBER ASC, AA.SETTYPECODE DESC, AA.WORKTYPECODE DESC
+    </select>
+    
+    <!-- 결제 요청 세션 정보가 타인에 의해 실시간으로 등록된 사항이 있는지 확인 -->
+    <select id="roomEduPaymentCheck" parameterType="reqBox" resultType="egovMap">
+        SELECT
+          A.RESERVATIONDATE
+          , A.RSVSESSIONSEQ
+          , SUBSTRING(DATENAME(DW, A.RESERVATIONDATE),1,1) AS RESERVATION_WEEK
+          , B.PPNAME AS PP_NAME
+          , C.ROOMNAME AS ROOM_NAME
+          , D.SESSIONNAME AS SESSION_NAME
+          , SUBSTRING(D.STARTDATETIME,1,2) + ':' + SUBSTRING(D.STARTDATETIME,3,2) AS START_TIME
+          , SUBSTRING(D.ENDDATETIME,1,2) + ':' + SUBSTRING(D.ENDDATETIME,3,2) AS END_TIME
+        FROM RSVRESERVATIONINFO A
+        INNER JOIN RSVPPINFO B
+          ON (A.PPSEQ = B.PPSEQ)
+        INNER JOIN RSVROOMINFO C
+          ON (A.ROOMSEQ = C.ROOMSEQ)
+        INNER JOIN RSVROOMSESSIONINFO D
+          ON (A.RSVSESSIONSEQ = D.RSVSESSIONSEQ)
+        WHERE CANCELCODE != 'B01'
+          AND A.RSVSESSIONSEQ = #{tempRsvSessionSeq}
+          AND A.RESERVATIONDATE = #{tempReservationDate}
+    </select>
+    
+    <!-- 날짜별 예약 정보 조회 -->
+    <select id="roomReservationInfoList" parameterType="reqBox" resultType="egovMap">
+        SELECT
+              A.YMD
+            , CASE 
+                WHEN A.YMD BETWEEN B.STARTDATE AND B.ENDDATE 
+                THEN B.TYPENAME
+                ELSE NULL
+            END AS TYPENAME
+            , C.PAYMENTSTATUSCODE
+            , B.ORDERNUMBER
+            , B.SETTYPECODE
+            , B.WORKTYPECODE
+            , B.TYPENAME AS TEMP1
+            , 0 AS TEMP
+        FROM (
+                SELECT
+                    CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')), 112) AS YMD
+                    , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS DAY
+                    , DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS WEEKDAY
+                FROM
+                    MASTER..SPT_VALUES
+                WHERE 
+                    TYPE = 'P' 
+                    AND NUMBER &gt;= 0
+                    AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{year}, #{month}, '01')))
+            ) A
+            LEFT OUTER JOIN (
+                SELECT DISTINCT
+                      B.RSVSESSIONSEQ
+                    , B.ORDERNUMBER
+                    , A.STARTDATE
+                    , A.ENDDATE
+                    , B.SETTYPECODE
+                    , B.WORKTYPECODE
+                    , B.SETDATE
+                    , CASE B.SETWEEK
+                        WHEN 'W01' THEN 1
+                        WHEN 'W02' THEN 2
+                        WHEN 'W03' THEN 3
+                        WHEN 'W04' THEN 4
+                        WHEN 'W05' THEN 5
+                        WHEN 'W06' THEN 6
+                        WHEN 'W07' THEN 7
+                        WHEN 'W08' THEN 8
+                        ELSE NULL
+                    END AS SETWEEK
+                    , D.TYPESEQ
+                    , D.TYPENAME
+                FROM
+                    RSVROOMINFO A
+                    INNER JOIN RSVROOMSESSIONINFO B
+                    ON(A.ROOMSEQ = B.ROOMSEQ
+                    AND B.STATUSCODE = 'B01')
+                    INNER JOIN RSVROOMTYPEMAP C
+                    ON(A.ROOMSEQ = C.ROOMSEQ)
+                    INNER JOIN RSVTYPEINFO D
+                    ON(C.TYPESEQ = D.TYPESEQ)
+            ) B
+            ON(A.YMD = B.SETDATE
+                OR A.WEEKDAY = B.SETWEEK)
+            LEFT OUTER JOIN RSVRESERVATIONINFO C
+            ON(A.YMD = C.RESERVATIONDATE
+                AND B.RSVSESSIONSEQ = C.RSVSESSIONSEQ
+                AND B.TYPESEQ = C.TYPESEQ
+                AND C.RSVTYPECODE = 'R01'
+                AND C.ACCOUNT = #{account})
+        UNION
+        SELECT
+              A.YMD
+            , CASE 
+                WHEN A.YMD BETWEEN B.STARTDATE AND B.ENDDATE 
+                THEN B.TYPENAME
+                ELSE NULL
+            END AS TYPENAME
+            , C.PAYMENTSTATUSCODE
+            , B.ORDERNUMBER
+            , B.SETTYPECODE
+            , B.WORKTYPECODE
+            , B.TYPENAME AS TEMP1
+            , 1 AS TEMP
+        FROM (
+                SELECT
+                    CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')), 112) AS YMD
+                    , DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS DAY
+                    , CASE
+                        WHEN DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) &gt;
+                                DATEPART(DD, DATEADD(MM, 1, CONVERT(DATETIME, CONCAT(#{year}, #{month}, '01')))-8) 
+                            AND DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) = 1
+                        THEN 8
+                        ELSE DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')))
+                    END AS WEEKDAY
+                FROM
+                    MASTER..SPT_VALUES
+                WHERE 
+                    TYPE = 'P' 
+                    AND NUMBER &gt;= 0
+                    AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{year}, #{month}, '01')))
+            ) A
+            LEFT OUTER JOIN (
+                SELECT DISTINCT
+                      B.RSVSESSIONSEQ
+                    , B.ORDERNUMBER
+                    , A.STARTDATE
+                    , A.ENDDATE
+                    , B.SETTYPECODE
+                    , B.WORKTYPECODE
+                    , B.SETDATE
+                    , CASE B.SETWEEK
+                        WHEN 'W01' THEN 1
+                        WHEN 'W02' THEN 2
+                        WHEN 'W03' THEN 3
+                        WHEN 'W04' THEN 4
+                        WHEN 'W05' THEN 5
+                        WHEN 'W06' THEN 6
+                        WHEN 'W07' THEN 7
+                        WHEN 'W08' THEN 8
+                        ELSE NULL
+                    END AS SETWEEK
+                    , D.TYPESEQ
+                    , D.TYPENAME
+                FROM
+                    RSVROOMINFO A
+                    INNER JOIN RSVROOMSESSIONINFO B
+                    ON(A.ROOMSEQ = B.ROOMSEQ
+                    AND B.STATUSCODE = 'B01')
+                    INNER JOIN RSVROOMTYPEMAP C
+                    ON(A.ROOMSEQ = C.ROOMSEQ)
+                    INNER JOIN RSVTYPEINFO D
+                    ON(C.TYPESEQ = D.TYPESEQ)
+            ) B
+            ON(A.YMD = B.SETDATE
+                OR A.WEEKDAY = B.SETWEEK)
+            LEFT OUTER JOIN RSVRESERVATIONINFO C
+            ON(A.YMD = C.RESERVATIONDATE
+                AND B.RSVSESSIONSEQ = C.RSVSESSIONSEQ
+                AND B.TYPESEQ = C.TYPESEQ
+                AND C.RSVTYPECODE = 'R01'
+                AND C.ACCOUNT = #{account})
+                WHERE A.WEEKDAY = 8
+            ORDER BY A.YMD ASC, B.TYPENAME ASC, B.ORDERNUMBER ASC, B.SETTYPECODE DESC, B.WORKTYPECODE DESC
+    </select>
+    
+    <!-- 해당 날짜 본인 전체 예약 정보 조회 -->
+    <select id="roomDayReservationList" parameterType="reqBox" resultType="egovMap">
+        SELECT DISTINCT /* ROOMMAP 테이블에 여러건의 (누적예약)조건에 의해서 여러건이 나오는 결과 형태 정리 */
+              A.ACCOUNT
+            , A.RSVSESSIONSEQ
+            , B.SESSIONNAME
+            , B.STARTDATETIME
+            , B.ENDDATETIME
+            , A.RESERVATIONDATE
+            , Format(GETDATE(), N'yyyyMMdd') AS GETTODAY
+            , CONVERT(VARCHAR(10), A.PURCHASEDATE, 23) AS PURCHASEDATE
+            , A.PAYMENTAMOUNT
+            , B.SETWEEK
+            , CASE DATEPART(DW, CONVERT(DATETIME, A.RESERVATIONDATE))
+                WHEN 1 THEN '일'
+                WHEN 2 THEN '월'
+                WHEN 3 THEN '화'
+                WHEN 4 THEN '수'
+                WHEN 5 THEN '목'
+                WHEN 6 THEN '금'
+                WHEN 7 THEN '토'
+                ELSE NULL
+            END AS WEEKNAME
+            , A.PPSEQ
+            , C.PPNAME
+            , H.TYPENAME
+            , A.RSVSEQ
+            , A.ROOMSEQ
+            , D.ROOMNAME
+            , CASE 
+                WHEN (A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07') 
+                    AND CONCAT(A.RESERVATIONDATE, B.STARTDATETIME) &lt;= CONCAT(CONVERT(VARCHAR(8), GETDATE(), 112), DATEPART(HH, GETDATE()), DATEPART(MI, GETDATE()))
+                THEN 'P06'
+                ELSE A.PAYMENTSTATUSCODE
+            END AS PAYMENTSTATUSCODE
+            , CASE 
+                WHEN (A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07') 
+                    AND CONCAT(A.RESERVATIONDATE, B.STARTDATETIME) &lt;= CONCAT(CONVERT(VARCHAR(8), GETDATE(), 112), DATEPART(HH, GETDATE()), DATEPART(MI, GETDATE()))
+                THEN '사용완료'
+                WHEN A.PAYMENTSTATUSCODE = 'P03' AND CONVERT(VARCHAR(8), GETDATE(), 112) = CONVERT(VARCHAR(8), A.CANCELDATETIME, 112)
+                THEN '당일취소'
+                ELSE F.CODENAME
+            END AS PAYMENTNAME
+            , CONVERT(VARCHAR, A.CANCELDATETIME, 21) AS CANCELDATETIME
+            , B.ORDERNUMBER
+            , A.STANDBYNUMBER
+            , ISNULL(I.TYPECODE, 'N') AS TYPECODE
+            , J.VIRTUALPURCHASENUMBER
+        FROM
+            RSVRESERVATIONINFO A
+            LEFT OUTER JOIN RSVROOMSESSIONINFO B
+            ON(A.RSVSESSIONSEQ = B.RSVSESSIONSEQ
+                AND A.RSVTYPECODE = 'R01'
+                AND A.ACCOUNT = #{account}
+                AND A.RESERVATIONDATE = #{reservationDate})
+            INNER JOIN RSVPPINFO C
+            ON(A.PPSEQ = C.PPSEQ)
+            INNER JOIN RSVROOMINFO D
+            ON(A.ROOMSEQ = D.ROOMSEQ)
+            -- INNER JOIN COMMONCODE E
+            -- ON(E.CODEMASTERSEQ = 'WK1'
+            --    AND B.SETWEEK = E.COMMONCODESEQ)
+            LEFT OUTER JOIN COMMONCODE F
+            ON(F.CODEMASTERSEQ = 'PM1'
+                AND A.PAYMENTSTATUSCODE = F.COMMONCODESEQ)
+            INNER JOIN RSVTYPEINFO H
+            ON(A.TYPESEQ = H.TYPESEQ)
+            LEFT OUTER JOIN (
+                SELECT
+                    CASE 
+                        /* 요리명장 예약인 경우 */
+                        WHEN AF.COOKMASTERCODE = 'R01'
+                            AND (                                    
+                                SELECT DISTINCT 
+                                    B.TYPECODE 
+                                FROM 
+                                    RSVROOMPENALTYMAP A 
+                                    INNER JOIN RSVPENALTYSETTING B 
+                                    ON(A.PENALTYSEQ = B.PENALTYSEQ 
+                                        AND B.STATUSCODE = 'B01' 
+                                        AND B.TYPECODE = 'P03'
+                                        AND A.ROOMSEQ = AF.ROOMSEQ)
+                            ) = 'P03'
+                        THEN 'C'
+                        /*요리명장 예약이 아니고 유료예약인 경우*/
+                        WHEN AF.COOKMASTERCODE = 'R02'
+                            AND AF.PAYMENTAMOUNT IS NOT NULL 
+                            AND AF.PAYMENTAMOUNT != 0
+                            AND (
+                                SELECT DISTINCT 
+                                    B.TYPEDETAILCODE 
+                                FROM 
+                                    RSVROOMPENALTYMAP A 
+                                    INNER JOIN RSVPENALTYSETTING B 
+                                    ON(A.PENALTYSEQ = B.PENALTYSEQ 
+                                        AND B.STATUSCODE = 'B01' 
+                                        AND A.ROOMSEQ = AF.ROOMSEQ
+                                        AND B.TYPECODE = 'P01'
+                                        AND B.TYPEDETAILCODE = 'P01')
+                            ) IS NOT NULL
+                        THEN 'P'
+                        /*요리명장 예약이 아니고 무료예약인 경우*/
+                        WHEN AF.COOKMASTERCODE = 'R02'
+                            AND (AF.PAYMENTAMOUNT IS NULL 
+                                OR AF.PAYMENTAMOUNT = 0)
+                            AND (
+                                SELECT DISTINCT 
+                                    B.TYPEDETAILCODE 
+                                FROM 
+                                    RSVROOMPENALTYMAP A 
+                                    INNER JOIN RSVPENALTYSETTING B 
+                                    ON(A.PENALTYSEQ = B.PENALTYSEQ 
+                                        AND B.STATUSCODE = 'B01' 
+                                        AND A.ROOMSEQ = AF.ROOMSEQ
+                                        AND B.TYPECODE = 'P01'
+                                        AND B.TYPEDETAILCODE = 'P02')
+                            ) IS NOT NULL
+                        THEN 'F'
+                        ELSE NULL
+                    END AS TYPECODE
+                    , AF.RSVSEQ
+                FROM RSVRESERVATIONINFO AF
+                    INNER JOIN RSVPURCHASEINFO BF
+                    ON(AF.RSVSEQ = BF.RSVSEQ
+                        AND AF.ACCOUNT = #{account}
+                        AND AF.RESERVATIONDATE = #{reservationDate})
+                ) I
+            ON(A.RSVSEQ = I.RSVSEQ AND D.STATUSCODE = 'B01')
+            LEFT OUTER JOIN RSVPURCHASEINFO J
+            ON(A.RSVSEQ = J.RSVSEQ)
+        ORDER BY A.PPSEQ ASC, A.ROOMSEQ ASC, A.RESERVATIONDATE ASC, A.RSVSESSIONSEQ ASC, B.ORDERNUMBER ASC
+    </select>
+    
+    <!-- 해당 년, 월 본인 전체 예약 정보 조회 -->
+    <select id="roomMonthReservationList" parameterType="reqBox" resultType="egovMap">
+        SELECT DISTINCT /* ROOMMAP 테이블에 여러건의 (누적예약)조건에 의해서 여러건이 나오는 결과 형태 정리 */
+              A.ACCOUNT
+            , A.RSVSESSIONSEQ
+            , B.SESSIONNAME
+            , B.STARTDATETIME
+            , B.ENDDATETIME
+            , A.RESERVATIONDATE
+            , CONVERT(VARCHAR(10), A.PURCHASEDATE, 23) AS PURCHASEDATE
+            , A.PAYMENTAMOUNT
+            , B.SETWEEK
+            , E.CODENAME AS WEEKNAME
+            , A.PPSEQ
+            , C.PPNAME
+            , H.TYPENAME
+            , A.RSVSEQ
+            , A.ROOMSEQ
+            , D.ROOMNAME
+            , CASE 
+                WHEN (A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07') 
+                    AND CONCAT(A.RESERVATIONDATE, B.STARTDATETIME) &lt;= CONCAT(CONVERT(VARCHAR(8), GETDATE(), 112), DATEPART(HH, GETDATE()), DATEPART(MI, GETDATE()))
+                THEN 'P06'
+                ELSE A.PAYMENTSTATUSCODE
+            END AS PAYMENTSTATUSCODE
+            , CASE 
+                WHEN (A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07') 
+                    AND CONCAT(A.RESERVATIONDATE, B.STARTDATETIME) &lt;= CONCAT(CONVERT(VARCHAR(8), GETDATE(), 112), DATEPART(HH, GETDATE()), DATEPART(MI, GETDATE()))
+                THEN '사용완료'
+                WHEN A.PAYMENTSTATUSCODE = 'P03' AND CONVERT(VARCHAR(8), GETDATE(), 112) = CONVERT(VARCHAR(8), A.CANCELDATETIME, 112)
+                THEN '당일취소'
+                ELSE F.CODENAME
+            END AS PAYMENTNAME
+            , CONVERT(VARCHAR, A.CANCELDATETIME, 21) AS CANCELDATETIME
+            , B.ORDERNUMBER
+            , A.STANDBYNUMBER
+            , ISNULL(I.TYPECODE, 'N') AS TYPECODE
+            , J.VIRTUALPURCHASENUMBER
+        FROM
+            RSVRESERVATIONINFO A
+            INNER JOIN RSVROOMSESSIONINFO B
+            ON(A.RSVSESSIONSEQ = B.RSVSESSIONSEQ
+                AND A.RSVTYPECODE = 'R01'
+                AND A.ACCOUNT = #{account}
+                AND SUBSTRING(A.RESERVATIONDATE, 1, 6) = #{year} + #{month})
+            INNER JOIN RSVPPINFO C
+            ON(A.PPSEQ = C.PPSEQ)
+            INNER JOIN RSVROOMINFO D
+            ON(A.ROOMSEQ = D.ROOMSEQ)
+            INNER JOIN COMMONCODE E
+            ON(E.CODEMASTERSEQ = 'WK1'
+                AND B.SETWEEK = E.COMMONCODESEQ)
+            INNER JOIN COMMONCODE F
+            ON(F.CODEMASTERSEQ = 'PM1'
+                AND A.PAYMENTSTATUSCODE = F.COMMONCODESEQ)
+            INNER JOIN RSVTYPEINFO H
+            ON(A.TYPESEQ = H.TYPESEQ)
+            LEFT OUTER JOIN (
+                SELECT
+                    CASE 
+                        /* 요리명장 예약인 경우 */
+                        WHEN AF.COOKMASTERCODE = 'R01'
+                            AND (                                    
+                                SELECT DISTINCT 
+                                    B.TYPECODE 
+                                FROM 
+                                    RSVROOMPENALTYMAP A 
+                                    INNER JOIN RSVPENALTYSETTING B 
+                                    ON(A.PENALTYSEQ = B.PENALTYSEQ 
+                                        AND B.STATUSCODE = 'B01' 
+                                        AND B.TYPECODE = 'P03'
+                                        AND A.ROOMSEQ = AF.ROOMSEQ)
+                            ) = 'P03'
+                        THEN 'C'
+                        /*요리명장 예약이 아니고 유료예약인 경우*/
+                        WHEN AF.COOKMASTERCODE = 'R02'
+                            AND AF.PAYMENTAMOUNT IS NOT NULL 
+                            AND AF.PAYMENTAMOUNT != 0
+                            AND (
+                                SELECT DISTINCT 
+                                    B.TYPEDETAILCODE 
+                                FROM 
+                                    RSVROOMPENALTYMAP A 
+                                    INNER JOIN RSVPENALTYSETTING B 
+                                    ON(A.PENALTYSEQ = B.PENALTYSEQ 
+                                        AND B.STATUSCODE = 'B01' 
+                                        AND A.ROOMSEQ = AF.ROOMSEQ
+                                        AND B.TYPECODE = 'P01'
+                                        AND B.TYPEDETAILCODE = 'P01')
+                            ) IS NOT NULL
+                        THEN 'P'
+                        /*요리명장 예약이 아니고 무료예약인 경우*/
+                        WHEN AF.COOKMASTERCODE = 'R02'
+                            AND (AF.PAYMENTAMOUNT IS NULL 
+                                OR AF.PAYMENTAMOUNT = 0)
+                            AND (
+                                SELECT DISTINCT 
+                                    B.TYPEDETAILCODE 
+                                FROM 
+                                    RSVROOMPENALTYMAP A 
+                                    INNER JOIN RSVPENALTYSETTING B 
+                                    ON(A.PENALTYSEQ = B.PENALTYSEQ 
+                                        AND B.STATUSCODE = 'B01' 
+                                        AND A.ROOMSEQ = AF.ROOMSEQ
+                                        AND B.TYPECODE = 'P01'
+                                        AND B.TYPEDETAILCODE = 'P02')
+                            ) IS NOT NULL
+                        THEN 'F'
+                        ELSE NULL
+                    END AS TYPECODE
+                    , AF.RSVSEQ
+                FROM RSVRESERVATIONINFO AF
+                    INNER JOIN RSVPURCHASEINFO BF
+                    ON(AF.RSVSEQ = BF.RSVSEQ
+                        AND AF.ACCOUNT = #{account}
+                        AND SUBSTRING(AF.RESERVATIONDATE, 1, 6) = #{year} + #{month})
+                ) I
+                ON(A.RSVSEQ = I.RSVSEQ AND D.STATUSCODE = 'B01')
+                LEFT OUTER JOIN RSVPURCHASEINFO J
+                ON(A.RSVSEQ = J.RSVSEQ)
+        ORDER BY A.PPSEQ ASC, A.ROOMSEQ ASC, A.RESERVATIONDATE ASC, A.RSVSESSIONSEQ ASC, B.ORDERNUMBER ASC
+    </select>
+    
+    <!-- 해당 room 이 다목적룸인지 맞으면 설정된 예약타입 정보 조회(typeseq) -->
+    <select id="multipurposeRoomCheck" parameterType="reqBox" resultType="egovMap">
+        SELECT DISTINCT
+              C.TYPESEQ
+            , C.TYPENAME
+            , CASE
+                WHEN C.TYPENAME LIKE '%교%'
+                THEN 'E'
+                WHEN C.TYPENAME LIKE '%퀸%'
+                THEN 'Q'
+                ELSE NULL
+            END AS TYPEFLAG
+        FROM
+        RSVROOMINFO A
+        INNER JOIN RSVROOMTYPEMAP B
+        ON(A.ROOMSEQ = B.ROOMSEQ
+            AND A.ROOMSEQ = #{roomseq}
+            AND A.STATUSCODE = 'B01')
+        INNER JOIN RSVTYPEINFO C
+        ON(B.TYPESEQ = C.TYPESEQ
+            AND C.STATUSCODE = 'B01')
+    </select>
+    
+    <!-- 파티션룸 체크  -->
+    <select id="partitionCheck" parameterType="reqBox" resultType="String">
+        SELECT 
+            CASE
+                WHEN #{roomseq} = (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomseq})
+                THEN 'true'
+                WHEN #{roomseq} != (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomseq})
+                THEN 'false'
+                ELSE NULL
+            END AS PARTITIONCHECK
+    </select>
+    
+    <!-- 넘어온 roomseq의 parentroomseq를 parentroomseq로 갖는 roomseq 조회 -->
+    <select id="partitionRoomSeqList" parameterType="reqBox" resultType="egovMap">
+        SELECT
+            ROOMSEQ
+        FROM
+            RSVSAMEROOMINFO A
+        WHERE
+            PARENTROOMSEQ = (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomseq})
+            AND ROOMSEQ != (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomseq})
+    
+        <!-- SELECT DISTINCT
+            A.ROOMSEQ,
+            B.TYPESEQ
+        FROM RSVSAMEROOMINFO A
+        INNER JOIN RSVROOMTYPEMAP B ON (A.ROOMSEQ = B.ROOMSEQ)
+        WHERE A.PARENTROOMSEQ = (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomseq})
+          AND A.ROOMSEQ != (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomseq}) -->
+    </select>
+    
+    <!-- 넘어온 roomseq의 parentroomseq를 parentroomseq로 갖는 roomseq 조회 -->
+    <select id="partitionRoomParentSeqList" parameterType="reqBox" resultType="egovMap">
+    
+        SELECT 
+            PARENTROOMSEQ AS ROOMSEQ
+        FROM 
+            RSVSAMEROOMINFO 
+        WHERE 
+            ROOMSEQ = #{roomseq}
+
+        <!-- SELECT 
+            A.PARENTROOMSEQ AS ROOMSEQ,
+            B.TYPESEQ AS TYPESEQ
+        FROM RSVSAMEROOMINFO A
+        INNER JOIN RSVROOMTYPEMAP B ON (A.PARENTROOMSEQ = B.ROOMSEQ)
+        WHERE A.ROOMSEQ = #{roomseq}
+          AND B.TYPESEQ != '0' -->
+    </select>
+    
+    <!-- 예약 대기자 조회[같은 세션을 선점할 경우 늦게 insert한 사용자는  다른 사용자가 먼저 선점하여 등록이 불가 하다라는 메세지를 뿌려줌] -->
+    <select id="roomStandByNumberAdvanceChecked" parameterType="reqBox" resultType="egovMap">
+        SELECT
+            CASE 
+                WHEN A.STANDBYNUMBER = 0 OR A.STANDBYNUMBER IS NULL THEN 'true' 
+                ELSE 'false'
+            END AS STANDBYNUMBER 
+        FROM (
+            SELECT ISNULL(COUNT(STANDBYNUMBER), 0) AS STANDBYNUMBER
+            FROM RSVRESERVATIONINFO
+            WHERE RESERVATIONDATE = #{tempReservationDate}
+                AND RSVSESSIONSEQ = #{tempRsvSessionSeq}
+                AND STANDBYNUMBER = #{tempStandByNumber}
+                AND CANCELCODE = 'B02'
+        )A
+        
+    </select>
+
+</mapper>

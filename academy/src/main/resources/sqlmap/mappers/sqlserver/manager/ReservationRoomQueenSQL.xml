@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.reservation.roomQueen.service.impl.RoomQueenMapper">
+	
+	<!-- 요리명장 사용가능 쿠폰갯수 조회 -->
+	<select id="getCookMasterCoupon" parameterType="reqBox" resultType="egovMap">
+		/* ReservationRoomQueenSQL.xml getCookMasterCoupon*/
+		SELECT
+			C.LIMIT_COUNT - ISNULL(D.CURRENT_COUNT, 0) - ISNULL(E.PENALTY_VALUE, 0) AS COUPONCOUNT
+		FROM (
+			/* (월단위) 지급 쿠폰 수량 */
+			SELECT
+				B.CODENAME AS TYPENAME,
+				A.TYPECODE,
+				CAST (A.TYPEVALUE AS NUMERIC) AS LIMIT_COUNT
+			FROM RSVPENALTYSETTING A
+				INNER JOIN COMMONCODE B
+				ON (A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+			WHERE TYPECODE = 'P05'
+		) C
+		INNER JOIN (
+			/* 해당윌의 요리명장 쿠폰 누적 갯수 */
+			SELECT
+			  COUNT(*) AS CURRENT_COUNT
+			FROM RSVRESERVATIONINFO
+			WHERE COOKMASTERCODE = 'R01'	/* 요리명장 */
+			  AND RSVTYPECODE = 'R01'		/* 시설 */
+			  AND NOSHOWCODE = 'R01'		/* 노쇼아님 */
+			  AND CANCELCODE = 'B02'		/* 취소아님 */
+              AND ACCOUNT = #{account}
+			  AND RESERVATIONDATE LIKE CONCAT('%', CONVERT(VARCHAR(6), CONCAT(#{year}, #{month}, '01'), 112),'%')		/* parameter1 */
+		) D
+          ON (1=1)
+        INNER JOIN (
+            /* 해당월의 요리명장 쿠폰 패널티 차감 갯수 */
+			SELECT 
+				SUM(RESULT) AS PENALTY_VALUE 
+			FROM (
+					SELECT 
+						CASE 
+						WHEN A.PENALTYSTATUSCODE = 'B01'
+						THEN CONVERT(INT, A.APPLYTYPEVALUE)
+						WHEN A.PENALTYSTATUSCODE = 'B02'
+						THEN -CONVERT(INT, A.APPLYTYPEVALUE)
+						ELSE 0
+					END AS RESULT
+					FROM 
+						RSVPENALTYHISTORY A
+						INNER JOIN RSVRESERVATIONINFO B
+							ON(A.RSVSEQ = B.RSVSEQ)
+						INNER JOIN RSVPENALTYSETTING C
+							ON(A.PENALTYSEQ = C.PENALTYSEQ)
+					WHERE B.COOKMASTERCODE = 'R01'  /* 요리명장 */
+						AND B.RSVTYPECODE = 'R01'     /* 시설 */
+						AND A.APPLYTYPECODE = 'P03'   /* 적용형태 : 횟수차감 */
+						AND A.STATUSCODE = 'B01'
+						AND A.ACCOUNT = #{account}
+						AND CONVERT(VARCHAR(6), DATEADD(MM, CONVERT(INT, C.PERIODVALUE), CONVERT(DATETIME, A.GRANTDATE)), 112) = CONVERT(VARCHAR(6), CONCAT(#{year}, #{month}, '01'), 112)
+			)X
+        ) E
+		  ON (1=1)
+	</select>
+	
+</mapper>

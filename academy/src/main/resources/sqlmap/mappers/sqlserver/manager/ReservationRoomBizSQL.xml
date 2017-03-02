@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.reservation.roomBiz.service.impl.RoomBizMapper">
+
+	<!-- 결제 요청 세션 정보가 타인에 의해 실시간으로 등록된 사항이 있는지 확인 -->
+	<select id="roomBizPaymentCheck" parameterType="reqBox" resultType="egovMap">
+		SELECT
+		  A.RESERVATIONDATE
+		  , A.RSVSESSIONSEQ
+		  , SUBSTRING(DATENAME(DW, A.RESERVATIONDATE),1,1) AS RESERVATION_WEEK
+		  , B.PPNAME AS PP_NAME
+		  , C.ROOMNAME AS ROOM_NAME
+		  , D.SESSIONNAME AS SESSION_NAME
+		  , SUBSTRING(D.STARTDATETIME,1,2) + ':' + SUBSTRING(D.STARTDATETIME,3,2) AS START_TIME
+		  , SUBSTRING(D.ENDDATETIME,1,2) + ':' + SUBSTRING(D.ENDDATETIME,3,2) AS END_TIME
+		FROM RSVRESERVATIONINFO A
+		INNER JOIN RSVPPINFO B
+		  ON (A.PPSEQ = B.PPSEQ)
+		INNER JOIN RSVROOMINFO C
+		  ON (A.ROOMSEQ = C.ROOMSEQ)
+		INNER JOIN RSVROOMSESSIONINFO D
+		  ON (A.RSVSESSIONSEQ = D.RSVSESSIONSEQ)
+		WHERE CANCELCODE != 'B01'
+		  AND A.RSVSESSIONSEQ = #{tempRsvSessionSeq}
+		  AND A.RESERVATIONDATE = #{tempReservationDate}
+		  AND A.STANDBYNUMBER = #{tempStandByNumber}
+	</select>
+	
+</mapper>

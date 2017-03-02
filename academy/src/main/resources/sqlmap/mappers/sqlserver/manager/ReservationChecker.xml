@@ -1,0 +1,2681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.reservation.basicPackage.service.impl.ReservationCheckerMapper">
+
+	<!-- 예약자의 기본정보 -->
+	<select id="getMemberInformation" parameterType="reqBox" resultType="egovMap">
+		SELECT /* ReservationChecker.xml getMemberInformation 예약자의 기본정보 */
+				UID AS ACCOUNT,
+				NAME AS ACCOUNTNAME,
+				PINNO,
+				PIN_VALUE AS PINVALUE,
+				REGIONNAME,
+				CITYNAME,
+				AGE,
+				SSN,
+				COOKMASTER,
+				COOKMASTERCODE,
+				CITYGROUPCODE
+		FROM (
+		  SELECT
+		  		X.UID,
+		  		X.NAME,
+			    X.PINNO,
+		      	X.PIN_VALUE,
+			    X.REGIONNAME,
+			    X.CITYNAME,
+			    X.AGE,
+			    X.SSN,
+			    CASE WHEN ISNULL(X.COOKMASTERCODE, '') != ''
+                    THEN 'true'
+                    ELSE 'false'
+                END AS COOKMASTER,
+                ISNULL(X.COOKMASTERCODE, '') AS COOKMASTERCODE,
+			    CASE WHEN NULL != Y2.CITYGROUPCODE 
+			        THEN Y2.CITYGROUPCODE 
+			        ELSE Y.CITYGROUPCODE
+			    END AS CITYGROUPCODE,
+		      ROW_NUMBER() OVER(ORDER BY Y.MAPPINGSEQ DESC) AS NUMB
+		  FROM (
+			    /* 기본정보 */
+			    SELECT
+			    	M.UID,
+			    	M.NAME,
+					M.PINNO,
+		      		ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+					M.REGIONNAME,
+					M.CITYNAME,
+					M.AGE,
+					M.SSN,
+					CM.GROUPSEQ AS COOKMASTERCODE,
+					N.REGIONCODE AS REGION_ALL_CODE,
+					G.REGIONCODE,
+					G.CITYCODE
+			    FROM (
+						/* 개인정보 */
+						SELECT
+							A.UID,
+							A.NAME,
+							A.GROUPS AS PINNO,
+		          			B.TARGETCODEORDER AS PIN_VALUE,
+							SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+							SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+							CASE WHEN A.SSN = '999000'
+								THEN 100
+								ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+								END AS AGE,
+							SUBSTRING(A.SSN,1,6) AS SSN
+						FROM MEMBER A
+		        		LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+				          ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+						WHERE A.UID = #{account}	/* parameter1:account:7480002 */
+			    ) M
+			    LEFT OUTER JOIN (
+                        /* 요리명장 */
+                        SELECT
+                            MAX(A.GROUPSEQ) AS GROUPSEQ,
+                            B.ABONO
+                        FROM RSVROLEGROUP A
+                        INNER JOIN RSVROLETARGET B
+                          ON (A.GROUPSEQ = B.GROUPSEQ)
+                        WHERE B.STATUSCODE = 'B01'
+                          AND A.COOKMASTERCODE = 'C01'
+                        GROUP BY B.ABONO
+                ) CM
+                ON (M.UID = CM.ABONO)
+			    LEFT OUTER JOIN (
+						/* 행정구역단위 비교 */
+						SELECT
+							REGIONCODE,
+							REGIONNAME,
+							SHORTNAME
+						FROM RSVREGIONINFO
+			    ) N
+			    ON (M.REGIONNAME = N.SHORTNAME)
+			    LEFT OUTER JOIN (
+						/* 도시단위 비교 */
+						SELECT
+							A.REGIONCODE,
+							A.SHORTNAME,
+							B.CITYCODE,
+							B.CITYNAME
+						FROM RSVREGIONINFO A
+						INNER JOIN RSVCITYINFO B
+						  ON (A.REGIONCODE = B.REGIONCODE)
+			    ) G
+			    ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+		  ) X
+		  LEFT OUTER JOIN RSVCITYGROUPMAP Y /* 행정구역단위 GROUPCODE */
+		  	ON (X.REGION_ALL_CODE = Y.REGIONCODE)
+		  INNER JOIN RSVCITYGROUPMASTER YM
+		    ON (Y.CITYGROUPCODE = YM.CITYGROUPCODE AND YM.STATUSCODE = 'B01')
+		  LEFT OUTER JOIN RSVCITYGROUPMAP Y2 /* 도시단위 GROUPCODE */
+		  	ON (X.REGIONCODE = Y2.REGIONCODE AND X.CITYCODE = Y2.CITYCODE)
+		  INNER JOIN RSVCITYGROUPMASTER Y2M
+		    ON (Y.CITYGROUPCODE = Y2M.CITYGROUPCODE AND Y2M.STATUSCODE = 'B01')
+		) T
+		WHERE NUMB = 1
+	</select>
+	
+	<select id="getPpCodeList" resultType="egovMap">
+		SELECT
+			PPSEQ, PPNAME
+		FROM RSVPPINFO
+		WHERE STATUSCODE = 'B01'
+		ORDER BY PPSEQ
+	</select>
+	
+	<select id="getMemberGlobalReservationCount" parameterType="reqBox" resultType="egovMap">
+		/* 예약자의 전국 (일,주,월)별 예약 누적 횟수 */
+		SELECT
+	        SUM(CASE UNIT WHEN 'D' THEN RCOUNT ELSE 0 END) AS DAILY,
+	        SUM(CASE UNIT WHEN 'W' THEN RCOUNT ELSE 0 END) AS WEEKLY,
+	        SUM(CASE UNIT WHEN 'M' THEN RCOUNT ELSE 0 END) AS MONTHLY
+    	FROM (
+			SELECT
+				'D' AS UNIT, COUNT(*) AS RCOUNT
+			FROM RSVRESERVATIONINFO
+			WHERE ACCOUNT = #{account}
+			AND RESERVATIONDATE = #{reservationdate}
+	        AND COOKMASTERCODE != 'R01' /* 요리명장 예약 제외 */
+	        AND ADMINFIRSTCODE != 'R01' /* 관리자 예약 제외 */
+			AND CANCELCODE = 'B02'
+			UNION ALL
+			SELECT
+				'W' AS UNIT, COUNT(*) AS RCOUNT
+			FROM RSVRESERVATIONINFO
+			WHERE ACCOUNT = #{account}		/* parameter1:account */
+			AND RESERVATIONDATE BETWEEN
+			            CONVERT(varchar(8), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, #{reservationdate}) - 6, #{reservationdate})), 112)		/* parameter2:예약일, parameter2:예약일 */
+			            AND 
+			            CONVERT(varchar(8), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, #{reservationdate}), #{reservationdate})), 112)		/* parameter2:예약일, parameter2:예약일 */
+	        AND COOKMASTERCODE != 'R01' /* 요리명장 예약 제외 */
+	        AND ADMINFIRSTCODE != 'R01' /* 관리자 예약 제외 */
+			AND CANCELCODE = 'B02'
+			UNION ALL
+			SELECT
+				'M' AS UNIT, COUNT(*) AS RCOUNT
+			FROM RSVRESERVATIONINFO
+			WHERE ACCOUNT = #{account}
+			AND RESERVATIONDATE LIKE CONVERT(VARCHAR(6), #{reservationdate}) +'%'
+	        AND COOKMASTERCODE != 'R01' /* 요리명장 예약 제외 */
+	        AND ADMINFIRSTCODE != 'R01' /* 관리자 예약 제외 */
+			AND CANCELCODE = 'B02'
+		) T
+	</select> 
+
+	<select id="getMemberPpReservationCount" parameterType="reqBox" resultType="egovMap">
+		/* 예약자의 PP별 (일,주,월)별 예약 누적 횟수 */
+		SELECT
+	        SUM(CASE UNIT WHEN 'D' THEN RCOUNT ELSE 0 END) AS DAILY,
+	        SUM(CASE UNIT WHEN 'W' THEN RCOUNT ELSE 0 END) AS WEEKLY,
+	        SUM(CASE UNIT WHEN 'M' THEN RCOUNT ELSE 0 END) AS MONTHLY
+	    FROM (
+			SELECT
+				'D' AS UNIT, COUNT(*) AS RCOUNT
+			FROM RSVRESERVATIONINFO
+			WHERE ACCOUNT = #{account}
+			AND RESERVATIONDATE = #{reservationdate}
+	        AND COOKMASTERCODE != 'R01' /* 요리명장 예약 제외 */
+	        AND ADMINFIRSTCODE != 'R01' /* 관리자 예약 제외 */
+			AND CANCELCODE = 'B02'
+			AND PPSEQ = #{ppseq}
+			UNION ALL
+			SELECT
+				'W' AS UNIT, COUNT(*) AS RCOUNT
+			FROM RSVRESERVATIONINFO
+			WHERE ACCOUNT = #{account}
+			AND RESERVATIONDATE BETWEEN
+			            CONVERT(varchar(8), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, #{reservationdate}) - 6, #{reservationdate})), 112)		/* parameter2:예약일, parameter2:예약일 */
+			            AND 
+			            CONVERT(varchar(8), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, #{reservationdate}), #{reservationdate})), 112)		/* parameter2:예약일, parameter2:예약일 */
+	        AND COOKMASTERCODE != 'R01' /* 요리명장 예약 제외 */
+	        AND ADMINFIRSTCODE != 'R01' /* 관리자 예약 제외 */
+			AND CANCELCODE = 'B02'
+			AND PPSEQ = #{ppseq}
+			UNION ALL
+			SELECT
+				'M' AS UNIT, COUNT(*) AS RCOUNT
+			FROM RSVRESERVATIONINFO
+			WHERE ACCOUNT = #{account}
+			AND RESERVATIONDATE LIKE CONVERT(VARCHAR(6), #{reservationdate}) +'%'
+	        AND COOKMASTERCODE != 'R01' /* 요리명장 예약 제외 */
+	        AND ADMINFIRSTCODE != 'R01' /* 관리자 예약 제외 */
+			AND CANCELCODE = 'B02'
+			AND PPSEQ = #{ppseq}
+		) T
+	</select> 
+
+	<!-- /* 회원의 패널티 갯수가 설정된 횟수와 같거나 크면 FALSE */ -->
+	<select id="isPossiblePenaltyRange" parameterType="reqBox" resultType="java.lang.Boolean">
+		SELECT /* ReservationChecker.xml isPossiblePenaltyRange 회원의 패널티 갯수가 설정된 횟수와 같거나 크면 FALSE */ 
+			CASE WHEN SUM(RESULT) &gt; 0 THEN 'false' ELSE 'true' END AS RESULT
+		FROM ( 
+			SELECT
+				CASE 
+					WHEN B.PENALTYSTATUSCODE = 'B01'
+					THEN 1
+					WHEN B.PENALTYSTATUSCODE = 'B02'
+					THEN -1
+					ELSE 0
+				END AS RESULT
+			FROM (
+				SELECT 
+					A.RSVSEQ 
+				FROM RSVPENALTYHISTORY A
+					INNER JOIN RSVRESERVATIONINFO B
+						ON(A.RSVSEQ = B.RSVSEQ)
+				WHERE A.APPLYTYPECODE = 'P02' /* 적용형태(fix) : 특정일동안 예약불가 (P02) */
+					AND A.STATUSCODE = 'B01'
+					AND A.PENALTYSTATUSCODE = 'B01'
+					AND A.ACCOUNT = #{account}
+					AND B.TYPESEQ = #{typeseq}
+					AND A.GRANTDATE &lt;= CONVERT(VARCHAR(8), GETDATE(), 112)
+					AND CONVERT(VARCHAR(8), (CONVERT(DATETIME, A.GRANTDATE) + CONVERT(INT, A.APPLYTYPEVALUE) ), 112) &gt;= CONVERT(VARCHAR(8), GETDATE(), 112)
+			) A
+			INNER JOIN RSVPENALTYHISTORY B
+				ON(A.RSVSEQ = B.RSVSEQ)
+		) X
+	</select>
+	
+	<!-- /* 기간내 예약 가능일이 있으면 TRUE */ -->
+	<select id="isPossibleRoomFromDayToDay" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT /* 기간내 예약 가능일 */
+			CASE WHEN COUNT(1) > 0 THEN 'true' ELSE 'false' END AS RESULT
+		FROM RSVROOMINFO A
+		INNER JOIN RSVROOMTYPEMAP B
+		  ON (A.ROOMSEQ = B.ROOMSEQ)
+		INNER JOIN RSVTYPEINFO C
+		  ON (B.TYPESEQ = C.TYPESEQ)
+		WHERE B.ROOMSEQ = #{roomseq}
+		  AND B.TYPESEQ = #{typeseq}
+		  AND #{reservationdate} BETWEEN A.STARTDATE AND A.ENDDATE
+		  AND A.STATUSCODE = 'B01'
+	]]></select>
+	
+	<select id="isPossibleExpFromDayToDay" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT /* 기간내 예약 가능일 */
+			CASE WHEN COUNT(1) > 0 THEN 'true' ELSE 'false' END AS RESULT
+		FROM RSVEXPINFO A
+		INNER JOIN RSVEXPTYPEMAP B
+		  ON (A.EXPSEQ = B.EXPSEQ)
+		INNER JOIN RSVTYPEINFO C
+		  ON (B.TYPESEQ = C.TYPESEQ)
+		WHERE B.EXPSEQ = #{expseq}
+		  AND B.TYPESEQ = #{typeseq}
+		  AND #{reservationdate} BETWEEN A.STARTDATE AND A.ENDDATE
+		  AND A.STATUSCODE = 'B01'
+	]]></select>
+	
+	<!-- /* 예약일이 설정된 세션의 요일이 존재 하는지 확인하고 존재 하면 TRUE */ -->
+	<select id="isPossibleWeek" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT /* 예약일이 설정된 세션의 요일이 존재 하는지 확인 */
+			CASE WHEN COUNT(1) > 0 THEN 'true' ELSE 'false' END AS RESULT
+		FROM (
+		    SELECT
+		      B.*
+		  	FROM RSVEXPINFO A
+		  	INNER JOIN RSVEXPSESSIONINFO B
+		  	  ON (A.EXPSEQ = B.EXPSEQ)
+		  	WHERE A.STATUSCODE = 'B01'		/* 사용유무:fix */
+		  	  AND B.SETTYPECODE = 'S01'		/* 일/주:fix */
+		) A
+		INNER JOIN (
+		    SELECT
+		      CASE DATEPART(DW, CONVERT(CHAR(8), #{reservationdate}, 112))	/* parameter1:예약일 */
+		      WHEN '1' THEN 'W01'
+		      WHEN '2' THEN 'W02'
+		      WHEN '3' THEN 'W03'
+		      WHEN '4' THEN 'W04'
+		      WHEN '5' THEN 'W05'
+		      WHEN '6' THEN 'W06'
+		      WHEN '7' THEN 'W07'
+		      ELSE ''
+		      END AS TARGET_WEEK
+		) B
+		ON (A.SETWEEK = B.TARGET_WEEK)
+	]]></select>
+
+	<!-- /* 예약일이 휴무일로 설정 된 날이 있는지 확인 후 있으면 false */ -->	
+	<select id="isPossibleRoomDay" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT /* 휴무일로 지정된날이면 예약 불가 */
+			CASE WHEN COUNT(1) > 0 THEN 'false' ELSE 'true' END AS RESULT
+		FROM RSVROOMINFO A
+		INNER JOIN RSVROOMSESSIONINFO B
+		  ON (A.ROOMSEQ = B.ROOMSEQ)
+		WHERE A.ROOMSEQ = #{roomseq}			/* parameter1 : 시설 일련번호 */
+		  AND A.STATUSCODE = 'B01'				/* 사용유무 */
+		  AND B.SETTYPECODE = 'S02'				/* 일/주 : 일 */
+		  AND B.WORKTYPECODE = 'S02'			/* 휴무일 */ 
+		  AND B.SETDATE = #{reservationdate}	/* parameter2 : 예약일 */
+	]]></select>
+
+	<select id="isPossibleExpDay" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT /* 휴무일로 지정된날이면 예약 불가 */
+			CASE WHEN COUNT(1) > 0 THEN 'false' ELSE 'true' END AS RESULT
+		FROM RSVEXPINFO A
+		INNER JOIN RSVEXPSESSIONINFO B
+		  ON (A.EXPSEQ = B.EXPSEQ)
+		WHERE A.EXPSEQ = #{expseq}				/* parameter1 : 체험 일련번호 */
+		  AND A.STATUSCODE = 'B01'				/* 사용유무 */
+		  AND B.SETTYPECODE = 'S02'				/* 일/주 : 일 */
+		  AND B.WORKTYPECODE = 'S02'			/* 휴무일 */ 
+		  AND B.SETDATE = #{reservationdate}	/* parameter2 : 예약일 */
+	]]></select>
+
+	<!-- /* 비즈룸이면 TRUE*/ -->
+	<select id="bizRoomCheck" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT 
+			CASE 
+				WHEN TYPENAME LIKE '%비즈%' THEN 'true'
+				ELSE 'false'
+			END RESULT
+		FROM 
+			RSVTYPEINFO
+		WHERE
+			TYPESEQ = #{typeseq}
+	]]></select>
+
+	<!-- /* 시설 예약시 다른사용자에 의한 예약이 있으면 FALSE */ -->
+	<select id="isPossibleRoomAnotherReservation" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT /* 다른사용자에 의한 예약 확인 */
+			CASE WHEN COUNT(1) > #{rsvcnt} THEN 'false' ELSE 'true' END AS RESULT
+		FROM (
+			SELECT RESERVATIONDATE, RSVSESSIONSEQ, RSVTYPECODE
+			FROM RSVRESERVATIONINFO
+			WHERE RESERVATIONDATE = #{reservationdate}	/* parameter1:예약일 */
+			AND CANCELCODE != 'B01'
+			AND RSVTYPECODE = 'R01'						/* parameter2:시설 */
+			AND RSVSESSIONSEQ = #{sessionseq} 			/* parameter3:예약하려는 세션 */
+			GROUP BY RESERVATIONDATE, RSVSESSIONSEQ, RSVTYPECODE
+		) X
+	]]></select>
+
+	<!-- /* 체험 예약시 다른사용자에 의한 예약이 (대기 포함) 안되면 FALSE */ -->
+	<select id="isPossibleExpAnotherReservation" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT /* 다른사용자에 의한 예약 확인 */
+			CASE WHEN COUNT(1) > 1 THEN 'false' ELSE 'true' END AS RESULT
+		FROM (
+			SELECT RESERVATIONDATE, RSVSESSIONSEQ, RSVTYPECODE
+			FROM RSVRESERVATIONINFO
+			WHERE RESERVATIONDATE = #{reservationdate}	/* parameter1:예약일 */
+			AND CANCELCODE != 'B01'
+			AND RSVTYPECODE = 'R02'						/* parameter2:체험 */
+			AND EXPSESSIONSEQ = #{sessionseq} 			/* parameter3:예약하려는 세션 */
+			GROUP BY RESERVATIONDATE, RSVSESSIONSEQ, RSVTYPECODE
+		) X
+	]]></select>
+	
+	<!-- 세션별로 설정된 조건에 맞는 sequence 번호를 얻는 쿼리 -->
+	<select id="preparedRoomRoleCondition" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		SELECT /* 세션별로 설정된 조건에 맞는 sequence 번호를 얻는 쿼리 */
+		    Y.RSVROLESEQ
+		FROM (
+		    SELECT
+				/* 세가지 조건중 설정된 조건에 모두 맞는 SEQ를 찾아내는 쿼리 */
+				X.RSVROLESEQ,
+				(
+				CASE WHEN X.PIN_VALUE <= CAST( #{pinvalue} AS INT) THEN 1 ELSE 0 END +	
+				CASE WHEN X.CITY_VALUE = CAST( #{citygroupcode} AS INT) THEN 1 ELSE 0 END +
+				CASE WHEN X.AGE_VALUE <= CAST( #{age} AS INT) THEN 1 ELSE 0 END
+				) AS TRUE_COUNT,			/* parameter 1,2,3 : user-pin 정보 */
+				X.CONDITION_COUNT
+		    FROM (
+			  SELECT
+					T1.RSVROLESEQ,
+					T2.TARGETCODEORDER AS PIN_VALUE,
+					T1.CITYTREATCODE AS CITY_VALUE,
+					ISNULL(T3.TARGETCODEORDER, 0) AS AGE_VALUE,
+					T1.CONDITION_COUNT
+		      FROM (
+			        /* 세션에 부여한 조건중 설정한 조건이 몇개인지 확인한다 */
+			        SELECT
+				          A.RSVROLESEQ,    /* 체험세션별 예약자격 일련번호 */
+				          A.PINTREATRANGE,
+				          A.CITYTREATCODE,
+				          A.AGETREATCODE,
+				          (
+				            CASE WHEN LEN(A.PINTREATRANGE) > 0 THEN 1 ELSE 0 END +
+				            CASE WHEN LEN(A.CITYTREATCODE) > 0 THEN 1 ELSE 0 END +
+				            CASE WHEN LEN(A.AGETREATCODE) > 0 THEN 1 ELSE 0 END
+				          ) AS CONDITION_COUNT
+			        FROM RSVROOMROLE A
+			        INNER JOIN RSVROOMSESSIONINFO B
+			          ON (A.RSVSESSIONSEQ = B.RSVSESSIONSEQ)
+			        WHERE A.TARGETTYPECODE = 'B02'	/* 대상자 우대 아님 */
+			          AND A.STATUSCODE = 'B01'		/* 사용여부 */
+			          AND ( A.RSVSESSIONSEQ IS NULL OR A.RSVSESSIONSEQ IN ('0','', #{sessionseq}) )	/* parameter2 : 예약 하려는 세션 */
+			          AND B.STATUSCODE = 'B01'		/* 사용여부 */
+			          AND B.ROOMSEQ = #{roomseq}
+		      ) T1
+		      LEFT OUTER JOIN V_TARGETCODE_NONMEM T2
+		        ON (T1.PINTREATRANGE = T2.TARGETCODESEQ AND T2.TARGETMASTERSEQ = 'PINCODE')
+		      LEFT OUTER JOIN TARGETCODE T3
+		        ON (T1.AGETREATCODE = T3.TARGETCODESEQ AND T3.TARGETMASTERSEQ = 'AGECODE')
+		    ) X
+		) Y
+		WHERE Y.TRUE_COUNT >= Y.CONDITION_COUNT	
+	]]></select>	
+
+	<!-- /* @TODO */ -->
+	<select id="isPossibleRoomRole" parameterType="reqBox" resultType="egovMap">
+<![CDATA[
+		/* 오늘, startDay이후 부터 endDay전 까지 예약일 설정 가능 */
+		SELECT 
+			RSVROLESEQ,
+			CASE WHEN
+				DATEDIFF(DAY, CONVERT(DATETIME, getdate(), 112), #{reservationdate}) >= STARTDAY	/* parameter1 : reservationdate */
+				AND
+				DATEDIFF(DAY, CONVERT(DATETIME, getdate(), 112), #{reservationdate}) <= ENDDAY		/* parameter1 : reservationdate */
+			THEN 'true'
+			ELSE 'false'
+			END AS RESULT  
+		 FROM RSVROOMROLE
+		WHERE PERIODTYPECODE = 'P01' /* 일기준설정 */
+		  AND STATUSCODE = 'B01'
+]]>
+		<if test="null != rolesequence and rolesequence.size() > 0">
+			  AND RSVROLESEQ IN		/* parameter2 : room-role-sequence */
+			  <foreach collection="rolesequence" item="item" separator="," open="(" close=")">#{item}</foreach>
+		</if>
+<![CDATA[
+		UNION ALL
+		/* startMonth 이후의 startDay일에 endMonth 이후의 endDay일까지 예약 설정 가능 */
+		SELECT
+			RSVROLESEQ,
+			CASE WHEN
+				CONVERT(VARCHAR(6), DATEADD(MONTH, CAST(ISNULL(STARTMONTH, '0') AS INT), getdate()), 112) + FORMAT(CAST(STARTDAY AS INT), '00') <= #{reservationdate}	/* parameter1 : reservationdate */
+				AND
+				CONVERT(VARCHAR(6), DATEADD(MONTH, CAST(ISNULL(ENDMONTH, '0') AS INT), getdate()), 112) + FORMAT(CAST(ENDDAY AS INT), '00') >= #{reservationdate}		/* parameter1 : reservationdate */
+			THEN 'true'
+			ELSE 'false'
+			END AS RESULT
+		 FROM RSVROOMROLE
+		WHERE PERIODTYPECODE = 'P03'  /* 월기준설정 */
+		  AND STATUSCODE = 'B01'
+]]>
+		  <if test="null != rolesequence and rolesequence.size() > 0">
+			  AND RSVROLESEQ IN 	/* parameter2 : room-role-sequence */
+			  <foreach collection="rolesequence" item="item" separator="," open="(" close=")">#{item}</foreach>
+		  </if>
+	</select>
+	
+	<!-- 세션별로 설정된 조건에 맞는 sequence 번호를 얻는 쿼리 -->
+	<select id="preparedExpRoleCondition" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		SELECT /* 세션별로 설정된 조건에 맞는 sequence 번호를 얻는 쿼리 */
+		    Y.EXPROLESEQ
+		FROM (
+		    SELECT
+				/* 세가지 조건중 설정된 조건에 모두 맞는 SEQ를 찾아내는 쿼리 */
+				X.EXPROLESEQ,
+				(
+				CASE WHEN X.PIN_VALUE <= CAST( #{pinvalue} AS INT) THEN 1 ELSE 0 END +	
+				CASE WHEN X.CITY_VALUE = CAST( #{citygroupcode} AS INT) THEN 1 ELSE 0 END +
+				CASE WHEN X.AGE_VALUE <= CAST( #{age} AS INT) THEN 1 ELSE 0 END
+				) AS TRUE_COUNT,			/* parameter 1,2,3 : user-pin 정보 */
+				CONDITION_COUNT
+		    FROM (
+			  SELECT
+					T1.EXPROLESEQ,
+					T2.TARGETCODEORDER AS PIN_VALUE,
+					T1.CITYTREATCODE AS CITY_VALUE,
+					ISNULL(T3.TARGETCODEORDER, 0) AS AGE_VALUE,
+					CONDITION_COUNT
+		      FROM (
+		        /* 세션에 부여한 조건중 설정한 조건이 몇개인지 확인한다 */
+		        SELECT
+		          EXPROLESEQ,    /* 체험세션별 예약자격 일련번호 */
+		          PINTREATRANGE,
+		          CITYTREATCODE,
+		          AGETREATCODE,
+		          (
+		            CASE WHEN LEN(PINTREATRANGE) > 0 THEN 1 ELSE 0 END +
+		            CASE WHEN LEN(CITYTREATCODE) > 0 THEN 1 ELSE 0 END +
+		            CASE WHEN LEN(AGETREATCODE) > 0 THEN 1 ELSE 0 END
+		          ) AS CONDITION_COUNT
+		        FROM RSVEXPROLE
+		        WHERE TARGETTYPECODE = 'B02'	/* 대상자 우대 아님 */
+		          AND STATUSCODE = 'B01'		/* 사용여부 */
+		          AND ( EXPSESSIONSEQ IS NULL OR EXPSESSIONSEQ IN ('0','', #{sessionseq}) )	/* parameter2 : 예약 하려는 세션 */
+		      ) T1
+		      LEFT OUTER JOIN V_TARGETCODE_NONMEM T2
+		        ON (T1.PINTREATRANGE = T2.TARGETCODESEQ AND T2.TARGETMASTERSEQ = 'PINCODE')
+		      LEFT OUTER JOIN TARGETCODE T3
+		        ON (T1.AGETREATCODE = T3.TARGETCODESEQ AND T3.TARGETMASTERSEQ = 'AGECODE')
+		    ) X
+		) Y
+		WHERE Y.TRUE_COUNT >= Y.CONDITION_COUNT	
+	]]></select>
+	
+	<!-- /* @TODO */ -->
+	<select id="isPossibleExpRole" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		/* 오늘, startDay이후 부터 endDay전 까지 예약일 설정 가능 */
+		SELECT 
+			EXPROLESEQ,
+			CASE WHEN
+				DATEDIFF(DAY, CONVERT(DATETIME, getdate(), 112), #{reservationdate}) >= STARTDAY	/* parameter1 : reservationdate */
+				AND
+				DATEDIFF(DAY, CONVERT(DATETIME, getdate(), 112), #{reservationdate}) <= ENDDAY		/* parameter1 : reservationdate */
+			THEN 'true'
+			ELSE 'false'
+			END AS RESULT  
+		 FROM RSVEXPROLE
+		WHERE PERIODTYPECODE = 'P01'
+		  AND STATUSCODE = 'B01'
+]]>
+		<if test="null != rolesequence and rolesequence.size() > 0">
+			  AND EXPROLESEQ IN		/* parameter2 : exp-role-sequence */
+			  <foreach collection="rolesequence" item="item" separator="," open="(" close=")">#{item}</foreach>
+		</if>
+<![CDATA[
+		UNION ALL
+		/* startMonth 이후의 startDay일에 endMonth 이후의 endDay일까지 예약 설정 가능 */
+		SELECT
+			EXPROLESEQ,
+			CASE WHEN
+				CONVERT(VARCHAR(8), DATEADD(DAY, CAST(T.STARTDAY AS INT), T.START_DAY), 112) <= #{reservationdate}	/* parameter1 : reservationdate */
+				AND
+				CONVERT(VARCHAR(8), DATEADD(DAY, CAST(T.ENDDAY AS INT), T.END_DAY), 112) >= #{reservationdate}	/* parameter1 : reservationdate */
+			THEN 'true'
+			ELSE 'false'
+			END AS RESULT
+		FROM (
+			SELECT
+				EXPROLESEQ,
+				CONVERT(VARCHAR(8), DATEADD(MONTH, CAST(ISNULL(STARTMONTH, '0') AS INT), getdate()), 112) AS START_DAY,
+				CONVERT(VARCHAR(8), DATEADD(MONTH, CAST(ISNULL(ENDMONTH, '0') AS INT), getdate()), 112) AS END_DAY,
+				STARTDAY,
+				ENDDAY
+			 FROM RSVEXPROLE
+			WHERE PERIODTYPECODE = 'P03'
+			  AND STATUSCODE = 'B01'
+]]>		  
+		  <if test="null != rolesequence and rolesequence.size() > 0">
+			  AND EXPROLESEQ IN 	/* parameter2 : exp-role-sequence */
+			  <foreach collection="rolesequence" item="item" separator="," open="(" close=")">#{item}</foreach>
+		  </if>
+		) T
+	</select>
+
+	<!-- /* 예약자의 일별 누적 예약 횟수 */ -->
+	<select id="currentAccountDailyReservationCount" parameterType="reqBox" resultType="java.lang.Integer"><![CDATA[
+		SELECT /* 예약자의 일별 누적 예약 횟수 */
+		  COUNT(*) AS DAILYCOUNT
+		FROM RSVRESERVATIONINFO
+		WHERE COOKMASTERCODE != 'R01'					/* 요리명장 */
+		  AND ADMINFIRSTCODE != 'R01'					/* 관리자 예약 */
+		  AND CANCELCODE = 'B02'
+		  AND RSVTYPECODE = #{rsvtypecode}				/* parameter1:시설 */
+		  AND RESERVATIONDATE LIKE #{reservationdate}	/* parameter2:예약일 */
+	]]></select>
+	
+	<!-- /* 예약자의 주별 누적 예약 횟수 */ -->
+	<select id="currentAccountWeeklyReservationCount" parameterType="reqBox" resultType="java.lang.Integer"><![CDATA[
+		SELECT /* 예약자의 주별 누적 예약 횟수 */
+		  COUNT(*) AS CURRENTCOUNT
+		FROM RSVRESERVATIONINFO
+		WHERE COOKMASTERCODE != 'R01'					/* 요리명장 제외 */
+		  AND ADMINFIRSTCODE != 'R01'					/* 관리자 예약 */
+		  AND CANCELCODE = 'B02'
+		  AND RSVTYPECODE = #{rsvtypecode}				/* parameter1 : 시설 */
+		  AND RESERVATIONDATE BETWEEN
+            CONVERT(varchar(8), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, #{reservationdate}) - 6, #{reservationdate})), 112)		/* parameter2:예약일, parameter2:예약일 */
+            AND 
+            CONVERT(varchar(8), (DATEADD(dd, @@DATEFIRST - DATEPART(dw, #{reservationdate}), #{reservationdate})), 112)		/* parameter2:예약일, parameter2:예약일 */
+	]]></select>
+	
+	<!-- /* 예약자의 월별 누적 예약 횟수 */ -->
+	<select id="currentAccountMonthlyReservationCount" parameterType="reqBox" resultType="java.lang.Integer"><![CDATA[
+		SELECT /* 예약자의 월별 누적 예약 횟수 */
+		  COUNT(*) AS CURRENTCOUNT
+		FROM RSVRESERVATIONINFO
+		WHERE COOKMASTERCODE != 'R01'					/* 요리명장 제외 */
+		  AND ADMINFIRSTCODE != 'R01'					/* 관리자 예약 */
+		  AND CANCELCODE = 'B02'
+		  AND RSVTYPECODE = #{rsvtypecode}				/* parameter1 : 시설 */
+		  AND RESERVATIONDATE LIKE CONVERT(VARCHAR(6), #{reservationdate}, 112) + '%'	-- {parameter2:예약일}
+	]]></select>
+	
+	<!-- /* 시설과 시설형태별로 누적 예약횟수 설정 목록을 획득 */ -->
+	<select id="limitCountListByRoomAndRoomTypeAtCondition" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		SELECT /* 시설과 시설형태별로 누적 예약횟수 설정 목록을 획득 */
+	        T1.SETTINGSEQ,
+	        T1.GLOBALDAILYCOUNT,
+	        T1.GLOBALWEEKLYCOUNT,
+	        T1.GLOBALMONTHLYCOUNT,
+	        T1.PPDAILYCOUNT,
+	        T1.PPWEEKLYCOUNT,
+	        T1.PPMONTHLYCOUNT
+	    FROM (
+	        SELECT
+	            A.SETTINGSEQ,
+			    A.PINTREATRANGE,
+			    A.CITYTREATCODE,
+			    A.AGETREATCODE,
+			    A.GLOBALDAILYCOUNT,
+			    A.GLOBALWEEKLYCOUNT,
+			    A.GLOBALMONTHLYCOUNT,
+			    A.PPDAILYCOUNT,
+			    A.PPWEEKLYCOUNT,
+			    A.PPMONTHLYCOUNT
+			FROM RSVCONSTRAINT A
+			INNER JOIN RSVROOMTYPEMAP B
+			  ON (A.SETTINGSEQ = B.SETTINGSEQ)
+			INNER JOIN RSVTYPEINFO C
+	      	  ON (B.TYPESEQ = C.TYPESEQ)
+			WHERE A.STATUSCODE = 'B01'
+			  AND C.RSVTYPECODE = 'R01'		/* 시설(R01) 체험 (R02) */
+	          AND A.CONSTRAINTTYPE = 'C01'	/* 조건 형태 */
+			  AND B.TYPESEQ = #{typeseq}	/* parameter1:시설타입코드 (시설형태) */
+			  AND B.ROOMSEQ = #{roomseq}	/* parameter2:시설일련번호 */
+	    ) T1
+	    INNER JOIN V_TARGETCODE_NONMEM T2
+	      ON (T1.PINTREATRANGE = T2.TARGETCODESEQ AND T2.TARGETMASTERSEQ = 'PINCODE')
+	    INNER JOIN V_TARGETCODE_NONMEM T3
+	      ON (T1.AGETREATCODE = T3.TARGETCODESEQ  AND T3.TARGETMASTERSEQ = 'AGECODE')
+	    WHERE T2.TARGETCODEORDER <= #{pinvalue}
+	      AND T1.CITYTREATCODE = #{citygroupcode}
+	      AND T3.TARGETCODEORDER >= #{age}	
+	]]></select>
+	
+	<select id="limitCountListByRoomAndRoomTypeAtSpecialGroup" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		SELECT /* limitCountListByRoomAndRoomTypeAtSpecialGroup */
+			A.SETTINGSEQ,
+			A.GLOBALDAILYCOUNT,
+			A.GLOBALWEEKLYCOUNT,
+			A.GLOBALMONTHLYCOUNT,
+			A.PPDAILYCOUNT,
+			A.PPWEEKLYCOUNT,
+			A.PPMONTHLYCOUNT
+		FROM RSVCONSTRAINT A
+		INNER JOIN RSVROOMTYPEMAP B
+		  ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		INNER JOIN RSVTYPEINFO C
+		  ON (B.TYPESEQ = C.TYPESEQ)
+		INNER JOIN RSVROLETARGET D
+		  ON (A.GROUPSEQ = D.GROUPSEQ)
+		WHERE A.STATUSCODE = 'B01'
+		AND C.RSVTYPECODE = 'R01'		/* 시설(R01) 체험 (R02) */
+		AND A.CONSTRAINTTYPE = 'C02'	/* 조건 형태 */
+		AND B.TYPESEQ = #{typeseq}		/* parameter1:시설타입코드 (프로그램) */
+		AND B.ROOMSEQ = #{roomseq}		/* parameter2:시설일련번호 */
+		AND D.ABONO = #{account}		/* ABO */
+	]]></select>
+	
+	<select id="limitCountListByRoomAndRoomTypeAtSpecialPP" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		SELECT /* limitCountListByRoomAndRoomTypeAtSpecialPP */
+			A.SETTINGSEQ,
+			A.GLOBALDAILYCOUNT,
+			A.GLOBALWEEKLYCOUNT,
+			A.GLOBALMONTHLYCOUNT,
+			A.PPDAILYCOUNT,
+			A.PPWEEKLYCOUNT,
+			A.PPMONTHLYCOUNT
+		FROM RSVCONSTRAINT A
+		INNER JOIN RSVROOMTYPEMAP B
+		  ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		INNER JOIN RSVTYPEINFO C
+		  ON (B.TYPESEQ = C.TYPESEQ)
+		INNER JOIN RSVROOMTYPEMAP D
+		  ON (A.SETTINGSEQ = D.SETTINGSEQ)
+		WHERE A.STATUSCODE = 'B01'
+		AND C.RSVTYPECODE = 'R01'		/* 시설(R01) 체험 (R02) */
+		AND A.CONSTRAINTTYPE = 'C03'	/* 조건 형태 */
+		AND B.TYPESEQ = #{typeseq}		/* parameter1:시설타입코드 (프로그램) */
+		AND B.ROOMSEQ = #{roomseq}		/* parameter2:시설일련번호 */
+        AND A.PPSEQ = #{ppseq}
+        AND D.TYPESEQ = #{typeseq}
+	]]></select>
+	
+	
+	<!-- /* 체험과 체험형태별로 누적 예약횟수 설정 목록을 취득 */ -->
+	<select id="limitCountListByExpAndExpTypeAtCondition" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		SELECT /* 체험과 체험형태별로 누적 예약횟수 설정 목록을 취득 */
+	        T1.SETTINGSEQ,
+	        T1.GLOBALDAILYCOUNT,
+	        T1.GLOBALWEEKLYCOUNT,
+	        T1.GLOBALMONTHLYCOUNT,
+	        T1.PPDAILYCOUNT,
+	        T1.PPWEEKLYCOUNT,
+	        T1.PPMONTHLYCOUNT
+	    FROM (
+	        SELECT
+	            A.SETTINGSEQ,
+			    A.PINTREATRANGE,
+			    A.CITYTREATCODE,
+			    A.AGETREATCODE,
+			    A.GLOBALDAILYCOUNT,
+			    A.GLOBALWEEKLYCOUNT,
+			    A.GLOBALMONTHLYCOUNT,
+			    A.PPDAILYCOUNT,
+			    A.PPWEEKLYCOUNT,
+			    A.PPMONTHLYCOUNT
+			FROM RSVCONSTRAINT A
+			INNER JOIN RSVEXPTYPEMAP B
+			  ON (A.SETTINGSEQ = B.SETTINGSEQ)
+			INNER JOIN RSVTYPEINFO C
+	      	  ON (B.TYPESEQ = C.TYPESEQ)
+			WHERE A.STATUSCODE = 'B01'
+			  AND C.RSVTYPECODE = 'R02'     /* 시설(R01) 체험 (R02) */
+	          AND A.CONSTRAINTTYPE = 'C01'	/* 조건 형태 */
+			  AND B.TYPESEQ = #{typeseq}	/* parameter1:체험타입코드 (프로그램) */
+			  AND B.EXPSEQ = #{expseq}		/* parameter2:체험일련번호 */
+	    ) T1
+	    INNER JOIN V_TARGETCODE_NONMEM T2
+	      ON (T1.PINTREATRANGE = T2.TARGETCODESEQ AND T2.TARGETMASTERSEQ = 'PINCODE')
+	    INNER JOIN V_TARGETCODE_NONMEM T3
+	      ON (T1.AGETREATCODE = T3.TARGETCODESEQ  AND T3.TARGETMASTERSEQ = 'AGECODE')
+	    WHERE T2.TARGETCODEORDER <= #{pinvalue}
+	      AND T1.CITYTREATCODE = #{citygroupcode}
+	      AND T3.TARGETCODEORDER >= #{age}
+	]]></select>
+
+	<select id="limitCountListByExpAndExpTypeAtSpecialGroup" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		SELECT /* limitCountListByExpAndExpTypeAtSpecialGroup */
+			A.SETTINGSEQ,
+			A.GLOBALDAILYCOUNT,
+			A.GLOBALWEEKLYCOUNT,
+			A.GLOBALMONTHLYCOUNT,
+			A.PPDAILYCOUNT,
+			A.PPWEEKLYCOUNT,
+			A.PPMONTHLYCOUNT
+		FROM RSVCONSTRAINT A
+		INNER JOIN RSVEXPTYPEMAP B
+		  ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		INNER JOIN RSVTYPEINFO C
+		  ON (B.TYPESEQ = C.TYPESEQ)
+		INNER JOIN RSVROLETARGET D
+		  ON (A.GROUPSEQ = D.GROUPSEQ)
+		WHERE A.STATUSCODE = 'B01'
+		AND C.RSVTYPECODE = 'R02'		/* 시설(R01) 체험 (R02) */
+		AND A.CONSTRAINTTYPE = 'C02'	/* 조건 형태 */
+		AND B.TYPESEQ = #{typeseq}		/* parameter1:체험타입코드 (프로그램) */
+		AND B.EXPSEQ = #{expseq}		/* parameter2:체험일련번호 */
+		AND D.ABONO = #{account}		/* ABO */		
+	]]></select>
+	
+	<select id="limitCountListByExpAndExpTypeAtSpecialPP" parameterType="reqBox" resultType="egovMap"><![CDATA[
+		SELECT /* limitCountListByExpAndExpTypeAtSpecialPP */
+			A.SETTINGSEQ,
+			A.GLOBALDAILYCOUNT,
+			A.GLOBALWEEKLYCOUNT,
+			A.GLOBALMONTHLYCOUNT,
+			A.PPDAILYCOUNT,
+			A.PPWEEKLYCOUNT,
+			A.PPMONTHLYCOUNT
+		FROM RSVCONSTRAINT A
+		INNER JOIN RSVEXPTYPEMAP B
+		  ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		INNER JOIN RSVTYPEINFO C
+		  ON (B.TYPESEQ = C.TYPESEQ)
+		INNER JOIN RSVROOMTYPEMAP D
+		  ON (A.SETTINGSEQ = D.SETTINGSEQ)
+		WHERE A.STATUSCODE = 'B01'
+		AND C.RSVTYPECODE = 'R01'		/* 시설(R01) 체험 (R02) */
+		AND A.CONSTRAINTTYPE = 'C03'	/* 조건 형태 */
+		AND B.TYPESEQ = #{typeseq}		/* parameter1:체험타입코드 (프로그램) */
+		AND B.EXPSEQ = #{roomseq}		/* parameter2:체험일련번호 */
+        AND A.PPSEQ = #{ppseq}
+        AND D.TYPESEQ = #{typeseq}	
+	]]></select>
+
+	<!-- /* PARTITION-ROOM : 동일한 시설 정보 취득 & 예약 불가 시설 목록 */ -->
+	<select id="isPossibleSessionBySameRoom" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT	/* 같은 장소를 활용하는 시설이 있으면서 예약이 잡혀있으면 예약 불가 */
+			CASE WHEN COUNT(1) > 0 THEN 'false' ELSE 'true' END AS RESULT
+		FROM (
+			SELECT DISTINCT
+			  T.IDENTIFY,
+			  T.RELATION_ROOM_SEQ
+			FROM (
+			  SELECT /* 역전개 */
+			    IDENTIFY, PARENTROOMSEQ AS RELATION_ROOM_SEQ
+			  FROM RSVSAMEROOMINFO
+			  WHERE IDENTIFY = (
+			    SELECT
+			      IDENTIFY
+			    FROM RSVSAMEROOMINFO
+			    WHERE ROOMSEQ = #{roomseq}				/* parameter1:시설정보일련번호(ROOMSEQ) */
+			  )
+			  UNION ALL
+			  SELECT /* 정전개 */
+			    IDENTIFY, ROOMSEQ AS RELATION_ROOM_SEQ
+			  FROM RSVSAMEROOMINFO
+			  WHERE IDENTIFY = (
+			    SELECT
+			      IDENTIFY
+			    FROM RSVSAMEROOMINFO
+			    WHERE PARENTROOMSEQ = #{roomseq}		/* parameter1:시설정보일련번호(ROOMSEQ) */
+			    GROUP BY IDENTIFY
+			  )
+			) T
+			WHERE T.RELATION_ROOM_SEQ != #{roomseq}		/* parameter1:시설정보일련번호(ROOMSEQ) */		
+		)  X
+	    INNER JOIN RSVRESERVATIONINFO Y
+	      ON (X.RELATION_ROOM_SEQ = Y.ROOMSEQ)
+	    WHERE Y.RSVTYPECODE = 'R01'
+	      AND Y.RESERVATIONDATE = #{reservationdate}
+	      AND Y.RSVSESSIONSEQ = #{sessionseq}
+	]]></select>
+
+	<!-- /* 요리명장의 제한 횟수보다 작으면 TRUE */ -->
+	<select id="isPossibleLimitCountQueenByVip" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		SELECT /* isPossibleLimitCountQueenByVip */
+			CASE WHEN C.LIMIT_COUNT > ( ISNULL(D.CURRENT_COUNT, 0) + ISNULL(E.PENALTY_VALUE, 0) ) THEN 'true' ELSE 'false' END AS RESULT
+		FROM (
+			/* (월단위) 지급 쿠폰 수량 */
+			SELECT
+			  B.CODENAME AS TYPENAME,
+			  A.TYPECODE,
+			  CAST (A.TYPEVALUE AS NUMERIC) AS LIMIT_COUNT
+			FROM RSVPENALTYSETTING A
+			INNER JOIN COMMONCODE B
+			  ON (A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+			WHERE TYPECODE = 'P05'
+		) C
+		INNER JOIN (
+			/* 해당윌의 요리명장 쿠폰 누적 갯수 */
+			SELECT
+			  COUNT(*) AS CURRENT_COUNT
+			FROM RSVRESERVATIONINFO
+			WHERE COOKMASTERCODE = 'R01'	/* 요리명장 */
+			  AND RSVTYPECODE = 'R01'		/* 시설 */
+			  AND NOSHOWCODE = 'R01'		/* 노쇼아님 */
+			  AND CANCELCODE = 'B02'		/* 취소아님 */
+              AND ACCOUNT = #{account}
+			  AND RESERVATIONDATE LIKE CONCAT(CONVERT(VARCHAR(6), ${reservationdate}, 112),'%')		/* parameter1 */
+		) D
+          ON (1=1)
+        INNER JOIN (
+            /* 해당월의 요리명장 쿠폰 패널티 차감 갯수 */
+            SELECT
+                SUM(CONVERT(INT, A.APPLYTYPEVALUE)) AS PENALTY_VALUE
+            FROM RSVPENALTYHISTORY A
+            INNER JOIN RSVRESERVATIONINFO B
+              ON(A.RSVSEQ = B.RSVSEQ)
+            WHERE B.COOKMASTERCODE = 'R01'  /* 요리명장 */
+              AND B.RSVTYPECODE = 'R01'     /* 시설 */
+              AND A.APPLYTYPECODE = 'P03'   /* 적용형태 : 횟수차감 */
+              AND A.STATUSCODE = 'B01'
+              AND A.ACCOUNT = #{account}
+              AND A.GRANTDATE LIKE CONCAT(CONVERT(VARCHAR(6), ${reservationdate}, 112),'%')
+        ) E
+		  ON (1=1)
+	]]></select>
+
+	<select id="isReservedRoomSameHuman" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		/* 동일인이 대기인으로 예약하지 못하게 하는 기능 */
+		SELECT CASE WHEN COUNT(1) > 0 THEN 'false' ELSE 'true' END AS RESULT
+		  FROM RSVRESERVATIONINFO
+		 WHERE ACCOUNT = #{account}
+		   AND CANCELCODE = 'B02'
+		   AND RESERVATIONDATE = #{reservationdate}
+		   AND RSVTYPECODE = 'R01'	/* exp case only  */
+		   AND ROOMSEQ = #{roomseq}
+		   AND RSVSESSIONSEQ = #{sessionseq}
+	]]></select>
+
+	<select id="isReservedExpSameHuman" parameterType="reqBox" resultType="java.lang.Boolean"><![CDATA[
+		/* 동일인이 대기인으로 예약하지 못하게 하는 기능 */
+		SELECT CASE WHEN COUNT(1) > 0 THEN 'false' ELSE 'true' END AS RESULT
+		  FROM RSVRESERVATIONINFO
+		 WHERE ACCOUNT = #{account}
+		   AND CANCELCODE = 'B02'
+		   AND RESERVATIONDATE = #{reservationdate}
+		   AND RSVTYPECODE = 'R02'	/* exp case only  */
+		   AND EXPSEQ = #{expseq}
+		   AND EXPSESSIONSEQ = #{sessionseq}
+	]]></select>
+	
+	<select id="isPossibleGwangjuReservation" parameterType="reqBox" resultType="egovMap"><![CDATA[
+	]]></select>
+
+	
+	<select id="isPossibleDaejeonReservation" parameterType="reqBox" resultType="egovMap"><![CDATA[
+	]]></select>
+
+	<!-- 14자리 TIMESTAMP-KEY 생성 -->
+	<select id="getUniqTimestamp" resultType="java.lang.String"><![CDATA[
+		SELECT CONVERT(CHAR(8), GETDATE(), 112) + REPLACE(CONVERT(CHAR(8), GETDATE(), 108), ':', '') AS TIMESTAMPKEY
+	]]></select>
+	
+	<select id="getPrimiumCountByRegionRoom" parameterType="reqBox" resultType="java.lang.Integer"><![CDATA[
+		SELECT /* 현재 시설신청 지역의 회원별 우대 횟수 (누적 신청 가능 횟수) */
+		    ISNULL(MIN(MONTHLYCOUNT),0) AS RESULT
+		FROM (
+		    SELECT  /* 일반 조건 */
+		        CASE WHEN ISNULL(MIN(A.PPMONTHLYCOUNT), 0) < ISNULL(MIN(A.GLOBALMONTHLYCOUNT), 0)
+		            THEN ISNULL(MIN(A.GLOBALMONTHLYCOUNT), 0)
+		            ELSE ISNULL(MIN(A.PPMONTHLYCOUNT), 0)
+		            END AS MONTHLYCOUNT
+		    FROM (
+		        SELECT
+		            T1.TARGETCODEORDER AS PIN_VALUE,
+		            B.CITYTREATCODE AS CITY_VALUE,
+		            T3.TARGETCODEORDER AS AGE_VALUE,
+		            (
+		                CASE WHEN ISNULL(T1.TARGETCODEORDER, 0) <= CAST(#{pinvalue} AS INT) THEN 1 ELSE 0 END /* PIN_VALUE */
+		                + CASE WHEN ISNULL(B.CITYTREATCODE, 0) = CAST(#{citygroupcode} AS INT) THEN 1 ELSE 0 END /* CITY_VALUE */
+		                + CASE WHEN ISNULL(T3.TARGETCODEORDER, 999) <= CAST(#{age} AS INT) THEN 1 ELSE 0 END /* AGE_VALUE */
+		            ) AS TRUE_COUNT,     /* 실제 조건에 맞는갯수 */
+		            (
+		                CASE WHEN ISNULL(T1.TARGETCODEORDER, 0) > 0 THEN 1 ELSE 0 END
+		                + CASE WHEN ISNULL(B.CITYTREATCODE, 0) > 0 THEN 1 ELSE 0 END
+		                + CASE WHEN ISNULL(T3.TARGETCODEORDER, 0) > 0 THEN 1 ELSE 0 END 
+		            ) AS CONDITION_COUNT,   /* 설정된 조건 갯수 */
+		            B.GLOBALMONTHLYCOUNT,
+		            B.PPMONTHLYCOUNT
+		         FROM RSVROOMTYPEMAP A
+		        INNER JOIN RSVCONSTRAINT B
+		         ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		        LEFT OUTER JOIN V_TARGETCODE_NONMEM T1
+		          ON (B.PINTREATRANGE = T1.TARGETCODESEQ AND T1.TARGETMASTERSEQ = 'PINCODE')
+		        LEFT OUTER JOIN V_TARGETCODE_NONMEM T3
+		          ON (B.AGETREATCODE = T3.TARGETCODESEQ AND T3.TARGETMASTERSEQ = 'AGECODE')
+		        WHERE A.ROOMSEQ = #{roomseq} /* PARAMETER */
+		          AND A.TYPESEQ = #{typeseq} /* PARAMETER */
+		          AND B.CONSTRAINTTYPE = 'C01'
+		          AND A.COOKMASTERCODE != 'C01' /* 요리명장 제외 */
+		          AND B.STATUSCODE = 'B01'
+		    ) A
+		    WHERE TRUE_COUNT >= CONDITION_COUNT /* 실제 조건에 맞는갯수 > 설정된 조건 갯수 */
+		    UNION ALL
+		    SELECT  /* 요리명장 우대조건 */
+		        CASE WHEN ISNULL(MIN(B.GLOBALMONTHLYCOUNT), 0) < ISNULL(MIN(B.PPMONTHLYCOUNT), 0)
+		            THEN ISNULL(MIN(B.GLOBALMONTHLYCOUNT), 0)
+		            ELSE ISNULL(MIN(B.PPMONTHLYCOUNT), 0)
+		            END AS MONTHLYCOUNT
+		    FROM (
+		        SELECT 
+		            B.GROUPSEQ,
+		            B.GLOBALMONTHLYCOUNT,
+		            B.PPMONTHLYCOUNT
+		         FROM RSVROOMTYPEMAP A
+		        INNER JOIN RSVCONSTRAINT B
+		          ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		        WHERE A.ROOMSEQ = #{roomseq} /* PARAMETER */
+		          AND A.TYPESEQ = #{typeseq} /* PARAMETER */
+		          AND B.CONSTRAINTTYPE = 'C02'
+		          AND A.COOKMASTERCODE = 'C01' /* 요리명장 */
+		          AND B.STATUSCODE = 'B01'
+		    ) B
+		    WHERE B.GROUPSEQ = #{cookmastercode} /* SESSION */
+		    UNION ALL
+		    SELECT  /* 특정PP 우대조건 */
+		        CASE WHEN ISNULL(MIN(C.GLOBALMONTHLYCOUNT), 0) < ISNULL(MIN(C.PPMONTHLYCOUNT), 0)
+		            THEN ISNULL(MIN(C.GLOBALMONTHLYCOUNT), 0)
+		            ELSE ISNULL(MIN(C.PPMONTHLYCOUNT), 0)
+		            END AS MONTHLYCOUNT
+		    FROM (
+		        SELECT
+		            B.PPSEQ,
+		            B.GLOBALMONTHLYCOUNT,
+		            B.PPMONTHLYCOUNT
+		         FROM RSVROOMTYPEMAP A
+		        INNER JOIN RSVCONSTRAINT B
+		          ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		        WHERE A.ROOMSEQ = #{roomseq} /* PARAMETER */
+		          AND A.TYPESEQ = #{typeseq} /* PARAMETER */
+		          AND B.CONSTRAINTTYPE = 'C03'
+		          AND B.STATUSCODE = 'B01'
+		    ) C
+		    WHERE C.PPSEQ = #{ppseq} /* PARAMETER */
+		) T
+		WHERE MONTHLYCOUNT > 0 /* 횟수 0을 제외하고 제일 낮은 횟수 적용 */
+	]]></select>
+		
+	<select id="getPrimiumCountByRegionExp" parameterType="reqBox" resultType="java.lang.Integer"><![CDATA[
+		SELECT /* 현재 시설신청 지역의 회원별 우대 횟수 (누적 신청 가능 횟수) */
+		    ISNULL(MIN(MONTHLYCOUNT),0) AS RESULT
+		FROM (
+		    SELECT  /* 일반 조건 */
+		        CASE WHEN ISNULL(MIN(A.PPMONTHLYCOUNT), 0) < ISNULL(MIN(A.GLOBALMONTHLYCOUNT), 0)
+		            THEN ISNULL(MIN(A.GLOBALMONTHLYCOUNT), 0)
+		            ELSE ISNULL(MIN(A.PPMONTHLYCOUNT), 0)
+		            END AS MONTHLYCOUNT
+		    FROM (
+		        SELECT
+		            T1.TARGETCODEORDER AS PIN_VALUE,
+		            B.CITYTREATCODE AS CITY_VALUE,
+		            T3.TARGETCODEORDER AS AGE_VALUE,
+		            (
+		                CASE WHEN ISNULL(T1.TARGETCODEORDER, 0) <= CAST(#{pinvalue} AS INT) THEN 1 ELSE 0 END /* PIN_VALUE */
+		                + CASE WHEN ISNULL(B.CITYTREATCODE, 0) = CAST(#{citygroupcode} AS INT) THEN 1 ELSE 0 END /* CITY_VALUE */
+		                + CASE WHEN ISNULL(T3.TARGETCODEORDER, 999) <= CAST(#{age} AS INT) THEN 1 ELSE 0 END /* AGE_VALUE */
+		            ) AS TRUE_COUNT,    /* 실제 조건에 맞는갯수 */
+		            (
+		                CASE WHEN ISNULL(T1.TARGETCODEORDER, 0) > 0 THEN 1 ELSE 0 END
+		                + CASE WHEN ISNULL(B.CITYTREATCODE, 0) > 0 THEN 1 ELSE 0 END
+		                + CASE WHEN ISNULL(T3.TARGETCODEORDER, 0) > 0 THEN 1 ELSE 0 END 
+		            ) AS CONDITION_COUNT,    /* 설정된 조건 갯수 */
+		            B.GLOBALMONTHLYCOUNT,
+		            B.PPMONTHLYCOUNT
+		         FROM RSVEXPTYPEMAP A
+		        INNER JOIN RSVCONSTRAINT B
+		         ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		        LEFT OUTER JOIN V_TARGETCODE_NONMEM T1
+		          ON (B.PINTREATRANGE = T1.TARGETCODESEQ AND T1.TARGETMASTERSEQ = 'PINCODE')
+		        LEFT OUTER JOIN V_TARGETCODE_NONMEM T3
+		          ON (B.AGETREATCODE = T3.TARGETCODESEQ AND T3.TARGETMASTERSEQ = 'AGECODE')
+		        WHERE A.EXPSEQ = #{expseq}    /* PARAMETER */
+		          AND A.TYPESEQ = #{typeseq}    /* PARAMETER */
+		          AND B.CONSTRAINTTYPE = 'C01'
+		          AND B.STATUSCODE = 'B01'
+		    ) A
+		    WHERE TRUE_COUNT >= CONDITION_COUNT /* 실제 조건에 맞는갯수 > 설정된 조건 갯수 */
+		    UNION ALL
+		    SELECT  /* 특정PP 우대조건 */
+		        CASE WHEN ISNULL(MIN(C.GLOBALMONTHLYCOUNT), 0) < ISNULL(MIN(C.PPMONTHLYCOUNT), 0)
+		            THEN ISNULL(MIN(C.GLOBALMONTHLYCOUNT), 0)
+		            ELSE ISNULL(MIN(C.PPMONTHLYCOUNT), 0)
+		            END AS MONTHLYCOUNT
+		    FROM (
+		        SELECT
+		            B.PPSEQ,
+		            B.GLOBALMONTHLYCOUNT,
+		            B.PPMONTHLYCOUNT
+		         FROM RSVEXPTYPEMAP A
+		        INNER JOIN RSVCONSTRAINT B
+		          ON (A.SETTINGSEQ = B.SETTINGSEQ)
+		        WHERE A.EXPSEQ = #{expseq} /* PARAMETER */
+		          AND A.TYPESEQ = #{typeseq} /* PARAMETER */
+		          AND B.CONSTRAINTTYPE = 'C03'
+		          AND B.STATUSCODE = 'B01'
+		    ) C
+		    WHERE C.PPSEQ = #{ppseq} /* PARAMETER */
+		) T
+		WHERE MONTHLYCOUNT > 0 /* 횟수 0을 제외하고 제일 낮은 횟수 적용 */
+	]]>
+	</select>
+	
+	<select id="getMonthlyReservedCountByRegion" parameterType="reqBox" resultType="java.lang.Integer">
+	
+		<if test="'R01'.equals(rsvtypecode)">
+			<![CDATA[
+				SELECT
+				    COUNT(1) AS RESULT
+				FROM RSVRESERVATIONINFO
+				WHERE ACCOUNT = #{account}	/* SESSION */
+				  AND PPSEQ = #{ppseq}		/* SESSION */
+				  AND TYPESEQ = #{typeseq}	/* SESSION */
+				  AND ROOMSEQ = #{roomseq}	/* SESSION */
+				  AND CANCELCODE = 'B02'
+				  AND SUBSTRING(RESERVATIONDATE,1,6) = CONVERT(VARCHAR(6), #{reservationdate}) 	/* PARAMETER */
+			]]>
+		</if>
+		<if test="'R02'.equals(rsvtypecode)">
+			<![CDATA[
+				SELECT
+				    COUNT(1) AS RESULT
+				FROM RSVRESERVATIONINFO
+				WHERE ACCOUNT = #{account}	/* SESSION */
+				  AND PPSEQ = #{ppseq}		/* SESSION */
+				  AND TYPESEQ = #{typeseq}	/* SESSION */
+				  AND EXPSEQ = #{expseq}	/* SESSION */
+				  AND CANCELCODE = 'B02'
+				  AND SUBSTRING(RESERVATIONDATE,1,6) = CONVERT(VARCHAR(6), #{reservationdate}) 	/* PARAMETER */
+			]]>
+		</if>
+		
+	</select>
+		
+	<!-- 누적 예약 가능 횟수 (월, 주, 일) 조회 -->
+	<select id="getRsvAvailabilityCount" parameterType="reqBox" resultType="egovMap">
+		WITH RSV2 AS
+		    (
+				SELECT /* 예약자의 기본정보 */
+					UID AS ACCOUNT,
+					NAME AS ACCOUNTNAME,
+					PINNO,
+					PIN_VALUE AS PINVALUE,
+					REGIONNAME,
+					CITYNAME,
+					AGE,
+					SSN,
+					COOKMASTER,
+					COOKMASTERCODE,
+					CITYGROUPCODE
+				FROM (
+				  SELECT
+				  		X.UID,
+				  		X.NAME,
+					    X.PINNO,
+				      	X.PIN_VALUE,
+					    X.REGIONNAME,
+					    X.CITYNAME,
+					    X.AGE,
+					    X.SSN,
+					    CASE WHEN ISNULL(X.COOKMASTERCODE, '') != ''
+		                    THEN 'true'
+		                    ELSE 'false'
+		                END AS COOKMASTER,
+		                ISNULL(X.COOKMASTERCODE, '') AS COOKMASTERCODE,
+					    CASE WHEN NULL != Y2.CITYGROUPCODE 
+					        THEN Y2.CITYGROUPCODE 
+					        ELSE Y.CITYGROUPCODE
+					    END AS CITYGROUPCODE,
+				      ROW_NUMBER() OVER(ORDER BY Y.MAPPINGSEQ DESC) AS NUMB
+				  FROM (
+					    /* 기본정보 */
+					    SELECT
+					    	M.UID,
+					    	M.NAME,
+							M.PINNO,
+				      		ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+							M.REGIONNAME,
+							M.CITYNAME,
+							M.AGE,
+							M.SSN,
+							CM.GROUPSEQ AS COOKMASTERCODE,
+							N.REGIONCODE AS REGION_ALL_CODE,
+							G.REGIONCODE,
+							G.CITYCODE
+					    FROM (
+								/* 개인정보 */
+								SELECT
+									A.UID,
+									A.NAME,
+									A.GROUPS AS PINNO,
+				          			B.TARGETCODEORDER AS PIN_VALUE,
+									SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+									SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+									CASE WHEN A.SSN = '999000'
+										THEN 100
+										ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+										END AS AGE,
+									SUBSTRING(A.SSN,1,6) AS SSN
+								FROM MEMBER A
+				        		LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+						          ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+								WHERE A.UID = #{account}	/* parameter1:account:7480002 */
+					    ) M
+					    LEFT OUTER JOIN (
+		                        /* 요리명장 */
+		                        SELECT
+		                            MAX(A.GROUPSEQ) AS GROUPSEQ,
+		                            B.ABONO
+		                        FROM RSVROLEGROUP A
+		                        INNER JOIN RSVROLETARGET B
+		                          ON (A.GROUPSEQ = B.GROUPSEQ)
+		                        WHERE B.STATUSCODE = 'B01'
+		                          AND A.COOKMASTERCODE = 'C01'
+		                        GROUP BY B.ABONO
+		                ) CM
+		                ON (M.UID = CM.ABONO)
+					    LEFT OUTER JOIN (
+								/* 행정구역단위 비교 */
+								SELECT
+									REGIONCODE,
+									REGIONNAME,
+									SHORTNAME
+								FROM RSVREGIONINFO
+					    ) N
+					    ON (M.REGIONNAME = N.SHORTNAME)
+					    LEFT OUTER JOIN (
+								/* 도시단위 비교 */
+								SELECT
+									A.REGIONCODE,
+									A.SHORTNAME,
+									B.CITYCODE,
+									B.CITYNAME
+								FROM RSVREGIONINFO A
+								INNER JOIN RSVCITYINFO B
+								  ON (A.REGIONCODE = B.REGIONCODE)
+					    ) G
+					    ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+				  ) X
+				  LEFT OUTER JOIN RSVCITYGROUPMAP Y /* 행정구역단위 GROUPCODE */
+				  	ON (X.REGION_ALL_CODE = Y.REGIONCODE)
+				  INNER JOIN RSVCITYGROUPMASTER YM
+				    ON (Y.CITYGROUPCODE = YM.CITYGROUPCODE AND YM.STATUSCODE = 'B01')
+				  LEFT OUTER JOIN RSVCITYGROUPMAP Y2 /* 도시단위 GROUPCODE */
+				  	ON (X.REGIONCODE = Y2.REGIONCODE AND X.CITYCODE = Y2.CITYCODE)
+				  INNER JOIN RSVCITYGROUPMASTER Y2M
+				    ON (Y.CITYGROUPCODE = Y2M.CITYGROUPCODE AND Y2M.STATUSCODE = 'B01')
+				) T
+				WHERE NUMB = 1
+		    )
+		, RSV1 AS
+		    (SELECT B.GLOBALDAILYCOUNT
+		          , B.GLOBALWEEKLYCOUNT
+		          , B.GLOBALMONTHLYCOUNT
+		          , B.PPDAILYCOUNT
+		          , B.PPWEEKLYCOUNT
+		          , B.PPMONTHLYCOUNT
+		          <if test='roomseq != null and !roomseq.equals("")'>
+		          , A.ROOMSEQ
+		          </if>
+		          <if test='expseq != null and !expseq.equals("")'>
+		          , A.EXPSEQ
+		          </if>
+		          , B.CONSTRAINTTYPE
+		          , B.PINTREATRANGE
+		          , C.TARGETCODEORDER
+		          , B.CITYTREATCODE
+		          , B.AGETREATCODE
+		          , F.TARGETCODEORDER AS AGEVALUE
+		          , B.GROUPSEQ
+		          , B.PPSEQ
+		          , D.TYPESEQ
+		     FROM 
+		          <if test='roomseq != null and !roomseq.equals("")'>
+		          RSVROOMTYPEMAP A
+		          </if>
+		          <if test='expseq != null and !expseq.equals("")'>
+		          RSVEXPTYPEMAP A
+		          </if>
+		          INNER JOIN RSVCONSTRAINT B
+		          ON (A.SETTINGSEQ = B.SETTINGSEQ
+		              <if test='roomseq != null and !roomseq.equals("")'>
+		              AND A.ROOMSEQ = #{roomseq} 
+		              </if>
+		              <if test='expseq != null and !expseq.equals("")'>
+		              AND A.EXPSEQ = #{expseq} 
+		              </if>
+		              AND B.STATUSCODE = 'B01'
+		              AND A.SETTINGSEQ IS NOT NULL
+		              <if test='roomseq != null and !roomseq.equals("")'>
+		              AND (A.COOKMASTERCODE IS NULL
+		                OR A.COOKMASTERCODE = 'C02')
+		              </if>
+		             )
+		          LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		          ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		              AND C.TARGETMASTERSEQ = 'PINCODE')
+		          LEFT OUTER JOIN RSVSPECIALPPMAP D
+		          ON (B.SETTINGSEQ = D.SETTINGSEQ)
+		          LEFT OUTER JOIN TARGETCODE F
+		          ON (B.AGETREATCODE = F.TARGETCODESEQ
+		              AND F.TARGETMASTERSEQ = 'AGECODE')
+		    )
+		-- SELECT 구문
+		SELECT AAAA.GLOBALDAILYCOUNT
+		     , AAAA.GLOBALWEEKLYCOUNT
+		     , AAAA.GLOBALMONTHLYCOUNT
+		     , AAAA.PPDAILYCOUNT
+		     , AAAA.PPWEEKLYCOUNT
+		     , AAAA.PPMONTHLYCOUNT
+		 FROM (SELECT ROW_NUMBER() OVER (ORDER BY AAA.ORDERCOUNT ASC) AS ROWNUM
+		            , AAA.GLOBALDAILYCOUNT
+		            , AAA.GLOBALWEEKLYCOUNT
+		            , AAA.GLOBALMONTHLYCOUNT
+		            , AAA.PPDAILYCOUNT
+		            , AAA.PPWEEKLYCOUNT
+		            , AAA.PPMONTHLYCOUNT
+		         FROM (
+		               <if test='account != null and !account.equals("")'>
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 1 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                WHERE
+		                      /* 특정 그룹 조건 */
+		                      AA.CONSTRAINTTYPE = 'C02'
+		                      AND AA.GROUPSEQ IN (SELECT A.GROUPSEQ
+		                                            FROM RSVROLEGROUP A
+		                                                 INNER JOIN RSVROLETARGET B
+		                                                 ON (A.GROUPSEQ = B.GROUPSEQ
+		                                                     AND B.STATUSCODE = 'B01'
+		                                                     AND B.ABONO = #{account})
+		                                         )
+		                <if test='roomseq != null and !roomseq.equals("")'>
+		                GROUP BY AA.ROOMSEQ 
+		                </if>
+		                <if test='expseq != null and !expseq.equals("")'>
+		                GROUP BY AA.EXPSEQ 
+		                </if>
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 2 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                      LEFT OUTER JOIN ( SELECT * FROM RSV2 ) BB
+		                      ON (1 = 1)
+		                WHERE
+		                  /* PIN , 지역 , 나이 */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                  AND AA.CITYTREATCODE IS NOT NULL
+		                  AND AA.CITYTREATCODE != ''
+		                  AND AA.AGETREATCODE IS NOT NULL
+		                  AND AA.AGETREATCODE != ''
+		                  /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                  AND AA.TARGETCODEORDER = (SELECT MAX(C.TARGETCODEORDER)
+		                                              FROM 
+		                                                   <if test='roomseq != null and !roomseq.equals("")'>
+		                                                   RSVROOMTYPEMAP A
+		                                                   </if>
+		                                                   <if test='expseq != null and !expseq.equals("")'>
+		                                                   RSVEXPTYPEMAP A
+		                                                   </if>
+		                                                   INNER JOIN RSVCONSTRAINT B
+		                                                   ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                       <if test='roomseq != null and !roomseq.equals("")'>
+		                                                       AND A.ROOMSEQ = #{roomseq} 
+		                                                       </if>
+		                                                       <if test='expseq != null and !expseq.equals("")'>
+		                                                       AND A.EXPSEQ = #{expseq} 
+		                                                       </if>
+		                                                       AND B.STATUSCODE = 'B01'
+		                                                       AND A.SETTINGSEQ IS NOT NULL
+		                                                       AND B.CITYTREATCODE IS NOT NULL
+		                                                       AND B.CITYTREATCODE != ''
+		                                                       AND B.AGETREATCODE IS NOT NULL
+		                                                       AND B.AGETREATCODE != '')
+		                                                   LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                                                   ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                                       AND C.TARGETMASTERSEQ = 'PINCODE')
+		                                             WHERE C.TARGETCODEORDER &lt;= BB.PINVALUE
+		                                             <if test='roomseq != null and !roomseq.equals("")'>
+		                                             GROUP BY A.ROOMSEQ 
+		                                             </if>
+		                                             <if test='expseq != null and !expseq.equals("")'>
+		                                             GROUP BY A.EXPSEQ 
+		                                             </if>
+		                                           )
+		                  /* 지역코드는 사용자의 지역코드 */
+		                  AND AA.CITYTREATCODE = BB.CITYGROUPCODE
+		                  /* 나이 벨류는는 사용자의 나이보다 작은 것 중 가장 큰것 */
+		                  AND AA.AGEVALUE = (SELECT MIN(C.TARGETCODEORDER)
+		                                       FROM 
+		                                            <if test='roomseq != null and !roomseq.equals("")'>
+		                                            RSVROOMTYPEMAP A
+		                                            </if>
+		                                            <if test='expseq != null and !expseq.equals("")'>
+		                                            RSVEXPTYPEMAP A
+		                                            </if>
+		                                            INNER JOIN RSVCONSTRAINT B
+		                                            ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                <if test='roomseq != null and !roomseq.equals("")'>
+		                                                AND A.ROOMSEQ = #{roomseq} 
+		                                                </if>
+		                                                <if test='expseq != null and !expseq.equals("")'>
+		                                                AND A.EXPSEQ = #{expseq} 
+		                                                </if>
+		                                                AND B.STATUSCODE = 'B01'
+		                                                AND A.SETTINGSEQ IS NOT NULL
+		                                                AND B.CITYTREATCODE IS NOT NULL
+		                                                AND B.CITYTREATCODE != ''
+		                                                AND B.AGETREATCODE IS NOT NULL
+		                                                AND B.AGETREATCODE != '')
+		                                            LEFT OUTER JOIN TARGETCODE C
+		                                            ON (B.AGETREATCODE = C.TARGETCODESEQ
+		                                                AND C.TARGETMASTERSEQ = 'AGECODE')
+		                                      WHERE C.TARGETCODEORDER &gt;= BB.AGE
+		                                      <if test='roomseq != null and !roomseq.equals("")'>
+		                                      GROUP BY A.ROOMSEQ 
+		                                      </if>
+		                                      <if test='expseq != null and !expseq.equals("")'>
+		                                      GROUP BY A.EXPSEQ 
+		                                      </if>
+                                            )
+		                <if test='roomseq != null and !roomseq.equals("")'>
+		                GROUP BY AA.ROOMSEQ 
+		                </if>
+		                <if test='expseq != null and !expseq.equals("")'>
+		                GROUP BY AA.EXPSEQ 
+		                </if>
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 3 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                      LEFT OUTER JOIN ( SELECT * FROM RSV2 ) BB
+		                      ON (1 = 1)
+		                WHERE
+		                  /* PIN , 지역 */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                  AND AA.CITYTREATCODE IS NOT NULL
+		                  AND AA.CITYTREATCODE != ''
+		                  AND (AA.AGETREATCODE IS NULL
+		                  OR AA.AGETREATCODE = '')
+		                  /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                  AND AA.TARGETCODEORDER = (SELECT MAX(C.TARGETCODEORDER)
+		                                              FROM 
+		                                                   <if test='roomseq != null and !roomseq.equals("")'>
+		                                                   RSVROOMTYPEMAP A
+		                                                   </if>
+		                                                   <if test='expseq != null and !expseq.equals("")'>
+		                                                   RSVEXPTYPEMAP A
+		                                                   </if>
+		                                                   INNER JOIN RSVCONSTRAINT B
+		                                                   ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                       <if test='roomseq != null and !roomseq.equals("")'>
+		                                                       AND A.ROOMSEQ = #{roomseq} 
+		                                                       </if>
+		                                                       <if test='expseq != null and !expseq.equals("")'>
+		                                                       AND A.EXPSEQ = #{expseq} 
+		                                                       </if>
+		                                                       AND B.STATUSCODE = 'B01'
+		                                                       AND A.SETTINGSEQ IS NOT NULL
+		                                                       AND B.CITYTREATCODE IS NOT NULL
+		                                                       AND B.CITYTREATCODE != ''
+		                                                       AND (B.AGETREATCODE IS NULL
+		                                                         OR B.AGETREATCODE = ''))
+		                                                   LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                                                   ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                                       AND C.TARGETMASTERSEQ = 'PINCODE')
+		                                             WHERE C.TARGETCODEORDER &lt;= BB.PINVALUE
+		                                             <if test='roomseq != null and !roomseq.equals("")'>
+		                                             GROUP BY A.ROOMSEQ 
+		                                             </if>
+		                                             <if test='expseq != null and !expseq.equals("")'>
+		                                             GROUP BY A.EXPSEQ 
+		                                             </if>
+		                                           )
+		                  /* 지역코드는 사용자의 지역코드 */
+		                  AND AA.CITYTREATCODE = BB.CITYGROUPCODE
+		                <if test='roomseq != null and !roomseq.equals("")'>
+		                GROUP BY AA.ROOMSEQ 
+		                </if>
+		                <if test='expseq != null and !expseq.equals("")'>
+		                GROUP BY AA.EXPSEQ 
+		                </if>
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 4 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                      LEFT OUTER JOIN ( SELECT * FROM RSV2 ) BB
+		                      ON (1 = 1)
+		                WHERE
+		                      /* PIN , 나이 */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                  AND AA.AGETREATCODE IS NOT NULL
+		                  AND AA.AGETREATCODE != ''
+		                  AND (AA.CITYTREATCODE IS NULL
+		                    OR AA.CITYTREATCODE = '')
+		                  /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                  AND AA.TARGETCODEORDER = (SELECT MAX(C.TARGETCODEORDER)
+		                                              FROM 
+		                                                   <if test='roomseq != null and !roomseq.equals("")'>
+		                                                   RSVROOMTYPEMAP A
+		                                                   </if>
+		                                                   <if test='expseq != null and !expseq.equals("")'>
+		                                                   RSVEXPTYPEMAP A
+		                                                   </if>
+		                                                   INNER JOIN RSVCONSTRAINT B
+		                                                   ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                       <if test='roomseq != null and !roomseq.equals("")'>
+		                                                       AND A.ROOMSEQ = #{roomseq} 
+		                                                       </if>
+		                                                       <if test='expseq != null and !expseq.equals("")'>
+		                                                       AND A.EXPSEQ = #{expseq} 
+		                                                       </if>
+		                                                       AND B.STATUSCODE = 'B01'
+		                                                       AND A.SETTINGSEQ IS NOT NULL
+		                                                       AND B.AGETREATCODE IS NOT NULL
+		                                                       AND B.AGETREATCODE != ''
+		                                                       AND (B.CITYTREATCODE IS NULL
+		                                                         OR B.CITYTREATCODE = ''))
+		                                                   LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                                                   ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                                       AND C.TARGETMASTERSEQ = 'PINCODE')
+		                                             WHERE C.TARGETCODEORDER &lt;= BB.PINVALUE
+		                                             <if test='roomseq != null and !roomseq.equals("")'>
+		                                             GROUP BY A.ROOMSEQ 
+		                                             </if>
+		                                             <if test='expseq != null and !expseq.equals("")'>
+		                                             GROUP BY A.EXPSEQ 
+		                                             </if>
+		                                           )
+		                  /* 나이 벨류는는 사용자의 보다 작은 것 중 가장 큰것 */
+		                  AND AA.AGEVALUE = (SELECT MIN(C.TARGETCODEORDER)
+		                                       FROM 
+		                                            <if test='roomseq != null and !roomseq.equals("")'>
+		                                            RSVROOMTYPEMAP A
+		                                            </if>
+		                                            <if test='expseq != null and !expseq.equals("")'>
+		                                            RSVEXPTYPEMAP A
+		                                            </if>
+		                                            INNER JOIN RSVCONSTRAINT B
+		                                            ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                <if test='roomseq != null and !roomseq.equals("")'>
+		                                                AND A.ROOMSEQ = #{roomseq} 
+		                                                </if>
+		                                                <if test='expseq != null and !expseq.equals("")'>
+		                                                AND A.EXPSEQ = #{expseq} 
+		                                                </if>
+		                                                AND B.STATUSCODE = 'B01'
+		                                                AND A.SETTINGSEQ IS NOT NULL
+		                                                AND B.AGETREATCODE IS NOT NULL
+		                                                AND B.AGETREATCODE != ''
+		                                                AND (B.CITYTREATCODE IS NULL
+		                                                  OR B.CITYTREATCODE = ''))
+		                                            LEFT OUTER JOIN TARGETCODE C
+		                                            ON (B.AGETREATCODE = C.TARGETCODESEQ
+		                                                AND C.TARGETMASTERSEQ = 'AGECODE')
+		                                      WHERE C.TARGETCODEORDER &gt;= BB.AGE
+		                                      <if test='roomseq != null and !roomseq.equals("")'>
+		                                      GROUP BY A.ROOMSEQ 
+		                                      </if>
+		                                      <if test='expseq != null and !expseq.equals("")'>
+		                                      GROUP BY A.EXPSEQ 
+		                                      </if>
+		                                           )
+		                <if test='roomseq != null and !roomseq.equals("")'>
+		                GROUP BY AA.ROOMSEQ 
+		                </if>
+		                <if test='expseq != null and !expseq.equals("")'>
+		                GROUP BY AA.EXPSEQ 
+		                </if>
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 5 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                      LEFT OUTER JOIN ( SELECT * FROM RSV2 ) BB
+		                      ON (1 = 1)
+		                WHERE
+		                      /* PIN */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                      AND (AA.AGETREATCODE IS NULL
+		                        OR AA.AGETREATCODE = '')
+		                      AND (AA.CITYTREATCODE IS NULL
+		                        OR AA.CITYTREATCODE = '')
+		                      /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                      AND AA.TARGETCODEORDER = (SELECT MAX(C.TARGETCODEORDER)
+		                                                  FROM 
+		                                                       <if test='roomseq != null and !roomseq.equals("")'>
+		                                                       RSVROOMTYPEMAP A
+		                                                       </if>
+		                                                       <if test='expseq != null and !expseq.equals("")'>
+		                                                       RSVEXPTYPEMAP A
+		                                                       </if>
+		                                                       INNER JOIN RSVCONSTRAINT B
+		                                                       ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                           <if test='roomseq != null and !roomseq.equals("")'>
+		                                                           AND A.ROOMSEQ = #{roomseq} 
+		                                                           </if>
+		                                                           <if test='expseq != null and !expseq.equals("")'>
+		                                                           AND A.EXPSEQ = #{expseq} 
+		                                                           </if>
+		                                                           AND B.STATUSCODE = 'B01'
+		                                                           AND A.SETTINGSEQ IS NOT NULL
+		                                                           AND (B.AGETREATCODE IS NULL
+		                                                             OR B.AGETREATCODE = '')
+		                                                           AND (B.CITYTREATCODE IS NULL
+		                                                             OR B.CITYTREATCODE = ''))
+		                                                       LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                                                       ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                                           AND C.TARGETMASTERSEQ = 'PINCODE')
+		                                                 WHERE C.TARGETCODEORDER &lt;= BB.PINVALUE
+		                                                 <if test='roomseq != null and !roomseq.equals("")'>
+		                                                 GROUP BY A.ROOMSEQ 
+		                                                 </if>
+		                                                 <if test='expseq != null and !expseq.equals("")'>
+		                                                 GROUP BY A.EXPSEQ 
+		                                                 </if>
+		                                               )
+		                <if test='roomseq != null and !roomseq.equals("")'>
+		                GROUP BY AA.ROOMSEQ 
+		                </if>
+		                <if test='expseq != null and !expseq.equals("")'>
+		                GROUP BY AA.EXPSEQ 
+		                </if>
+		               </if>
+		               <if test='account == null or account.equals("")'>
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 5 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                WHERE
+		                      /* PIN */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                      AND (AA.AGETREATCODE IS NULL
+		                        OR AA.AGETREATCODE = '')
+		                      AND (AA.CITYTREATCODE IS NULL
+		                        OR AA.CITYTREATCODE = '')
+		                      /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                      AND AA.TARGETCODEORDER = -99
+		                <if test='roomseq != null and !roomseq.equals("")'>
+		                GROUP BY AA.ROOMSEQ 
+		                </if>
+		                <if test='expseq != null and !expseq.equals("")'>
+		                GROUP BY AA.EXPSEQ 
+		                </if>
+		               </if>
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 6 AS ORDERCOUNT
+		                 FROM (SELECT B.GLOBALDAILYCOUNT
+		                            , B.GLOBALWEEKLYCOUNT
+		                            , B.GLOBALMONTHLYCOUNT
+		                            , B.PPDAILYCOUNT
+		                            , B.PPWEEKLYCOUNT
+		                            , B.PPMONTHLYCOUNT
+		                            <if test='roomseq != null and !roomseq.equals("")'>
+		                            , A.ROOMSEQ
+		                            </if>
+		                            <if test='expseq != null and !expseq.equals("")'>
+		                            , A.EXPSEQ
+		                            </if>
+		                            , B.CONSTRAINTTYPE
+		                            , B.PINTREATRANGE
+		                            , C.TARGETCODEORDER
+		                            , B.CITYTREATCODE
+		                            , B.AGETREATCODE
+		                            , F.TARGETCODEORDER AS AGEVALUE
+		                            , B.GROUPSEQ
+		                            , B.PPSEQ
+		                            , D.TYPESEQ
+		                       FROM 
+		                            <if test='roomseq != null and !roomseq.equals("")'>
+		                            RSVROOMTYPEMAP A
+		                            </if>
+		                            <if test='expseq != null and !expseq.equals("")'>
+		                            RSVEXPTYPEMAP A
+		                            </if>
+		                            INNER JOIN RSVCONSTRAINT B
+		                            ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                /* pp가 넘어온 파라미터이고 예약형태가 넘어온 파아미터 */
+		                                AND B.PPSEQ = #{ppseq}
+		                                AND A.TYPESEQ = #{typeseq}
+		                                /* PP별 예약형태별 */
+		                                AND B.CONSTRAINTTYPE = 'C03'
+		                                AND B.STATUSCODE = 'B01'
+		                                AND A.SETTINGSEQ IS NOT NULL
+		                                <if test='roomseq != null and !roomseq.equals("")'>
+		                                AND (A.COOKMASTERCODE IS NULL
+		                                  OR A.COOKMASTERCODE = 'C02')
+		                                </if>
+		                               )
+		                            LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                            ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                AND C.TARGETMASTERSEQ = 'PINCODE')
+		                            LEFT OUTER JOIN RSVSPECIALPPMAP D
+		                            ON (B.SETTINGSEQ = D.SETTINGSEQ)
+		                            LEFT OUTER JOIN TARGETCODE F
+		                            ON (B.AGETREATCODE = F.TARGETCODESEQ
+		                                AND F.TARGETMASTERSEQ = 'AGECODE')
+		                      ) AA
+		                <if test='roomseq != null and !roomseq.equals("")'>
+		                GROUP BY AA.ROOMSEQ 
+		                </if>
+		                <if test='expseq != null and !expseq.equals("")'>
+		                GROUP BY AA.EXPSEQ 
+		                </if>
+		              ) AAA
+		      ) AAAA
+		WHERE AAAA.ROWNUM = 1
+	</select>
+	
+	<!-- 시설별 일별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilityPpDailyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 일단위 */
+		SELECT
+			COUNT(*) 
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 1=1
+            <if test='account != null and !account.equals("")'>
+            AND ACCOUNT = #{account} 
+            </if>
+            <if test='account == null or account.equals("")'>
+            AND NONMEMBERID = #{nonMemberId}
+            </if>
+			AND RESERVATIONDATE = #{reservationdate}
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 시설별 주차별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilityPpWeeklyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 주단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 1=1
+            <if test='account != null and !account.equals("")'>
+            AND ACCOUNT = #{account} 
+            </if>
+            <if test='account == null or account.equals("")'>
+            AND NONMEMBERID = #{nonMemberId}
+            </if>
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(WK, RESERVATIONDATE) = DATEPART(WK, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 시설별 월별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilityPpMonthlyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 월단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 1=1
+            <if test='account != null and !account.equals("")'>
+            AND ACCOUNT = #{account} 
+            </if>
+            <if test='account == null or account.equals("")'>
+            AND NONMEMBERID = #{nonMemberId}
+            </if>
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(MM, RESERVATIONDATE) = DATEPART(MM, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 시설별 일별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilityGlobalDailyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 일단위 */
+		SELECT
+			COUNT(*) 
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 1=1
+            <if test='account != null and !account.equals("")'>
+            AND ACCOUNT = #{account} 
+            </if>
+            <if test='account == null or account.equals("")'>
+            AND NONMEMBERID = #{nonMemberId}
+            </if>
+			AND RESERVATIONDATE = #{reservationdate}
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 시설별 주차별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilityGlobalWeeklyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 주단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 1=1
+            <if test='account != null and !account.equals("")'>
+            AND ACCOUNT = #{account} 
+            </if>
+            <if test='account == null or account.equals("")'>
+            AND NONMEMBERID = #{nonMemberId}
+            </if>
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(WK, RESERVATIONDATE) = DATEPART(WK, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 시설별 월별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilityGlobalMonthlyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 월단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 1=1
+            <if test='account != null and !account.equals("")'>
+            AND ACCOUNT = #{account} 
+            </if>
+            <if test='account == null or account.equals("")'>
+            AND NONMEMBERID = #{nonMemberId}
+            </if>
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(MM, RESERVATIONDATE) = DATEPART(MM, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 요리명장 누적 예약 가능 횟수 (월, 주, 일) 조회 -->
+	<select id="getCookMasterRsvAvailabilityCount" parameterType="reqBox" resultType="egovMap">
+		WITH RSV2 AS
+		    (
+				SELECT /* 예약자의 기본정보 */
+					UID AS ACCOUNT,
+					NAME AS ACCOUNTNAME,
+					PINNO,
+					PIN_VALUE AS PINVALUE,
+					REGIONNAME,
+					CITYNAME,
+					AGE,
+					SSN,
+					COOKMASTER,
+					COOKMASTERCODE,
+					CITYGROUPCODE
+				FROM (
+				  SELECT
+				  		X.UID,
+				  		X.NAME,
+					    X.PINNO,
+				      	X.PIN_VALUE,
+					    X.REGIONNAME,
+					    X.CITYNAME,
+					    X.AGE,
+					    X.SSN,
+					    CASE WHEN ISNULL(X.COOKMASTERCODE, '') != ''
+		                    THEN 'true'
+		                    ELSE 'false'
+		                END AS COOKMASTER,
+		                ISNULL(X.COOKMASTERCODE, '') AS COOKMASTERCODE,
+					    CASE WHEN NULL != Y2.CITYGROUPCODE 
+					        THEN Y2.CITYGROUPCODE 
+					        ELSE Y.CITYGROUPCODE
+					    END AS CITYGROUPCODE,
+				      ROW_NUMBER() OVER(ORDER BY Y.MAPPINGSEQ DESC) AS NUMB
+				  FROM (
+					    /* 기본정보 */
+					    SELECT
+					    	M.UID,
+					    	M.NAME,
+							M.PINNO,
+				      		ISNULL(M.PIN_VALUE, -99) AS PIN_VALUE,
+							M.REGIONNAME,
+							M.CITYNAME,
+							M.AGE,
+							M.SSN,
+							CM.GROUPSEQ AS COOKMASTERCODE,
+							N.REGIONCODE AS REGION_ALL_CODE,
+							G.REGIONCODE,
+							G.CITYCODE
+					    FROM (
+								/* 개인정보 */
+								SELECT
+									A.UID,
+									A.NAME,
+									A.GROUPS AS PINNO,
+				          			B.TARGETCODEORDER AS PIN_VALUE,
+									SUBSTRING(A.BUSINESSDISTRICT,1,2) AS REGIONNAME,
+									SUBSTRING(A.BUSINESSDISTRICT,4,10) AS CITYNAME,
+									CASE WHEN A.SSN = '999000'
+										THEN 100
+										ELSE DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(A.SSN, 1, 6), 112), GETDATE())
+										END AS AGE,
+									SUBSTRING(A.SSN,1,6) AS SSN
+								FROM MEMBER A
+				        		LEFT OUTER JOIN V_TARGETCODE_NONMEM B
+						          ON (A.GROUPS = B.TARGETCODESEQ AND B.TARGETMASTERSEQ = 'PINCODE')
+								WHERE A.UID = #{account}	/* parameter1:account:7480002 */
+					    ) M
+					    LEFT OUTER JOIN (
+		                        /* 요리명장 */
+		                        SELECT
+		                            MAX(A.GROUPSEQ) AS GROUPSEQ,
+		                            B.ABONO
+		                        FROM RSVROLEGROUP A
+		                        INNER JOIN RSVROLETARGET B
+		                          ON (A.GROUPSEQ = B.GROUPSEQ)
+		                        WHERE B.STATUSCODE = 'B01'
+		                          AND A.COOKMASTERCODE = 'C01'
+		                        GROUP BY B.ABONO
+		                ) CM
+		                ON (M.UID = CM.ABONO)
+					    LEFT OUTER JOIN (
+								/* 행정구역단위 비교 */
+								SELECT
+									REGIONCODE,
+									REGIONNAME,
+									SHORTNAME
+								FROM RSVREGIONINFO
+					    ) N
+					    ON (M.REGIONNAME = N.SHORTNAME)
+					    LEFT OUTER JOIN (
+								/* 도시단위 비교 */
+								SELECT
+									A.REGIONCODE,
+									A.SHORTNAME,
+									B.CITYCODE,
+									B.CITYNAME
+								FROM RSVREGIONINFO A
+								INNER JOIN RSVCITYINFO B
+								  ON (A.REGIONCODE = B.REGIONCODE)
+					    ) G
+					    ON (M.REGIONNAME = G.SHORTNAME AND M.CITYNAME = G.CITYNAME)
+				  ) X
+				  LEFT OUTER JOIN RSVCITYGROUPMAP Y /* 행정구역단위 GROUPCODE */
+				  	ON (X.REGION_ALL_CODE = Y.REGIONCODE)
+				  INNER JOIN RSVCITYGROUPMASTER YM
+				    ON (Y.CITYGROUPCODE = YM.CITYGROUPCODE AND YM.STATUSCODE = 'B01')
+				  LEFT OUTER JOIN RSVCITYGROUPMAP Y2 /* 도시단위 GROUPCODE */
+				  	ON (X.REGIONCODE = Y2.REGIONCODE AND X.CITYCODE = Y2.CITYCODE)
+				  INNER JOIN RSVCITYGROUPMASTER Y2M
+				    ON (Y.CITYGROUPCODE = Y2M.CITYGROUPCODE AND Y2M.STATUSCODE = 'B01')
+				) T
+				WHERE NUMB = 1
+		    )
+		, RSV1 AS
+		    (SELECT B.GLOBALDAILYCOUNT
+		          , B.GLOBALWEEKLYCOUNT
+		          , B.GLOBALMONTHLYCOUNT
+		          , B.PPDAILYCOUNT
+		          , B.PPWEEKLYCOUNT
+		          , B.PPMONTHLYCOUNT
+		          , A.ROOMSEQ
+		          , B.CONSTRAINTTYPE
+		          , B.PINTREATRANGE
+		          , C.TARGETCODEORDER
+		          , B.CITYTREATCODE
+		          , B.AGETREATCODE
+		          , F.TARGETCODEORDER AS AGEVALUE
+		          , B.GROUPSEQ
+		          , B.PPSEQ
+		          , D.TYPESEQ
+		     FROM 
+		          RSVROOMTYPEMAP A
+		          INNER JOIN RSVCONSTRAINT B
+		          ON (A.SETTINGSEQ = B.SETTINGSEQ
+		              AND A.ROOMSEQ = #{roomseq} 
+		              AND B.STATUSCODE = 'B01'
+		              AND A.SETTINGSEQ IS NOT NULL
+		              AND A.COOKMASTERCODE = 'C01'
+		             )
+		          LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		          ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		              AND C.TARGETMASTERSEQ = 'PINCODE')
+		          LEFT OUTER JOIN RSVSPECIALPPMAP D
+		          ON (B.SETTINGSEQ = D.SETTINGSEQ)
+		          LEFT OUTER JOIN TARGETCODE F
+		          ON (B.AGETREATCODE = F.TARGETCODESEQ
+		              AND F.TARGETMASTERSEQ = 'AGECODE')
+		    )
+		-- SELECT 구문
+		SELECT AAAA.GLOBALDAILYCOUNT
+		     , AAAA.GLOBALWEEKLYCOUNT
+		     , AAAA.GLOBALMONTHLYCOUNT
+		     , AAAA.PPDAILYCOUNT
+		     , AAAA.PPWEEKLYCOUNT
+		     , AAAA.PPMONTHLYCOUNT
+		 FROM (SELECT ROW_NUMBER() OVER (ORDER BY AAA.ORDERCOUNT ASC) AS ROWNUM
+		            , AAA.GLOBALDAILYCOUNT
+		            , AAA.GLOBALWEEKLYCOUNT
+		            , AAA.GLOBALMONTHLYCOUNT
+		            , AAA.PPDAILYCOUNT
+		            , AAA.PPWEEKLYCOUNT
+		            , AAA.PPMONTHLYCOUNT
+		         FROM (
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 1 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                WHERE
+		                      /* 특정 그룹 조건 */
+		                      AA.CONSTRAINTTYPE = 'C02'
+		                      AND AA.GROUPSEQ IN (SELECT A.GROUPSEQ
+		                                            FROM RSVROLEGROUP A
+		                                                 INNER JOIN RSVROLETARGET B
+		                                                 ON (A.GROUPSEQ = B.GROUPSEQ
+		                                                     AND B.STATUSCODE = 'B01'
+		                                                     AND B.ABONO = #{account})
+		                                         )
+		                GROUP BY AA.ROOMSEQ 
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 2 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                      LEFT OUTER JOIN ( SELECT * FROM RSV2 ) BB
+		                      ON (1 = 1)
+		                WHERE
+		                  /* PIN , 지역 , 나이 */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                  AND AA.CITYTREATCODE IS NOT NULL
+		                  AND AA.CITYTREATCODE != ''
+		                  AND AA.AGETREATCODE IS NOT NULL
+		                  AND AA.AGETREATCODE != ''
+		                  /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                  AND AA.TARGETCODEORDER = (SELECT MAX(C.TARGETCODEORDER)
+		                                              FROM 
+		                                                   RSVROOMTYPEMAP A
+		                                                   INNER JOIN RSVCONSTRAINT B
+		                                                   ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                       AND A.ROOMSEQ = #{roomseq} 
+		                                                       AND B.STATUSCODE = 'B01'
+		                                                       AND A.SETTINGSEQ IS NOT NULL
+		                                                       AND B.CITYTREATCODE IS NOT NULL
+		                                                       AND B.CITYTREATCODE != ''
+		                                                       AND B.AGETREATCODE IS NOT NULL
+		                                                       AND B.AGETREATCODE != '')
+		                                                   LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                                                   ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                                       AND C.TARGETMASTERSEQ = 'PINCODE')
+		                                             WHERE C.TARGETCODEORDER &lt;= BB.PINVALUE
+		                                             GROUP BY A.ROOMSEQ 
+		                                           )
+		                  /* 지역코드는 사용자의 지역코드 */
+		                  AND AA.CITYTREATCODE = BB.CITYGROUPCODE
+		                  /* 나이 벨류는는 사용자의 나이보다 작은 것 중 가장 큰것 */
+		                  AND AA.AGEVALUE = (SELECT MIN(C.TARGETCODEORDER)
+		                                       FROM 
+		                                            RSVROOMTYPEMAP A
+		                                            INNER JOIN RSVCONSTRAINT B
+		                                            ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                AND A.ROOMSEQ = #{roomseq} 
+		                                                AND B.STATUSCODE = 'B01'
+		                                                AND A.SETTINGSEQ IS NOT NULL
+		                                                AND B.CITYTREATCODE IS NOT NULL
+		                                                AND B.CITYTREATCODE != ''
+		                                                AND B.AGETREATCODE IS NOT NULL
+		                                                AND B.AGETREATCODE != '')
+		                                            LEFT OUTER JOIN TARGETCODE C
+		                                            ON (B.AGETREATCODE = C.TARGETCODESEQ
+		                                                AND C.TARGETMASTERSEQ = 'AGECODE')
+		                                      WHERE C.TARGETCODEORDER &gt;= BB.AGE
+		                                      GROUP BY A.ROOMSEQ 
+                                            )
+		                GROUP BY AA.ROOMSEQ 
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 3 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                      LEFT OUTER JOIN ( SELECT * FROM RSV2 ) BB
+		                      ON (1 = 1)
+		                WHERE
+		                  /* PIN , 지역 */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                  AND AA.CITYTREATCODE IS NOT NULL
+		                  AND AA.CITYTREATCODE != ''
+		                  AND (AA.AGETREATCODE IS NULL
+		                  OR AA.AGETREATCODE = '')
+		                  /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                  AND AA.TARGETCODEORDER = (SELECT MAX(C.TARGETCODEORDER)
+		                                              FROM 
+		                                                   RSVROOMTYPEMAP A
+		                                                   INNER JOIN RSVCONSTRAINT B
+		                                                   ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                       AND A.ROOMSEQ = #{roomseq} 
+		                                                       AND B.STATUSCODE = 'B01'
+		                                                       AND A.SETTINGSEQ IS NOT NULL
+		                                                       AND B.CITYTREATCODE IS NOT NULL
+		                                                       AND B.CITYTREATCODE != ''
+		                                                       AND (B.AGETREATCODE IS NULL
+		                                                         OR B.AGETREATCODE = ''))
+		                                                   LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                                                   ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                                       AND C.TARGETMASTERSEQ = 'PINCODE')
+		                                             WHERE C.TARGETCODEORDER &lt;= BB.PINVALUE
+		                                             GROUP BY A.ROOMSEQ 
+		                                           )
+		                  /* 지역코드는 사용자의 지역코드 */
+		                  AND AA.CITYTREATCODE = BB.CITYGROUPCODE
+		                GROUP BY AA.ROOMSEQ 
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 4 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                      LEFT OUTER JOIN ( SELECT * FROM RSV2 ) BB
+		                      ON (1 = 1)
+		                WHERE
+		                      /* PIN , 나이 */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                  AND AA.AGETREATCODE IS NOT NULL
+		                  AND AA.AGETREATCODE != ''
+		                  AND (AA.CITYTREATCODE IS NULL
+		                    OR AA.CITYTREATCODE = '')
+		                  /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                  AND AA.TARGETCODEORDER = (SELECT MAX(C.TARGETCODEORDER)
+		                                              FROM 
+		                                                   RSVROOMTYPEMAP A
+		                                                   INNER JOIN RSVCONSTRAINT B
+		                                                   ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                       AND A.ROOMSEQ = #{roomseq} 
+		                                                       AND B.STATUSCODE = 'B01'
+		                                                       AND A.SETTINGSEQ IS NOT NULL
+		                                                       AND B.AGETREATCODE IS NOT NULL
+		                                                       AND B.AGETREATCODE != ''
+		                                                       AND (B.CITYTREATCODE IS NULL
+		                                                         OR B.CITYTREATCODE = ''))
+		                                                   LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                                                   ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                                       AND C.TARGETMASTERSEQ = 'PINCODE')
+		                                             WHERE C.TARGETCODEORDER &lt;= BB.PINVALUE
+		                                             GROUP BY A.ROOMSEQ 
+		                                           )
+		                  /* 나이 벨류는는 사용자의 보다 작은 것 중 가장 큰것 */
+		                  AND AA.AGEVALUE = (SELECT MIN(C.TARGETCODEORDER)
+		                                       FROM 
+		                                            RSVROOMTYPEMAP A
+		                                            INNER JOIN RSVCONSTRAINT B
+		                                            ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                AND A.ROOMSEQ = #{roomseq} 
+		                                                AND B.STATUSCODE = 'B01'
+		                                                AND A.SETTINGSEQ IS NOT NULL
+		                                                AND B.AGETREATCODE IS NOT NULL
+		                                                AND B.AGETREATCODE != ''
+		                                                AND (B.CITYTREATCODE IS NULL
+		                                                  OR B.CITYTREATCODE = ''))
+		                                            LEFT OUTER JOIN TARGETCODE C
+		                                            ON (B.AGETREATCODE = C.TARGETCODESEQ
+		                                                AND C.TARGETMASTERSEQ = 'AGECODE')
+		                                      WHERE C.TARGETCODEORDER &gt;= BB.AGE
+		                                      GROUP BY A.ROOMSEQ 
+		                                           )
+		                GROUP BY AA.ROOMSEQ 
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 5 AS ORDERCOUNT
+		                 FROM ( SELECT * FROM RSV1 ) AA
+		                      LEFT OUTER JOIN ( SELECT * FROM RSV2 ) BB
+		                      ON (1 = 1)
+		                WHERE
+		                      /* PIN */
+		                      AA.CONSTRAINTTYPE = 'C01'
+		                      AND (AA.AGETREATCODE IS NULL
+		                        OR AA.AGETREATCODE = '')
+		                      AND (AA.CITYTREATCODE IS NULL
+		                        OR AA.CITYTREATCODE = '')
+		                      /* 핀 밸류는 예약자의 핀벨류보다 작은것중 가장 큰 것 */
+		                      AND AA.TARGETCODEORDER = (SELECT MAX(C.TARGETCODEORDER)
+		                                                  FROM 
+		                                                       RSVROOMTYPEMAP A
+		                                                       INNER JOIN RSVCONSTRAINT B
+		                                                       ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                                           AND A.ROOMSEQ = #{roomseq} 
+		                                                           AND B.STATUSCODE = 'B01'
+		                                                           AND A.SETTINGSEQ IS NOT NULL
+		                                                           AND (B.AGETREATCODE IS NULL
+		                                                             OR B.AGETREATCODE = '')
+		                                                           AND (B.CITYTREATCODE IS NULL
+		                                                             OR B.CITYTREATCODE = ''))
+		                                                       LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                                                       ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                                           AND C.TARGETMASTERSEQ = 'PINCODE')
+		                                                 WHERE C.TARGETCODEORDER &lt;= BB.PINVALUE
+		                                                 GROUP BY A.ROOMSEQ 
+		                                               )
+		                GROUP BY AA.ROOMSEQ 
+		               UNION
+		               SELECT MIN(AA.GLOBALDAILYCOUNT) AS GLOBALDAILYCOUNT
+		                    , MIN(AA.GLOBALWEEKLYCOUNT) AS GLOBALWEEKLYCOUNT
+		                    , MIN(AA.GLOBALMONTHLYCOUNT) AS GLOBALMONTHLYCOUNT
+		                    , MIN(AA.PPDAILYCOUNT) AS PPDAILYCOUNT
+		                    , MIN(AA.PPWEEKLYCOUNT) AS PPWEEKLYCOUNT
+		                    , MIN(AA.PPMONTHLYCOUNT) AS PPMONTHLYCOUNT
+		                    , 6 AS ORDERCOUNT
+		                 FROM (SELECT B.GLOBALDAILYCOUNT
+		                            , B.GLOBALWEEKLYCOUNT
+		                            , B.GLOBALMONTHLYCOUNT
+		                            , B.PPDAILYCOUNT
+		                            , B.PPWEEKLYCOUNT
+		                            , B.PPMONTHLYCOUNT
+		                            , A.ROOMSEQ
+		                            , B.CONSTRAINTTYPE
+		                            , B.PINTREATRANGE
+		                            , C.TARGETCODEORDER
+		                            , B.CITYTREATCODE
+		                            , B.AGETREATCODE
+		                            , F.TARGETCODEORDER AS AGEVALUE
+		                            , B.GROUPSEQ
+		                            , B.PPSEQ
+		                            , D.TYPESEQ
+		                       FROM 
+		                            RSVROOMTYPEMAP A
+		                            INNER JOIN RSVCONSTRAINT B
+		                            ON (A.SETTINGSEQ = B.SETTINGSEQ
+		                                /* pp가 넘어온 파라미터이고 예약형태가 넘어온 파아미터 */
+		                                AND B.PPSEQ = #{ppseq}
+		                                AND A.TYPESEQ = #{typeseq}
+		                                /* PP별 예약형태별 */
+		                                AND B.CONSTRAINTTYPE = 'C03'
+		                                AND B.STATUSCODE = 'B01'
+		                                AND A.SETTINGSEQ IS NOT NULL
+		                                AND A.COOKMASTERCODE = 'C01'
+		                               )
+		                            LEFT OUTER JOIN V_TARGETCODE_NONMEM C
+		                            ON (B.PINTREATRANGE = C.TARGETCODESEQ
+		                                AND C.TARGETMASTERSEQ = 'PINCODE')
+		                            LEFT OUTER JOIN RSVSPECIALPPMAP D
+		                            ON (B.SETTINGSEQ = D.SETTINGSEQ)
+		                            LEFT OUTER JOIN TARGETCODE F
+		                            ON (B.AGETREATCODE = F.TARGETCODESEQ
+		                                AND F.TARGETMASTERSEQ = 'AGECODE')
+		                      ) AA
+		                GROUP BY AA.ROOMSEQ 
+		              ) AAA
+		      ) AAAA
+		WHERE AAAA.ROWNUM = 1
+	</select>
+	
+	<!-- 요리명장 시설별 일별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilityPpDailyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 일단위 */
+		SELECT
+			COUNT(*) 
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND RESERVATIONDATE = #{reservationdate}
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 요리명장 시설별 주차별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilityPpWeeklyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 주단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(WK, RESERVATIONDATE) = DATEPART(WK, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 시설별 월별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilityPpMonthlyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 월단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(MM, RESERVATIONDATE) = DATEPART(MM, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 요리명장 시설별 일별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilityGlobalDailyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 일단위 */
+		SELECT
+			COUNT(*) 
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND RESERVATIONDATE = #{reservationdate}
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 요리명장 시설별 주차별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilityGlobalWeeklyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 주단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(WK, RESERVATIONDATE) = DATEPART(WK, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 요리명장 시설별 월별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilityGlobalMonthlyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 월단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(MM, RESERVATIONDATE) = DATEPART(MM, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND TYPESEQ = #{typeseq}
+	</select>
+	
+	<!-- 요리명장 코드 조회 (R01)-->
+	<select id="getCookMasterCode" resultType="String">
+		SELECT 'R01'
+	</select>
+	
+	<!-- 특정교육장 조회 -->
+	<select id="getSpecialPpseq" resultType="String">
+		<!-- SELECT PPSEQ
+		FROM RSVPPINFO
+		WHERE PPNAME LIKE CONCAT('광주', '%') -->
+		
+		SELECT
+            A.PPSEQ
+        FROM RSVCONSTRAINT A
+        INNER JOIN RSVSPECIALPPMAP B
+          ON (A.SETTINGSEQ = B.SETTINGSEQ)
+        WHERE A.PPSEQ = #{ppseq}
+          AND A.STATUSCODE = 'B01'
+        GROUP BY A.PPSEQ
+	</select>
+	
+	<!-- 특정교육장 예약 횟수 체크 쿼리  -->
+	<select id="rsvAvailabilitySpecialPpDailyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* 특정 교육장 - 일단위 */
+		SELECT
+			COUNT(*) 
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND RESERVATIONDATE = #{reservationdate}
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 특정교육장 예약 횟수 체크 쿼리  -->
+	<select id="rsvAvailabilitySpecialPpWeeklyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/*특정 교육장 - 주단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(WK, RESERVATIONDATE) = DATEPART(WK, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 특정교육장[광주 AP] 예약 횟수 체크 쿼리 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilitySpecialPpMonthlyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/*특정교육장 - 예약 횟수  월단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(MM, RESERVATIONDATE) = DATEPART(MM, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 특정교육장[광주 AP] 일별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilitySpecialPpGlobalDailyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/*특정교육장 - 일단위 */
+		SELECT
+			COUNT(*) 
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND RESERVATIONDATE = #{reservationdate}
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 특정교육장[광주 AP] 주차별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilitySpecialPpGlobalWeeklyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/*특정교육장 - 주단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(WK, RESERVATIONDATE) = DATEPART(WK, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 특정교육장[광주 AP] 월별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvAvailabilitySpecialPpGlobalMonthlyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/*특정교육장 - 월단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(MM, RESERVATIONDATE) = DATEPART(MM, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R02'
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 요리명장 특정교육장[광주 AP] 일별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilitySpecialPpDailyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 특정교육장 - 일단위 */
+		SELECT
+			COUNT(*) 
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND RESERVATIONDATE = #{reservationdate}
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 요리명장 특정교육장[광주 AP] 주차별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilitySpecialPpWeeklyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 특정교육장 - 주단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(WK, RESERVATIONDATE) = DATEPART(WK, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 특정교육장[광주 AP]  월별 PP 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilitySpecialPpMonthlyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 특정교육장 - 월단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(MM, RESERVATIONDATE) = DATEPART(MM, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND PPSEQ = #{ppseq}
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 요리명장 특정교육장[광주 AP]  일별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilitySpecialPpGlobalDailyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 특정교육장 - 일단위 */
+		SELECT
+			COUNT(*) 
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND RESERVATIONDATE = #{reservationdate}
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 요리명장 특정교육장[광주 AP]  주차별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilitySpecialPpGlobalWeeklyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 특정교육장 - 주단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(WK, RESERVATIONDATE) = DATEPART(WK, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<!-- 요리명장 특정교육장[광주 AP]  월별 GLOBAL 누적 예약 건수 카운트 -->
+	<select id="rsvCookMasterAvailabilitySpecialPpGlobalMonthlyCheck" parameterType="reqBox" resultType="java.lang.Integer">
+		/* [요리명장] 특정교육장 - 월단위 */
+		SELECT
+			COUNT(*)  
+		FROM 
+			RSVRESERVATIONINFO
+		WHERE 
+			ACCOUNT = #{account}
+			AND DATEPART(YY, RESERVATIONDATE) = DATEPART(YY, #{reservationdate})
+			AND DATEPART(MM, RESERVATIONDATE) = DATEPART(MM, #{reservationdate})
+			AND CANCELCODE != 'B01'
+			AND COOKMASTERCODE = 'R01'
+			AND TYPESEQ IN(
+				SELECT 
+				    B.TYPESEQ
+				FROM RSVCONSTRAINT A
+				INNER JOIN RSVSPECIALPPMAP B
+				  ON(A.SETTINGSEQ = B.SETTINGSEQ)
+				WHERE A.STATUSCODE = 'B01'
+				  AND A.PPSEQ = #{ppseq}
+			)
+	</select>
+	
+	<select id="getReservationPriceBySessionSeq" parameterType="java.util.Map" resultType="egovMap">
+		/* ReservationChecker.getReservationPriceBySessionSeq */
+		SELECT
+		  CASE WHEN #{typeseq} = '1' /* room-type */
+		  THEN ROOM_PRICE
+		  ELSE QUEEN_PRICE
+		  END AS PRICE
+		FROM (
+		    SELECT
+		        CASE WHEN B.DISCOUNTPRICE > 0 
+		          THEN B.DISCOUNTPRICE
+		          ELSE B.PRICE
+		        END AS ROOM_PRICE,
+		        CASE WHEN B.QUEENDISCOUNTPRICE > 0 
+		          THEN B.QUEENDISCOUNTPRICE
+		          ELSE B.QUEENPRICE
+		        END AS QUEEN_PRICE
+		    FROM RSVROOMINFO A
+		    INNER JOIN RSVROOMSESSIONINFO B
+		      ON (A.ROOMSEQ = B.ROOMSEQ)
+		    WHERE B.RSVSESSIONSEQ = #{rsvSessionSeq}
+		) X	
+	</select>
+	
+</mapper>

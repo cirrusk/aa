@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.mypage.service.impl.MyPageMapper">
+
+	<select id="selectMessageList" parameterType="reqBox" resultType="egovMap">
+		/* MyPage.xml  selectMessageList  */
+		SELECT *
+		  FROM (
+				SELECT   ROW_NUMBER() OVER (ORDER BY SENDDATE DESC, NOTESERVICE DESC) AS RN
+				       , CASE WHEN DATEADD(hh, 24, REGISTRANTDATE) <![CDATA[>]]> GETDATE() THEN 'NEW' ELSE 'OLD' END GUBUN
+				       , NOTESENDSEQ
+		               , NOTESERVICE
+		               , CASE NOTESERVICE WHEN '1' THEN '아카데미'
+		                                  WHEN '2' THEN '비즈니스'
+		                                  WHEN '3' THEN '쇼핑'
+						 END AS NOTESERVICENAME
+		               , NAME
+		               , UID
+		               , NOTEITEM
+		               , NOTECONTENT
+		               , CONVERT(VARCHAR, SENDDATE, 23) AS SENDDATE
+                       , SUBSTRING(CONVERT(VARCHAR, SENDDATE, 20), 12, 5) AS SENDTIME
+		               , MODIFIER
+		               , MODIFYDATE
+		               , REGISTRANT
+		               , REGISTRANTDATE
+		               , DELETEYN
+		          FROM   DBO.NOTESEND
+		         WHERE   DELETEYN = 'N'
+		           AND   UID = #{abono}
+				   AND   ( CONVERT(DATE,SENDDATE) <![CDATA[>=]]> CONVERT(DATE, #{schDt1})
+				   AND CONVERT(DATE,SENDDATE) <![CDATA[<=]]> CONVERT(DATE, #{schDt2}) )
+		           <if test="checkAll != null and checkAll.equalsIgnoreCase('0') ">
+		           AND   NOTESERVICE IN (${schNoteservice})
+		           </if>
+		           <if test="notecontent != null and !notecontent.equals('') ">
+		           AND   NOTECONTENT LIKE '%'+#{notecontent}+'%'
+		           </if>
+		           ) A
+		 WHERE RN BETWEEN ((#{pageIndex} -1) * #{rowPerPage} +1) AND (#{pageIndex} * #{rowPerPage})
+	</select>
+
+	<select id="selectMessageListCount" parameterType="reqBox" resultType="int">
+		/* MyPage.xml  selectMessageListCount  */
+		SELECT   COUNT(*) AS TOT_CNT
+          FROM   DBO.NOTESEND
+         WHERE   DELETEYN = 'N'
+           AND   UID = #{abono}
+		   AND   ( CONVERT(DATE,SENDDATE) <![CDATA[>=]]> CONVERT(DATE, #{schDt1})
+		   AND CONVERT(DATE,SENDDATE) <![CDATA[<=]]> CONVERT(DATE, #{schDt2}) )
+         <if test="checkAll != null and checkAll.equalsIgnoreCase('0') ">
+         AND   NOTESERVICE IN (${schNoteservice})
+         </if>
+         <if test="notecontent != null and !notecontent.equals('') ">
+         AND   NOTECONTENT LIKE '%'+#{notecontent}+'%'
+         </if>
+	</select>
+
+	<select id="checkList" parameterType="reqBox" resultType="dataBox">
+       SELECT COUNT(UID) AS UID FROM NOTESEND
+	   WHERE UID = #{abono}
+	</select>
+
+	<select id="checkListCount" parameterType="reqBox" resultType="dataBox">
+		SELECT CASE WHEN COUNT(RN)%20 > 0  THEN 'END'
+					ELSE 'TOO' END AS TOTCNT
+		FROM (
+			SELECT   ROW_NUMBER() OVER (ORDER BY SENDDATE DESC, NOTESERVICE DESC) AS RN
+			FROM   DBO.NOTESEND
+			WHERE   DELETEYN = 'N'
+			AND   UID = #{abono}
+			AND   ( CONVERT(DATE,SENDDATE) <![CDATA[>=]]> CONVERT(DATE, #{schDt1})
+			AND CONVERT(DATE,SENDDATE) <![CDATA[<=]]> CONVERT(DATE, #{schDt2}) )
+			<if test="noteservice != null and !noteservice.equals('')">
+				AND NOTESERVICE = #{noteservice}
+			</if>
+			<if test="notecontent != null and !notecontent.equals('') ">
+				AND   NOTECONTENT LIKE '%'+#{notecontent}+'%'
+			</if>
+		) A
+		WHERE RN BETWEEN 0 AND (#{pageIndex}) * 20
+	</select>
+
+	<select id="selectMobileMessageList" parameterType="amway.com.academy.mypage.service.MyPageMessageVO" resultType="egovMap">
+			/* MyPage.xml  selectMessageList  */
+			SELECT *
+			FROM (
+			SELECT   ROW_NUMBER() OVER (ORDER BY SENDDATE DESC, NOTESERVICE DESC) AS RN
+					, CASE WHEN DATEADD(hh, 24, REGISTRANTDATE) <![CDATA[>]]> GETDATE() THEN 'NEW' ELSE 'OLD' END GUBUN
+					, NOTESENDSEQ
+					, NOTESERVICE
+					, CASE NOTESERVICE WHEN '1' THEN '아카데미'
+									   WHEN '2' THEN '비즈니스'
+									   WHEN '3' THEN '쇼핑'
+					  END AS NOTESERVICENAME
+					, NAME
+					, UID
+					, NOTEITEM
+					, NOTECONTENT
+					, CONVERT(VARCHAR, SENDDATE, 23) AS SENDDATE
+					, SUBSTRING(CONVERT(VARCHAR, SENDDATE, 20), 12, 5) AS SENDTIME
+					, MODIFIER
+					, MODIFYDATE
+					, REGISTRANT
+					, REGISTRANTDATE
+					, DELETEYN
+			FROM   DBO.NOTESEND
+			WHERE   DELETEYN = 'N'
+			AND   UID = #{abono}
+			AND   ( CONVERT(DATE,SENDDATE) <![CDATA[>=]]> CONVERT(DATE, #{schDt1})
+			AND CONVERT(DATE,SENDDATE) <![CDATA[<=]]> CONVERT(DATE, #{schDt2}) )
+			<if test="noteservice != null and !noteservice.equals('')">
+				AND NOTESERVICE = #{noteservice}
+			</if>
+			<if test="notecontent != null and !notecontent.equals('') ">
+				AND   NOTECONTENT LIKE '%'+#{notecontent}+'%'
+			</if>
+			) A
+			WHERE RN BETWEEN 0 AND (#{pageIndex}) * 20
+	</select>
+
+</mapper>

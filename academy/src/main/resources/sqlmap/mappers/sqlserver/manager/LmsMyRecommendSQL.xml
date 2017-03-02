@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.myAcademy.service.impl.LmsMyRecommendMapper">
+
+	<sql id="selectLmsCourseConditionSearch">
+	FROM LMSCOURSECONDITION 
+	WHERE CONDITIONTYPE = '3'
+		AND ( GETDATE() BETWEEN STARTDATE AND ENDDATE  )
+		<if test='conditiontype.equals("1")'>
+		AND ( (PINCODE <![CDATA[ <> ]]> '' AND CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER)
+			 	OR (BONUSCODE <![CDATA[ <> ]]> '' AND CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER)
+			 )
+		</if>
+		<if test='conditiontype.equals("2")'>
+		AND BUSINESSSTATUSCODE <![CDATA[ <> ]]> '' AND BUSINESSSTATUSCODE IN (#{businessstatuscode1},#{businessstatuscode2})
+		</if>
+		<if test='conditiontype.equals("3")'>
+		AND BUSINESSSTATUSCODE <![CDATA[ <> ]]> '' AND BUSINESSSTATUSCODE IN (#{businessstatuscode3},#{businessstatuscode4})
+		</if>
+		<if test='conditiontype.equals("4")'>
+		AND ( (CUSTOMERCODE <![CDATA[ <> ]]> '' AND CUSTOMERCODE = #{customercode}) OR (CONSECUTIVECODE <![CDATA[ <> ]]> '' AND CONSECUTIVECODE = #{consecutivecode}) )
+		</if>
+	</sql>
+	
+	<select id="selectLmsRecommendCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*)
+		FROM LMSCOURSE A INNER JOIN LMSCATEGORY B
+		ON A.CATEGORYID = B.CATEGORYID
+		WHERE A.USEFLAG = 'Y'
+		AND A.OPENFLAG = 'Y'
+		AND A.COURSEID IN (
+			SELECT COURSEID 
+				<include refid="selectLmsCourseConditionSearch" />
+				
+			UNION
+			
+			SELECT C.COURSEID
+			FROM LMSSUBSCRIBE A INNER JOIN LMSCATEGORY B
+			ON A.CATEGORYID = B.CATEGORYID INNER JOIN LMSCOURSE C
+			ON B.CATEGORYID = C.CATEGORYID INNER JOIN LMSCOURSECONDITION D
+			ON C.COURSEID = D.COURSEID
+			WHERE A.UID = #{uid}
+			AND D.CONDITIONTYPE = '1'
+			AND GETDATE() BETWEEN D.STARTDATE AND D.ENDDATE
+			AND A.SUBSCRIBEDATE <![CDATA[ <= ]]> C.REGISTRANTDATE
+		)
+		AND B.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+	</select>
+
+	<select id="selectLmsRecommendList" parameterType="reqBox" resultType="egovMap">
+	/* LmsMyRecommendSQL.xml selectLmsRecommendList */	
+		SELECT
+			AAA.COURSEID
+     		, AAA.CATEGORYID
+     		, AAA.CATEGORYNAME
+     		, AAA.COURSETYPE
+     		, AAA.COURSENAME
+		    , AAA.COURSECONTENT 
+       	    , AAA.DATATYPE
+     		, AAA.COURSEIMAGE
+     		, AAA.COURSEIMAGENOTE
+     		, AAA.LIKECOUNT
+     		, AAA.FINISHFLAG
+   			, AAA.REQUESTFLAG
+			, DBO.F_LMS_TIME_FORMAT(AAA.PLAYTIME, 'en') AS PLAYTIME
+			, DBO.F_LMS_LIKECNT(AAA.LIKECOUNT, '1') AS LIKECNT
+			, DBO.F_LMS_COURSETYPENAME(AAA.COURSETYPE) AS COURSETYPENAME
+			, (SELECT COUNT(*) FROM LMSSAVELOG WHERE SAVETYPE='2' AND UID=#{uid} AND COURSEID = AAA.COURSEID) AS DEPOSITCNT
+			, (SELECT COUNT(*) FROM LMSVIEWLOG WHERE VIEWTYPE='2' AND UID=#{uid} AND COURSEID = AAA.COURSEID) AS MYLIKECNT
+			, CASE WHEN AAA.COURSETYPE = 'O' OR AAA.COURSETYPE = 'D' THEN ISNULL(AAA.FINISHFLAG,'N')
+				ELSE ISNULL(AAA.REQUESTFLAG,'N')  
+				END AS VIEWFLAG	
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY A.REGISTRANTDATE DESC, A.COURSEID DESC) AS ROW_NUM 
+				, A.COURSEID
+	     		, A.CATEGORYID
+	     		, B.CATEGORYNAME
+	     		, A.COURSETYPE
+	     		, A.COURSENAME
+			    , A.COURSECONTENT 
+	       	    , A.DATATYPE
+	     		, A.PLAYTIME
+	     		, A.COURSEIMAGE
+	     		, A.COURSEIMAGENOTE
+	     		, A.LIKECOUNT
+	     		, E.FINISHFLAG
+    				, E.REQUESTFLAG
+			FROM LMSCOURSE A INNER JOIN LMSCATEGORY B
+			ON A.CATEGORYID = B.CATEGORYID LEFT OUTER JOIN LMSSTUDENT E 
+			ON ( A.COURSEID = E.COURSEID AND E.UID = #{uid} )
+			WHERE A.USEFLAG = 'Y'
+			AND A.OPENFLAG = 'Y'
+			AND A.COURSEID IN (
+				<if test='!categoryflag.equals("Y")'>
+				SELECT COURSEID 
+					<include refid="selectLmsCourseConditionSearch" />
+				</if>
+				<if test='categoryflag.equals("Y")'>
+				SELECT C.COURSEID
+				FROM LMSSUBSCRIBE A INNER JOIN LMSCATEGORY B
+				ON A.CATEGORYID = B.CATEGORYID INNER JOIN LMSCOURSE C
+				ON B.CATEGORYID = C.CATEGORYID INNER JOIN LMSCOURSECONDITION D
+				ON C.COURSEID = D.COURSEID
+				WHERE A.UID = #{uid}
+				AND D.CONDITIONTYPE = '1'
+				AND GETDATE() BETWEEN D.STARTDATE AND D.ENDDATE
+				AND A.SUBSCRIBEDATE <![CDATA[ <= ]]> C.REGISTRANTDATE
+				AND A.CATEGORYID IN
+					<foreach collection="categoryids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+				</if>					
+			)
+			AND B.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+		) AAA	
+		WHERE AAA.ROW_NUM BETWEEN ((#{pageIndex} -1) * #{rowPerPage} +1) AND (#{pageIndex} * #{rowPerPage})	
+	</select>
+	
+	<select id="selectLmsRecommendCategoryList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			B.CATEGORYID
+		FROM LMSSUBSCRIBE A INNER JOIN LMSCATEGORY B
+		ON A.CATEGORYID = B.CATEGORYID 
+		WHERE A.UID = #{uid}
+		AND B.USEFLAG = 'Y'
+	</select>
+	
+	<select id="selectLmsTargetCodeName" parameterType="reqBox" resultType="String">
+		SELECT DBO.F_TARGET_CODENAME(#{targetmasterseq},#{targetcodeseq})
+	</select>
+	
+	<delete id="deleteLmsSubscribe" parameterType="reqBox" >
+		DELETE FROM LMSSUBSCRIBE
+		WHERE UID = #{uid}
+		AND CATEGORYID NOT IN
+		<foreach collection="categoryids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</delete>
+
+	<insert id="insertLmsSubscribe" parameterType="reqBox" >
+		INSERT INTO LMSSUBSCRIBE (
+			CATEGORYID
+			, UID
+			, SUBSCRIBEDATE
+		)
+		SELECT
+			#{categoryid}
+			, #{uid}
+			, GETDATE()
+		WHERE 0 = (
+			SELECT COUNT(*)
+			FROM LMSSUBSCRIBE
+			WHERE UID = #{uid}
+			AND CATEGORYID = #{categoryid}
+		)
+	</insert>
+
+	<delete id="deleteLmsSubscribeAll" parameterType="reqBox" >
+		DELETE FROM LMSSUBSCRIBE
+		WHERE UID = #{uid}
+	</delete>
+
+</mapper>

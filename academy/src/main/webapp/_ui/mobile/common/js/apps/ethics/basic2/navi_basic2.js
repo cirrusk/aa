@@ -1,0 +1,62 @@
+var curPage = 1;  // 첫 페이지 지정
+
+// 페이지 수만큼 생성 (N:일반 페이지, V:동영상페이지, A:오디오페이지)
+
+var navi_page = new Array();
+	navi_page[0]  = 'N';
+	navi_page[1]  = 'N';
+	navi_page[2]  = 'N';
+	navi_page[3]  = 'N';
+	navi_page[4]  = 'A';
+	navi_page[5]  = 'A';
+	navi_page[6]  = 'A';
+	navi_page[7]  = 'V';
+	navi_page[8]  = 'N';
+	navi_page[9]  = 'N';
+	navi_page[10] = 'A';
+	navi_page[11] = 'A';
+	navi_page[12] = 'A';
+	navi_page[13] = 'V';
+	navi_page[14] = 'V';
+	navi_page[15] = 'N';
+	navi_page[16] = 'N';
+	navi_page[17] = 'N';
+	navi_page[18] = 'A';
+	navi_page[19] = 'A';
+	navi_page[20] = 'N';
+	navi_page[21] = 'N';
+	navi_page[22] = 'N';
+	navi_page[23] = 'A';
+	navi_page[24] = 'A';
+	navi_page[25] = 'V';
+	navi_page[26] = 'N';
+
+
+var navi_linkfile = new Array();
+	navi_linkfile[0]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/01e6fcc6694bdd39cc4ea1f6abe55505_M.mp3';
+	navi_linkfile[1]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/a162af3e5ad03e261a9f2e56fe7c5666_M.mp3';
+	navi_linkfile[2]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/8959eaebfad16cde8f18ddc99589c4f2_M.mp3';
+	navi_linkfile[3]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/3b91b6f761e863d3f665acff48d6ea57_M.mp3';
+	navi_linkfile[4]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/67c8f0c0d2cd80d0e306542bd1ae3824_M.mp3';
+	navi_linkfile[5]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/7e75975d1b6a07382a3939f10a847367_M.mp3';
+	navi_linkfile[6]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/f4125d61108009ec9eaeba508ccbe555_M.mp3';
+	navi_linkfile[7]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/ce5d8ff2d93adf065ec2d99bd42de996_W.mp4';
+	navi_linkfile[8]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/6f3808a8b93459ecb1de20a44c6527af_M.mp3';
+	navi_linkfile[9]  = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/110600dee9958bfb5320a4c5b3982bf0_M.mp3';
+	navi_linkfile[10] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/6ecf5c1d653faa635e3016e3a2f2dbaf_M.mp3';
+	navi_linkfile[11] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/a0d30d6dd80cea3fcd0c3a246d549ad1_M.mp3';
+	navi_linkfile[12] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/eb83112ae7169a1e49a77b37aff301b5_M.mp3';
+	navi_linkfile[13] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/22cf9cec89ae9a7368fc8dc89ccd5dd3_W.mp4';
+	navi_linkfile[14] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/dad99d23de9df1039da82ec3cefa105b_W.mp4';
+	navi_linkfile[15] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/0b710d968e8bec8fdd3663a5a519d41b_M.mp3';
+	navi_linkfile[16] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/38f4c6469f6b4161cc01ebe578d6c444_M.mp3';
+	navi_linkfile[17] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/651bd468d711469b8478b370d93e2e9f_M.mp3';
+	navi_linkfile[18] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/933a36c872844d9e0beab7b61cb848cc_M.mp3';
+	navi_linkfile[19] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/2b14c90fcf1fe3c766725b397fca3bbd_M.mp3';
+	navi_linkfile[20] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/e82155da9d2911871ca0f810cf99c68c_M.mp3';
+	navi_linkfile[21] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/36193980ee7bee21af7dc200d29604e5_M.mp3';
+	navi_linkfile[22] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/6a8178c34ddb8a7da6f81c7c2cd468a0_M.mp3';
+	navi_linkfile[23] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/2717942cf575387cdc2afe1cab6b95f9_M.mp3';
+	navi_linkfile[24] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/e034f959cc011406fea07ff194f2b63b_M.mp3';
+	navi_linkfile[25] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/3a6c1763a885fd3ee306258c0df29e35_W.mp4';
+	navi_linkfile[26] = 'http://mvod.artistry.smartucc.kr/encodeFile/73/2014/02/26/ec9f5e6461463a224a14e6265653ad85_M.mp3';

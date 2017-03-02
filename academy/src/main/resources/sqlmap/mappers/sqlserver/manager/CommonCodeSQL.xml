@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.common.commoncode.service.impl.CommonCodeMapper">
+
+	<select id="getEduKindList" parameterType="java.util.Map" resultType="egovMap">
+        /* CommonCodeSQL.xml  getEduKindList  */
+        SELECT   CONVERT(VARCHAR,COMMONCODESEQ) AS MINOR_CD
+               , CODENAME AS CD_NAME
+          FROM   DBO.COMMONCODE
+         WHERE   CODEMASTERSEQ = 'TR1'
+      ORDER BY   CODEORDER ASC
+	</select>
+	
+	<select id="getSpendItemList" parameterType="java.util.Map" resultType="egovMap">
+		/* CommonCodeSQL.xml  getSpendItemList  */
+		SELECT   CONVERT(VARCHAR,COMMONCODESEQ) AS MINOR_CD
+               , CODENAME AS CD_NAME
+          FROM   DBO.COMMONCODE
+         WHERE   CODEMASTERSEQ = 'TR2'
+      ORDER BY   CODEORDER ASC
+	</select>
+	
+	<select id="getSearchYearList" parameterType="java.util.Map" resultType="egovMap">
+		SELECT   SCHYEAR AS MINOR_CD
+		       , SCHYEAR AS CD_NAME
+		  FROM (
+				 SELECT CONVERT(VARCHAR(4), DATEADD(YY, 1, GETDATE()), 112) AS SCHYEAR
+				 UNION
+				 SELECT CONVERT(VARCHAR(4), DATEADD(YY, 0, GETDATE()), 112)
+				 UNION
+				 SELECT CONVERT(VARCHAR(4), DATEADD(YY, -1, GETDATE()), 112)
+				 UNION
+				 SELECT CONVERT(VARCHAR(4), DATEADD(YY, -2, GETDATE()), 112)
+				 UNION
+				 SELECT CONVERT(VARCHAR(4), DATEADD(YY, -3, GETDATE()), 112) ) A
+	  ORDER BY   SCHYEAR DESC
+	</select>
+
+	<select id="getAnalyticsTag" parameterType="reqBox" resultType="dataBox">
+		WITH tree_query  AS (
+		  			SELECT
+						   NAVIGATIONCODE
+						 , NAVIGATIONNAME
+						 , URL
+						 , convert(varchar(255), NAVIGATIONNAME) FULLNAME
+					  FROM HYBRISMENU
+					 WHERE NAVIGATIONCODE in ('ACADEMY', 'BUSINESS', 'MYPAGE')
+					UNION ALL
+					SELECT
+							 B.NAVIGATIONCODE
+						   , B.NAVIGATIONNAME
+						   , B.URL
+						   , convert(varchar(255), convert(nvarchar,C.FULLNAME) + ' > ' +  convert(varchar(255), B.NAVIGATIONNAME)) FULLNAME
+					  FROM HYBRISMENU B, tree_query C
+					 WHERE B.PARENTCODE = C.NAVIGATIONCODE
+					)
+		SELECT
+		       A.NAVIGATIONCODE
+		     , A.NAVIGATIONNAME
+		     , A.FULLNAME
+		     , A.URL
+		  FROM tree_query A
+		 WHERE URL = #{conUrl}
+	</select>
+
+	<select id="getCheckVisitor" parameterType="reqBox" resultType="dataBox">
+		select UID
+			 , CUSTOMERGUBUN
+			 , GROUPS
+		  FROM MEMBER
+		 WHERE UID = #{visitor}
+	</select>
+</mapper>

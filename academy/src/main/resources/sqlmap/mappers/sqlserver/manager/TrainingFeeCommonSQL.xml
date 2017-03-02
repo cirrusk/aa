@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.trainingFee.common.service.impl.TrainingFeeCommonMapper">
+	
+	<insert id="inserTrfeeSystemProcessLog" parameterType="reqBox">
+		/* TrainingFeeCommonSQL.xml inserTrfeeSystemProcessLog */
+		INSERT
+		  INTO   DBO.TRFEESYSTEMLOG
+		       ( ABO_NO
+               , SYSTEMID
+               , SYSTEMTYPE
+               , EVENTID
+               , SYSTEMTEXT
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE )
+        VALUES ( #{depaboNo}
+               , ( SELECT ISNULL(MAX(SYSTEMID), 0) + 1 FROM DBO.TRFEESYSTEMLOG WHERE ABO_NO = #{depaboNo} )
+               , #{systemtype}
+               , #{eventid}
+               , #{systemtext}
+               , #{depaboNo}
+               , GETDATE()
+               , #{depaboNo}
+               , GETDATE()     )
+	</insert>
+	
+</mapper>

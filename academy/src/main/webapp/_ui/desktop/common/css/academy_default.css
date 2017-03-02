@@ -1,0 +1,128 @@
+@charset "utf-8";
+/* ---------------------------------------
+	Description : 비즈니스(교육장예약, 교육비), 아카데미
+	Author		: netive
+	Version: 	: 2016.05 ECM 1.5 AI
+  --------------------------------------- */
+@import url("common.css");
+@import url("layout.css");
+@import url("table.css");
+@import url("academy.css"); /* 아카데미 ECM 1.5 */
+@import url("popup.css");
+
+/* Internet Explorer 9+ */
+@media screen and (min-width:0\0){
+	a[class^=btnBasic]{line-height:36px;}
+	input[class^=btnBasic]{line-height:36px;}
+
+	.btnCont span, .btnCont .btn,
+	a.btnBoxGs, input.btnBoxGs,
+	.btnTbl span,
+	.btnTbl .btn,
+	.btnTblArrow span,
+	.btnTblData span,
+	.btnTblDown span,
+	.btnDtSrc span,
+	.btnTblReData span,
+	.btnTblMyData span{/*line-height:26px;*/line-height:24px;}
+	.btnSort span{line-height:27px;}
+	.btnBizDown span{line-height:38px}
+
+	span.notMsg{height:17px;}
+	span.notMsg em{height:12px; padding:5px 7px 1px 0;}
+	.proListImg span.check input[type="checkbox"]{margin-top:-2px;}
+	.proListImg span.check label{line-height:160%;}
+
+	.tblList tbody th{padding:11px 0 6px;}
+	.tblList tbody td{padding:11px 0 6px;}
+}
+
+/* webkit */
+@media screen and (-webkit-min-device-pixel-ratio:0){
+	/*a[class^=btnBasic]{line-height:34px;}*/
+	/*input[class^=btnBasic]{line-height:30px;}*/
+
+	a.btnBoxGs, input.btnBoxGs{line-height:22px;}
+	.btnCont span, .btnSort span, .btnCont input{line-height:22px;}
+	.btnSort span{line-height:24px;}
+
+	.btnTbl span,
+	.btnTbl .btn,
+	.btnTblData span,
+	.btnTblDown span,
+	.btnDtSrc span,
+	.btnTblReData span,
+	.btnTblMyData span{line-height:24px;}
+	.btnBizDown span{line-height:34px}
+
+	input[type="radio"]{margin-top:0;}
+	input[type="checkbox"]{margin-top:0;}
+	.subLoginWrap .loginSave input[type="checkbox"]{margin-top:5px;}
+	.subLoginWrap .securityLevel{background:url(/_ui/desktop/images/main/bg_main_loginbar.gif) no-repeat 0 6px !important;}
+
+	.keywordWrap strong{background-position:0 3px}
+	.keywordWrap a, .sortTab a{background-position:0 1px;}
+	span.notMsg{height:17px;}
+	span.notMsg em{height:12px; padding:3px 7px 1px 0;}
+	.proListImg span.check label{line-height:120%;}
+	.recomSelBox label input{vertical-align:top;}
+	.loginFooter.after li{background:url(/_ui/desktop/images/main/bg_main_loginbar.gif) no-repeat 0 2px !important;}
+	/* .loginFooter.after li:first-child{background:none !important;} */ /* 160518 : Leeyoungja 개편 관련 수정*/
+
+	.tblList tbody th{padding:11px 0 7px;}
+	.tblList tbody td{padding:11px 0 7px;}
+
+	.qOrderListWrap .qOrderList ul li input[type=checkbox]{margin:2px 2px 0 0;}
+	.qOrderListWrap .qOrderList .pCode .vps{letter-spacing:-0.05em;}
+	.qOrderListWrap .qOrderList .pCode .sku{letter-spacing:-0.05em;}
+	.qOrderListWrap .qOrderList .pPrice{letter-spacing:-0.05em;}
+	.qOrderListWrap .qOrderList .tag{position:relative;top:1px;}
+}
+
+/* firefox */
+@-moz-document url-prefix(){
+	a[class^=btnBasic]{line-height:34px;}
+	input[class^=btnBasic]{line-height:30px;}
+
+	.btnCont span, .btnSort span{line-height:22px;}
+	.btnSort span{line-height:24px;}
+	.btnCont .btn{padding-top:1px}
+
+	a.btnBoxGs{line-height:22px;}
+	input.btnBoxGs{padding-top:1px;}
+
+	.btnTbl span{line-height:22px;}
+	.btnTbl .btn{padding-top:1px;}
+
+	.btnTblData span,
+	.btnTblArrow span,
+	.btnTblDown span,
+	.btnDtSrc span,
+	.btnTblReData span,
+	.btnTblMyData span{line-height:22px;}
+	.btnBizDown span{line-height:34px}
+
+	input[type="radio"]{margin-top:0;}
+	input[type="checkbox"]{margin-top:0;}
+	.subLoginWrap .loginSave input[type="checkbox"]{margin-top:5px;}
+	.subLoginWrap .securityLevel{background:url(/_ui/desktop/images/main/bg_main_loginbar.gif) no-repeat 0 7px !important;}
+
+	.keywordWrap strong{background-position:0 4px}
+	.keywordWrap a, .sortTab a{background-position:0 2px;}
+	span.notMsg{height:17px;}
+	span.notMsg em{height:12px; padding:3px 7px 1px 0;}
+	.proListImg span.check label{line-height:120%;}
+	.loginFooter.after li{background:url(/_ui/desktop/images/main/bg_main_loginbar.gif) no-repeat 0 3px !important;}
+	/* .loginFooter.after li:first-child{background:none !important;} */ /* 160518 : Leeyoungja 개편 관련 수정*/
+
+	.tblList tbody th{padding:11px 0 7px;}
+	.tblList tbody td{padding:11px 0 7px;}
+
+	.qOrderListWrap .qOrderList ul li input[type=checkbox]{margin:0 2px 0 0;}
+}
+
+
+@media screen and (-webkit-min-device-pixel-ratio:0){
+	.tblListLos{table-layout:initial;}
+}
+

@@ -1,0 +1,236 @@
+#-----------------------------------------------------------------------
+#
+#   globals.properties : \uc2dc\uc2a4\ud15c
+#
+#-----------------------------------------------------------------------
+#   1.  key = value \uad6c\uc870\uc785\ub2c8\ub2e4.
+#   2.  key\uac12\uc740 \uacf5\ubc31\ubb38\uc790\ub97c \ud3ec\ud568\ubd88\uac00, value\uac12\uc740 \uacf5\ubc31\ubb38\uc790\ub97c \uac00\ub2a5
+#   3.  key\uac12\uc73c\ub85c \ud55c\uae00\uc744 \uc0ac\uc6a9\ubd88\uac00,   value\uac12\uc740 \ud55c\uae00\uc0ac\uc6a9\uc774 \uac00\ub2a5
+#   4.  \uc904\uc744 \ubc14\uafc0 \ud544\uc694\uac00 \uc788\uc73c\uba74 '\'\ub97c \ub77c\uc778\uc758 \ub05d\uc5d0 \ucd94\uac00(\ub9cc\uc57d  '\'\ubb38\uc790\ub97c \uc0ac\uc6a9\ud574\uc57c \ud558\ub294 \uacbd\uc6b0\ub294 '\\'\ub97c \uc0ac\uc6a9)
+#   5.  Windows\uc5d0\uc11c\uc758 \ub514\ub809\ud1a0\ub9ac \ud45c\uc2dc : '\\' or '/'  ('\' \uc0ac\uc6a9\ud558\uba74 \uc548\ub428)
+#   6.  Unix\uc5d0\uc11c\uc758 \ub514\ub809\ud1a0\ub9ac \ud45c\uc2dc : '/'
+#   7.  \uc8fc\uc11d\ubb38 \ucc98\ub9ac\ub294  #\uc0ac\uc6a9
+#   8.  value\uac12 \ub4a4\uc5d0 \uc2a4\ud398\uc774\uc2a4\uac00 \uc874\uc7ac\ud558\ub294 \uacbd\uc6b0 \uc11c\ube14\ub9bf\uc5d0\uc11c \ucc38\uc870\ud560\ub54c\ub294 \uc5d0\ub7ec\ubc1c\uc0dd\ud560 \uc218 \uc788\uc73c\ubbc0\ub85c trim()\ud558\uac70\ub098 \ub9c8\uc9c0\ub9c9 \uacf5\ubc31\uc5c6\uc774 properties \uac12\uc744 \uc124\uc815\ud560\uac83
+#-----------------------------------------------------------------------
+
+# \uc6b4\uc601\uc11c\ubc84 \ud0c0\uc785(WINDOWS, UNIX)
+Globals.OsType = WINDOWS
+#Globals.OsType = UNIX
+
+# DB\uc11c\ubc84 \ud0c0\uc785(ORACLE, MYSQL) - datasource \ubc0f sqlMap \ud30c\uc77c \uc9c0\uc815\uc5d0 \uc0ac\uc6a9\ub428
+Globals.DbType = sqlserver
+
+# Jndi Name
+Globals.DSName = jdbc/amwayAcademyDS
+
+# \uc704\uc800\ub4dc \uc0ac\uc6a9\uc2dc \ub370\uc774\ud130\ubca0\uc774\uc2a4 \uad00\ub828 \uc124\uc815\uc744 \ubd88\ub7ec\uc634
+Globals.DriverClassName=com.microsoft.sqlserver.jdbc.SQLServerDriver
+Globals.DriverLogClassName=net.sf.log4jdbc.DriverSpy
+#Globals.Url=jdbc:oracle:thin:@192.168.10.98:3333:ssa
+#Globals.Url=jdbc:oracle:thin:@125.129.229.16:1521:XE
+#Globals.Url=jdbc:sqlserver://10.126.130.226:1433;DatabaseName=academydev
+Globals.Url=jdbc:sqlserver://10.126.130.226:1433;DatabaseName=academyqa
+Globals.logUrl=jdbc:log4jdbc:oracle:thin:@seeds.iptime.org:1521:CSHRD
+#Globals.Url=jdbc:oracle:thin:@172.16.1.59:1723:NGEHRD
+#Globals.logUrl=jdbc:log4jdbc:oracle:thin:@172.16.1.59:1723:NGEHRD
+#Globals.Url=jdbc:oracle:thin:@seeds.iptime.org:1521:cshrd
+#Globals.logUrl=jdbc:log4jdbc:oracle:thin:@seeds.iptime.org:1521:cshrd
+#Globals.Url=jdbc:oracle:thin:@55.101.101.244:1521:orcl
+#Globals.logUrl=jdbc:log4jdbc:oracle:thin:@55.101.101.244:1521:orcl
+#Globals.Url=jdbc:oracle:thin:@seeds.iptime.org:1521:CSHRD
+#Globals.logUrl=jdbc:log4jdbc:oracle:thin:@seeds.iptime.org:1521:CSHRD
+
+#DB\uacc4\uc815 ID/PW\uc124\uc815
+Globals.UserName=academyadmin
+Globals.Password=amway11!
+
+# MainPage Setting
+Globals.MainPage  = /EgovContent.mvc
+#\ud1b5\ud569\uba54\uc778\uba54\ub274
+#Globals.MainPage = /sym/mnu/mpm/EgovMainMenuHome.do
+
+# G4C \uc5f0\uacb0\uc6a9 IP (localhost)
+#Globals.LocalIp = 127.0.0.2
+
+# \ud658\uacbd\ud30c\uc77c \uc704\uce58
+Globals.ShellFilePath     = globals.properties
+Globals.ServerConfPath    = conf/server.properties
+Globals.ClientConfPath    = conf/client.properties
+Globals.FileFormatPath    = conf/format.properties
+Globals.GPKIConfPath      = conf/gpki.properties
+Globals.ConfPath          = conf
+Globals.MailRequestPath   = mail/request/
+Globals.MailRResponsePath = mail/response/
+Globals.SMEConfigPath     = conf/SMEConfig.properties
+
+# \ud658\uacbd\ud30c\uc77c \uc704\uce58 (jeus)
+#Globals.ShellFilePath     = globals.properties
+#Globals.ServerConfPath    = conf/server.properties
+#Globals.ClientConfPath    = conf/client.properties
+#Globals.FileFormatPath    = conf/format.properties
+#Globals.GPKIConfPath      = conf/gpki.properties
+#Globals.ConfPath          = conf
+#Globals.fileStorePath     =
+#Globals.MailRequestPath   = mail/request/
+#Globals.MailRResponsePath = mail/response/
+#Globals.SMEConfigPath     = conf/SMEConfig.properties
+#Globals.SynchrnServerPath = tmp/upload/
+
+# WINDOWS\uc6a9 \uc258\ud30c\uc77c \uc815\ubcf4
+SHELL.WINDOWS.getHostName      = prg/sh_001.bat
+SHELL.WINDOWS.getDrctryByOwner = prg/getDrctryByOwner.bat
+SHELL.WINDOWS.getDrctryOwner   = prg/getDrctryOwner.bat
+SHELL.WINDOWS.moveDrctry       = prg/moveDrctry.bat
+SHELL.WINDOWS.compileSchema    = prg/compileSchema.bat
+SHELL.WINDOWS.getDiskAttrb     = prg/getDiskAttrb.bat
+SHELL.WINDOWS.getDiskCpcty     = prg/getDiskCpcty.bat
+SHELL.WINDOWS.getDiskExst      = prg/getDiskExst.bat
+
+# UNIX\uc6a9 \uc258\ud30c\uc77c \uc815\ubcf4 - \uac1c\ubc1cwas jeus\uc5d0\uc11c \uc0ac\uc6a9\ud560\ub54c \uae30\uc900
+SHELL.UNIX.getHostName      = prg/sh_001.sh
+SHELL.UNIX.getDrctryByOwner = prg/getDrctryByOwner.sh
+SHELL.UNIX.getDrctryOwner   = prg/getDrctryOwner.sh
+SHELL.UNIX.getDrctryAccess  = prg/getDrctryAccess.sh
+SHELL.UNIX.getMountLc       = prg/getMountLc.sh
+SHELL.UNIX.getDiskName      = prg/getNetWorkInfo.sh
+SHELL.UNIX.moveDrctry       = prg/moveDrctry.sh
+SHELL.UNIX.compileSchema    = prg/compileSchema.sh
+SHELL.UNIX.getDiskAttrb     = prg/getDiskAttrb.sh
+SHELL.UNIX.getDiskCpcty     = prg/getDiskCpcty.sh
+SHELL.UNIX.getDiskExst      = prg/getDiskExst.sh
+SHELL.UNIX.getProcInfo      = prg/getProcInfo.sh
+
+# LINUX\uc6a9 \uc258\ud30c\uc77c \uc815\ubcf4
+
+# \uc5f0\uacc4
+# \uae30\uad00\ucf54\ub4dc\uc218\uc2e0\uc6a9(\uacbd\ub85c \uc124\uc815\uc740 \ubc18\ub4dc\uc2dc \uc808\ub300\uacbd\ub85c\ub97c \uc0ac\uc6a9\ud574\uc57c\ud568.)
+CNTC.INSTTCODE.DIR.rcv       = D:/tmp/test/rcv/
+CNTC.INSTTCODE.DIR.rcvold    = D:/tmp/test/rcvold/
+CNTC.INSTTCODE.DIR.bin       = D:/tmp/test/bin/
+
+CNTC.INSTTCODE.CMD.edircv    = gcc_edircv.bat
+CNTC.INSTTCODE.CMD.edircvmsg = gcc_edircvmsg.bat
+
+CNTC.INSTTCODE.INFO.userid   = USERID
+CNTC.INSTTCODE.INFO.userpw   = ******
+
+# \ud30c\uc77c \uc5c5\ub85c\ub4dc \uacbd\ub85c(\uacbd\ub85c \uc124\uc815\uc740 \ubc18\ub4dc\uc2dc \uc808\ub300\uacbd\ub85c\ub97c \uc0ac\uc6a9\ud574\uc57c\ud568, \uacbd\ub85c \ub4a4\uc5d0 /\ub97c \ubd99\uc5ec \uc8fc\uc5b4\uc57c\ud568.)
+Globals.fileStorePath =  C:/egovframework/upload/
+
+# \ud30c\uc77c \ub3d9\uae30\ud654 \ucef4\ud3ec\ub10c\ud2b8\uc5d0\uc11c \uc0ac\uc6a9\ud560 \ud30c\uc77c \uc5c5\ub85c\ub4dc \uacbd\ub85c(\uacbd\ub85c \uc124\uc815\uc740 \ubc18\ub4dc\uc2dc \uc808\ub300\uacbd\ub85c\ub97c \uc0ac\uc6a9\ud574\uc57c\ud568, \uacbd\ub85c \ub4a4\uc5d0 /\ub97c \ubd99\uc5ec \uc8fc\uc5b4\uc57c\ud568.)
+Globals.SynchrnServerPath = C:/egovframework/upload/Synch/
+
+# for JFile properties
+system.uploadpath = C:/egovframework/upload/
+no.image.url = /resources/jfile/swfupload/images/no_img.gif
+ftp.server.ip = 127.0.0.1
+ftp.user.id = test
+ftp.user.password = test
+
+
+# pageing
+pageUnit=10
+pageSize=10
+
+#------------------------------------------------------------------------
+# AI SYSTEM
+#------------------------------------------------------------------------
+ai.systemOpen.day=20160110
+
+# \uad00\ub9ac \uad6c\ubd84 (\uc6b4\uc601(\uc5c5\ubb34)/\uad00\ub9ac(\uc2dc\uc2a4\ud15c))
+divisionOperation=1
+divisionSystem=2
+
+# \uc2a4\ub9c8\ud2b8\uc5f0\uc218\uc6d0 Domain
+smartDomain=55.102.102.37
+
+# Hybris.ssoUrl = https://dev2.abnkorea.co.kr/rest/sso/authorize : dev
+# Hybris.ssoUrl = https://qa2.abnkorea.co.kr/rest/sso/authorize : qa
+# Hybris.ssoUrl = https://localhost : test
+Hybris.ssoUrl = https://dev2.abnkorea.co.kr/rest/sso/authorize
+# Hybris.httpDomain=http://dev2.abnkorea.co.kr 
+Hybris.httpDomain=http://dev2.abnkorea.co.kr
+# Hybris.httpDomain=http://www.abnkorea.co.kr
+
+
+#------------------------------------------------------------------------
+# API SERVER 
+#------------------------------------------------------------------------
+# DEV-SERVER
+api.server.location = http://dev2.abnkorea.co.kr
+# QA-SERVER
+#api.server.location = https://qa2.abnkorea.co.kr
+# PRD-SERVER
+#api.server.location = https://apihub.abnkorea.co.kr
+
+
+#------------------------------------------------------------------------
+# EASYPAY
+#------------------------------------------------------------------------
+current.server.location=http://ad.abnkorea.co.kr
+request.server.location=http://testpg.easypay.co.kr/webpay/MainAction.do
+request.mobile.location=http://testsp.easypay.co.kr/main/MainAction.do
+
+easypay.certfile.location=/ai/Dev/ad/WEB-INF
+easypay.logfile.location=/ai/Dev/log/easypay
+
+easypay.g_log_level=1
+easypay.g_gw_url=testgw.easypay.co.kr
+easypay.g_gw_port=80
+easypay.g_mall_id=T5102001
+easypay.g_mall_name=\ud55c\uad6d\uc554\uc6e8\uc774
+
+
+#------------------------------------------------------------------------
+# PUSH DEV : 197 SERVICE : 196
+#------------------------------------------------------------------------
+interface.push.yn=Y
+interface.push.http.url.file=http://10.187.51.197/cam/sendPushByFile.jsp
+interface.push.http.url.grade=http://10.187.51.197/cam/sendPushByGrade.jsp
+interface.push.http.url.user=http://10.187.51.197/cam/sendPushByUser.jsp
+interface.push.http.ch.reply.cert=1000
+interface.push.http.reply.timeout=5000
+interface.push.http.user.id=ADMIN
+interface.push.sftp.session.cachesize=10
+interface.push.sftp.session.timeout=60000
+interface.push.sftp.timeout=5000
+interface.push.sftp.remote.dir=/ecmPush
+interface.push.sftp.host=10.187.51.197
+interface.push.sftp.port=22
+interface.push.sftp.password=amway11!
+interface.push.sftp.user=navid
+
+#AmwayGo Down Link
+market.amwaygo.googleplay=https://play.google.com/store/apps/details?id=sABN.UI.SmartABNAndroid
+market.amwaygo.appstore=https://itunes.apple.com/kr/app/sabn/id430140303?mt=8
+
+#------------------------------------------------------------------------
+# RESERVATION AVALIABLE TIME (unit:hour)
+#------------------------------------------------------------------------
+# 10 = 10\uc2dc 00\ubd84 , 10\uc2dc 01\ubd84 \uc608\uc57d \uac00\ub2a5
+reservation.time.start=10
+# 22 = 21\uc2dc 59\ubd84 \uc608\uc57d\uac00\ub2a5, 22\uc2dc\uba74 \uc608\uc57d \ubd88\uac00
+reservation.time.end=22
+
+
+#------------------------------------------------------------------------
+# RoomRsvReceipt
+#------------------------------------------------------------------------
+# DEV-SERVER
+receipt.rdSolution.location = http://dev.abnkorea.co.kr/_ui/desktop/common/js/apps/rd.solution.js?=2016071811
+receipt.mrdPath.location = http://dev.abnkorea.co.kr/document/CARDRECEIPT.mrd
+receipt.reportingServer.location = http://dev.abnkorea.co.kr/rd/ReportingServer/service
+receipt.crownix.location = http://dev.abnkorea.co.kr/rd/ReportingServer/html5/js/crownix-viewer.storage.min.js
+
+# QA-SERVER
+#receipt.rdSolution.location = https://qa2.abnkorea.co.kr/_ui/desktop/common/js/apps/rd.solution.js?=2016071811
+#receipt.mrdPath.location = https://qa2.abnkorea.co.kr/document/CARDRECEIPT.mrd
+#receipt.reportingServer.location = https://qa2.abnkorea.co.kr/rd/ReportingServer/service
+#receipt.crownix.location = https://qa2.abnkorea.co.kr/rd/ReportingServer/html5/js/crownix-viewer.storage.min.js
+
+# PRD-SERVER
+#api.server.location = https://apihub.abnkorea.co.kr
+#receipt.rdSolution.location = https://abnkorea.co.kr/_ui/desktop/common/js/apps/rd.solution.js?=2016071811
+#receipt.mrdPath.location = https://abnkorea.co.kr/document/CARDRECEIPT.mrd
+#receipt.reportingServer.location = https://abnkorea.co.kr/rd/ReportingServer/service
+#receipt.crownix.location = https://abnkorea.co.kr/rd/ReportingServer/html5/js/crownix-viewer.storage.min.js

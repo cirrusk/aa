@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.myAcademy.service.impl.LmsMyEducationMapper">
+	
+	<select id="selectLmsConnectLogTot" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsConnectLogTot  - 통합교육 - 월 접속 일수 -전체 */
+		SELECT COUNT(*) AS CONNECTCNT
+		FROM (
+			SELECT CONVERT(CHAR(8), CONNECTDATE, 112) AS CONNECTDAY
+			FROM LMSCONNECTLOG 
+			WHERE UID = #{uid} 
+			  AND CONVERT(CHAR(6), CONNECTDATE, 112) BETWEEN #{startdateYM} AND #{enddateYM} 
+			GROUP BY CONVERT(CHAR(8), CONNECTDATE, 112)
+		) A
+	</select>
+	
+	<select id="selectLmsConnectLogCnt" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsConnectLogCnt  - 통합교육 - 월 접속 일수 -설정달 */
+		SELECT COUNT(*) AS CONNECTCNT
+		FROM (
+			SELECT CONVERT(CHAR(8), CONNECTDATE, 112) AS CONNECTDAY
+			FROM LMSCONNECTLOG 
+			WHERE UID = #{uid}
+			  AND CONVERT(CHAR(6), CONNECTDATE, 112) BETWEEN #{currdateYM}  AND #{currdateYM}
+			GROUP BY CONVERT(CHAR(8), CONNECTDATE, 112)
+		) A
+	</select>
+	
+	<select id="selectLmsConnectLogWeekTot" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsConnectLogWeekTot  - 통합교육 - 개근주 -전체 */
+		SELECT ISNULL(SUM(A.REGULARWEEKCOUNT), 0)
+ 		FROM (
+			  SELECT MAX(REGULARWEEKCOUNT) REGULARWEEKCOUNT
+			  FROM LMSCONNECTLOG
+			  WHERE UID = #{uid}
+			  AND DBO.F_LMS_DFYEAR(REGULARDATE) = DBO.F_LMS_DFYEAR(#{currdateYMD})
+			  GROUP BY REGULARDATE
+ 		) A
+	</select>
+	
+	<select id="selectLmsConnectLogWeekTot2" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsConnectLogWeekTot2  - 통합교육 - 개근주 -연속 최근*/
+			  SELECT TOP 1 REGULARWEEKCOUNT
+			  FROM LMSCONNECTLOG
+			  WHERE UID = #{uid}
+			  ORDER BY CONNECTDATE DESC
+	</select>
+	
+	<select id="selectLmsConnectLogWeekList" parameterType="reqBox" resultType="egovMap">
+		/* LmsMyEducationSql.xml -- selectLmsConnectLogWeekList  - 통합교육 - 개근주 -설정달 */
+		SELECT TOP 1
+     			CONNECTDATE 
+  				, DATEPART(WW, CONVERT(DATE, #{currdateYMD})) AS REGWEEK
+     			, DBO.F_LMS_DATETYPE(REGULARDATE, '2') AS CONNECTDAY
+				, REGULARWEEKCOUNT AS WEEKCNT
+		FROM LMSCONNECTLOG
+		WHERE UID = #{uid}
+  		   AND CONVERT(CHAR(6), CONNECTDATE, 112) BETWEEN #{currdateYM} AND #{currdateYM}
+		ORDER BY CONNECTDATE DESC
+	</select>
+	
+	<select id="selectLmsConnectLogWeekList2" parameterType="reqBox" resultType="egovMap">
+		/* LmsMyEducationSql.xml -- selectLmsConnectLogWeekList2  - 통합교육 -  월 개근주 단순 출석 주 */
+		SELECT COUNT(*) AS WEEKNUMCNT FROM ( 
+			SELECT  
+					DATEPART(WK, CONNECTDATE) AS WEEKNUM
+			FROM LMSCONNECTLOG
+			WHERE UID = #{uid}
+		 		   AND CONVERT(CHAR(6), CONNECTDATE, 112) BETWEEN #{currdateYM} AND #{currdateYM}
+		 		 GROUP BY DATEPART(WK, CONNECTDATE)
+		) T
+	</select>
+	
+	<select id="selectLmsCourseStudentFinshCnt" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsCourseStudentFinshCnt  - 통합교육 - 수료건수 -설정달 */
+		SELECT COUNT(*) AS FINISHCNT
+ 		FROM LMSCOURSE A
+     		INNER JOIN LMSSTUDENT B
+      			 ON ( B.COURSEID = A.COURSEID
+         			AND B.UID = #{uid}
+         			<choose>
+						<when test='coursetype != null and coursetype.equals("R")'>
+						AND B.REQUESTFLAG = 'Y'
+				        AND DBO.F_LMS_DFYEAR(B.REQUESTDATE) = DBO.F_LMS_DFYEAR(#{currdateYMD})
+						</when>
+						<when test='coursetype != null and coursetype.equals("O")'>
+				        AND B.REQUESTFLAG = 'Y'
+				        AND CONVERT(CHAR(6), B.REQUESTDATE, 112) BETWEEN #{currdateYM}  AND #{currdateYM}
+						</when>
+						<when test='coursetype != null and coursetype.equals("F")'>
+						AND B.FINISHFLAG = 'Y'
+				        AND CONVERT(CHAR(6), A.STARTDATE, 112) BETWEEN #{currdateYM}  AND #{currdateYM}
+						</when>
+						<otherwise>
+						AND B.FINISHFLAG = 'Y'
+				        AND CONVERT(CHAR(6), B.FINISHDATE, 112) BETWEEN #{currdateYM}  AND #{currdateYM}
+				        </otherwise>
+			        </choose>
+       			)
+		 WHERE A.COURSETYPE = #{coursetype}
+		    AND A.OPENFLAG = 'Y'
+		    AND A.USEFLAG = 'Y'
+	</select>
+	
+	<select id="selectLmsCourseStudentFinshTot" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsCourseStudentFinshTot  - 통합교육 - 수료건수 -전체 */
+		SELECT COUNT(*) AS FINISHCNT
+ 		FROM LMSCOURSE A
+     		INNER JOIN LMSSTUDENT B
+      			 ON ( B.COURSEID = A.COURSEID
+         			AND B.UID = #{uid}
+			        <choose>
+						<when test='coursetype != null and coursetype.equals("R")'>
+						AND B.REQUESTFLAG = 'Y'
+						</when>
+						<when test='coursetype != null and coursetype.equals("O")'>
+				        AND B.REQUESTFLAG = 'Y'
+				        AND DBO.F_LMS_DFYEAR(B.REQUESTDATE) = DBO.F_LMS_DFYEAR(#{currdateYMD})
+						</when>
+						<when test='coursetype != null and coursetype.equals("F")'>
+				        AND B.FINISHFLAG = 'Y'
+				        AND DBO.F_LMS_DFYEAR(A.STARTDATE) = DBO.F_LMS_DFYEAR(#{currdateYMD})
+						</when>
+						<otherwise>
+						AND B.FINISHFLAG = 'Y'
+				        AND DBO.F_LMS_DFYEAR(B.FINISHDATE) = DBO.F_LMS_DFYEAR(#{currdateYMD})
+				        </otherwise>
+			        </choose>
+       			)
+		 WHERE A.COURSETYPE = #{coursetype}
+		    AND A.OPENFLAG = 'Y'
+		    AND A.USEFLAG = 'Y'
+	</select>
+	
+	<select id="selectLmsCourseViewlogCnt" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsViewlogCnt  - 통합교육 - 과정갯수(1:SNS공유, 3:조회) -설정달 */
+		SELECT COUNT(*) AS COURSECNT
+		FROM ( SELECT B.COURSEID
+			FROM LMSVIEWLOG B
+	       	WHERE B.VIEWTYPE = #{viewtype}
+       		  AND B.UID = #{uid}
+       		  AND CONVERT(CHAR(6), B.VIEWMONTH, 112) BETWEEN #{currdateYM}  AND #{currdateYM}
+       		GROUP BY B.COURSEID  
+		) A
+	</select>
+	
+	<select id="selectLmsCourseViewlogTot" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsViewlogTot  - 통합교육 - 과정갯수(1:SNS공유, 3:조회) -전체 */
+		SELECT COUNT(*) AS COURSECNT
+		FROM ( SELECT B.COURSEID
+			FROM LMSVIEWLOG B
+	       	WHERE B.VIEWTYPE = #{viewtype}
+       		  AND B.UID = #{uid}
+       		  AND DBO.F_LMS_DFYEAR(CONVERT(DATE, B.VIEWMONTH+'01')) = DBO.F_LMS_DFYEAR(#{currdateYMD})
+       		GROUP BY B.COURSEID  
+		) A
+	</select>
+	
+	<select id="selectLmsViewlogCnt" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsViewlogCnt  - 통합교육 - VIEWTYPE(1:SNS공유, 3:조회)건수합 -설정달 */
+		SELECT  ISNULL(SUM(B.VIEWCOUNT), 0) AS VIEWCNT
+		FROM LMSVIEWLOG B
+       	WHERE B.VIEWTYPE = #{viewtype}
+       		AND B.UID = #{uid}
+       		AND CONVERT(CHAR(6), B.VIEWMONTH, 112) BETWEEN #{currdateYM}  AND #{currdateYM}
+	</select>
+	
+	<select id="selectLmsViewlogTot" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsViewlogTot  - 통합교육 - VIEWTYPE(1:SNS공유, 3:조회)건수합 -전체 */
+		SELECT  ISNULL(SUM(B.VIEWCOUNT), 0) AS VIEWCNT
+		FROM LMSVIEWLOG B
+       	WHERE B.VIEWTYPE = #{viewtype}
+       		AND B.UID = #{uid}
+       		AND DBO.F_LMS_DFYEAR(CONVERT(DATE, B.VIEWMONTH+'01')) = DBO.F_LMS_DFYEAR(#{currdateYMD})
+	</select>
+	
+	<select id="selectLmsStampRegularCnt" parameterType="reqBox" resultType="int">
+		/* LmsMyEducationSql.xml -- selectLmsStampRegularCnt  - 통합교육 - 정규과정 스템프 발행건수 */
+		SELECT COUNT(*) AS STAMPIDCNT
+		FROM (
+			SELECT A.STAMPID
+			FROM LMSSTAMPOBTAIN A
+			    INNER JOIN LMSSTAMP B
+			     	ON (A.STAMPID = B.STAMPID 
+			     		AND B.STAMPTYPE = 'C' )
+			WHERE A.UID = #{uid}
+			<if test='currentYear != null and !currentYear.equals("")'>
+			AND DBO.F_LMS_DFYEAR(A.OBTAINDATE) = DBO.F_LMS_DFYEAR(#{currdateYMD})
+			</if>
+			AND A.COURSEID > 0
+			GROUP BY A.STAMPID
+		 ) A
+	</select>
+	
+	<select id="selectLmsStampobtain" parameterType="reqBox" resultType="egovMap">
+		/* LmsMyEducationSql.xml -- selectLmsStampobtain  - 통합교육 - 스템프 발행 조회 */
+		SELECT STAMPID
+			  , MIN(OBTAINDATE) AS OBTAINDATE
+			  , MAX(STAMPIMAGE) AS STAMPIMAGE
+			  , MAX(STAMPIMAGENOTE) AS STAMPIMAGENOTE
+		 FROM (
+		    SELECT B.STAMPID
+				     , (CONVERT(CHAR(10), A.OBTAINDATE, 23)) AS OBTAINDATE
+			         , CASE WHEN A.OBTAINDATE IS NULL THEN B.OFFIMAGE
+			                ELSE B.ONIMAGE END AS STAMPIMAGE
+			         , CASE WHEN A.OBTAINDATE IS NULL THEN B.OFFIMAGENOTE
+			                ELSE B.ONIMAGENOTE END AS STAMPIMAGENOTE
+		  	FROM LMSSTAMP B
+				    LEFT OUTER JOIN LMSSTAMPOBTAIN A
+				     	ON ( A.STAMPID = B.STAMPID 
+				     		AND A.UID = #{uid}
+				     		AND  A.OBTAINDATE BETWEEN #{prevYear}+'0901' AND  #{currentYearStamp}+'0831 23:59:59'
+			        		)
+			WHERE B.STAMPTYPE = 'N'
+				AND B.USEFLAG = 'Y'
+		) AA
+		GROUP BY STAMPID
+		ORDER BY STAMPID
+	</select>
+	
+	<select id="selectLmsStampRegular" parameterType="reqBox" resultType="egovMap">
+		/* LmsMyEducationSql.xml -- selectLmsStampRegular  - 통합교육 - 정규과정 스템프 발행 조회 */
+		SELECT STAMPID
+			  , OBTAINDATE
+			  , CASE WHEN OBTAINDATE IS NULL THEN OFFIMAGE ELSE ONIMAGE END AS STAMPIMAGE
+			  , CASE WHEN OBTAINDATE IS NULL THEN OFFIMAGENOTE ELSE ONIMAGENOTE END AS STAMPIMAGENOTE
+		 FROM (
+		    SELECT B.STAMPID
+		    		, B.ONIMAGE
+		    		, B.ONIMAGENOTE
+		    		, B.OFFIMAGE
+		    		, B.OFFIMAGENOTE
+		    		, B.STAMPORDER
+		    		, (SELECT MAX(CONVERT(CHAR(10), OBTAINDATE, 23)) AS OBTAINDATE FROM LMSSTAMPOBTAIN WHERE UID = #{uid} AND STAMPID = B.STAMPID AND COURSEID > 0) AS OBTAINDATE
+		  	FROM LMSSTAMP B
+			WHERE B.STAMPTYPE = 'C'
+				AND B.USEFLAG = 'Y'
+		) AA
+		ORDER BY STAMPORDER ASC, STAMPID ASC
+	</select>
+	
+	<select id="selectLmsStampIdList" parameterType="reqBox" resultType="egovMap">
+		/* LmsMyEducationSql.xml -- selectLmsStampIdList  - 통합교육 - 스템프 항목 조회 */
+		SELECT STAMPID, STAMPTYPE
+		     , STAMPNAME, STAMPCONDITION, STAMPCONTENT
+		     , OFFIMAGE, OFFIMAGENOTE
+		     , ONIMAGE, ONIMAGENOTE
+		FROM LMSSTAMP
+		WHERE USEFLAG = 'Y'
+		<if test='stamptype != null and !stamptype.equals("")'>
+		  AND STAMPTYPE = #{stamptype}
+		</if>
+		ORDER BY STAMPORDER ASC, STAMPID ASC
+	</select>
+	
+	<select id="selectLmsStampNowYear" parameterType="reqBox" resultType="egovMap">
+		/* LmsMyEducationSql.xml -- selectLmsStampNowYear  - 현재 연도 가져오기 */
+		SELECT DBO.F_LMS_DFYEAR(getdate()) AS NOWYEAR
+	</select>
+	
+</mapper>
+
+		

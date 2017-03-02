@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.reservation.expInfo.service.impl.ExpInfoMapper">
+	
+	<!-- 해당 pp의 체성분 체험 상세 정보(정원, 이용시간, 예약자격, 준비물 등) -->
+	<select id="expInfoList" parameterType="reqBox" resultType="dataBox">
+		SELECT   /* ReservationExpInfoSQL.xml expInfoList */
+		         BB.* 
+		  FROM ( SELECT   ROW_NUMBER() OVER (ORDER BY PURCHASEDATE DESC) AS ROW_NUM
+			            , AA.* 
+			       FROM (  SELECT   CONVERT(VARCHAR(20), A.PURCHASEDATE, 23) AS PURCHASEDATE
+								  , A.FULLPURCHASEDATE  
+								  , A.TYPENAME
+								  , A.PPNAME
+								  , ISNULL(A.EXPRSVTOTALCOUNNT, 0) AS EXPRSVTOTALCOUNNT
+								  , A.CANCELCODECOUNT
+								  , A.TYPESEQ
+								  , A.PPSEQ
+								  , CASE WHEN DATEPART(MM, GETDATE()) &lt; 10 THEN CONCAT('0', DATEPART(MM, GETDATE()))
+								  	                                          ELSE CONCAT('', DATEPART(MM, GETDATE()))
+								                                              END AS GETMONTH
+								  , DATEPART(YY, GETDATE()) AS GETYEAR
+								  , A.TRANSACTIONTIME
+							 FROM ( SELECT   CONVERT(VARCHAR(10), A.PURCHASEDATE, 23) AS PURCHASEDATE
+										   , A.PURCHASEDATE AS FULLPURCHASEDATE  
+										   , A.PPSEQ
+										   , ( SELECT C.PPNAME
+										         FROM RSVPPINFO C 
+										        WHERE C.PPSEQ = A.PPSEQ ) AS PPNAME
+										   , A.TYPESEQ
+										   , ( SELECT C.TYPENAME
+										         FROM RSVTYPEINFO C 
+										        WHERE C.TYPESEQ = A.TYPESEQ ) AS TYPENAME
+										   , B.CATEGORYTYPE1
+										   , COUNT(*) AS EXPRSVTOTALCOUNNT
+										   , SUM( CASE A.CANCELCODE WHEN 'B02' THEN 0
+										   		                    ELSE 1
+										   	                        END ) AS CANCELCODECOUNT
+										   , A.TRANSACTIONTIME
+								      FROM   RSVRESERVATIONINFO A
+								INNER JOIN   RSVEXPINFO B ON(A.EXPSEQ = B.EXPSEQ)
+								     WHERE   ACCOUNT = #{account}
+								     <if test="searchStrYear != null and !searchStrYear.equals('')">
+										AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &gt;= CONCAT(#{searchStrYear}, #{searchStrMonth}, '01')
+									</if>
+									<if test="searchEndYear != null and !searchEndYear.equals('')">
+										AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &lt;= DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATETIME, CONCAT(#{searchEndYear}, #{searchEndMonth}, '01'))))
+									</if>
+									
+									<if test='searchStrDateMobile != null and !searchStrDateMobile.equals("")'>
+										AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &gt;= CONCAT(#{searchStrYear}, #{searchStrMonth}, '01')
+									</if>
+									<if test='searchEndDateMobile != null and !searchEndDateMobile.equals("")'>
+										AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &lt;= DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATETIME, CONCAT(#{searchEndYear}, #{searchEndMonth}, '01'))))
+									</if>
+								
+									<if test='ppseq != null and !ppseq.equals("")'>
+										AND A.PPSEQ =  #{ppseq}
+									</if>
+									
+									<if test="searchexpTypeList != null and !searchexpTypeList.equals('')">
+										AND A.TYPESEQ IN
+										<foreach collection="searchexpTypeList" item="item" index="index" open="(" close=")" separator=",">
+											#{item}
+										</foreach>
+									</if>
+								  GROUP BY   CONVERT(VARCHAR(10), PURCHASEDATE, 23)
+								           , A.PPSEQ
+								           , A.TYPESEQ
+								           , B.CATEGORYTYPE1
+								           , A.TRANSACTIONTIME
+								           , A.PURCHASEDATE ) A
+							 ) AS AA
+		             ) AS BB
+		WHERE ROW_NUM BETWEEN ((#{pageIndex} -1) * #{rowPerPage} +1) AND (#{pageIndex} * #{rowPerPage})
+		ORDER BY BB.FULLPURCHASEDATE DESC, TRANSACTIONTIME DESC
+	</select>
+	
+	<select id="expInfoListCount" parameterType="reqBox" resultType="int">
+		SELECT   COUNT(*) AS TOTAL_CNT 
+		  FROM ( SELECT   CONVERT(VARCHAR(20), A.PURCHASEDATE, 23) AS PURCHASEDATE
+					  , A.FULLPURCHASEDATE  
+					  , A.TYPENAME
+					  , A.PPNAME
+					  , ISNULL(A.EXPRSVTOTALCOUNNT, 0) AS EXPRSVTOTALCOUNNT
+					  , A.CANCELCODECOUNT
+					  , A.TYPESEQ
+					  , A.PPSEQ
+					  , CASE WHEN DATEPART(MM, GETDATE()) &lt; 10 THEN CONCAT('0', DATEPART(MM, GETDATE()))
+					  	                                          ELSE CONCAT('', DATEPART(MM, GETDATE()))
+					                                              END AS GETMONTH
+					  , DATEPART(YY, GETDATE()) AS GETYEAR
+					  , A.TRANSACTIONTIME
+				 FROM ( SELECT   CONVERT(VARCHAR(10), A.PURCHASEDATE, 23) AS PURCHASEDATE
+							   , A.PURCHASEDATE AS FULLPURCHASEDATE  
+							   , A.PPSEQ
+							   , ( SELECT C.PPNAME
+							         FROM RSVPPINFO C 
+							        WHERE C.PPSEQ = A.PPSEQ ) AS PPNAME
+							   , A.TYPESEQ
+							   , ( SELECT C.TYPENAME
+							         FROM RSVTYPEINFO C 
+							        WHERE C.TYPESEQ = A.TYPESEQ ) AS TYPENAME
+							   , B.CATEGORYTYPE1
+							   , COUNT(*) AS EXPRSVTOTALCOUNNT
+							   , SUM( CASE A.CANCELCODE WHEN 'B02' THEN 0
+							   		                    ELSE 1
+							   	                        END ) AS CANCELCODECOUNT
+							   , A.TRANSACTIONTIME
+					      FROM   RSVRESERVATIONINFO A
+					INNER JOIN   RSVEXPINFO B ON(A.EXPSEQ = B.EXPSEQ)
+					     WHERE   ACCOUNT = #{account}
+					     <if test="searchStrYear != null and !searchStrYear.equals('')">
+							AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &gt;= CONCAT(#{searchStrYear}, #{searchStrMonth}, '01')
+						</if>
+						<if test="searchEndYear != null and !searchEndYear.equals('')">
+							AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &lt;= DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATETIME, CONCAT(#{searchEndYear}, #{searchEndMonth}, '01'))))
+						</if>
+						
+						<if test='searchStrDateMobile != null and !searchStrDateMobile.equals("")'>
+							AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &gt;= CONCAT(#{searchStrYear}, #{searchStrMonth}, '01')
+						</if>
+						<if test='searchEndDateMobile != null and !searchEndDateMobile.equals("")'>
+							AND CONVERT(VARCHAR(20), A.PURCHASEDATE, 112) &lt;= DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATETIME, CONCAT(#{searchEndYear}, #{searchEndMonth}, '01'))))
+						</if>
+					
+						<if test='ppseq != null and !ppseq.equals("")'>
+							AND A.PPSEQ =  #{ppseq}
+						</if>
+						
+						<if test="searchexpTypeList != null and !searchexpTypeList.equals('')">
+							AND A.TYPESEQ IN
+							<foreach collection="searchexpTypeList" item="item" index="index" open="(" close=")" separator=",">
+								#{item}
+							</foreach>
+						</if>
+					  GROUP BY   CONVERT(VARCHAR(10), PURCHASEDATE, 23)
+					           , A.PPSEQ
+					           , A.TYPESEQ
+					           , B.CATEGORYTYPE1
+					           , A.TRANSACTIONTIME
+					           , A.PURCHASEDATE ) A ) AA
+	</select>
+	
+	<select id="expInfoDetailList" parameterType="reqBox" resultType="egovMap">
+		SELECT /* ReservationExpInfoSQL.xml expInfoDetailList */
+			  A.RESERVATIONDATE AS FORMATRESERVATIONDATE
+			,   CONVERT(date, A.RESERVATIONDATE, 23) AS RESERVATIONDATE
+			, Format(GETDATE(), N'yyyyMMdd') AS GETTODAY
+			, CASE DATEPART (WEEKDAY, A.RESERVATIONDATE)
+				WHEN '1' THEN '(일)'
+				WHEN '2' THEN '(월)'
+				WHEN '3' THEN '(화)'
+				WHEN '4' THEN '(수)'
+				WHEN '5' THEN '(목)'
+				WHEN '6' THEN '(금)'
+				ELSE '(토)'
+			END AS RSVWEEK
+			, SUBSTRING(A.STARTDATETIME, 1, 2) + ':' + SUBSTRING(A.STARTDATETIME, 3, 2) + '~' + SUBSTRING(A.ENDDATETIME, 1, 2) + ':' + SUBSTRING(A.ENDDATETIME, 3, 2) AS SESSION
+			, CASE
+				WHEN B.TYPENAME LIKE CONCAT('%', '브랜드', '%') THEN C.PRODUCTNAME
+				WHEN B.TYPENAME LIKE CONCAT('%', '문화', '%') THEN C.PRODUCTNAME
+				ELSE B.TYPENAME
+			  END AS TYPENAME
+			, CASE
+				WHEN B.TYPENAME LIKE CONCAT('%', '브랜드', '%') THEN C.PREPARATION
+				WHEN B.TYPENAME LIKE CONCAT('%', '문화', '%') THEN C.PREPARATION
+				ELSE 'N'
+			  END AS PREPARATION
+			, CASE
+				WHEN B.TYPENAME LIKE CONCAT('%', '브랜드', '%') AND A.ACCOUNTTYPE = 'A02' THEN '(그룹)'
+				WHEN B.TYPENAME LIKE CONCAT('%', '브랜드', '%') AND A.ACCOUNTTYPE = 'A01' THEN D.CODENAME
+				WHEN B.TYPENAME LIKE CONCAT('%', '문화', '%') THEN CONVERT(VARCHAR, A.VISITNUMBER)
+				ELSE D.CODENAME
+			  END AS PARTNERTYPENAME
+			, CASE
+				WHEN B.TYPENAME LIKE CONCAT('%', '브랜드', '%') AND A.ACCOUNTTYPE = 'A02' THEN 'BG' /** 브랜드 체험이고 그룹일경우 */
+				WHEN B.TYPENAME LIKE CONCAT('%', '브랜드', '%') AND A.ACCOUNTTYPE = 'A01' THEN 'BP' /** 브랜드 체험이고 개인일경우 */
+				WHEN B.TYPENAME LIKE CONCAT('%', '문화', '%') THEN 'CN'  /** 문화체험일 경우 */
+				ELSE 'NM' /** 나머지 체험들 */
+			  END AS RSVINFOFLAG
+			, CASE 
+				WHEN CONVERT(VARCHAR, A.RESERVATIONDATE, 112) = CONVERT(VARCHAR, GETDATE(), 112) AND A.ENDDATETIME &lt;= Replace(Convert(varchar(8),Getdate(),108),':','') AND A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07' THEN '-'
+				WHEN CONVERT(VARCHAR, A.RESERVATIONDATE, 112) &lt; CONVERT(VARCHAR, GETDATE(), 112)  AND A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07' THEN '-'
+				WHEN A.PAYMENTSTATUSCODE = 'P01' AND A.CANCELCODE = 'B02' THEN '예약 취소'
+				WHEN A.PAYMENTSTATUSCODE = 'P02' AND A.CANCELCODE = 'B02' THEN '예약 취소'
+				WHEN A.CANCELCODE = 'B01' THEN '-'
+				ELSE '-'
+			  END AS RSVCANCEL
+			, A.PARTNERTYPECODE
+			, A.CANCELCODE
+			/** , ISNULL(D.CODENAME, '') AS PARTNERTYPENAME */
+			, CASE 
+				WHEN CONVERT(VARCHAR, A.RESERVATIONDATE, 112) = CONVERT(VARCHAR, GETDATE(), 112) AND A.ENDDATETIME &lt;= Replace(Convert(varchar(8),Getdate(),108),':','') AND A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07' THEN 'P06'
+				WHEN CONVERT(VARCHAR, A.RESERVATIONDATE, 112) &lt; CONVERT(VARCHAR, GETDATE(), 112)  AND A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07' THEN 'P06'
+				ELSE A.PAYMENTSTATUSCODE
+			END AS PAYMENTSTATUSCODE
+			, CASE 
+				WHEN CONVERT(VARCHAR, A.RESERVATIONDATE, 112) = CONVERT(VARCHAR, GETDATE(), 112) AND A.ENDDATETIME &lt;= Replace(Convert(varchar(8),Getdate(),108),':','') AND A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07' THEN '사용완료'
+				WHEN CONVERT(VARCHAR, A.RESERVATIONDATE, 112) &lt; CONVERT(VARCHAR, GETDATE(), 112)  AND A.PAYMENTSTATUSCODE = 'P02' OR A.PAYMENTSTATUSCODE = 'P07' THEN '사용완료'
+				ELSE E.CODENAME 
+			END AS PAYMENTSTATUSNAME
+			, G.PPNAME
+			, A.PPSEQ
+			, A.TYPESEQ
+			, B.TYPENAME
+			, A.RSVSEQ
+			, A.EXPSEQ
+			, A.EXPSESSIONSEQ
+			, A.VISITNUMBER
+			, CONVERT(VARCHAR, A.PURCHASEDATE, 112)FORMATPURCHASEDATE
+			, H.[NAME]
+<!-- 			, ISNULL(J.TYPECODE, 'N') AS TYPECODE -->
+<!-- 			, A.CANCELDATETIME -->
+			, Format(A.CANCELDATETIME, N'yyyy-MM-dd HH:mm') AS CANCELDATETIME
+			, A.TRANSACTIONTIME
+			<!-- 20170201 홍석조 추가
+			     브랜드 정원 체크 필요한 PARAM
+			 -->
+			, A.ACCOUNTTYPE
+			, ( SELECT   CASE WHEN (B.SEATCOUNT - AA.VISITNUMBERCHECK) = 0    AND AA.ACCOUNTTYPE IS NOT NULL THEN CASE AA.ACCOUNTTYPE WHEN 'R01' THEN 'Y'
+			                                                                                                                        WHEN 'R02' THEN 'Y'
+			                                                                                                                        WHEN 'R03' THEN 'Y'
+			                                                                                                                        END
+					          WHEN (B.SEATCOUNT - AA.VISITNUMBERCHECK) &gt; 0 AND AA.ACCOUNTTYPE IS NOT NULL THEN CASE AA.ACCOUNTTYPE WHEN 'R01' THEN 'Y'
+			                                                                                                                        WHEN 'R02' THEN 'Y'
+			                                                                                                                        WHEN 'R03' THEN 'Y'
+			                                                                                                                        END
+					          WHEN (B.SEATCOUNT - AA.VISITNUMBERCHECK) &lt; 1 AND AA.ACCOUNTTYPE IS NOT NULL THEN CASE AA.ACCOUNTTYPE WHEN 'R01' THEN 'N'
+			                                                                                                                        WHEN 'R02' THEN 'N'
+			                                                                                                                        WHEN 'R03' THEN 'Y'
+			                                                                                                                        END
+			                  WHEN (B.SEATCOUNT - AA.VISITNUMBER) = 0 THEN 'Y'
+                              WHEN (B.SEATCOUNT - AA.VISITNUMBER) &gt; 0 THEN 'Y'
+                              WHEN (B.SEATCOUNT - AA.VISITNUMBER) &lt; 0 THEN 'B'
+                              ELSE 'N'
+					          END
+		          FROM ( SELECT   EXPSEQ
+					            , RESERVATIONDATE
+					            , EXPSESSIONSEQ
+					            , SUM(CASE WHEN ACCOUNTTYPE = 'A01' THEN VISITNUMBER ELSE 0 END) AS VISITNUMBERCHECK
+					            , MAX(CASE WHEN ACCOUNTTYPE = 'A01' THEN ACCOUNTTYPE ELSE NULL END) AS ACCOUNTTYPE
+					            , SUM(VISITNUMBER) AS VISITNUMBER
+					       FROM   RSVRESERVATIONINFO
+					      WHERE   STANDBYNUMBER = 0
+					        AND   EXPSESSIONSEQ IS NOT NULL
+					        AND   CANCELCODE = 'B02'
+					   GROUP BY   EXPSEQ, RESERVATIONDATE, EXPSESSIONSEQ, STANDBYNUMBER, CANCELCODE) AA
+					 INNER JOIN   RSVEXPINFO B ON ( AA.EXPSEQ = B.EXPSEQ )
+				  WHERE   AA.RESERVATIONDATE = CONVERT(VARCHAR, A.RESERVATIONDATE, 112)
+					AND   AA.EXPSESSIONSEQ   = A.EXPSESSIONSEQ ) AS RANDSAVEYN
+		FROM RSVRESERVATIONINFO A
+			INNER JOIN RSVTYPEINFO B
+				ON(A.TYPESEQ = B.TYPESEQ AND A.RSVTYPECODE = 'R02')
+			INNER JOIN RSVEXPINFO C
+				ON(A.EXPSEQ = C.EXPSEQ)
+			LEFT OUTER JOIN COMMONCODE D
+				ON(A.PARTNERTYPECODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'RV4')
+			LEFT OUTER JOIN COMMONCODE E
+				ON(A.PAYMENTSTATUSCODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PM1')
+			INNER JOIN RSVPPINFO G
+				ON(A.PPSEQ = G.PPSEQ)
+			INNER JOIN MEMBER H
+				ON(A.ACCOUNT = H.UID)
+<!-- 			LEFT OUTER JOIN ( -->
+<!-- 				SELECT    DISTINCT -->
+<!-- 						  PENALTYSEQ -->
+<!-- 						, EXPSEQ -->
+<!-- 				FROM RSVEXPPENALTYMAP -->
+<!-- 			) I -->
+<!-- 				ON(C.EXPSEQ = I.EXPSEQ AND C.STATUSCODE = 'B01') -->
+<!-- 			LEFT OUTER JOIN RSVPENALTYSETTING J -->
+<!-- 				ON(I.PENALTYSEQ = J.PENALTYSEQ AND J.STATUSCODE = 'B01') -->
+		WHERE A.ACCOUNT = #{account}
+				AND CONVERT(VARCHAR(20), PURCHASEDATE, 23) = #{purchasedate}
+			<if test='transactiontime != null and !transactiontime.equals("")'>
+				AND A.TRANSACTIONTIME  = #{transactiontime}
+			</if>
+			
+				
+				AND A.PPSEQ = #{ppseq}
+<!-- 				AND J.TYPECODE = 'P01' -->
+<!-- 				AND J.APPLYTYPECODE = 'P02' -->
+				<if test="typeseq != null and !typeseq.equals('')">
+					AND A.TYPESEQ = #{typeseq}
+				</if>
+				<if test="expsessionseq != null and !expsessionseq.equals('')">
+					AND A.EXPSESSIONSEQ = #{expsessionseq}
+				</if>
+		ORDER BY  A.CANCELDATETIME DESC, A.RESERVATIONDATE ASC
+	</select>
+	
+	<update id="changePartnertAjax" parameterType="reqBox">
+		UPDATE   RSVRESERVATIONINFO
+		   SET   PARTNERTYPECODE = #{partnerTypeCode}
+		       , VISITNUMBER     = CASE #{partnerTypeCode} WHEN 'R03' THEN 1 ELSE 2 END
+			   , UPDATEUSER      = #{account}
+			   , UPDATEDATE      = GETDATE()
+		 WHERE   RSVSEQ 		 = #{rsvseq}
+		<if test="transactiontime != null and !transactiontime.equals('')">
+		   AND   TRANSACTIONTIME = #{transactiontime}
+		</if>		  
+	</update>
+	
+	
+	<update id="updateCancelCodeAjax" parameterType="reqBox">
+		UPDATE RSVRESERVATIONINFO
+		 	SET
+				  CANCELCODE = 'B01'
+				, STANDBYNUMBER = 0
+				, PAYMENTSTATUSCODE = 'P03'
+				, CANCELDATETIME = GETDATE()
+				, UPDATEUSER = #{account}
+				, UPDATEDATE = GETDATE()
+		WHERE RSVSEQ = #{rsvseq}
+		<if test="transactiontime != null and !transactiontime.equals('')">
+		  AND TRANSACTIONTIME 	= #{transactiontime}
+		</if>
+	</update>
+	
+	<select id="searchMaxStandByNumber" parameterType="reqBox" resultType="egovMap">
+		SELECT A.RSVSEQ
+		     , CASE
+		          WHEN A.ACCOUNTTYPE = 'A01' AND (C.SEATCOUNT - D.VISITNUMBER) &gt;= A.VISITNUMBER
+		          THEN 'true'
+		          WHEN B.TYPENAME LIKE '%'+'문화'+'%' AND (C.SEATCOUNT - D.VISITNUMBER) &gt;= A.VISITNUMBER
+		          THEN 'true'
+		          WHEN A.ACCOUNTTYPE != 'A01' AND B.TYPENAME NOT LIKE '%'+'문화'+'%'
+		          THEN 'true'
+		          ELSE 'false'
+		       END AS RSVCHECK
+		FROM RSVRESERVATIONINFO A
+		     INNER JOIN RSVTYPEINFO B
+		     ON(A.TYPESEQ = B.TYPESEQ)
+		     INNER JOIN RSVEXPINFO C
+		     ON(A.EXPSEQ = C.EXPSEQ)
+		     LEFT OUTER JOIN (
+		           SELECT RESERVATIONDATE
+		                , EXPSESSIONSEQ
+		                , SUM(VISITNUMBER) AS VISITNUMBER
+		           FROM RSVRESERVATIONINFO 
+		           WHERE STANDBYNUMBER = 0 
+		             AND CANCELCODE = 'B02'
+		             AND EXPSESSIONSEQ = #{expsessionseq}
+		             AND RESERVATIONDATE = #{reservationdate}
+		           GROUP BY RESERVATIONDATE, EXPSESSIONSEQ, CANCELCODE) D
+		     ON(A.RESERVATIONDATE = D.RESERVATIONDATE
+			 AND A.EXPSESSIONSEQ = D.EXPSESSIONSEQ)
+		WHERE A.EXPSESSIONSEQ = #{expsessionseq}
+		  AND A.RESERVATIONDATE = #{reservationdate}
+		  AND A.STANDBYNUMBER = 1
+	</select>
+	
+	<update id="updateStandByNumber" parameterType="reqBox">
+		UPDATE RSVRESERVATIONINFO
+			SET
+				STANDBYNUMBER = '0'
+				, PAYMENTSTATUSCODE = 'P02'
+				, UPDATEDATE = GETDATE()
+		WHERE RSVSEQ = #{standbyrsvseq}
+
+		<!-- 		 
+		<if test="transactiontime != null and !transactiontime.equals('')">
+		  AND TRANSACTIONTIME 	= #{transactiontime}
+		</if>
+		 -->
+ 	</update>
+	
+	<select id="searchPenaltyList" parameterType="reqBox" resultType="egovMap">
+<!-- 		SELECT  -->
+<!-- 			  A.EXPSESSIONSEQ -->
+<!-- 			, B.PENALTYSEQ -->
+<!-- 			, C.TYPECODE -->
+<!-- 			, C.APPLYTYPECODE -->
+<!-- 			, C.APPLYTYPEVALUE -->
+<!-- 		FROM RSVEXPSESSIONINFO A -->
+<!-- 			INNER JOIN RSVEXPPENALTYMAP B -->
+<!-- 				ON(A.EXPSESSIONSEQ = B.EXPSESSIONSEQ) -->
+<!-- 			INNER JOIN RSVPENALTYSETTING C -->
+<!-- 				ON(B.PENALTYSEQ = C.PENALTYSEQ) -->
+<!-- 		WHERE A.EXPSESSIONSEQ = #{expsessionseq} -->
+<!-- 			AND C.TYPECODE = 'P01'  -->
+<!-- 			AND (C.APPLYTYPECODE = 'P02' OR C.APPLYTYPECODE = 'P03') -->
+		SELECT
+			  A.EXPSEQ
+			, B.PENALTYSEQ
+			, C.TYPECODE
+			, C.APPLYTYPECODE
+			, C.APPLYTYPEVALUE
+			, C.PERIODVALUE
+			, C.PERIODCODE
+			, C.TYPEVALUE
+			, C.TYPEDETAILCODE
+			, CASE 
+			  /** 
+				Y -> 패널티
+				N -> 패널티 아님
+			  */
+				WHEN CONVERT(VARCHAR(8),CONVERT(DATETIME, #{reservationdate})-CONVERT(INT , C.TYPEVALUE),112) &lt;= CONVERT(VARCHAR(8),CONVERT(DATETIME, GETDATE()),112) THEN 'Y'
+				WHEN CONVERT(VARCHAR(8),CONVERT(DATETIME, #{reservationdate})-CONVERT(INT , C.TYPEVALUE),112) &gt; CONVERT(VARCHAR(8),CONVERT(DATETIME, GETDATE()),112) THEN 'N'
+				ELSE ''
+			END AS PENALTYYN
+		FROM RSVEXPINFO A
+			INNER JOIN RSVEXPPENALTYMAP B
+				ON(A.EXPSEQ = B.EXPSEQ)
+			INNER JOIN RSVPENALTYSETTING C
+				ON(B.PENALTYSEQ = C.PENALTYSEQ)
+		WHERE A.EXPSEQ = #{expseq}
+			AND C.TYPECODE = 'P01'
+			AND C.APPLYTYPECODE = 'P02'
+	</select>
+	
+	<insert id="insertPenaltyHistory" parameterType="map">
+		INSERT INTO RSVPENALTYHISTORY(
+			  ACCOUNT
+			, RSVSEQ
+			, PENALTYSEQ
+			, APPLYTYPECODE
+			, APPLYTYPEVALUE
+			, REASON
+			, GRANTDATE
+			, PENALTYSTATUSCODE
+			, STATUSCODE
+			, INSERTUSER
+			, INSERTDATE
+		)VALUES(
+			  #{account}
+			, #{rsvseq}
+			, #{penaltyseq}
+			, #{applytypecode}
+			, #{applytypevalue}
+			, 'P03'
+			, CONVERT(VARCHAR, GETDATE(),112)
+			, 'B01'
+			, 'B01'
+			, #{account}
+			, GETDATE()
+		)
+	</insert>
+	
+	
+	<!-- 모바일_현재달~3개월후 마지막날 조회 -->
+	<select id="searchThreeMonthMobile" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			  /** CONCAT(AA.YEAR, '-', AA.MONTH, '-01') AS ENDDATE
+			, CONVERT(VARCHAR, AA.ENDDATE) AS STRDATE*/
+			  CONVERT(VARCHAR(10), DATEADD(MM, DATEDIFF(M, 0, GETDATE())-2, 0), 121) AS STRDATE
+			, CONVERT(VARCHAR(10), DATEADD(S,-1,DATEADD(MM, DATEDIFF(M, 0, GETDATE())+1, 0)), 121) AS ENDDATE
+			, SUBSTRING(CONVERT(VARCHAR, AA.ENDDATE, 112), 1, 4) AS STARYEAER
+			, SUBSTRING(CONVERT(VARCHAR, AA.ENDDATE, 112), 5, 2) AS STARMONTH
+			, AA.YEAR AS ENDYEAER
+			, AA.[MONTH] AS ENDMONTH
+			, SUBSTRING(CONVERT(VARCHAR, GETDATE(), 112), 7, 2) AS TODAY
+		FROM(
+			SELECT
+				  DATEPART(YY, DATEADD(MM, NUMBER, GETDATE())) AS YEAR
+				, REPLICATE('0', 2 - DATALENGTH(CONVERT(VARCHAR, DATEPART(MM, DATEADD(MM, NUMBER, GETDATE())))))+CONVERT(VARCHAR, DATEPART(MM, DATEADD(MM, NUMBER, GETDATE()))) AS MONTH
+				, CONVERT(DATE, DATEADD(s,-1,DATEADD(mm, DATEDIFF(m,0,GETDATE())-1,0))) AS ENDDATE
+				, CASE DATEPART(MM, DATEADD(MM, NUMBER, GETDATE()))
+				 WHEN 1 THEN 'jan'
+				 WHEN 2 THEN 'feb'
+				 WHEN 3 THEN 'mar'
+				 WHEN 4 THEN 'apr'
+				 WHEN 5 THEN 'may'
+				 WHEN 6 THEN 'june'
+				 WHEN 7 THEN 'july'
+				 WHEN 8 THEN 'aug'
+				 WHEN 9 THEN 'sep'
+				 WHEN 10 THEN 'oct'
+				 WHEN 11 THEN 'nov'
+				 ELSE 'dec'
+				  END AS ENGMONTH
+			FROM
+				 MASTER..SPT_VALUES
+			WHERE 
+				 TYPE = 'P' 
+				 AND NUMBER &gt;= 0
+				 AND NUMBER &lt; 1 
+		)AS AA
+	</select>
+	
+	<select id="searchExpPenaltyYn" parameterType="reqBox" resultType="egovMap">
+		SELECT 
+			CASE 
+				WHEN ISNULL(COUNT(J.TYPECODE), 0) &gt; 0 THEN 'Y'
+				ELSE 'N'
+			END AS TYPECODE
+		FROM RSVRESERVATIONINFO A
+			INNER JOIN RSVTYPEINFO B
+				ON(A.TYPESEQ = B.TYPESEQ AND A.RSVTYPECODE = 'R02')
+			INNER JOIN RSVEXPINFO C
+				ON(A.EXPSEQ = C.EXPSEQ)
+			INNER JOIN RSVPPINFO G
+				ON(A.PPSEQ = G.PPSEQ)
+			LEFT OUTER JOIN (
+				SELECT    DISTINCT
+				  PENALTYSEQ
+				, EXPSEQ
+				FROM RSVEXPPENALTYMAP
+			) I
+				ON(C.EXPSEQ = I.EXPSEQ AND C.STATUSCODE = 'B01')
+			LEFT OUTER JOIN RSVPENALTYSETTING J
+				ON(I.PENALTYSEQ = J.PENALTYSEQ AND J.STATUSCODE = 'B01')
+		WHERE A.ACCOUNT = #{account}
+			<if test="ppseq != null and !ppseq.equals('')">
+				AND A.PPSEQ = #{ppseq}
+			</if>
+			<if test="typeseq != null and !typeseq.equals('')">
+				AND A.TYPESEQ = #{typeseq}
+			</if>
+			<if test="reservationdate != null and !reservationdate.equals('')">
+				AND A.RESERVATIONDATE = #{reservationdate} 
+			</if>
+			<if test="reservationdate == null and reservationdate.equals('')">
+				AND CONVERT(VARCHAR(20), PURCHASEDATE, 23) = #{purchasedate}
+			</if>
+			AND A.EXPSEQ = #{tempExpseq}
+			AND CONVERT(VARCHAR(8), CONVERT(DATETIME, #{tempreservationdate}) - CONVERT(INT, J.TYPEVALUE), 112) &lt;  CONVERT(VARCHAR(8), GETDATE(), 112)
+			AND CONVERT(VARCHAR, A.PURCHASEDATE, 112) != CONVERT(VARCHAR, GETDATE(), 112)
+			AND J.TYPECODE != 'P02'
+	</select>
+	
+	<select id="expInfoByRsvSeq" parameterType="reqBox" resultType="java.lang.String">
+		SELECT
+		  ACCOUNT
+		FROM RSVRESERVATIONINFO
+		WHERE RSVSEQ = #{rsvseq}
+	</select>
+	
+</mapper>

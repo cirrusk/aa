@@ -1,0 +1,958 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>교육장 레이어 팝업 - ABN Korea</title>
+<link rel="stylesheet" href="../../common/css/academy_default.css" />
+<script src="http://qa2.abnkorea.co.kr/_ui/mobile/common/js/jquery-1.8.3.min.js"></script>
+<script src="../../common/js/pbCommonAcademy.js"></script>
+<script src="http://qa2.abnkorea.co.kr/_ui/mobile/common/js/pbLayerPopup.js"></script>
+<style type="text/css">
+.layerpopWrap{padding:20px; color:#000;}
+.layerpopWrap h1{color:#000; font-size:15px;}
+.layerpopWrap a{display:block; margin:20px 0; padding:7px 10px; border:1px solid #888; border-radius:3px; font-weight: bold;font-size:13px;color:#666;text-align:center;}
+</style>
+</head>
+<body>
+
+		<!-- content -->
+		<section id="pbContent" class="bizroom">
+
+			<div class="layerpopWrap">
+				<h1>[교육장 레이어 팝업]</h1><br/>
+				<div>
+					<a href="#uiLayerPop_fail" onclick="layerPopupOpen(this);return false;">예약실패 알림</a>
+					<a href="#uiLayerPop_cannot" onclick="layerPopupOpen(this);return false;">예약불가 알림</a>
+					<a href="#uiLayerPop_cookingReserve" onclick="layerPopupOpen(this);return false;">[ 요리명장 예약 ] 안내 및 확정 페이지</a>
+					<a href="#uiLayerPop_confirm" onclick="layerPopupOpen(this);return false;">예약 및 결제정보 확인</a>
+					<a href="#uiLayerPop_cancel" onclick="layerPopupOpen(this);return false;">예약취소</a>
+					<a href="#uiLayerPop_cancelView" onclick="layerPopupOpen(this);return false;">환불내역 확인</a>
+					<a href="#uiLayerPop_receipt" onclick="layerPopupOpen(this);return false;">신용카드영수증</a>
+					<a href="#uiLayerPop_personal" onclick="layerPopupOpen(this);return false;">약관 및 동의 전체보기</a>
+					<a href="#uiLayerPop_calender" onclick="layerPopupOpen(this);return false;">시설예약 현황확인</a>
+					<a href="#uiLayerPop_visionCenter" onclick="layerPopupOpen(this);return false;">룸 안내</a>
+					<a href="#uiLayerPop_calender2" onclick="layerPopupOpen(this);return false;">체험예약 현황확인</a>
+					<a href="#uiLayerPop_alter" onclick="layerPopupOpen(this);return false;">동반여부 변경</a>
+					<a href="#uiLayerPop_alter2" onclick="layerPopupOpen(this);return false;">참석인원 변경</a>
+					<a href="m02_050_0250.html" target="_blank">브랜드체험 소개</a>
+					<a href="#uiLayerPop_culture" onclick="layerPopupOpen(this);return false;">문화체험 소개</a>
+					<a href="#uiLayerPop_noneculture" onclick="layerPopupOpen(this);return false;">비회원 문화체험 신청자 확인</a>
+				</div>
+			</div>
+			
+			<!-- layer popoup -->
+			
+			<!-- 예약실패 알림 -->
+			<div class="pbLayerPopup" id="uiLayerPop_fail">
+				<div class="pbLayerHeader">
+					<strong>예약실패 알림</strong>
+				</div>
+				<div class="pbLayerContent">
+				
+					<div class="cancelWrap">예약에 실패하였습니다.
+						<div class="bdBox"><strong>원인: </strong><span class="point1">카드번호 오류</span></div>
+					</div>
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicBL">확인</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //예약실패 알림 -->
+
+			<!-- 예약불가 알림 -->
+			<div class="pbLayerPopup" id="uiLayerPop_cannot">
+				<div class="pbLayerHeader">
+					<strong>예약불가 알림</strong>
+				</div>
+				<div class="pbLayerContent">
+				
+					<div class="cancelWrap">
+						예약 진행 중 다른 사용자가 실시간으로 <br/>아래 예약건을 이미 완료하였습니다.
+						<div class="bdBox textL">
+							<strong>예약불가 항목 : </strong>
+							<span class="point1">강서 AP <em>|</em> 비전센타 1 <em>|</em> 2016-05-25 (수) <em>|</em> Session 2 (14:00~17:00)</span>
+						</div>
+					</div>
+					<div class="radioList">
+						<span><input type="radio" id="radio1" name="radio1" /><label for="radio1">예약불가 세션 제외 후 결제 진행</label></span>
+						<span><input type="radio" id="radio2" name="radio1" /><label for="radio2">날짜 및 세션 다시 선택 후 진행</label></span>
+					</div>
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicBL">확인</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //예약불가 알림 -->
+
+			<!-- [ 요리명장 예약 ] 안내 및 확정 페이지 -->
+			<div class="pbLayerPopup" id="uiLayerPop_cookingReserve">
+				<div class="pbLayerHeader">
+					<strong>안내</strong>
+				</div>
+				<div class="pbLayerContent">
+				
+					<div class="cancelWrap">
+						요리명장으로 선정되어 월 2회 무료사용이 가능합니다.<br>
+						무료 또는 유료 예약여부를 선택해 주세요.<br>
+					</div>
+					<ul class="listWarning">
+						<li>※ 무료로 예약하는 경우, 사용예정일 1~7일 전까지 취소의 경우, 시설 이용한 것으로 간주하고 해당월 예약 횟수에 산정합니다.</li>
+					</ul>
+					<div class="radioList">
+						<span><input type="radio" id="radio1" name="radio1" /><label for="radio1">무료로 예약</label></span>
+						<span><input type="radio" id="radio2" name="radio1" /><label for="radio2">유료로 예약</label></span>
+					</div>
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicBL">확인</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //퀸룸/파티룸 예약 -->	
+			
+			<!-- 예약 및 결제정보 확인 -->
+			<div class="pbLayerPopup fixedFullsize" id="uiLayerPop_confirm">
+				<div class="pbLayerHeader">
+					<strong>예약 및 결제정보 확인</strong>
+				</div>
+				<div class="pbLayerContent">
+				
+					<table class="tblResrConform">
+						<colgroup><col width="30%" /><col width="70%" /></colgroup>
+						<thead>
+							<tr><th scope="col" colspan="2">강서 AP <em>|</em> 비전센타 1</th></tr>
+						</thead>
+						<tfoot>
+							<tr>
+								<td colspan="2">총 2건 <em>|</em> <span class="point1">300,000원</span></td>
+							</tr>
+						</tfoot>
+						<tbody>
+							<tr>
+								<th scope="row" class="bdTop">날짜</th>
+								<td class="bdTop">2016-01-01 (수)</td>
+							</tr>
+							<tr>
+								<th scope="row">세션(시간)</th>
+								<td>Session2 (14:00~17:00)</td>
+							</tr>
+							<tr>
+								<th scope="row">금액(VAT포함)</th>
+								<td>150,000원</td>
+							</tr>
+							<tr>
+								<th scope="row" class="bdTop">날짜</th>
+								<td class="bdTop">2016-01-01 (수)</td>
+							</tr>
+							<tr>
+								<th scope="row">세션(시간)</th>
+								<td>Session2 (14:00~17:00)</td>
+							</tr>
+							<tr>
+								<th scope="row">금액(VAT포함)</th>
+								<td>150,000원</td>
+							</tr>
+						</tbody>
+					</table>
+					
+					<table class="tblCredit">
+						<colgroup><col width="30%" /><col width="auto" /></colgroup>
+						<tbody>
+							<tr>
+								<th scope="row">카드번호</th>
+								<td>0000 - **** - **** - 0000</td>
+							</tr>
+							<tr>
+								<th scope="row">유효기간</th>
+								<td>2018년 07월</td>
+							</tr>
+							<tr>
+								<th scope="row">할부기간</th>
+								<td>00개월</td>
+							</tr>
+							<tr>
+								<th scope="row">카드결제금액</th>
+								<td>300,000원</td>
+							</tr>
+						</tbody>
+					</table>
+					
+					<ul class="listWarning">
+						<li>※ 결제완료까지 시간이 지연될 수 있습니다.조금만 기다려 주세요.</li>
+						<li>※ [예약확정] 버튼은 한 번만 선택하세요.</li>
+						<li>※ 여러 번 선택하시면 예약이 중복 생성될 수 있습니다.</li>
+						<li>※ 사용 예정일 1~7일 전 취소한 경우, 해당 시설 임대 금액의 10%를 취소 수수료로 공제 후 환급됩니다.</li>
+					</ul>
+					<div class="grayBox">
+						위의 정보가 맞으면 [예약확정] 버튼을 눌러 주세요.<br/>
+						<span class="point3">[예약확정] 하셔야 정상적으로 예약이 완료됩니다.</span>
+					</div>
+					
+					<div class="btnWrap aNumb2">
+						<span><a href="#" class="btnBasicGL">예약취소</a></span>
+						<span><a href="#" class="btnBasicBL">예약확정</a></span>
+					</div>
+					<div class="btnWrap bNumb1">
+						<a href="#none" class="btnBasicBL">다음</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //예약 및 결제정보 확인 -->
+			
+			<!-- 환불내역 확인 -->
+			<div class="pbLayerPopup" id="uiLayerPop_cancelView">
+				<div class="pbLayerHeader">
+					<strong>환불내역 확인</strong>
+				</div>
+				<div class="pbLayerContent">
+					<h2>시설 예약</h2>
+					<table class="tblCredit">
+						<colgroup><col width="110px" /><col width="auto" /></colgroup>
+						<tbody>
+							<tr>
+								<th scope="row" class="bdTop">예약자</th>
+								<td class="bdTop">7480003 홍길동</td>
+							</tr>
+							<tr>
+								<th scope="row">예약완료일자</th>
+								<td>2016-04-20</td>
+							</tr>
+							<tr>
+								<th scope="row">사용예정일자</th>
+								<td>2016-05-31</td>
+							</tr>
+							<tr>
+								<th scope="row">시설종류</th>
+								<td>교육장</td>
+							</tr>
+							<tr>
+								<th scope="row">지역 / 시설명</th>
+								<td>강서AP / 비전센타1</td>
+							</tr>
+							<tr>
+								<th scope="row">사용예정시간</th>
+								<td>Session1 (14:00~17:00)</td>
+							</tr>
+						</tbody>
+					</table>
+					
+					<h2 class="mgtL">결제 및 취소</h2>
+					<table class="tblCredit">
+						<colgroup><col width="110px" /><col width="auto" /></colgroup>
+						<tbody>
+							<tr>
+								<th scope="row" class="bdTop">취소일자</th>
+								<td class="bdTop">2016-4-20 11:12:10</td>
+							</tr>
+							<tr>
+								<th scope="row">취소구분</th>
+								<td>시설예약 취소</td>
+							</tr>
+							<tr>
+								<th scope="row">취소형태</th>
+								<td>신용카드</td>
+							</tr>
+							<tr>
+								<th scope="row">취소번호</th>
+								<td>123456 신용</td>
+							</tr>
+							<tr>
+								<th scope="row">환불방법</th>
+								<td>결제금액 기준 10% 취소 수수료 제외 후 환불</td>
+							</tr>
+							<tr>
+								<th scope="row">결제금액</th>
+								<td>150,000원</td>
+							</tr>
+							<tr>
+								<th scope="row">취소수수료</th>
+								<td>15,000원</td>
+							</tr>
+							<tr>
+								<th scope="row">환불금액</th>
+								<td>135,000원</td>
+							</tr>
+						</tbody>
+					</table>
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicGL">닫기</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //환불내역 확인 -->
+			
+			<!-- 약관 및 동의 전체보기 -->
+			<div class="pbLayerPopup fixedFullsize" id="uiLayerPop_personal">
+				<div class="pbLayerHeader">
+					<strong>약관 및 동의 전체보기</strong>
+				</div>
+				<div class="pbLayerContent">
+				
+					<div class="tabWrapLogical tNum2Line">
+						<section class="on">
+							<h2 class="tab01"><a href="#none">교육장(퀸룸)<br/> 규정 동의</a></h2>
+							<div>
+								<div class="borderbox">
+									<div class="termsWrapper pdNone" tabindex="0">
+										<ul>
+											<li>
+												<p class="titH2 mgNone">제1조(목적)</p>
+												이 규정은 AMWAY 프라자 교육장(이하 “교육장”이라 한다.)내 대관에 따른 시설물 사용 허가 및 기자재 관리와 운영에 관한 사항을 규정하는데 그 목적이 있다.
+											</li>
+											<li>
+												<p class="titH2">제2조 (대관의 정의)</p>
+												대관이라 함은 ‘교육’, ‘행사’ 등을 위하여 시설, 설비 및 부수장비를 소정의 절차를 거쳐 대관 사용하는 것과 관련 부수행위를 위하여 교육장의 시설설비를 임대 사용하는 것을 말한다.
+											</li>
+											<li>
+												<p class="titH2">제3조(대관의 범위)</p>
+												이 규정의 적용을 받는 대여시설 및 설비는 교육장과 관련된 제반시설 및 설비를 말한다. 
+											</li>
+											<li>
+												<p class="titH2">제4조(대관 시간과 비용) </p>
+												<ol>
+													<li>1. 대관료는 인건비, 시설유지비, 감가상각비 등 물가를 고려하여 “한국암웨이㈜” 에서 
+												    정하는 바에 따르며 교육 신청 시에 절차에 따라 납부해야 한다. </li>
+													<li>2. 대관자가 납부한 대관료는 반환하지 않는다, 다만 한국암웨이㈜에서 정하는 절차에 따라 
+												    반환을 요구할 경우 대관료를 반환할 수 있다. 3. 교육장의 대관 시간은 따로 정하는 
+												    바에 따른다.</li>
+												</ol>
+											</li>
+											<li>
+												<p class="titH2">제5조(시설 및 기자재 이용) </p>
+												교육장 시설 및 기자재 이용은 아래 각 호에 해당하는 자에 한하여 교육장내 시설물을 이용할 수 있다. 
+												<ol>
+													<li>1.AMWAY 프라자에서 실시되는 본사 교육과 행사 우선 원칙. </li>
+													<li>2. 한국암웨이㈜에서 정한 교육장 신청 기준에 맞는 ABO. </li>
+													<li>3. 기타 AMWAY 프라자의 허가를 득한 단체 및 개인. </li>
+												</ol>
+											</li>
+											<li>
+												<p class="titH2">제6조(사용 조건) </p>
+												본 교육장 사용자는 다음 각 호의 사용 조건을 준수하여야 한다. 단, 부득이한 경우 AMWAY 프라자와 사전 협의 조정할 수 있다 
+												<ol>
+													<li>1. 교육장 사용자는 교육장 시설물 및 비품 관리에 만전을 기하여야 한다. <br>단, 부주의에 의한 시설물 및 비품 훼손 시 그에 상응한 보상처리를 하여야 한다. </li>
+													<li>2. 교육장 사용 기간과 시간은 신청한 일자와 시간을 벗어나 사용할 수 없다.</li>
+												</ol>
+											</li>
+											<li>
+												<p class="titH2">제7조(사용상 주의) </p>
+												교육장 시설 기자재 및 자료 사용자는 소중히 사용하여야 하며 망실 혹은 훼손하는 자는 원상회복에 해당하는 금액을 변상하는 것을 원칙으로 한다. 
+											</li>
+											<li>
+												<p class="titH2">제8조(사용자 제한) </p>
+												교육장 사용자 중 다음 각 호의 행위에 한 해 사용을 금지할 수 있다. 
+												<ol>
+													<li>1. 교육장 운영에 지장을 초래하는 행위 </li>
+													<li>2. 교육장 사용 계획의 본래 목적과 상반된 행위 </li>
+													<li>3. 교육장 내 기자재 등 비품을 소홀히 다루고 훼손하는 행위 </li>
+													<li>4. 기타 명시되지 아니한 사용 목적 중 명백히 한국암웨이의 이익에 위배되는 행위 </li>
+												</ol>
+											</li>
+											<li>
+												<p class="titH2">제 9조 </p>
+												<ol>
+													<li>1. ABO의 대관은 한조당 월 4회에 한하며, 신청 자격과 기간은 별도의 한국 암웨이가 정한 규정에 따라 가능하다. </li>
+													<li>2. 사용월 예약은 7일전에만 가능하다 제 10조(부칙) 본 규정은 2008년 6월 1일부터 시행한다.</li>
+												</ol>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</section>
+						<section class="">
+							<h2 class="tab02"><a href="#none">교육장(퀸룸)<br/> 제품 교육 시 주의사항</a></h2>
+							<div>
+								<div class="borderbox">
+									<div class="termsWrapper pdNone" tabindex="0">
+									<p>건강기능식품의 경우 과대과장 광고 및 기타 불법 판매 행위에 대한 지속적인 감시와 규제가 이루어지고 있으며, 
+									다른 일반 제품과는 달리 지정기관에서의 교육 수료 후, 영업신고를 하셔야 제품 판매가 가능합니다.</p>
+									
+									<p class="mgtM">따라서 제품 교육시에는 반드시 한국암웨이를 통해 공식적으로 인정된 내용만이 언급되어야 하며, 
+									다음의 내용이 전달 되지 않도록 유의하여 주십시오.</p>
+									<ul class="mgtM">
+									<li>- 뉴트리라이트 제품이 질병의 치료나 예방에 효과가 있다는 내용의 전달</li>
+									<li>- 기타 의약품으로 이인할 수 있는 표현의 사용</li>
+									<li>- 제품의 소분/재가공 판매</li>
+									<li>- 권장 섭취량 이상의 제품 과량 섭취 권장 등</li>
+									</ul>
+									
+									<p class="mgtM">또한 재료비를 포함하여 어떠한 명목이나 형태로도 참가자에게 비용을 받을 수 없으며, 각종 책자 및 컨텐츠 등의 사업 보조 물품을 판매하거나 홍보할 수 없습니다.
+									상기 규정의 위반시 윤리강령상의 조치는 물론 법규 위반에 따른 법적 처벌까지 받을 수 있는 중대한 사안임을 감안하시어, 적극적인 준수를 부탁 드립니다.</p>
+									</div>
+								</div>
+								<p class="listDot mgtS fsS">한국암웨이 뉴트리라이트 제품은 의약품이 아닌 건강기능식품으로, 제품 판매 또는 권유시 세심한 주의가 요구됩니다.</p>
+							</div>
+						</section>
+					</div>
+					
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicGL">닫기</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //약관 및 동의 전체보기 -->
+			
+			<!-- 신용카드영수증 -->
+			<div class="pbLayerPopup" id="uiLayerPop_receipt">
+				<div class="pbLayerHeader">
+					<strong>신용카드영수증</strong>
+				</div>
+				<div class="pbLayerContent">
+					<div class="receipt"><img src="/_ui/mobile/images/academy/@receipt.gif" alt="카드영수증" /></div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //신용카드영수증 -->
+			
+			<!-- 시설예약 현황확인 -->
+			<div class="pbLayerPopup fixedFullsize" id="uiLayerPop_calender">
+				<div class="pbLayerHeader">
+					<strong>시설예약 현황확인</strong>
+				</div>
+				<div class="pbLayerContent">
+					<!-- 캘린더형 -->
+					<div class="viewCalendar">
+						<p class="topText"><strong>총 00 개</strong>의 시설예약 내역이 있습니다.</p>
+						<div class="calendarWrapper">
+							
+							<div class="inputBox monthlyNum">
+								<p class="selectBox">
+									<select class="year" title="년도">
+										<option>2016</option>
+									</select>
+									<select class="month" title="월">
+										<option>06</option>
+										<option>05</option>
+										<option>04</option>
+									</select>
+								</p>
+								<a href="#" class="monthPrev"><span class="hide">이전달</span></a><!-- 이전목록이 있으면 .on 활성화 -->
+								<a href="#" class="monthNext"><span class="hide">다음달</span></a><!-- 다음 목록이 있으면 .on 활성화 -->
+							</div>
+							
+							<table class="tblBookCalendar">
+								<caption>캘린더형 - 날짜별 시설예약가능 시간</caption>
+								<colgroup>
+									<col style="width:13.5%">
+									<col style="width:14.5%" span="5">
+									<col style="width:auto">
+								</colgroup>
+								<thead>
+									<tr>
+										<th scope="col" class="weekSun">일</th>
+										<th scope="col" class="weekMon">월</th>
+										<th scope="col" class="weekTue">화</th>
+										<th scope="col" class="weekWed">수</th>
+										<th scope="col" class="weekThur">목</th>
+										<th scope="col" class="weekFri">금</th>
+										<th scope="col" class="weekSat">토</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="weekSun"></td>
+										<td><a href="#none"></a></td>
+										<td><a href="#none"></a></td>
+										<td><a href="#none"></a></td>
+										<td><a href="#none"></a></td>
+										<td><a href="#none">1</a></td>
+										<td class="weekSat"><a href="#none">2</a></td>
+									</tr>
+									<tr>
+										<td class="weekSun">
+											<a href="#none">3</a>
+										</td>
+										<td>
+											<a href="#none">4</a>
+										</td>
+										<td>
+											<a href="#none">5</a>
+										</td>
+										<td>
+											<a href="#none">6</a>
+										</td>
+										<td>
+											<a href="#none">7</a>
+										</td>
+										<td>
+											<a href="#none">8</a>
+										</td>
+										<td class="weekSat">
+											<a href="#none">9</a>
+										</td>
+									</tr>
+									<tr>
+										<td class="weekSun">
+											<a href="#none">10</a>
+										</td>
+										<td>
+											<a href="#none" class="selcOn">11</a>
+										</td>
+										<td>
+											<a href="#none">12</a>
+										</td>
+										<td>
+											<a href="#none">13</a>
+										</td>
+										<td>
+											<a href="#none">14
+											<span><em class="calIcon2 blue">예약</em></span>
+											</a>
+										</td>
+										<td>
+											<a href="#none">15
+											<span><em class="calIcon2 blue">예약</em><em class="calIcon2 green">예약</em><em class="calIcon2 red">예약</em></span>
+											</a>
+										</td>
+										<td class="weekSat">
+											<a href="#none" class="selcOn">16
+											<span><em class="calIcon2 blue">예약</em><em class="calIcon2 red">예약</em></span>
+											</a>
+										</td>
+									</tr>
+									<tr>
+										<td class="weekSun">
+											<a href="#none">17</a>
+										</td>
+										<td>
+											<a href="#none">18</a>
+										</td>
+										<td>
+											<a href="#none">19</a>
+										</td>
+										<td>
+											<a href="#none">20</a>
+										</td>
+										<td>
+											<a href="#none">21</a>
+										</td>
+										<td>
+											<a href="#none">22</a>
+										</td>
+										<td class="weekSat">
+											<a href="#none">23</a>
+										</td>
+									</tr>
+									<tr>
+										<td class="weekSun">
+											<a href="#none" class="selcOn">24
+											<span><em>예약</em></span></a>
+										</td>
+										<td>
+											<a href="#none">25</a>
+										</td>
+										<td>
+											<a href="#none">26</a>
+										</td>
+										<td>
+											<a href="#none">27</a>
+										</td>
+										<td>
+											<a href="#none">28</a>
+										</td>
+										<td>
+											<a href="#none">29</a>
+										</td>
+										<td class="weekSat">
+											<a href="#none">30</a>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+							
+							<div class="tblCalendarBottom">
+								<div class="resrState"> 
+									<span class="calIcon2 blue"></span>교육장
+									<span class="calIcon2 green"></span>비즈룸
+									<span class="calIcon2 red"></span>퀸룸/파티룸
+								</div>
+								<div class="btnR"> <a href="#none" class="btnTbl">월 예약 전체보기</a></div>
+							</div>
+						</div>
+
+						<dl class="tblBizroomState">
+							<dt>사용일자<br/>2016-05-31 (화)  14:00~17:00 <a href="#none" class="btnTbl">예약취소</a></dt>
+							<dd>퀸룸/파티룸 | 강서AP – 비전센타 1 <br/>상태 : 사용완료</dd>
+						</dl>
+					</div>
+					<!-- //캘린더형 -->
+					
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicGL">닫기</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //시설예약 현황확인 -->
+			
+			<!-- 체험예약 현황확인 -->
+			<div class="pbLayerPopup fixedFullsize" id="uiLayerPop_calender2">
+				<div class="pbLayerHeader">
+					<strong>체험예약 현황확인</strong>
+				</div>
+				<div class="pbLayerContent">
+					<!-- 캘린더형 -->
+					<div class="viewCalendar">
+						<p class="topText"><strong>총 00 개</strong>의 체험예약 내역이 있습니다.</p>
+						<div class="calendarWrapper">
+							
+							<div class="inputBox monthlyNum">
+								<p class="selectBox">
+									<select class="year" title="년도">
+										<option>2016</option>
+									</select>
+									<select class="month" title="월">
+										<option>06</option>
+										<option>05</option>
+										<option>04</option>
+									</select>
+								</p>
+								<a href="#" class="monthPrev"><span class="hide">이전달</span></a><!-- 이전목록이 있으면 .on 활성화 -->
+								<a href="#" class="monthNext"><span class="hide">다음달</span></a><!-- 다음 목록이 있으면 .on 활성화 -->
+							</div>
+							
+							<table class="tblBookCalendar">
+								<caption>캘린더형 - 날짜별 체험예약가능 시간</caption>
+								<colgroup>
+									<col style="width:13.5%">
+									<col style="width:14.5%" span="5">
+									<col style="width:auto">
+								</colgroup>
+								<thead>
+									<tr>
+										<th scope="col" class="weekSun">일</th>
+										<th scope="col" class="weekMon">월</th>
+										<th scope="col" class="weekTue">화</th>
+										<th scope="col" class="weekWed">수</th>
+										<th scope="col" class="weekThur">목</th>
+										<th scope="col" class="weekFri">금</th>
+										<th scope="col" class="weekSat">토</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td class="weekSun"><a href="#none">1</a></td>
+										<td><a href="#none">2</a></td>
+										<td><a href="#none">3</a></td>
+										<td><a href="#none">4</a></td>
+										<td><a href="#none">5</a></td>
+										<td><a href="#none">6</a></td>
+										<td class="weekSat"><a href="#none">7</a></td>
+									</tr>
+									<tr>
+										<td class="weekSun"><a href="#none">8</a></td>
+										<td><a href="#none">9</a></td>
+										<td><a href="#none">10</a></td>
+										<td><a href="#none">11</a></td>
+										<td><a href="#none">12</a></td>
+										<td><a href="#none">13</a></td>
+										<td class="weekSat"><a href="#none">14</a></td>
+									</tr>
+									<tr>
+										<td class="weekSun"><a href="#none">15</a></td>
+										<td><a href="#none">16</a></td>
+										<td><a href="#none">17</a></td>
+										<td><a href="#none">18</a></td>
+										<td><a href="#none">19</a></td>
+										<td><a href="#none">20</a></td>
+										<td class="weekSat"><a href="#none">21</a></td>
+									</tr>
+									<tr>
+										<td class="weekSun"><a href="#none">22</a></td>
+										<td>
+											<a href="#none">23<span><em class="calIcon2 blue">체성분측정 예약</em><em class="calIcon2 red">문화체험 예약</em></span></a>
+										</td>
+										<td><a href="#none">24</a></td>
+										<td>
+											<a href="#none" class="selcOn">25<span><em class="calIcon2 blue">체성분측정 예약</em></span></a>
+										</td>
+										<td><a href="#none">26</a></td>
+										<td><a href="#none">27</a></td>
+										<td class="weekSat"><a href="#none">28</a></td>
+									</tr>
+									<tr>
+										<td class="weekSun"><a href="#none">29</a></td>
+										<td><a href="#none">30</a></td>
+										<td><a href="#none">31</a></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td class="weekSat"></td>
+									</tr>
+								</tbody>
+							</table>
+							
+							<div class="tblCalendarBottom">
+								<div class="resrState"> 
+									<p>
+										<span class="calIcon2 blue"></span>체성분측정
+										<span class="calIcon2 green"></span>피부측정
+										<span class="calIcon2 gray"></span>브랜드체험
+										<span class="calIcon2 red"></span>문화체험
+									</p>
+								</div>
+								<div class="btnR"> <a href="#none" class="btnTbl">월 예약 전체보기</a></div>
+							</div>
+						</div>
+
+						<dl class="tblBizroomState">
+							<dt>체험일자<br />2016-05-18 (수)  14:00~17:00</dt>
+							<dd>체성분측정<em>|</em>체성분측정<em>|</em>강서AP<em>|</em>일반인동반<br />
+							상태 : 체험대기</dd>
+						</dl>
+						
+						<dl class="tblBizroomState">
+							<dt>체험일자<br />2016-05-31 (화)  14:00~17:00</dt>
+							<dd>문화체험<em>|</em>가족이 대를 잇는 추억놀이<em>|</em>강서AP<em>|</em>참석인원 1명<br />
+							상태 : 체험대기</dd>
+						</dl>
+					</div>
+					<!-- //캘린더형 -->
+					
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicGL">닫기</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //체험예약 현황확인 -->
+			
+			<!-- 룸 안내 -->
+			<div class="pbLayerPopup" id="uiLayerPop_visionCenter">
+				<div class="pbLayerHeader">
+					<strong>안내</strong>
+				</div>
+				<div class="pbLayerContent">
+				
+					<p>선택하신 룸은 다목적 룸입니다.<br />
+					일반 교육장으로 사용시에는 [교육장 예약신청]을 선택하시고, 
+					요리시연 목적으로 퀸쿡웨어를 사용시에는 [퀸쿡/파티룸 예약신청] 을 선택하시기 바랍니다.</p>
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicBL">교육장 예약신청</a>
+					</div>
+					<div class="btnWrap bNumb1 mgtS">
+						<a href="#" class="btnBasicBL">퀸쿡/파티룸 예약신청</a>
+					</div>
+					
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- // 룸 안내 -->
+			
+			<!-- 예약취소 알림 -->
+			<div class="pbLayerPopup" id="uiLayerPop_cancel">
+				<div class="pbLayerHeader">
+					<strong>예약취소</strong>
+				</div>
+				<div class="pbLayerContent">
+					
+					<div class="cancelWrap">
+						<p>예약을 취소하시겠습니까?</p>
+						<!-- 무료예약의 경우 -->
+						
+						<!-- 20160714 페널티 수정 -->
+						<p class="bdBox">취소 시 페널티가 적용됩니다.</p>
+						<!-- 유료예약의 경우 -->
+						<p class="bdBox">취소 시 결제 금액의 10%의 취소 수수료 제외 후 환불 처리됩니다.</p>
+					</div>
+					
+					<div class="btnWrap aNumb2">
+						<span><a href="#none" class="btnBasicGL">취소</a></span>
+						<span><a href="#none" class="btnBasicBL">확인</a></span>
+					</div>
+				</div>
+				
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //예약취소 알림 -->
+			
+			<!-- 동반여부 변경 -->
+			<div class="pbLayerPopup" id="uiLayerPop_alter">
+				<div class="pbLayerHeader">
+					<strong>동반여부 변경</strong>
+				</div>
+				<div class="pbLayerContent">
+					<div class="radioList mgAuto">
+						<span><input type="radio" id="cpRadio1" name="cpRadio1" /><label for="cpRadio1">비동반</label></span>
+						<span><input type="radio" id="cpRadio2" name="cpRadio1" /><label for="cpRadio2">ABO동반</label></span>
+						<span><input type="radio" id="cpRadio3" name="cpRadio1" /><label for="cpRadio3">일반인동반</label></span>
+					</div>
+					
+					<div class="btnWrap aNumb2">
+						<span><a href="#" class="btnBasicGL">변경취소</a></span>
+						<span><a href="#" class="btnBasicBL">변경완료</a></span>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- // 동반여부 변경 -->
+			
+			<!-- 참석인원 변경 -->
+			<div class="pbLayerPopup" id="uiLayerPop_alter2">
+				<div class="pbLayerHeader">
+					<strong>참석인원 변경</strong>
+				</div>
+				<div class="pbLayerContent">
+					<div class="selectBox mgAuto">
+						<label for="memberNum">참석인원</label> 
+							<select id="memberNum" title="참석인원 선택">
+								<option>1명</option>
+								<option>2명</option>
+								<option>3명</option>
+							</select>
+					</div>
+					
+					<div class="btnWrap aNumb2">
+						<span><a href="#" class="btnBasicGL">변경취소</a></span>
+						<span><a href="#" class="btnBasicBL">변경완료</a></span>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- // 참석인원 변경 -->
+			
+			<!-- 문화체험 소개 -->
+			<div class="pbLayerPopup fixedFullsize" id="uiLayerPop_culture">
+				<div class="pbLayerHeader">
+					<strong>문화체험 소개</strong>
+				</div>
+				<div class="pbLayerContent">
+				
+					<dl class="programList" id="culture">
+						<dt class=""><a href="#none">
+							암웨이 칠드런스데이<br/><span class="subject">[강서AP] 가족이 대를 잇는 추억놀이</span>
+							<span class="btn">내용보기</span>
+						</a></dt>
+						<dd class="">
+							<section class="programInfoWrap">
+								<div class="programInfo">
+									<p>엄마와 함께하는 우산 만들기 체험!!<br/>빗방울이 똑똑 우산을 함께 만들어 봅시다.</p>
+									<p>대상 : 5~10세 어린이</p>
+								</div>
+								<dl class="roomTbl">
+									<dt><span class="bizIcon icon6"></span>장소</dt>
+									<dd>강서 AP</dd>
+									<dt><span class="bizIcon icon7"></span>일정</dt>
+									<dd>7월 2일(토) 14시<br/>7월 2일(토) 14시</dd>
+									<dt><span class="bizIcon icon1"></span>정원</dt>
+									<dd>1~2명 (개인)<br/>15~20명 (그룹)</dd>
+									<dt><span class="bizIcon icon2"></span>체험시간</dt>
+									<dd>180분</dd>
+									<dt><span class="bizIcon icon3"></span>예약자격</dt>
+									<dd>PT이상<br><span class="fsS">(일반소비자 동반 가능)</span></dd>
+									<dt><span class="bizIcon icon5"></span>준비물</dt>
+									<dd>하이드라 V 앰플마스크 1매</dd>
+								</dl>
+							</section>
+						</dd>
+						<dt><a href="#none">
+							암웨이 칠드런스데이<br/><span class="subject">[강서AP] 가족이 대를 잇는 추억놀이</span>
+							<span class="btn">내용보기</span>
+						</a></dt>
+						<dd>
+							<section class="programInfoWrap">
+								<div class="programInfo">
+									<p>엄마와 함께하는 우산 만들기 체험!!<br/>빗방울이 똑똑 우산을 함께 만들어 봅시다.</p>
+									<p>대상 : 5~10세 어린이</p>
+								</div>
+								<dl class="roomTbl">
+									<dt><span class="bizIcon icon6"></span>장소</dt>
+									<dd>강서 AP</dd>
+									<dt><span class="bizIcon icon7"></span>일정</dt>
+									<dd>7월 2일(토) 14시<br/>7월 2일(토) 14시</dd>
+									<dt><span class="bizIcon icon1"></span>정원</dt>
+									<dd>1~2명 (개인)<br/>15~20명 (그룹)</dd>
+									<dt><span class="bizIcon icon2"></span>체험시간</dt>
+									<dd>180분</dd>
+									<dt><span class="bizIcon icon3"></span>예약자격</dt>
+									<dd>PT이상<br><span class="fsS">(일반소비자 동반 가능)</span></dd>
+									<dt><span class="bizIcon icon5"></span>준비물</dt>
+									<dd>하이드라 V 앰플마스크 1매</dd>
+								</dl>
+							</section>
+						</dd>
+						<dt><a href="#none">
+							암웨이 칠드런스데이<br/><span class="subject">[강서AP] 가족이 대를 잇는 추억놀이</span>
+							<span class="btn">내용보기</span>
+						</a></dt>
+						<dd>
+							<section class="programInfoWrap">
+								<div class="programInfo">
+									<p>엄마와 함께하는 우산 만들기 체험!!<br/>빗방울이 똑똑 우산을 함께 만들어 봅시다.</p>
+									<p>대상 : 5~10세 어린이</p>
+								</div>
+								<dl class="roomTbl">
+									<dt><span class="bizIcon icon6"></span>장소</dt>
+									<dd>강서 AP</dd>
+									<dt><span class="bizIcon icon7"></span>일정</dt>
+									<dd>7월 2일(토) 14시<br/>7월 2일(토) 14시</dd>
+									<dt><span class="bizIcon icon1"></span>정원</dt>
+									<dd>1~2명 (개인)<br/>15~20명 (그룹)</dd>
+									<dt><span class="bizIcon icon2"></span>체험시간</dt>
+									<dd>180분</dd>
+									<dt><span class="bizIcon icon3"></span>예약자격</dt>
+									<dd>PT이상<br><span class="fsS">(일반소비자 동반 가능)</span></dd>
+									<dt><span class="bizIcon icon5"></span>준비물</dt>
+									<dd>하이드라 V 앰플마스크 1매</dd>
+								</dl>
+							</section>
+						</dd>
+					</dl>
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicGL">닫기</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //문화체험 소개 -->
+			
+			<!-- 비회원 문화체험 신청자 확인 -->
+			<div class="pbLayerPopup" id="uiLayerPop_noneculture">
+				<div class="pbLayerHeader">
+					<strong>신청자 확인</strong>
+				</div>
+				<div class="pbLayerContent">
+					
+					<p>이름과 연락처를 입력하시면 나의 문화체험 예약내역 확인이 가능합니다.</p>
+					
+					<table class="tblCredit">
+						<colgroup><col width="80px"><col width="auto"></colgroup>
+						<tbody>
+							<tr>
+								<th scope="row" class="bdTop">이름</th>
+								<td class="bdTop"><input type="text" title="이름" /></td>
+							</tr>
+							<tr>
+								<th scope="row">휴대폰번호</th>
+								<td>
+									<input type="text" title="휴대폰앞번호" style="width:50px" /> -
+									<input type="text" title="휴대폰가운데번호" style="width:50px" /> -
+									<input type="text" title="휴대폰뒷번호" style="width:50px" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				
+					<div class="btnWrap bNumb1">
+						<a href="#" class="btnBasicBL">확인</a>
+					</div>
+				</div>
+				<a href="#none" class="btnPopClose"><img src="/_ui/mobile/images/common/btn_close.gif" alt="창 닫기"></a>
+			</div>
+			<!-- //비회원 문화체험 신청자 확인 -->
+			
+			<!-- //layer popoup -->
+
+		</section>
+		<!-- //content -->
+
+</body>
+</html>
+

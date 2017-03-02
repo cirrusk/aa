@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.request.service.impl.LmsRequestMapper">
+	
+	<!-- 서칭 권한 공통 조회조건 -->
+	<sql id="selectLmsCourseConditionSearch">
+	FROM LMSCOURSECONDITION 
+	WHERE 1 = 1
+		AND ( ABOTYPECODE = '' OR ABOTYPEABOVE  <![CDATA[ <= ]]> CONVERT(INT, #{abotypeorder}) )
+		AND ( PINCODE = '' OR CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER )
+		AND ( BONUSCODE = '' OR CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER )
+		AND ( AGECODE = '' OR CONVERT(INT, #{ageorder}) BETWEEN AGEABOVE AND AGEUNDER )
+		AND ( LOACODE = '' OR LOACODE LIKE '%' + #{loacode}  + '%' )
+		AND ( DIACODE = '' OR DIACODE LIKE '%' + #{diacode} + '%' )
+		AND ( GETDATE() BETWEEN STARTDATE AND ENDDATE  )
+		AND ( TARGETCODE = '' OR (TARGETMEMBER LIKE '%' + #{uid} + '%' AND CONVERT(VARCHAR(15), #{uid} ) != '' ) )
+	</sql>
+	
+
+	<select id="selectLmsRequestListCount" parameterType="reqBox" resultType="int">
+		/* LmsRequestSQL.xml selectLmsRequestListCount */
+				SELECT 
+					COUNT(*) AS TOTAL_CNT
+				FROM LMSCOURSE A
+					LEFT OUTER JOIN LMSVIEWLOG B ON (A.COURSEID = B.COURSEID AND B.VIEWTYPE = '2' AND B.UID = #{uid} )
+					LEFT OUTER JOIN LMSVIEWLOG C ON (A.COURSEID = C.COURSEID AND C.VIEWTYPE = '3' AND C.UID = #{uid} )
+					LEFT OUTER JOIN LMSSTUDENT D ON (A.COURSEID = D.COURSEID AND D.REQUESTFLAG = 'Y' AND D.UID = #{uid})
+					<if test='coursetype eq "F" '>
+					INNER JOIN LMSOFFLINE E ON (A.COURSEID = E.COURSEID)
+					</if>
+				WHERE A.USEFLAG = 'Y' AND A.OPENFLAG IN ('Y') 
+					AND A.COURSETYPE = #{coursetype}
+					<if test='coursetype eq "F" '>
+						<if test='searchapseqArr != null and !searchapseqArr.equals("") and searchapseqArr.size()!=0'>
+							AND E.APSEQ IN 
+								<foreach collection="searchapseqArr" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+						</if>
+					</if>
+					AND A.COURSEID IN (
+						SELECT COURSEID 
+						<include refid="selectLmsCourseConditionSearch" />
+						AND CONDITIONTYPE = '1'
+						)
+					<choose>
+						<when test='searchdate != null and !searchdate.equals("")'>
+							AND FORMAT(A.STARTDATE, 'yyyy-MM') = #{searchdate}
+						</when>
+						<otherwise>
+							<choose>
+								<when test='coursetype eq "R" '>
+									AND A.ENDDATE >= GETDATE()
+								</when>
+								<otherwise>
+									AND A.STARTDATE >= GETDATE()	
+								</otherwise>
+							</choose>
+						</otherwise>
+					</choose>
+	</select>
+
+	<select id="selectLmsRequestList" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestList */
+		SELECT *
+			FROM (
+				SELECT 
+					ROW_NUMBER() OVER(ORDER BY A.COURSEID DESC) AS RN ,
+					A.COURSEID ,
+					COURSENAME ,
+					THEMENAME ,
+					DBO.F_LMS_DATETYPE(REQUESTSTARTDATE, '3') AS REQUESTSTARTDATE ,
+					DBO.F_LMS_DATETYPE(REQUESTENDDATE, '3') AS REQUESTENDDATE ,
+					DBO.F_LMS_DATETYPE(REQUESTSTARTDATE, '1') AS REQUESTSTARTDATE2 ,
+					DBO.F_LMS_DATETYPE(REQUESTENDDATE, '1') AS REQUESTENDDATE2 ,
+					DBO.F_LMS_DATETYPE(REQUESTSTARTDATE, '5') AS REQUESTSTARTDATE5 ,
+					DBO.F_LMS_DATETYPE(REQUESTENDDATE, '5') AS REQUESTENDDATE5 ,
+					DBO.F_LMS_DATETYPE(STARTDATE, '2') AS STARTDATE ,
+					DBO.F_LMS_DATETYPE(ENDDATE, '2') AS ENDDATE ,
+					DBO.F_LMS_DATETYPE(STARTDATE, '4') AS STARTDATE4 ,
+					DBO.F_LMS_DATETYPE(ENDDATE, '4') AS ENDDATE4 ,
+					DBO.F_LMS_DATETYPE(REGISTRANTDATE, '') AS REGISTRANTDATE ,
+					COURSEIMAGE ,
+					COURSEIMAGENOTE ,
+					TARGET ,
+					SNSFLAG ,
+					DBO.F_LMS_LIKECNT(LIKECOUNT, '1') AS LIKECOUNT ,
+					(SELECT ISNULL(SUM(VIEWCOUNT), 0) FROM LMSVIEWLOG WHERE A.COURSEID = COURSEID AND VIEWTYPE = '2' AND UID = #{uid} ) AS MYLIKECOUNT ,
+					(SELECT ISNULL(SUM(VIEWCOUNT), 0) FROM LMSVIEWLOG WHERE A.COURSEID = COURSEID AND VIEWTYPE = '3' AND UID = #{uid} ) AS MYVIEWCOUNT ,
+					D.REQUESTFLAG ,
+					CASE WHEN (SELECT COUNT(*) FROM LMSCOURSECONDITION WHERE COURSEID = A.COURSEID AND CONDITIONTYPE='2' ) >1 THEN '(핀별차등)' ELSE '' END AS REQUESTDIFF
+					<if test='coursetype eq "F" '>
+					, E.APNAME
+					, FORMAT(A.STARTDATE, 'yyyy-MM-dd') AS STARTDATESTR
+					, FORMAT(A.ENDDATE, 'yyyy-MM-dd') AS ENDDATESTR
+					</if> 
+				FROM LMSCOURSE A
+					LEFT OUTER JOIN LMSSTUDENT D ON (A.COURSEID = D.COURSEID AND D.REQUESTFLAG = 'Y' AND D.UID = #{uid})
+					<if test='coursetype eq "F" '>
+					INNER JOIN LMSOFFLINE E ON (A.COURSEID = E.COURSEID)
+					</if>
+				WHERE A.USEFLAG = 'Y' AND A.OPENFLAG IN ('Y') 
+					AND A.COURSETYPE = #{coursetype}
+					<if test='coursetype eq "F" '>
+						<if test='searchapseqArr != null and !searchapseqArr.equals("") and searchapseqArr.size()!=0'>
+							AND E.APSEQ IN 
+								<foreach collection="searchapseqArr" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+						</if>
+					</if>
+					AND A.COURSEID IN (
+						SELECT COURSEID 
+						<include refid="selectLmsCourseConditionSearch" />
+						AND CONDITIONTYPE = '1'
+						)
+					<choose>
+						<when test='searchdate != null and !searchdate.equals("")'>
+							AND FORMAT(A.STARTDATE, 'yyyy-MM') = #{searchdate}
+						</when>
+						<otherwise>
+							<choose>
+								<when test='coursetype eq "R" '>
+									AND A.ENDDATE >= GETDATE()
+								</when>
+								<otherwise>
+									AND A.STARTDATE >= GETDATE()	
+								</otherwise>
+							</choose>
+						</otherwise>
+					</choose>
+		) T WHERE RN BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage} 
+
+	</select>
+	
+
+	<select id="selectLmsRequestDetail" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestDetail */
+		SELECT 
+			A.COURSEID ,
+			A.COURSENAME ,
+			A.THEMENAME ,
+			DBO.F_LMS_DATETYPE(A.REQUESTSTARTDATE, '3') AS REQUESTSTARTDATE ,
+			DBO.F_LMS_DATETYPE(A.REQUESTENDDATE, '3') AS REQUESTENDDATE ,
+			DBO.F_LMS_DATETYPE(A.REQUESTSTARTDATE, '1') AS REQUESTSTARTDATE2 ,
+			DBO.F_LMS_DATETYPE(A.REQUESTENDDATE, '1') AS REQUESTENDDATE2 ,
+			DBO.F_LMS_DATETYPE(A.STARTDATE, '2') AS STARTDATE ,
+			DBO.F_LMS_DATETYPE(A.ENDDATE, '2') AS ENDDATE ,
+			DBO.F_LMS_DATETYPE(A.STARTDATE, '3') AS STARTDATE3 ,
+			DBO.F_LMS_DATETYPE(A.ENDDATE, '3') AS ENDDATE3 ,
+			DBO.F_LMS_DATETYPE(A.REGISTRANTDATE, '') AS REGISTRANTDATE ,
+			A.COURSEIMAGE ,
+			A.COURSEIMAGENOTE ,
+			A.TARGET ,
+			A.COURSECONTENT ,
+			A.GROUPFLAG ,
+			A.SNSFLAG ,
+			DBO.F_LMS_LIKECNT(A.LIKECOUNT, '2') AS LIKECOUNT ,
+			(SELECT ISNULL(SUM(VIEWCOUNT), 0) FROM LMSVIEWLOG WHERE A.COURSEID = COURSEID AND VIEWTYPE = '2' AND UID = #{uid} ) AS MYLIKECOUNT ,
+			(SELECT ISNULL(SUM(VIEWCOUNT), 0) FROM LMSVIEWLOG WHERE A.COURSEID = COURSEID AND VIEWTYPE = '3' AND UID = #{uid} ) AS MYVIEWCOUNT ,
+			D.REQUESTFLAG ,
+			CASE WHEN (SELECT COUNT(*) FROM LMSCOURSECONDITION WHERE COURSEID = A.COURSEID AND CONDITIONTYPE='2') >1 THEN '(핀별차등)' ELSE '' END AS REQUESTDIFF ,
+			CASE WHEN A.REQUESTSTARTDATE <![CDATA[ < ]]> GETDATE() THEN '1'
+					  WHEN GETDATE() BETWEEN A.REQUESTSTARTDATE AND A.REQUESTENDDATE THEN '2'
+					  ELSE '3' END AS REQUESTDATEFLAG ,
+			( SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID = A.COURSEID AND REQUESTFLAG = 'Y') AS REQUESTCOUNT ,
+			( SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID IN (SELECT COURSEID FROM LMSCOURSE WHERE THEMESEQ = A.THEMESEQ AND COURSEID <![CDATA[ <>]]> A.COURSEID) AND UID=#{uid} AND FINISHFLAG = 'Y') AS THEMEFINISHCOUNT ,
+			( SELECT COUNT(*) <include refid="selectLmsCourseConditionSearch" />  
+					AND CONDITIONTYPE = '2'
+					AND COURSEID = A.COURSEID
+				)  AS CONDITIONUSECOUNT	,
+				CASE WHEN A.STARTDATE <![CDATA[ < ]]>  GETDATE() THEN '1' ELSE '0' END AS STARTDATEFLAG
+		FROM LMSCOURSE A
+			
+			LEFT OUTER JOIN LMSSTUDENT D ON (A.COURSEID = D.COURSEID AND D.REQUESTFLAG = 'Y' AND D.UID = #{uid})
+		WHERE USEFLAG = 'Y' AND OPENFLAG IN ('Y') 
+			AND A.COURSETYPE = #{coursetype}
+			AND A.COURSEID = #{courseid}
+	</select>
+
+	<select id="selectLmsRequestRegularDetail" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestCourseDetail */
+		SELECT
+			COURSEID ,
+			STEPCOUNT ,
+			TOGETHERFLAG ,
+			STAMPFLAG ,
+			STAMPID ,
+			LIMITCOUNT ,
+			TARGETDETAIL ,
+			NOTE ,
+			PASSNOTE ,
+			LINKTITLE ,
+			LINKURL ,
+			PENALTYNOTE ,
+			CANCELTERM
+			FROM LMSREGULAR A
+		WHERE A.COURSEID = #{courseid}
+	</select>
+	
+	<select id="selectLmsRequestCourseApList" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestCourseApList */
+			SELECT 
+				C.APSEQ, 
+				C.APNAME
+			FROM LMSSTEPUNIT A
+				INNER JOIN LMSCOURSE B ON(A.STEPCOURSEID = B.COURSEID AND B.COURSETYPE='F' AND B.USEFLAG='Y') 
+				INNER JOIN LMSOFFLINE C ON (B.COURSEID = C.COURSEID)
+			WHERE A.COURSEID = #{courseid}
+			GROUP BY C.APSEQ, C.APNAME
+			ORDER BY C.APNAME ASC
+	</select>
+	
+	<select id="selectLmsRequestDateList" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestDateList */
+			SELECT SUBSTRING(ISNULL(PINCODENAME, ''), 2, 100) AS PINCODENAME ,
+				REQDATE
+			FROM (
+				SELECT 
+					CASE WHEN ABOCODENAME IS NOT NULL THEN ',' + ABOCODENAME + ' 이상 ' ELSE '' END +
+					CASE WHEN PINCODENAME IS NOT NULL THEN ',' + PINCODENAME ELSE '' END +
+					CASE WHEN BONUSCODENAME IS NOT NULL THEN ',' + BONUSCODENAME ELSE '' END +
+					CASE WHEN AGECODENAME IS NOT NULL THEN ',' + AGECODENAME ELSE '' END 
+					AS PINCODENAME ,
+					REQDATE ,
+					STARTDATE
+				FROM (
+					SELECT 
+						(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETMASTERSEQ='ABOTYPE' AND TARGETCODESEQ=A.ABOTYPECODE) AS ABOCODENAME ,
+						(SELECT TARGETRULENAME FROM TARGETRULE WHERE TARGETCODEGUBUN='pincode' AND TARGETRULESEQ=A.PINCODE) AS PINCODENAME ,
+						(SELECT TARGETRULENAME FROM TARGETRULE WHERE TARGETCODEGUBUN='bonuscode' AND TARGETRULESEQ=A.BONUSCODE) AS BONUSCODENAME ,
+						(SELECT TARGETRULENAME FROM TARGETRULE WHERE TARGETCODEGUBUN='agecode' AND TARGETRULESEQ=A.AGECODE) AS AGECODENAME ,
+						DBO.F_LMS_DATETYPE(STARTDATE, '3') + ' ~ ' + DBO.F_LMS_DATETYPE(ENDDATE, '3') AS REQDATE ,
+						STARTDATE
+					FROM LMSCOURSECONDITION A
+					WHERE CONDITIONTYPE = 2
+						AND COURSEID = #{courseid}
+				) T
+			) T1
+			ORDER BY STARTDATE ASC
+	</select>
+
+	<select id="selectLmsRequestStepUnitList" parameterType="reqBox" resultType="dataBox">
+	/* LmsRequestSQL.xml selectLmsRequestStepUnitList */
+		SELECT
+			COUNT(A.STEPSEQ) OVER (PARTITION BY A.STEPSEQ) AS ROWSPAN ,
+			ROW_NUMBER() OVER (PARTITION BY A.STEPSEQ ORDER BY A.UNITORDER) AS ROWNUM ,
+			A.STEPSEQ ,
+			A.UNITORDER ,
+			B.COURSETYPE ,
+			CASE WHEN B.COURSETYPE='O' THEN '온라인과정' 
+				WHEN B.COURSETYPE='F' THEN '오프라인과정' 
+				WHEN B.COURSETYPE='L' THEN '라이브과정'
+				WHEN B.COURSETYPE='D' THEN '교육자료'
+				WHEN B.COURSETYPE='V' THEN '설문'
+				WHEN B.COURSETYPE='T' THEN '시험'
+			END AS COURSETYPENAME ,
+			B.COURSENAME ,
+			C.APNAME ,
+			DBO.F_LMS_DATETYPE(B.STARTDATE, '5')  + ' ~ ' + DBO.F_LMS_DATETYPE(B.ENDDATE, '5') AS EDUDATE ,
+			DBO.F_LMS_DATETYPE(B.STARTDATE, '5')  AS STARTDATE
+			
+		FROM LMSSTEPUNIT A 
+			INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID)
+			LEFT OUTER JOIN LMSOFFLINE C ON (A.STEPCOURSEID = C.COURSEID)
+		WHERE A.COURSEID = #{courseid}
+			AND B.USEFLAG = 'Y'
+		ORDER BY A.STEPSEQ ASC, A.UNITORDER ASC
+	</select>
+	
+	
+	<select id="selectLmsRequestApList" parameterType="reqBox" resultType="dataBox">
+	/* LmsRequestSQL.xml selectLmsRequestApList */
+		SELECT 
+			B.APSEQ ,
+			ISNULL(C.PPNAME, '기타지역') AS APNAME
+		FROM LMSCOURSE A
+			INNER JOIN LMSOFFLINE B ON (A.COURSEID = B.COURSEID)
+			LEFT OUTER JOIN RSVPPINFO C ON (B.APSEQ = C.PPSEQ)
+				WHERE A.USEFLAG = 'Y' AND A.OPENFLAG IN ('Y') 
+					AND A.COURSETYPE = #{coursetype}
+					AND A.COURSEID IN (
+						SELECT COURSEID 
+						<include refid="selectLmsCourseConditionSearch" />
+						AND CONDITIONTYPE = '1'
+						)
+			<choose>
+				<when test='searchdate != null and !searchdate.equals("")'>
+					AND FORMAT(A.STARTDATE, 'yyyy-MM') = #{searchdate}
+				</when>
+				<otherwise>
+					AND A.STARTDATE <![CDATA[ >= ]]> GETDATE()	
+				</otherwise>
+			</choose>
+				
+		GROUP BY B.APSEQ, C.PPNAME, C.ORDERNUMBER
+		ORDER BY CASE WHEN C.ORDERNUMBER IS NULL THEN 1 ELSE 0 END ASC ,C.ORDERNUMBER ASC
+	</select>
+
+	<select id="selectLmsRequestMonthDate" parameterType="reqBox" resultType="dataBox">
+	/* LmsRequestSQL.xml selectLmsRequestMonthDate */
+		SELECT 
+			CASE WHEN USEDATE <![CDATA[ < ]]> FORMAT(GETDATE(), 'yyyy-MM-dd') THEN 'P' ELSE 'F' END AS NOWTHEN ,
+			LEFT(DBO.F_LMS_WEEKNAME(USEDATE), 1)  AS WEEKNAME ,
+			USEDATE ,
+			NUM
+		FROM (
+			SELECT 
+				CONVERT(CHAR(10), DATEADD(D, NUMBER, #{searchdate}+'-01'),120) AS USEDATE ,
+				NUMBER + 1 AS NUM
+			FROM MASTER..SPT_VALUES WITH(NOLOCK)
+			WHERE TYPE = 'P'
+				AND CONVERT(CHAR(10), DATEADD(D, NUMBER, #{searchdate}+'-01'), 120) <![CDATA[ < ]]> DATEADD(M, 1, #{searchdate}+'-01') 
+		) A	
+	</select>
+
+
+	<select id="selectLmsRequestOfflineDetail" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestOfflineDetail */
+		SELECT
+			COURSEID ,
+			PLACEFLAG ,
+			TOGETHERFLAG ,
+			PENALTYFLAG ,
+			PENALTYTERM ,
+			APSEQ ,
+			APNAME ,
+			ROOMSEQ ,
+			ROOMNAME ,
+			LIMITCOUNT ,
+			DETAILCONTENT ,
+			TARGETDETAIL ,
+			NOTE ,
+			LINKTITLE ,
+			LINKURL ,
+			PENALTYNOTE ,
+			CANCELTERM 
+			FROM LMSOFFLINE A
+		WHERE A.COURSEID = #{courseid}
+	</select>
+	
+	<select id="selectLmsRequestLiveDetail" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestLiveDetail */
+		SELECT
+			COURSEID ,
+			LIVELINK ,
+			LIVEREPLAYLINK ,
+			REPLAYSTART ,
+			REPLAYEND ,
+			DBO.F_LMS_DATETYPE(A.REPLAYSTART, '3') AS REPLAYSTART3 ,
+			DBO.F_LMS_DATETYPE(A.REPLAYEND, '3') AS REPLAYEND3 ,
+			TARGETDETAIL ,
+			NOTE ,
+			LINKTITLE ,
+			LINKURL ,
+			PENALTYNOTE ,
+			LIMITCOUNT ,
+			CANCELTERM
+			FROM LMSLIVE A
+		WHERE A.COURSEID = #{courseid}
+	</select>
+	
+
+	<select id="selectLmsRequestCheck" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestCheck */
+		SELECT * ,
+			CASE WHEN POSSIBLECOUNT > 0 AND REQUESTMYCOUNT = 0 AND THEMEFINISHCOUNT = 0 AND CONDITIONUSECOUNT > 0 AND PENALTYCOUNT = 0 THEN 'Y' ELSE 'N' END AS REQUESTPOSSIBLEFLAG
+		FROM (
+			SELECT * ,
+				LIMITCOUNT - REQUESTTOTALCOUNT AS POSSIBLECOUNT
+			FROM (
+				SELECT A.COURSEID , 
+					A.COURSETYPE , 
+					A.GROUPFLAG  ,
+					(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID = A.COURSEID AND REQUESTFLAG='Y' AND UID = #{uid} ) AS REQUESTMYCOUNT ,
+					(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID = A.COURSEID AND REQUESTFLAG='Y' ) AS REQUESTTOTALCOUNT ,
+					CASE WHEN COURSETYPE = 'R' THEN
+						(SELECT LIMITCOUNT FROM LMSREGULAR WHERE COURSEID = A.COURSEID ) 
+						WHEN COURSETYPE = 'F' THEN
+						(SELECT LIMITCOUNT FROM LMSOFFLINE WHERE COURSEID = A.COURSEID ) 
+						WHEN COURSETYPE = 'L' THEN
+						(SELECT LIMITCOUNT FROM LMSLIVE WHERE COURSEID = A.COURSEID ) 
+					END AS LIMITCOUNT ,
+					CASE WHEN COURSETYPE = 'R' THEN
+						(SELECT COUNT(*) FROM LMSSTUDENT WHERE FINISHFLAG='Y' AND UID = #{uid}  AND COURSEID IN (SELECT COURSEID FROM LMSCOURSE WHERE THEMESEQ = A.THEMESEQ))
+					ELSE 0 END THEMEFINISHCOUNT ,
+					( SELECT COUNT(*) <include refid="selectLmsCourseConditionSearch" />  
+							AND CONDITIONTYPE = '2'
+							AND COURSEID = A.COURSEID )  AS CONDITIONUSECOUNT ,
+					( SELECT COUNT(*) 
+						FROM LMSCOURSECONDITION 
+						WHERE 1 = 1
+							AND ( ABOTYPECODE = '' OR ABOTYPEABOVE  <![CDATA[ <= ]]> CONVERT(INT, #{abotypeorder}) )
+							AND ( PINCODE = '' OR CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER )
+							AND ( BONUSCODE = '' OR CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER )
+							AND ( AGECODE = '' OR CONVERT(INT, #{ageorder}) BETWEEN AGEABOVE AND AGEUNDER )
+							AND ( LOACODE = '' OR LOACODE LIKE '%' + #{loacode}  + '%' )
+							AND ( DIACODE = '' OR DIACODE LIKE '%' + #{diacode} + '%' )
+							AND ( TARGETCODE = '' OR (TARGETMEMBER LIKE '%' + #{uid} + '%' AND CONVERT(VARCHAR(15), #{uid} ) != '' ) )
+							AND CONDITIONTYPE = '2'
+							AND COURSEID = A.COURSEID )  AS CONDITIONTARGETCOUNT ,							
+					( SELECT COUNT(*) 
+						FROM LMSCOURSECONDITION 
+						WHERE 1 = 1
+							AND ( GETDATE() BETWEEN STARTDATE AND ENDDATE  )
+							AND CONDITIONTYPE = '2'
+							AND COURSEID = A.COURSEID )  AS CONDITIONDATECOUNT ,					
+					(SELECT COUNT(*) FROM LMSPENALTY WHERE UID = #{uid} AND  CLEARDATE > GETDATE() AND PENALTYFLAG='Y' ) AS PENALTYCOUNT
+				FROM LMSCOURSE A
+				WHERE COURSEID = #{courseid}
+			) B
+		) C
+		
+	</select>
+
+	<select id="selectLmsRequestCourseList" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsRequestCheckCourseList */
+			SELECT A.COURSEID, COURSETYPE, COURSENAME, DBO.F_LMS_DATETYPE(STARTDATE, '3') AS STARTDATE, C.APNAME + ' ' + C.ROOMNAME AS APNAME, C.TOGETHERFLAG AS TOGETHERFLAG
+			FROM LMSCOURSE A
+			LEFT  OUTER JOIN LMSOFFLINE C ON (A.COURSEID = C.COURSEID)
+			WHERE A.COURSEID = #{courseid} 
+			UNION ALL
+			SELECT A.STEPCOURSEID AS COURSEID , B.COURSETYPE, B.COURSENAME, DBO.F_LMS_DATETYPE(B.STARTDATE, '3') AS STARTDATE, '' AS APNAME, NULL AS TOGETHERFLAG
+			FROM LMSSTEPUNIT A
+				INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID AND B.COURSETYPE != 'F')
+			WHERE A.COURSEID = #{courseid}
+			UNION ALL
+			SELECT A.STEPCOURSEID AS COURSEID , B.COURSETYPE, B.COURSENAME, DBO.F_LMS_DATETYPE(B.STARTDATE, '3') AS STARTDATE, C.APNAME + ' ' + C.ROOMNAME AS APNAME, C.TOGETHERFLAG
+			FROM LMSSTEPUNIT A
+				INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID AND B.COURSETYPE = 'F')
+				INNER JOIN LMSOFFLINE C ON (B.COURSEID = C.COURSEID AND C.APSEQ=#{apseq})
+			WHERE A.COURSEID = #{courseid}
+	</select>
+
+	<!-- 수강신청 인서트 또는 업데이트  -->
+ 	<insert id="insertCourseRequest" parameterType="reqBox">
+ 	/* LmsRequestSQL.xml insertCourseRequest */
+		MERGE LMSSTUDENT AS A
+		USING (SELECT MAX(COURSEID) AS COURSEID, MAX(UID) AS UID  FROM LMSSTUDENT WHERE COURSEID=#{targetcourseid} AND UID=#{uid} ) AS B
+		ON ( A.COURSEID = B.COURSEID AND A.UID=B.UID )
+		WHEN NOT MATCHED THEN
+		INSERT(COURSEID,UID,REQUESTFLAG,REQUESTDATE,TOGETHERREQUESTFLAG,PINCODE,REQUESTCHANNEL,FINISHFLAG)
+		VALUES(#{targetcourseid}, #{uid}, 'Y', getDate(), #{togetherrequestflag}, #{pincode}, 'O', 'N')
+		WHEN MATCHED THEN
+		UPDATE SET A.TOGETHERREQUESTFLAG = #{togetherrequestflag}, A.REQUESTFLAG = 'Y', A.REQUESTDATE = GETDATE(), PINCODE = #{pincode};
+	</insert>
+
+
+	<!-- 수강신청 정규과정 스탭 인서트 또는 업데이트  -->
+ 	<insert id="insertCourseRequestStep" parameterType="reqBox">
+ 	/* LmsRequestSQL.xml insertCourseRequestStep */
+		MERGE LMSSTEPFINISH AS A
+			USING (SELECT COURSEID, STEPSEQ, CONVERT(VARCHAR(11), #{uid}) AS UID, CASE WHEN MUSTFLAG='Y' THEN 'N' ELSE 'Y' END AS FINISHFLAG FROM LMSSTEP WHERE COURSEID = #{courseid}) AS B
+			ON ( A.COURSEID = B.COURSEID AND A.STEPSEQ = B.STEPSEQ AND A.UID=B.UID )
+		WHEN NOT MATCHED THEN
+			INSERT(COURSEID, STEPSEQ, UID, FINISHFLAG) VALUES(B.COURSEID, B.STEPSEQ, B.UID, B.FINISHFLAG)
+		WHEN MATCHED THEN
+			UPDATE SET A.FINISHFLAG = B.FINISHFLAG;
+	</insert>
+	
+	
+	<select id="selectLmsCourseShareDetail" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsCourseShareDetail */
+		SELECT 
+			A.COURSEID ,
+			A.COURSENAME ,
+			A.THEMENAME ,
+			A.COURSETYPE ,
+			CASE WHEN A.COURSETYPE='R' THEN '정규과정'
+					WHEN  A.COURSETYPE='F' THEN '오프라인강의'
+					WHEN  A.COURSETYPE='L' THEN '라이브교육'
+					WHEN  A.COURSETYPE='D' THEN '교육자료'
+					WHEN  A.COURSETYPE='O' THEN '온라인강의'
+			END AS COURSETYPENAME ,
+			DBO.F_LMS_DATETYPE(A.REQUESTSTARTDATE, '3') AS REQUESTSTARTDATE ,
+			DBO.F_LMS_DATETYPE(A.REQUESTENDDATE, '3') AS REQUESTENDDATE ,
+			DBO.F_LMS_DATETYPE(A.REQUESTSTARTDATE, '1') AS REQUESTSTARTDATE2 ,
+			DBO.F_LMS_DATETYPE(A.REQUESTENDDATE, '1') AS REQUESTENDDATE2 ,
+			DBO.F_LMS_DATETYPE(A.STARTDATE, '2') AS STARTDATE ,
+			DBO.F_LMS_DATETYPE(A.ENDDATE, '2') AS ENDDATE ,
+			DBO.F_LMS_DATETYPE(A.STARTDATE, '3') AS STARTDATE3 ,
+			DBO.F_LMS_DATETYPE(A.ENDDATE, '3') AS ENDDATE3 ,
+			DBO.F_LMS_DATETYPE(A.REGISTRANTDATE, '') AS REGISTRANTDATE ,
+			A.COURSEIMAGE ,
+			A.COURSEIMAGENOTE ,
+			A.TARGET ,
+			A.COURSECONTENT ,
+			A.GROUPFLAG ,
+			A.SNSFLAG ,
+			A.DATATYPE ,
+			A.PLAYTIME ,
+			A.VIEWCOUNT ,
+			DBO.F_LMS_LIKECNT(A.LIKECOUNT, '2') AS LIKECOUNT ,
+			(SELECT CATEGORYNAME FROM LMSCATEGORY WHERE CATEGORYID = A.CATEGORYID) AS CATEGORYNAME
+		FROM LMSCOURSE A
+		WHERE USEFLAG = 'Y' AND OPENFLAG IN ('Y','C') AND SNSFLAG = 'Y' 
+			AND A.COURSEID = #{courseid}
+	</select>
+	
+	
+	<select id="selectLmsCourseShareDetailData" parameterType="reqBox" resultType="dataBox">
+		/* LmsRequestSQL.xml selectLmsCourseShareDetailData */
+		SELECT 
+			PCLINK ,
+			MOBILELINK ,
+			FILELINK ,
+			FILEDOWN
+		FROM LMSDATA A
+		WHERE A.COURSEID = #{courseid}
+	</select>
+
+</mapper>

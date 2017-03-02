@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApihubWsXml>
+    <header>
+	  <interfaceURI>/rest/orders/amwaySuperintendent/cancel</interfaceURI>
+        <dateAndTimeStamp>
+            <request>2016-08-09T12:32:22.857</request>
+            <response>2016-08-09T14:02:27.494</response>
+        </dateAndTimeStamp>
+        <result>
+            <status>SUCCESS</status>
+            <errorCode/>
+            <errorMsg/>
+        </result>
+    </header>
+    <body>
+        <amwaySuperintendentOrderCreate>
+            <interfaceChannel>interfaceChannel</interfaceChannel>
+            <checkMode>
+                true  : 주문 체크 - 재주문 여부 리턴
+                false : 실주문 생성 (기본)
+            </checkMode>
+            <distNo>7480003</distNo>
+            <member>Member회원여부 (member true | abo false)</member>
+            <products>
+                <product>
+                    <code>제품 코드</code>
+                    <quantity>제품수량</quantity>
+                </product>
+                <product>
+                    <code>제품 코드</code>
+                    <quantity>제품수량</quantity>
+                </product>
+            </products>
+            <apCode>AP 코드</apCode>
+            <addrSeq>as400 주소 시퀀스</addrSeq>
+            <etc>여분처리 필드</etc>
+            <payment>
+                <mode>
+                    007 : 카드결제
+                    005 : 자동이체
+                    077 : ABO 포인트 결제
+                    026 : Member 포인트 결제
+                    055 : 현금 IC 카드
+                </mode>
+                <debitPassword>자동이체 비밀번호</debitPassword>
+                <couponNumber>쿠폰번호</couponNumber>
+                <point>사용포인트</point>
+                <orderAmount>주문금액</orderAmount>
+                <cashICCard>
+                    <cardID>카드 ID (16자리)</cardID>
+                    <orderAmount>결제 금액</orderAmount>
+                    <netPrice>공급가액</netPrice>
+                    <taxPrice>부가세</taxPrice>
+                    <encInfo>암호화정보(IC칩)</encInfo>
+                    <track3Info>TRACK III 정보</track3Info>
+                    <url>호출 URL(도메인제외)</url>
+                </cashICCard>
+                <easyPay>
+                    <cardNumber>카드번호</cardNumber>
+                    <cardEffectiveDate>카드유효기간</cardEffectiveDate>
+                    <vpsInstallmentMonth>할부개월(기본:00)</vpsInstallmentMonth>
+                    <ispCard>isp 카드 여부(true|fasle)</ispCard>
+                    <mpiCard>mpi 카드 여부(true|fasle)</mpiCard>
+                    <bizNo>
+                        식별번호 : KFTC, NICE의 경우 필수
+                            - 주민등록번호 앞 6자리
+                            - 사업자 등록번호의 경우 앞 7자리
+                    </bizNo>
+                    <epTrCd></epTrCd>
+                    <epTraceNo>
+                        전문추적번호 : KICC의 경우 필수
+                            - 클라이언트의 EP_trace_no 값
+                    </epTraceNo>
+                    <epSessionkey>
+                        세션키 : KICC의 경우 필수
+                            - 클라이언트의 EP_sessionkey 값
+                    </epSessionkey>
+                    <epEncryptData>
+                        암호화 전문 : KICC의 경우 필수
+                            - 클라이언트의 EP_encrypt_data 값
+                    </epEncryptData>
+                    <epUserIp>
+                        고객 IP : KICC의 경우 필수
+                            - 클라이언트의 req_ip 값
+                    </epUserIp>
+                    <epOrderNo>
+                        가맹점 주문번호 : KICC의 경우 필수
+                            - 클라이언트의 EP_order_no 값
+                    </epOrderNo>
+                    <kknCode>
+                        VAN 사 구분
+                            1 : KICC (PG 클라이언트)
+                            2 : KFTC, NICE (kEY-IN)
+                    </kknCode>
+                    <url>호출 URL(도메인제외)</url>
+                </easyPay>
+            </payment>
+            <invoice>
+                <pricePrintStatus>Price 출력 여부(true|fasle)</pricePrintStatus>
+                <pvPrintStatus>PV 출력 여부(true|fasle)</pvPrintStatus>
+                <bvPrintStatus>BV 출력 여부(true|fasle)</bvPrintStatus>
+                <cashReceiptsNumber>현금영수증 - 식별번호</cashReceiptsNumber>
+                <cashReceiptsType>
+                    현금영수증 식별구분
+                        SSN : Residence
+                        CPN : Cell
+                        CDN : Card
+                        BRN : BER
+                </cashReceiptsType>
+                <cashDistClassify>
+                    현금영수증거래유형
+                        0 : Personal
+                        1 : Company
+                </cashDistClassify>
+            </invoice>
+            <result>
+                <reorder>재주문여부(true|fasle)</reorder>
+                <orderPV>주문 PV 값</orderPV>
+                <orderBV>주문 BV 값</orderBV>
+                <orderAmount>주문금액</orderAmount>
+                <invoiceQueue>주문 번호(queue code)</invoiceQueue>
+                <products>
+                    <product>
+                        <code>제품 코드</code>
+                        <quantity>제품수량</quantity>
+                        <state>제품상태('S'가 아닌 값은 주문불능)</state>
+                        <stateMsg>제품상태메시지</stateMsg>
+                    </product>
+                    <product>
+                        <code>제품 코드</code>
+                        <quantity>제품수량</quantity>
+                        <state>제품상태('S'가 아닌 값은 주문불능)</state>
+                        <stateMsg>제품상태메시지</stateMsg>
+                    </product>
+                </products>
+            </result>
+        </amwaySuperintendentOrderCreate>
+    </body>
+</ApihubWsXml>

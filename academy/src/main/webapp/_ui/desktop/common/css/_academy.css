@@ -1,0 +1,1330 @@
+@charset "utf-8";
+ 
+/* ---------------------------------------
+	Description : 비즈니스(교육장예약, 교육비), 아카데미
+	Author		: netive
+	Version: 	: 2016.05 ECM 1.5 AI
+  --------------------------------------- */
+
+/* ----- layout -----*/
+.academyMain{position:relative;width:1070px;margin:0 auto;padding:0}
+.academyMain #pbContent{width:960px;margin-left:0;padding:0}
+.academyMain:after{content:""; display:block;clear:both}
+
+#pbPopWrap #pbPopHeader{background:url(/_ui/desktop/images/common/bg_popup.gif) repeat-x 0 bottom;height:42px}
+.layerMask{display:none; position:fixed; z-index:10000; top:0; right:0; bottom:0; left:0; background:#fff; filter:alpha(opacity=70) !important; opacity:.7; -moz-opacity:0.7; -khtml-opacity: 0.7;} /* AI수정 2016.09.19 : background-color 수정 */
+.pbLayerWrap{border:2px solid #cbcbcb}
+
+/* ---------- ## 이하 비즈니스(교육장, 교육비) ## ---------- */
+.fcDG{color:#444 !important}
+.fcR{color:#ee312f}
+.fcG{color:#888}
+.normal{font-weight:normal !important}
+.relative{position:relative}
+.lineHS{line-height:150%}
+.b, .ftw{font-weight:bold}
+.inputWFull{width:90%}
+input[type="file"]{height:22px}
+.fl{float:left}
+.fr{float:right}
+.u{text-decoration:underline}
+.throught{text-decoration:line-through}
+.block{display:block}
+.vaT{vertical-align:top !important}
+.pdbSs{padding-bottom:5px !important}
+.pdbS2{padding-bottom:10px !important}
+.mgtS2{margin-top:15px !important}
+.mglS2{margin-left:15px !important}
+.numList li{margin-bottom:10px;margin-left:17px;text-indent:-17px;line-height:150%}
+
+a[class^=btnBasic]{height:33px; line-height:34px;}
+a[class^=btnBasic]:focus, input[class^=btnBasic]:focus{outline:0;}
+
+/* 터치슬라이더 */
+.touchSliderWrap{position:relative;padding:0;text-align:center}
+.touchSliderWrap a img{border:none}
+.touchSliderWrap .btnPrev, .touchSliderWrap .btnNext{display:none;position:absolute;top:50%;margin-top:-22px;z-index:10}
+.touchSliderWrap .btnPrev{left:10px}
+.touchSliderWrap .btnNext{right:10px}
+.touchSliderWrap .btnPrev img, .touchSliderWrap .btnNext img{width:39px;height:36px}
+.touchSliderWrap .btnStopPlay{position:absolute;bottom:14px;left:50%}
+.touchSliderWrap .btnStopPlay img{width:12px;height:12px}
+
+.touchSlider{overflow:hidden;position:relative;margin:0 auto}
+.touchSlider ul{margin:0 auto;overflow:hidden}
+.touchSlider ul li{width:100%;height:100%;text-align:center;float:none}
+
+.sliderPaging{display:inline-block;margin-top:7px}
+.sliderPaging .btnPage{margin:0 2px}
+.sliderPaging .btnPage img{width:12px;height:12px}
+.sliderPaging .btnPage.on img{width:27px}
+
+/* ----- 재정의 -----*/
+.bizroom .hWrap{position:relative}
+.bizroom .hWrap .textR{position:absolute;right:0;bottom:15px}
+.brWrap .btnR{position:absolute;right:0;top:-2px;margin:0 0 0 5px}
+.bizroom select{vertical-align:middle}
+.bizroom .agreeBoxYN{padding-top:2px;text-align:left}
+
+.listDotFS > li{background-position:0 9px}
+.listDot li{font-size:12px;padding-left:8px;background-position:0 8px}
+.listWarning li{line-height:18px;}
+
+.tblInput{table-layout:auto;}
+.btnWrapC{padding-top:0;margin-top:30px;}
+
+/* layer popup */
+.pbLayerWrap{position:fixed;top:0;left:0;overflow:hidden;width:600px;background:#fff;z-index:10001}
+.pbLayerWrap.bgSizeL .pbLayerHeader{background:url(/_ui/desktop/images/common/bg_layerpop_sizel.gif) no-repeat 0 bottom}
+.pbLayerHeader{position:relative;margin:0 30px;padding-top:30px;background:url(/_ui/desktop/images/common/bg_popup.gif) repeat-x 0 bottom;height:41px;text-align:left}
+.pbLayerHeader .btnPopClose{position:absolute;top:31px;right:0}
+.pbLayerContent{margin:30px;text-align:left}
+.pbLayerContent .pbLayerh2{font-size:14px;color:#444;background:url(/_ui/desktop/images/common/bul_dot.gif) no-repeat 0 5px;padding:0 0 10px 10px;margin-top:30px;line-height:normal;font-weight:bold}
+.pbLayerWrap.bgSizeS{width:400px}
+.pbLayerWrap.bgSizeS .pbLayerHeader{background:url(/_ui/desktop/images/common/bg_popup_sizes.gif) no-repeat 0 bottom}
+.pbLayerWrap.bgSizeL{width:772px}
+.pbLayerWrap.bgSizeL .pbLayerHeader{background:url(/_ui/desktop/images/common/bg_popup_sizel.gif) no-repeat 0 bottom}
+.pbLayerWrap + .btnCont{margin-left:0}
+.pbLayerWrap .scrollBox{height:400px;overflow:hidden;overflow-y:auto}
+
+.dotTxtL{font-weight:bold}
+.dotTxtL dd{width:80% !important;font-weight:normal !important}
+.dotTxtL dd.longText{width:70% !important}
+
+/* Tag추가 */
+.tag .instantlyPay, .tag .feasiblePay,.tag .smartOrderTag {background:url(/_ui/desktop/images/content/bg_goods_tag2.gif) 0 0 no-repeat}
+.tag .feasiblePay {background-position:0 0;width:53px}/* 결제가능 */
+.tag .instantlyPay {background-position:0 -20px;width:58px;height:21px} /* 즉시결제 */
+.tag .smartOrderTag {background-position:0 -50px;width:62px;height:16px} /* 스마트오더 */
+
+/* 툴팁 (닫기버튼포함) */
+.tag.closeBtnType {position:relative}
+.miniLayer {text-align:left}
+.miniLayer.withCloseTip { position:absolute;z-index:110;top:-16px;left:60px;display:none;height:50px;padding-left:6px;width:190px;background:url(/_ui/desktop/images/common/bg_minilayer2_left.png) no-repeat 0 50%}
+.miniLayer.withCloseTip span {display:block;height:51px;font-size:11px;padding:0;border:0;background:url(/_ui/desktop/images/common/bg_minilayer2_body.png) no-repeat 100% 100%}
+.miniLayer.withCloseTip span>em {display:block;width:189px;margin-right:1px;/* margin:-1px 0 0px;*/ border-top:1px solid #8e8e8e;height:1px;line-height:0;background:none 0}
+.miniLayer.withCloseTip span i {font-style:normal;display:block;margin:8px 20px 8px 8px;letter-spacing:-1px}
+.miniLayer.withCloseTip .btnCloseTip {position:absolute;top:1px;right:1px;text-indent:0}
+
+/* 동의 */
+.agreeBox{clear:both;border:1px solid #d5d5d5;height:110px;overflow-y:auto;padding:15px;line-height:170%;margin-top:10px;background:#fafafa}
+.agreeBoxYN{text-align:right;margin-top:8px;overflow:hidden}
+.agreeBoxYN input[type="radio"] + label{margin-right:0px}
+.agreeBoxYN input[type='radio']{margin-left:14px}
+.agreeBox.onFocus{border:1px dashed #666}
+.agreeBox.hscroll{height:50px}
+.agreeBoxYN.textL{padding-left:0 !important}
+
+/* ----- 약관 ----- */
+.tabWrap .hide .termsWrapper{padding-top:0}
+.termsWrapper{padding-top:30px}
+.termsWrapper.popArticle, .agreeBox > .termsWrapper{padding-top:0}
+.termsWrapper .topTextBox{color:#333}
+.termsWrapper .topTextBox .txts{margin-bottom:30px;padding-bottom:26px;line-height:160%;border-bottom:1px solid #d5d5d5}
+.termsWrapper .topTextBox .txtsG{margin-top:12px;padding:20px 24px 18px;line-height:160%;color:#333;background:#f6f6f6}
+.termsWrapper .txtsGrBox{margin-top:12px;padding:10px 24px 6px 40px;line-height:160%;color:#333;background:#f6f6f6;text-indent:-16px}
+.termsWrapper .btmTextBox{color:#333;margin-top:20px}
+
+.termsWrapper .topLinker{overflow:hidden;padding:24px 0 8px 24px;background:#f6f6f6}
+.termsWrapper .topTextBox + .topTit{margin-top:30px}
+.termsWrapper .topTit{margin-bottom:12px;color:#444;font-weight:bold}
+
+.termsWrapper .topLinker a{display:block;color:#444;margin-bottom:14px;padding-left:18px;background:url(/_ui/desktop/images/common/bul_arr_terms.gif) no-repeat}
+.termsWrapper .topLinker a:hover{color:#0a70d4;font-weight:bold;letter-spacing:-0.05em}
+.termsWrapper .topLinker .leftBx{float:left;width:52%}
+.termsWrapper .topLinker .rightBx{float:right;width:48%}
+
+.termsWrapper > ul > li{line-height:160%}
+.termsWrapper > ul a{text-decoration:underline}
+.termsWrapper .block{display:block}
+
+.termsWrapper ol > li{text-indent:-15px;padding-left:15px;line-height:160%}
+.termsWrapper ol li ol{margin-top:5px;margin-bottom:5px}
+.termsWrapper ol > li p{text-indent:0}
+.termsWrapper ol > li .listDash li{text-indent:0;padding-left:12px}
+
+.termsWrapper .titH1{display:block;padding:35px 0 10px;color:#444;font-size:15px}
+.termsWrapper.popArticle > ul > li:first-child .titH1{padding-top:0}
+.termsWrapper > strong.titH1{display:block;padding:0;color:#0a70d3;font-size:12px;padding-top:30px;border-top:1px solid #d5d5d5;margin-top:26px}
+.termsWrapper > strong.titH1.titH1st{padding-top:0;border-top:none;margin-top:0}
+.termsWrapper .titH2{display:block;margin:16px 0 8px 0;padding-left:10px;color:#444;font-weight:bold;background:url(/_ui/desktop/images/common/bul_arr_terms_h2.gif) 0 3px no-repeat}
+.termsWrapper .titH2.bgNone{background-image:none;padding-left:0}
+.termsWrapper .titH3{display:block;margin:10px 0 8px 0;padding-left:10px;font-weight:bold;background:url(/_ui/desktop/images/common/bul_dot_terms_h3.gif) 0 3px no-repeat}
+.termsWrapper .titH3.bul{display:inline-block;margin:0}
+.termsWrapper .titHtext{padding:0 0 12px 0;line-height:160%}
+.termsWrapper .titHtext.pdbNone{padding-bottom:0}
+.termsWrapper .titHtext + .titH2{margin-top:4px}
+.termsWrapper .membrGuide .titH2,
+.termsWrapper .membrGuide .titHtext{margin-bottom:.25em}
+.membrGuide .titH2 + p ,
+.membrGuide .titH2 + ul > li{line-height:160%}
+
+.termsWrapper .titHtext.grayBox{margin:15px 0 40px;padding:24px 24px 18px;background:#f6f6f6}
+
+.termsWrapper .listDash > ul,
+.termsWrapper .listDash > li,
+.termsWrapper p.listDash{padding-left:12px;background:url(/_ui/desktop/images/common/bul_dashed_terms.gif) 0 3px no-repeat}
+.termsWrapper .listDash .bgNone{background-image:none;padding-left:0}
+.termsWrapper .listDash.mgtLi li{margin-top:8px}
+
+.termsWrapper .listDotFN{padding:0 0 3px 0}
+.termsWrapper .listDotFN li{background:url(/_ui/desktop/images/common/bul_dot2.gif) no-repeat 0 7px;padding-left:6px}
+
+.termsWrapper .tblList .listDotFS{color:#444}
+
+.termsWrapper .scrollArea{/* border:1px solid #b4b4b4;padding:20px;height:300px;overflow-x:none;overflow-y:auto;*/}
+.termsWrapper .scrollArea table{margin-bottom:20px}
+.termsWrapper table thead th{text-align:center !important;padding-left:0;padding-right:0}
+
+.termsWrapper .tblList tbody td:first-child{border-left:1px solid #e3e3e3}
+.termsWrapper .tblList.lineLeft tbody td:first-child{border-left:0}
+.termsWrapper .selectBar{margin-top:25px;padding-top:15px;border-top:1px solid #d5d5d5;text-align:right}
+.termsWrapper .selectBar label{display:inline-block;line-height:20px}
+.termsWrapper .selectBar select{color:#888}
+
+/* SNS Link */
+.snsWrap{position:relative}
+.snsLink{height:25px;margin:15px 0;padding:0;text-align:right}
+.snsLink a{margin:0 1px}
+.snsLink a:last-child{margin-right:0}
+
+a.pPrint{display:inline-block;width:25px;height:25px;background:url(/_ui/desktop/images/common/ico_sns.gif) no-repeat top left}
+a.snsUrl{display:inline-block;width:25px;height:25px;background:url(/_ui/desktop/images/common/ico_sns.gif) no-repeat 0 -35px}
+a.snsCt{display:inline-block;width:25px;height:25px;background:url(/_ui/desktop/images/common/ico_sns.gif) no-repeat 0 -70px}
+a.snsCs{display:inline-block;width:25px;height:25px;background:url(/_ui/desktop/images/common/ico_sns.gif) no-repeat 0 -105px}
+a.snsBand{display:inline-block;width:25px;height:25px;background:url(/_ui/desktop/images/common/ico_sns.gif) no-repeat 0 -140px}
+a.snsFb{display:inline-block;width:25px;height:25px;background:url(/_ui/desktop/images/common/ico_sns.gif) no-repeat 0 -175px}
+a.mailTo{display:inline-block;width:25px;height:25px;background:url(/_ui/desktop/images/common/ico_sns.gif) no-repeat 0 -210px}
+
+.snsUrlBox{display:inline-block;position:relative}/* 주소복사 레이어 팝업 */
+.snsUrlBox .alert{display:block;position:absolute;z-index:10;top:27px;left:-90px;width:207px;padding:21px 0 0 0;background:url(/_ui/desktop/images/common/bg_minilayer_top3.png) no-repeat top center;color:#666;font-size:11px;text-align:left}
+.snsUrlBox .alert .alertIn{display:block;padding:0 10px 10px 10px;background:#f2f2f2;border:1px solid #888888;border-top:0;line-height:16px;letter-spacing:-0.05em}
+.snsUrlBox .alert em{display:block;margin-bottom:3px}
+.snsUrlBox .alert a.btnClose{position:absolute;top:18px;right:10px;margin:0 !important}
+.snsUrlBox .alert .alertIn input[type=text]{width:170px;line-height:14px;border:1px solid #d5d5d5}
+
+/* ---- 교육장 예약 ---- */
+/* 교육장 신청 안내 */
+.brIntro{position:relative;overflow:hidden;margin-top:30px;border:2px solid #d5d5d5}
+.brIntro h2{padding:0 0 10px 0;color:#e81135;font-size:14px}
+.brIntro .toggleTitle{display:block;padding:15px 20px 15px;text-decoration:none}
+.brIntro .toggleTitle strong{color:#e81135;font-size:14px}
+.brIntro p{margin-top:5px;margin-bottom:5px;padding-top:0}
+.brIntro .pTit{margin-top:15px;font-weight:bold;color:#555}
+.brIntro .tiptextR{padding:20px 0 15px;font-size:11px;color:#999;text-align:right}
+.brIntro .btnArrow{position:absolute;top:18px;right:20px;display:block;width:20px;height:11px;background:url('/_ui/desktop/images/academy/btn_updown3.gif') no-repeat 0 100%;font-size:0;text-indent:-999px}
+.brIntro .open .btnArrow{background-position:0 0}
+.brIntro .toggleDetail{display:none;padding:0 20px;border-top:1px solid #ddd5d5}
+.brIntro .listDot{padding:3px 0 10px 0}
+.brIntro .tblInput{margin-top:10px;}
+.brWrapAll{margin-top:15px}
+
+/* 스텝1 */
+.brWrap{position:relative;border:4px solid #d5d5d5;margin-top:15px;padding:15px 15px 15px 0;overflow:hidden}
+.brWrap:after{content:"";clear:both;display:block;height:0}
+.brWrap .stepTit{position:absolute;top:20px;left:0px;padding:0;min-height:80px;width:150px;text-align:center}
+.brWrap .stepTit .open{display:none}
+.brWrap .stepTit .close{display:block}
+.brSelectWrapAll{float:left;margin-left:150px;padding:15px 0 8px 20px;width:538px;min-height:100px;box-sizing:border-box;border-left:1px solid #e2e2e2}
+.brSelectWrapAll h3{margin-top:35px;padding-top:0;padding-bottom:12px}
+.brWrap .sectionWrap{display:none}
+.brWrap .result{font-size:16px;color:#666;font-weight:bold}
+.brWrap .result > p{padding-top:25px}
+.brWrap .result > p span.fs12{font-size:12px}
+.brWrap .result em{display:inline-block;margin:0 9px;color:#ddd}
+.brWrap > .modifyBtn{position:absolute;top:50%;right:30px;margin-top:-13px}
+.brWrap.current .sectionWrap{display:block}
+.brWrap.current .stepTit .open{display:block}
+.brWrap.current .stepTit .close{display:none}
+.brWrap.current .result{display:none}
+.brWrap.current .modifyBtn{display:none}
+.btnWrapR a[class^=btnBasic]{margin-left:5px}
+.btnWrapL a[class^=btnBasic]{margin:0 5px 0 0}
+
+.brselectArea{position:relative;width:522px}
+.brselectArea:after{content:"";display:block;clear:both}
+.brselectArea a{float:left;display:inline-block;margin:0 5px 5px 0;border:1px solid #d5d5d5;box-sizing:border-box;;width:82px;height:36px;line-height:36px;background:#f3f3f3;text-align:center;color:#666;font-weight:bold;letter-spacing:-0.02em;text-decoration:none}
+.brselectArea span a:last-child{margin-right:0}
+.brselectArea a.on{border:2px solid #1572b1;color:#1572b1;line-height:35px;}
+.brselectArea.sizeM a{width:169px}
+.brselectArea.sizeL a{width:125px;height:45px;line-height:45px}
+.brselectArea.sizeL a.line2{padding-top:6px;line-height:16px}
+/* 20160923 */
+.brselectArea.room >span{display:inline-block;padding-bottom:5px;vertical-align:top;}
+.brselectArea.room >span a{display:table-cell;float:none;line-height:120%;padding:0;vertical-align:middle}
+
+.sessionTbl{margin-top:10px;width:100%;border-top:2px solid #9e9e9e}
+.sessionTbl thead th{padding:8px;background:#f1f1f1;text-align:center;color:#444;line-height:150%;border-left:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5}
+.sessionTbl td{padding:8px;border-left:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;text-align:center;color:#444;line-height:150%}
+.sessionTbl tr th:first-child, .sessionTbl tr td:first-child{border-left:none}
+.sessionTbl tr.dont td{color:#bfbfbf}
+.sessionTbl tr.checked td{color:#2a8acb}
+
+/* 룸정보, 체험정보, 브랜드 템플릿*/
+.roomInfo{margin-top:15px;padding-top:20px;border-top:1px solid #dedede}
+.roomInfo dl{overflow:hidden}
+.roomInfo dt{float:right;width:270px;line-height:180%;color:#333}
+.roomInfo dt .tit{color:#1572b1;font-size:14px;font-weight:bold;padding-bottom:10px}
+.roomInfo dt .tit em{color:#cdcdcd}
+.roomInfo dd{float:left;width:228px}
+
+.touchSliderWrap.roomImg ul{width:228px;height:148px}
+.touchSliderWrap.roomImg ul a{display:block}
+.touchSliderWrap.roomImg ul li img{width:100%;height:100%}
+.touchSliderWrap.roomImg .btnPrev, .touchSliderWrap.roomImg .btnNext{width:28px;height:24px;display:block;font-size:0;text-indent:-999px;background:url(/_ui/desktop/images/academy/ico_sidenotive_navi.png) no-repeat 0 0}
+.touchSliderWrap.roomImg .btnPrev{left:5px}
+.touchSliderWrap.roomImg .btnNext{right:5px;background-position:100% 0}
+.touchSliderWrap.roomImg .sliderPaging .btnPage img{width:auto;height:auto}
+.touchSliderWrap.roomImg .sliderPaging .btnPage.on img{width:auto}
+
+.roomInfoDetail{margin-top:20px;width:100%;border-bottom:1px solid #dedede}
+.roomInfoDetail td{padding:13px 10px 13px 0;border-top:1px dashed #eaeaea;color:#666;text-align:left;line-height:17px;font-weight:bold}
+.roomInfoDetail td.title{text-align:center}
+.roomInfoDetail td.title span{display:inline-block;padding-top:40px;width:70px;font-weight:normal;background:url('/_ui/desktop/images/academy/ico_roomInfo.gif') no-repeat 0 0}
+.roomInfoDetail td.title span.icon1{background-position:10px 0}
+.roomInfoDetail td.title span.icon2{background-position:10px -75px}
+.roomInfoDetail td.title span.icon3{background-position:10px -150px}
+.roomInfoDetail td.title span.icon4{background-position:10px -225px}
+.roomInfoDetail td.title span.icon5{background-position:10px -300px}
+.roomInfoDetail td.title span.icon6{background-position:10px -375px}
+.roomInfoDetail td.title span.icon7{background-position:10px -450px}
+
+.roomInfo.prgInfo{margin-top:0}
+
+/* 스텝2 */
+.calenderHeader{position:relative;padding-bottom:20px;height:66px}
+.calenderHeader .year{position:absolute;top:0;left:18px}
+.calenderHeader .btnR{top:20px}
+.monthlyWrap{position:absolute;top:1px;left:0}
+.monthlyWrap span a{overflow:hidden;position:relative;float:left;display:inline-block;width:65px;height:50px;padding-left:2px;background:url('/_ui/desktop/images/academy/img_month.png') no-repeat 0 100%;font-size:0;text-indent:-999px}
+.monthlyWrap span a:after{position:absolute;content:"";top:0;left:0;width:2px;height:100%;background:url('/_ui/desktop/images/academy/bg_calenderBar.gif') no-repeat 0 80%}
+.monthlyWrap span:first-child a:after{width:0}
+.monthlyWrap span a.on{background-position-y:0}
+.monthlyWrap span a.jan{background-position-x:0}
+.monthlyWrap span a.feb{background-position-x:-65px}
+.monthlyWrap span a.mar{background-position-x:-130px}
+.monthlyWrap span a.apr{background-position-x:-195px}
+.monthlyWrap span a.may{background-position-x:-260px}
+.monthlyWrap span a.june{background-position-x:-325px}
+.monthlyWrap span a.july{background-position-x:-390px}
+.monthlyWrap span a.aug{background-position-x:-455px}
+.monthlyWrap span a.sep{background-position-x:-520px}
+.monthlyWrap span a.oct{background-position-x:-585px}
+.monthlyWrap span a.nov{background-position-x:-650px}
+.monthlyWrap span a.dec{background-position-x:-715px}
+
+.tblBookCalendar{width:100%;border-bottom:1px solid #edeeed}
+.tblBookCalendar th, .tblBookCalendar td{border-top:1px solid #edeeed;color:#555;padding:9px 0}
+.tblBookCalendar td{padding:0px}
+.tblBookCalendar .weekSun, .tblBookCalendar .weekSun a{color:#ff6560}
+.tblBookCalendar .weekSat, .tblBookCalendar .weekSat a{color:#2a8acb}
+.tblBookCalendar td a{position:relative;display:block;box-sizing:border-box;padding:6px 0 0 6px;width:100%;height:60px;color:#555;text-decoration:none;text-align:left}
+.tblBookCalendar td.late a{color:#bababa !important;cursor:default}
+.tblBookCalendar td.late a span, .tblBookCalendar td .off{color:#bababa !important}
+.tblBookCalendar td a.selcOn{background:#eaf5fc;border:1px solid #c3dbea}
+.tblBookCalendar td a.selcOn:after{content:"";position:absolute;top:0;right:0;width:20px;height:20px;display:block;z-index:1;background:url('/_ui/desktop/images/academy/img_del.png') no-repeat 70% 40%}
+.tblBookCalendar td a> p,
+.tblBookCalendar td a> span{display:block;margin-top:8px;color:#555;font-size:11px;text-align:center}
+.tblBookCalendar td a em.reserv{margin-left:4px;color:#555}
+
+.brWrap .hText{position:absolute;bottom:13px;right:0;text-align:right;font-size:12px;color:#666}
+.brselectDateWrap .hText{position:relative;bottom:auto;margin:-8px 0 9px;text-align:right;font-size:11px;color:#666}
+.hText input + label{margin-right:0}
+
+.tblSession{position:relative;margin-bottom:20px;width:100%;border-bottom:1px solid #d5d5d5}
+.tblSession th{padding:11px;border-top:2px solid #676767;background:#f1f1f1;font-size:14px;color:#444;text-align:left}
+.tblSession td{padding:10px 0;border-top:1px solid #eaeaea;text-align:center;color:#444}
+.tblSession tr:first-child td{border-top:1px solid #bbb}
+.tblSession tr td:first-child{padding-left:15px;text-align:left}
+.tblSession tr.select td{background:#eaf5fc}
+.tblSession tr.fullBook td{color:#bababa}
+.tblSession .able{color:#1874cd}
+.tblSession td.price{padding-right:35px;text-align:right}
+.tblSession td.price span{display:block}
+.tblSession td.price span.throught{text-decoration:line-through}
+.tblSession td.price em{display:inline-block;margin-right:4px;padding:1px 6px 0px;color:#fff;background:#ca3b45;font-size:11px;border-radius:0.3em;line-height:15px}
+.tblSession td input[type="checkbox"]{margin:0 2px 2px 0;}
+.btnDel{position:absolute;top:11px;right:10px;font-size:0;text-indent:-999px;width:20px;height:20px;display:block;background:url("/_ui/desktop/images/academy/btn_delete.gif") no-repeat 0 0}
+
+.brWrap .result.lines > p{padding-top:0;padding-bottom:10px;width:500px;line-height:150%;box-sizing:border-box}
+.brWrap .result.lines .total{border-bottom:1px solid #d5d5d5;margin-bottom:10px}
+.brWrap .result.lines .program {padding-left:60px}
+.brWrap .result.lines .program span.t{margin-left:-60px;display:inline-block}
+
+
+/* 스텝3 */
+.brSelectWrapAll .hWrap{margin-bottom:20px}
+.brSelectWrapAll .hWrap h2, .brSelectWrapAll .hWrap h3{padding:0}
+.brSelectWrapAll .agreeBox{margin:0;height:65px}
+.brSelectWrapAll .agreeBoxYN{margin-top:5px;line-height:150%}
+.brSelectWrapAll .agreeBoxYN input[type="checkbox"] + label, 
+.brSelectWrapAll .agreeBoxYN input[type="radio"] + label{font-size:12px;color:#666;line-height:150%}
+.brSelectWrapAll .agreeBoxYN label span{display:block;padding-left:20px}
+.brSelectWrapAll .agreeBoxYN .inputR, .bizroom .agreeBoxYN .inputR{float:right}
+.brSelectWrapAll .agreeBoxYN .inputR input[type="checkbox"] + label, .bizroom .agreeBoxYN .inputR input[type="checkbox"] + label{margin:0}
+.creditWrap .tblInput .btnCard{margin-left:4px;padding:4px 8px;border:1px solid #bebebe;background:#f5f5f5;color:#666 !important;vertical-align:initial}
+.creditWrap .tblInput input[type="text"] + label{margin-right:10px}
+.txtBtnBox{margin:7px 0 18px;overflow:hidden}
+.txtBtnBox span{line-height:150%}
+.txtBtnBox .btn{float:right;margin-top:5px}
+
+/* 예약 완료 */
+.brWrap#stepDone{margin-top:50px;padding:0;text-align:center;border:0}
+.bizroom .snsWrap{padding-top:30px;text-align:center}
+.bizroom .snsWrap .snsLink{display:block;text-align:center}
+.bizroom .snsWrap .snsText{display:block;margin-top:10px}
+
+/* 시설예약 현황확인 : 스마트오더 클래스 재정의 */
+.bizroomStateBox{margin-top:30px}
+.bizroomStateBox .viewTypeSet{float:left}
+.bizroomStateBox .btnR{float:right}
+.bizroomStateBox .viewTypeSet a{width:70px}
+.bizroomStateBox .tblInput select{vertical-align:middle}
+.bizroomStateBox .btnBasicRS{background:#1874cd;border-color:#075db1}
+.bizroomStateBox .topText{padding-top:50px;margin-bottom:10px;color:#444}
+.bizroomStateBox .btnBasicBXL{padding-left:20px;padding-right:20px}
+.roomCheck label{display:inline-block;margin:0 15px 0 0px;}
+.roomCheck input[type="checkbox"]{margin:0 3px 2px 3px;}
+
+/* 보기형식(리스트형-캘린더형) */
+.smartOrderResultBox { position:relative;margin-top:45px}
+.viewTypeBox {overflow:hidden;margin-bottom:15px}
+.viewTypeSet a{ display:inline-block;width:58px;height:25px;line-height:30px;padding-left:30px;color:#444;font-size:11px;background:url(/_ui/desktop/images/common/bg_viewtype.gif) no-repeat 0 0}
+.viewTypeSet .list{background-position:0 -30px}
+.viewTypeSet .list.on{font-weight:bold;background-position:0 0}
+.viewTypeSet .calendar{background-position:0 -91px}
+.viewTypeSet .calendar.on{font-weight:bold;background-position:0 -60px}
+.viewTypeSet .label{background-position:0 -153px}
+.viewTypeSet .label.on{font-weight:bold;background-position:0 -122px}
+
+/* 캘린더보기 */
+.calIcon {display:inline-block;width:15px;height:17px;vertical-align:middle;background:url(/_ui/desktop/images/common/bg_icon_calendar.gif) no-repeat}
+.calIcon>em {display:inline-block;position:absolute;left:-9999px;top:-9999px;width:0 !important;height:0 !important;font-size:0 !important;line-height:0 !important;margin:0;padding:0}
+.calIcon.progress {background-position:0 0}
+.calIcon.canceled {background-position:0 -20px}
+.calIcon.finished {background-position:0 -40px}
+.calIcon.reprogress {background-position:0 -60px}
+.listDot .calIcon { margin-right:1px}
+
+.calIcon2 {display:inline-block !important;width:15px;height:17px;vertical-align:middle;background:url(/_ui/desktop/images/academy/bg_icon_calendar2.png) no-repeat}
+.calIcon2>em {display:inline-block;position:absolute;left:-9999px;top:-9999px;width:0 !important;height:0 !important;font-size:0 !important;line-height:0 !important;margin:0;padding:0}
+.calIcon2.blue {background-position:0 0}
+.calIcon2.green {background-position:-16px 0}
+.calIcon2.red {background-position:-33px 0}
+.calIcon2.gray {background-position:-49px 0}
+.calIcon2.tooltip {background-position:-65px 0;width:17px;margin-top:-3px}
+.calIcon2.blueL {background-position:0 bottom}
+.calIcon2.greenL {background-position:-33px bottom}
+.calIcon2.redL {background-position:-65px bottom}
+.calIcon2.grayL {background-position:-98px bottom}
+.calIcon2.personal {background-position:-98px 0}
+.calIcon2.group {background-position:-114px 0}
+
+.monthlyNum {position:absolute;top:-5px;left:0;width:156px;height:33px}
+.monthlyNum>a{position:absolute;top:0;width:24px;height:33px;color:#666;background:url(/_ui/desktop/images/content/bg_calendar_arrw.gif) no-repeat}
+.monthlyNum>a>span{display:inline-block;position:absolute;left:-9999px;top:-9999px;width:0 !important;height:0 !important;font-size:0 !important;line-height:0 !important;margin:0;padding:0}
+.monthlyNum a.monthPrev {left:0;background-position:0 0}
+.monthlyNum a.monthNext {right:0;background-position:-30px 0}
+/* .monthlyNum a.monthPrev.on {background-position:0 -60px}
+.monthlyNum a.monthNext.on {background-position:-30px -60px} 20161117 주석*/
+.monthlyNum strong {display:block}
+.monthlyNum strong>em,.monthlyNum strong>span{display:inline-block;line-height:1;letter-spacing:-1px;font-family:Tahoma,Sans-serif}
+.monthlyNum em { margin:-2px 0 0 23px;font-size:36px;}
+.monthlyNum span { margin-left:8px;font-size:20px}
+
+.tblCalendar {width:100%;border:1px solid #d5d5d5}
+.tblCalendar th,.tblCalendar td { color:#444;font-size:14px;border:1px solid #d5d5d5;border-width:1px 0 1px 1px}
+.tblCalendar th { background:#f1f1f1;line-height:1;padding:15px 0}
+.tblCalendar th.weekSun, .tblCalendar td.weekSun div>em {color:#e81135}
+.tblCalendar th.weekSat, .tblCalendar td.weekSat div>em {color:#167adf}
+.tblCalendar td {vertical-align:top}
+.tblCalendar td>div {position:relative;min-height:84px;margin:6px}
+.tblCalendar td>div>em {display:block;position:absolute;top:0;left:0;font-weight:bold;letter-spacing:-1px;}
+.tblCalendar .roomRerv{padding-top:33px;text-align:center}
+.tblCalendar .roomRerv .calIcon2{margin-left:5px;width:20px;height:20px}
+
+.bizroomStateBox .viewCalendar{position:relative}
+.bizroomStateBox .monthlyNum{top:0;left:50%;margin-left:-100px;width:200px}
+.bizroomStateBox .monthlyNum select{margin-left:22px;width:80px;height:30px;font-weight:bold;font-size:20px;color:#666;vertical-align:bottom;border-color:#fff}
+.bizroomStateBox .monthlyNum select.month{margin-left:4px;width:55px}
+
+.bizroomStateBox .orderState{position:absolute;top:auto;left:-15px;width:auto;height:16px}
+.bizroomStateBox .orderState> span, .orderStateWrap> span{margin-left:15px}
+.bizroomStateBox .orderState .tag a{text-indent:0;background:none;margin:0}
+.bizroomStateBox .orderState .miniLayer.withCloseTip{left:23px}
+.bizroomStateBox .tblCalendar td.on{background:#eaf5fc}
+.tblCalendarBottom{margin-top:15px;}
+.tblCalendarBottom:after{content:"";display:block;clear:both}
+.tblBizroomState{margin-top:30px}
+.tblBizroomState thead th{font-weight:normal}
+.tblBizroomState td{line-height:150%}
+
+/* 시설예약 현황확인 상세보기 */
+.tblBottomBtnR{margin-top:15px;text-align:right}
+.reservInfoHeader{border-top:2px solid #9e9e9e;overflow:hidden;padding:30px 0 15px}
+.reservInfoHeader .title{float:left;color:#666;font-size:14px;font-weight:bold}
+.reservInfoHeader em{margin:0 10px;color:#ddd}
+.reservInfoHeader .btnR{margin-top:-3px}
+
+.inputList {padding-left:100px}
+.inputList > span{display:block;line-height:280%}
+
+.tblBizState{margin-top:30px;width:100%}
+.tblBizState td{border:1px solid #e3e3e3;text-align:center;padding:11px 0 7px;color:#444}
+
+/* 브랜드체험 예약 */
+.tabWrap .btnR{position:absolute;right:0;bottom:10px}
+.brIntro + .tabWrap{margin-top:20px;}
+.bizroom .tblDetailHead{border-top:2px solid #676767}
+.bizroom .tblDetailHead dt{position:relative}
+.bizroom .tblDetailHead .btnDel{top:8px}
+.bizroom .tblDetailHead dd{padding:15px 0 10px}
+.bizroom .tblDetailHead dd a{margin:0 5px 5px 0;width:99px;height:45px;line-height:45px}
+.bizroom .tblDetailHead dd a.line2{padding-top:6px;line-height:16px}
+.calenderBookWrap .tblCalendarBottom{position:relative}
+.noSelectDate{border-top:2px solid #676767;border-bottom:1px solid #d5d5d5;background: #f1f1f1;line-height:60px;text-align:center;}
+.noSelectDate >span{display:inline-block;padding-left:37px;background:url(/_ui/desktop/images/academy/ico_notice.jpg) no-repeat 0 49%;}
+
+/* 브랜드 프로그램 먼저 선택 */
+.programInfoWrap .programInfo{padding:15px 15px 0;line-height:150%}
+.programInfoWrap .programInfo .tit{font-weight:bold}
+.programInfoWrap .programInfo p{padding-bottom:8px}
+.programInfoWrap .imgExplain{margin-top:10px;overflow:hidden}
+.imgExplain.div2{text-align:center}
+.imgExplain.div2 > div{margin:0 auto;display:inline-block;vertical-align:top;width:160px;margin-left:30px;text-align:left}
+.imgExplain.div3 > div{float:left;width:150px;margin-left:15px}
+.imgExplain div.first{margin-left:0}
+.imgExplain div ul{padding-top:5px}
+
+.imgExplain .figure{margin-top:5px}
+
+.programInfoWrap .img{float:left;margin-right:20px}
+.programInfoWrap .img img{border:1px solid #d5d5d5;width:148px;}
+.programInfoWrap .roomInfoDetail{border-bottom:0}
+
+/* 프로그램 선택 테이블 */
+.tblProgram{position:relative;margin-top:20px;width:100%;border-bottom:1px solid #d5d5d5}
+.tblProgram th{padding:11px;border-top:2px solid #676767;background:#f1f1f1;font-size:14px;color:#444;text-align:left}
+.tblProgram td{padding:11px 8px;border-top:1px solid #eaeaea;text-align:left;color:#666;line-height:190%;text-align:center}
+.tblProgram tr:first-child td{border-top:1px solid #bbb}
+.tblProgram .programTitle{text-align:left}
+.tblProgram .programTitle a{color:#555;text-decoration:underline}
+.tblProgram .programTitle strong{display:block;color:#2279d1}
+.tblProgram .able{color:#1874cd}
+.tblProgram .prepare{display:none;font-weight:normal}
+.tblProgram tr.select .prepare{display:block}
+.tblProgram tr.select td{background:#eaf5fc}
+.tblProgram td input[type="checkbox"]{margin:0 2px 2px 0;}
+
+.programListWrap{position:relative;display:none}
+.programListWrap#pGroup1{display:block}
+.programWrap >.brselectArea{width:100%}
+.programWrap >.brselectArea a{width:24.2%;margin:0 0 0 5px}
+.programWrap >.brselectArea a:first-child{margin-left:0}
+.programImg{margin-top:15px;border:1px solid #d5d5d5;text-align:center}
+.programImg span{overflow:hidden;display:block;margin:10px}
+.programImg a{display:inline-block;float:left;margin:2px;padding:3px;background:#fff}
+.programImg a.active{background:#2a8acb}
+.programImg img{border:0;display:block;width:155px;height:103px}
+
+.programList{position:relative;margin-top:20px;border:1px solid #d5d5d5}
+.programList dt{border-top:1px solid #d5d5d5}
+.programList dt:first-child{border:0}
+.programList dt a{position:relative;display:block;padding:9px 22px 9px 24px;height:100%;line-height:150%;color:#555;text-decoration:none;background: url("/_ui/desktop/images/common/bul_dot9.gif") no-repeat 14px 15px} 
+.programList dd{display:none}
+.programList dd.active{display:block}
+.programList dt .btn{position:absolute;top:50%;right:10px;display:block;margin-top:-7px;width:13px;height:13px;background:url("/_ui/desktop/images/academy/ico_toggle.gif") no-repeat 0 0;font-size:0;text-indent:-999px} 
+.programList dt.active{background:#f3f3f3;font-weight:bold} 
+.programList dt.active a{cursor:cursor}
+.programList dt.active .btn{background-position:0 100%}
+.programList.type2 dt{position:relative} 
+.programList.type2 dt input{position:absolute;top:50%;left:10px;margin-top:-6px;display:block}
+.programList.type2 dt a{background:none;padding-left:0;margin-left:40px}
+.programList.type2 dt a strong{color:#2279d1}
+.programList.type2 dt .prepare{display:none;font-weight:normal} 
+
+.programItem{display:none;position:relative;margin-top:15px}
+.programItem.active{display:block}
+.programItem dt{position:relative;margin-top:8px}
+.programItem dt:first-child{border:0}
+.programItem dt > a{display:block;width:475px;height:34px;padding-left:12px;box-sizing:border-box;border:1px solid #d5d5d5;line-height:32px;color:#555;text-decoration:none}
+.programItem dt > a.selected,
+.programItem dt > a:hover{border:2px solid #1572b1;color:#1572b1;font-weight:bold;line-height:30px}
+.programItem dd{display:none}
+.programItem dt a.btn_detailView{position:absolute;top:0;right:0;width:34px;height:34px;padding:0;background:url("/_ui/desktop/images/academy/btn_detailView.gif") no-repeat 0 0;border:0;font-size:0;text-indent:-999px}
+.programItem dt.active{background:#f3f3f3;font-weight:bold}
+.programItem dt.active a{cursor:cursor}
+.programItem dt.active .btn{background-position:0 100%}
+.programItem.type2 dt{position:relative}
+.programItem.type2 dt input{position:absolute;top:50%;left:10px;margin-top:-6px;display:block}
+.programItem.type2 dt a{background:none;padding-left:0;margin-left:40px}
+.programItem.type2 dt a strong{color:#2279d1}
+.programItem.type2 dt .prepare{display:none;font-weight:normal}
+
+.prgSection{display:none}
+.prgSection.active{display:block}
+.pdNone2{padding:0 !important}
+.programWrap h3{margin-top:35px}
+
+
+/* 문화체험예약 */
+.calenderWrap{position:relative;margin-top:30px;padding:20px 0 0 0;border-top:1px solid #d5d5d5;}
+.calenderWrap .calenderHeader .year{left:3px}
+.calenderWrap .monthlyWrap{left:-15px}
+.selectPrgTit{padding:20px 0 10px;color:#2279d1;font-weight:bold;font-size:13px;}
+.selectPrgTit em{margin:0 10px;color:#c9c9c9}
+.brWrap .result > p .dsBlock{display:block;margin-bottom:7px}
+.hWrapLineN .fcR{color:#167adf;}
+
+/* 팝업 */
+.bizroom .btnL{width:170px}
+
+.lineBox.msgBox{margin-top:10px;padding:19px 14px;font-size:13px;color:#444;font-weight:bold}
+.itemlist:after{display:block;content:"";clear:both}
+.itemlist li{float:left;color:#444;font-size:14px;font-weight:bold}
+.itemlist li:before {content:"|";padding:0 10px;color:#d5d5d5}
+.itemlist li:first-child:before{content:none;padding:0 0 0 10px}
+.lineBox.msgBox {text-align:center}
+.lineBox.msgBox .resvItem{font-size:13px}
+.lineBox.msgBox .resvItem em{font-weight:normal}
+.resvItem{font-size:14px;font-weight:bold;color:#444}
+.resvItem em{display:inline-block;margin:0 10px;color:#ddd}
+
+.confirmTbl{margin-top:25px;width:100%;border-top:2px solid #9e9e9e}
+.confirmTbl thead th{padding:8px;background:#f1f1f1;text-align:center;color:#444;line-height:150%;border-left:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;font-weight:normal}
+.confirmTbl td{padding:8px;border-left:1px solid #d5d5d5;border-bottom:1px solid #d5d5d5;text-align:center;color:#444;line-height:150%}
+.confirmTbl tr th:first-child, .confirmTbl tr td:first-child{border-left:none}
+.confirmTbl .total{text-align:right}
+.confirmTbl .total em{display:inline-block;margin:0 10px;color:#444}
+
+.tabWrapLogical.tabStyle1{overflow:hidden;position:relative;margin-top:0;padding-top:0}
+.tabWrapLogical.tabStyle1 section > div{position:relative;display:none;border-top:0}
+.tabWrapLogical.tabStyle1 h2{position:absolute;top:0;padding:1px !important;margin:0 0 0 -1px !important;line-height:normal;width:270px;}
+.tabWrapLogical.tabStyle1 h2 a{display:block;padding-top:0;padding-left:20px;height:auto;background:#fff url('/_ui/desktop/images/common/bul_arrow.gif') 0 1px no-repeat;color:#444;border:0;font-size:12px;font-weight:bold;text-align:left;text-decoration:none}
+.tabWrapLogical.tabStyle1 section.on h2 a{background-color:#fff;color:#0a70d3;border:0}
+.tabWrapLogical.tabStyle1 section.on > div{display:block}
+.tabWrapLogical.tabStyle1 .tab02{left:260px}
+.tabWrapLogical.tabStyle1 .tabcon{margin-top:45px;padding:30px 0;border-top:1px solid #e3e3e3}
+.tabWrapLogical.tabStyle1 .tabcon h3{padding:0 0 0 11px;background:url(/_ui/desktop/images/common/bul_dot.gif) no-repeat 0 5px;font-size:14px}
+.tabWrapLogical.tabStyle1 .tabcon .scrollbox{overflow-y:scroll;height:250px;margin-top:15px;padding:15px 30px 15px 15px;background:#fafafa;border:1px solid #e2e2e2;line-height:1.5}
+
+.tabStyle2{margin-bottom:25px;padding:10px 15px;background-color:#fafafa;border:1px solid #dedede;line-height:180%;}
+.tabStyle2 a{display:block;color:#444;text-decoration:none;}
+.tabStyle2 a.on{font-weight:bold; text-decoration:underline}
+
+.logTabSection .scrollbox{overflow-y:scroll;height:350px;margin-top:15px;padding:15px 30px 15px 15px;background:#fafafa;border:1px solid #e2e2e2;line-height:1.5}
+
+.acompnayBox{padding-left:107px}
+.revMsg {text-align:center;line-height:20px}
+.revMsg strong{display:block}
+#pbPopContent h2.subtit{padding:0;margin-top:10px;background:none}
+.btnBasicBXL.w240 {width:240px}
+.textC.popupBText{margin-top:30px;line-height:150%}
+
+
+/* ---- 교육비 ---- */
+/* 재정의 */
+#trainingFee .listWarning{padding-bottom:10px}
+#trainingFee .tblInput td select{vertical-align:middle}
+#trainingFee .tblInput input[disabled]{border-color:#f1f1f1;background-color:#f1f1f1;text-align:center}
+#trainingFee .tblInput .fileup li{margin-top:4px;margin-bottom:6px;vertical-align:middle}
+td a.btnGs{height:22px;line-height:24px;padding: 0 6px 0 6px;font-size:11px;background:#6f6f6f;border:1px solid #575757;margin:0;color:#fff !important}
+
+/* 교육비 관리 */
+.relative .btnR{position:absolute;bottom:10px;right:0}
+.tabWrapLogical .btnR{position:absolute;top:8px;right:0}
+
+.tfInfo{overflow:hidden}
+.tfInfo span{float:left;margin-left:9px}
+.tfInfo span:first-child{margin:0}
+
+#trainingFee .tabWrapLogical .tabCont{padding-top:30px}
+.tblTraningFee{width:100%;border-bottom:1px solid #d6d6d6}
+.tblTraningFee th{padding-bottom:20px}
+.tblTraningFee th div{position:relative;margin-left:2px;height:35px;line-height:37px;border:1px solid #c2c2c2;background:#e9e9e9}
+.tblTraningFee a.iconTip{position:absolute;top:10px;right:22px;display:block;width:15px;height:15px;font-size:0;text-indent:-999px;background:url('/_ui/desktop/images/academy/ico_tip.png') no-repeat 0 0}
+.tblTraningFee td{border-top:1px solid #d6d6d6;padding:15px 0 10px;height:70px;color:#666;text-align:center;vertical-align:top;line-height:22px}
+.tblTraningFee td.bg{background:url("/_ui/desktop/images/academy/ico_arrow0.gif") no-repeat 100% 40px}
+.tblTraningFee td.bg.on{background-image:url("/_ui/desktop/images/academy/ico_arrow1.gif")}
+.tblTraningFee tr.selectTr td{background-color:#ebf6fc}
+.tblTraningFee a{color:#666;text-decoration:underline}
+.tblTraningFee .month{vertical-align:top}
+.tblTraningFee .num{font-size:24px;font-weight:bold}
+.tblTraningFee .textPre{display:block;height:22px}
+.tblTraningFee .preWon{padding-right:20px;text-align:right}
+.tblTraningFee .preWon .num{display:block;position:relative}
+.tblTraningFee .detailView{display:block;margin-top:3px}
+.tblTraningFee .subText{margin-top:10px;display:inline-block;line-height:18px;text-align:left}
+.tblTraningFee .subText > span{display:block;overflow:hidden}
+.tblTraningFee .subText > span .fl{padding-right:5px}
+.tblTraningFee .textTip{display:inline-block;margin-top:5px;padding:2px 0 1px 16px;line-height:16px;background:url('/_ui/desktop/images/academy/ico_!.png') no-repeat 0 3px;color:#ff0000}
+.tblTraningFee .insertPre{color:#c9c9c9}
+.tblTraningFee .insert{color:#888}
+.tblTraningFee .insert.end{line-height:18px}
+.tblTraningFee .insertBtn{display:inline-block;width:80px;height:26px;line-height:26px;text-align:center;color:#888 !important;font-weight:normal;border:1px solid #d4d4d4;background:#fafafa;text-decoration:none !important}
+.tblTraningFee .insertBtn.on{color:#fff !important;font-weight:bold;border:1px solid #19538c;background:#1e5e9d;text-decoration:none !important}
+.tblTraningFee a[class^=insert], .tblTraningFee span[class^=insert]{margin:15px auto 0;display:block;height:26px;line-height:26px}
+
+.tblTraningFee .preWon .iconGroup{overflow:hidden;position:absolute;left:15px;top:5px;width:15px;height:15px;background:url('/_ui/desktop/images/academy/ico_toggle2.gif') no-repeat 0 0}
+.tblTraningFee .preWon .iconGroup.open{background-position:0 100%}
+.tblTraningFee tr.groupTr td{height:42px;line-height:150%;border-top:1px dashed #d5dce0;background:#ebf6fc}
+.tblTraningFee tr.groupTr .user{display:inline-block;float:left;margin-left:15px;padding-left:12px;text-align:left;background:url('/_ui/desktop/images/academy/ico_list.gif') no-repeat 0 2px}
+.tblTraningFee tr.groupTr .user a{display:block;}
+.tblTraningFee tr.groupTr strong.num{display:inline-block;font-size:16px}
+.tblTraningFee tr.groupTr .subText{margin-top:0}
+
+/* 교육비 사전계획 등록조회 */
+.tblList{width:100%; border-top:2px solid #9e9e9e;  table-layout:fixed;}
+.tblList thead th{color:#444; background-color:#f1f1f1; border-bottom:1px solid #d5d5d5; padding:5px 8px 0 8px; line-height:30px;  min-height:30px; text-align:center;}
+.tblList tbody th{color:#444; border-bottom:1px solid #e3e3e3; padding:8px 0 8px; /* padding:5px 8px 0 8px; line-height:20px; min-height:30px; */text-align:center; font-weight:normal;}
+.tblList tbody td{color:#444; background-color:#fff; border-bottom:1px solid #e3e3e3; padding:8px 0 8px; /* padding:5px 8px 0 8px; line-height:20px; min-height:30px;*/  text-align:center;hyphens:auto; word-break: break-word; word-break:break-all;}
+.tblList thead th:first-child, .tblList tbody th:first-child, .tblList tbody td:first-child{border-left:none;}
+.tblList .lineH th{padding:5px 0 5px;line-height:120%;}
+.tblList tbody td.call{padding:5px 0 0;}
+.tblList tbody td.icon,
+.tblList tbody td.btn{padding:0;}
+.tblList tfoot td{border-top:2px solid #d5d5d5; border-bottom:1px solid #d5d5d5;background-color:#f1f1f1; font-weight:bold; text-align:center; color:#444;}
+
+.tblList.lineLeft thead th, .tblList.shipping thead th{border-left:1px solid #d5d5d5;}
+.tblList.lineLeft tbody th, .tblList.shipping tbody th{border-left:1px solid #d5d5d5;}
+.tblList.lineLeft tbody td, .tblList.shipping tbody td{border-left:1px solid #e3e3e3;}
+.tblList.lineLeft thead th:first-child, .tblList.shipping thead th:first-child,
+.tblList.lineLeft tbody th:first-child, .tblList.shipping tbody th:first-child,
+.tblList.lineLeft tbody td:first-child, .tblList.shipping tbody td:first-child{border-left:none;}
+.tblList.lineLeft thead th.lineL{border-left:1px solid #d5d5d5;}
+.tblList.lineLeft tbody th.lineL,
+.tblList.lineLeft tbody td.lineL{border-left:1px solid #e3e3e3;}
+.tblList.lineLeft tfoot td{border-left: 1px solid #e3e3e3;}
+.tblList.lineLeft tfoot td:first-child{border-left:0;}
+
+.tblList .trMulti th{padding:5px 0 0 0;}
+
+.tblList a{color:#444;}
+.tblList a:visited{color:#831e88;}
+.tblList.lineLeft tbody td input[type=text]{margin-bottom:5px;}
+.tblList .selectList{background:#f8f8f8 !important;}
+.tblList .textPVBV{text-align:center;}
+.tblList .textPVBV p strong{display:inline-block; margin-right:5px;}
+#pbPopContent h2 + .tblList{margin-top:10px;}
+
+#trainingFee .tblList th{padding:5px 0 5px}
+#trainingFee .tblList td{padding:12px 0 10px;}
+#trainingFee .tblList a{text-decoration:underline}
+
+.lb_txtin{margin-left:32px;text-indent:-22px;line-height:150%}
+
+.monthSelectWrap{margin:30px 0;overflow:hidden;border-left:1px solid #d4d4d4}
+.monthSelectWrap select, .monthSelectWrap a{display:block;float:left;color:#666}
+.monthSelectWrap a:visited{color:#666}
+.monthSelectWrap select, .monthSelectWrap a span{display:block;border:1px solid #d4d4d4;border-width:1px 1px 1px 0px;width:49px;height:45px;text-align:center;line-height:45px}
+.monthSelectWrap select{padding-left:20px;width:110px;height:47px;font-size:14px;font-weight:bold;background:url(/_ui/desktop/images/academy/btn_down2.gif) no-repeat 93% 50%;-webkit-appearance:none;appearance:none}
+.monthSelectWrap a.on span{font-size:14px;font-weight:bold;color:#fff;background:#1874cd;border:1px solid #075db1;width:48px}
+
+.tblTopTitleBox{position:relative;padding-bottom:15px}
+.tblTopTitleBox .tit{font-size:14px}
+.tblTopTitleBox .tit .won{font-size:26px;letter-spacing:-0.04em}
+.tblTopTitleBox .btnCont{position:absolute;bottom:15px;right:0}
+.footMsg{margin-top:30px;padding:22px 64px;border-top:1px solid #e2e2e2;border-bottom:1px solid #e2e2e2;text-align:center}
+.footMsg p{display:inline-block;min-height:24px;padding-left:30px;padding-top:4px;background:url(/_ui/desktop/images/academy/bg_point.gif) no-repeat 0 0;line-height:150%;letter-spacing:-0.5px}
+
+#trainingFee .btnWrap{position:relative;clear:both;margin-top:10px;min-height:40px}
+#trainingFee .btnWrap .btnR{position:absolute;top:5px;right:0}
+#trainingFee .btnWrap .listWarning{padding:0}
+.btnPlanBS{width:116px;height:30px;line-height:30px !important;background-color:#fff;border:2px solid #1572b1;font-size:14px;color:#1572b1;font-weight:bold}
+.btnPlanBS:visited{color:#1572b1}
+
+.logTabContent{padding-top:30px}
+
+/* 교육비 동의관리 */
+.topBoxUpper {margin:30px 0 0;font-weight:bold;font-size:14px}
+.topBoxUpper strong{color:#1962a9}
+.agreeCWrap{margin:30px auto 0}
+.agreeCWrap .tblList thead th{padding:6px 8px}
+.agreeCWrap .tblList tbody td{padding:26px 0}
+.agreeCWrap .agreeSec{margin:20px 0;color:#444;text-align:center}
+.agreeCWrap .agreeSec p strong{font-size:14px}
+
+.borderBox{clear:both;overflow:hidden;margin:15px 0 32px;border:1px solid #d5d5d5}
+.borderBox .borderBoxHeader{padding:15px 20px;background-color:#fafafa;font-size:14px;font-weight:bold}
+.borderBox .borderBoxHeader strong{color:#1962a9}
+.borderBox .borderBoxHeader span{float:right;font-size:12px;font-weight:normal}
+.borderBox .borderBoxContent{padding:20px 0;background-color:#fff;letter-spacing:-0.5px}
+.borderBox .borderBoxContent > .floatL{float:none;display:table-cell;overflow:hidden;width:488px;padding:0 20px 0 90px;border-right:1px solid #dedede;height:30px;line-height:20px}
+.borderBox .borderBoxContent > .floatR{float:none;display:table-cell;overflow:hidden;width:70px;padding:0 20px 0;vertical-align:middle;}
+.borderBox .borderBoxContent.bBC01 > .floatL{background:url(/_ui/desktop/images/academy/bg_borderBox01.gif) 20px 50% no-repeat}
+.borderBox .borderBoxContent.bBC02 > .floatL{background:url(/_ui/desktop/images/academy/bg_borderBox02.gif) 25px 50% no-repeat}
+.borderBox .borderBoxContent.bBC03 > .floatL{background:url(/_ui/desktop/images/academy/bg_borderBox03.gif) 22px 50% no-repeat}
+.borderBox .borderBoxContent > .floatR .btnTbl{width:68px}
+/* ---------- ## 이상 비즈니스(교육장, 교육비) ## ---------- */
+
+/* ---------- ## 이하 아카데미 ## ---------- */
+/* pin Level : LOS Map table */
+span[class^=pinLevel]{display:inline-block;width:13px;height:13px;line-height:0;font-size:0;text-indent:-9999px;vertical-align:middle}
+.pinLevelMember{background:url(/_ui/desktop/images/common/ico_pin_member.png) no-repeat 0 0}
+.pinLevelAbo{background:url(/_ui/desktop/images/common/ico_pin_abo.png) no-repeat 0 0}
+.pinLevelSps{background:url(/_ui/desktop/images/common/ico_pin_sps.png) no-repeat 0 0}
+.pinLevelSp{background:url(/_ui/desktop/images/common/ico_pin_sp.png) no-repeat 0 0}
+.pinLevelGp{background:url(/_ui/desktop/images/common/ico_pin_gp.png) no-repeat 0 0}
+.pinLevelPt{background:url(/_ui/desktop/images/common/ico_pin_pt.png) no-repeat 0 0}
+.pinLevelRuby{background:url(/_ui/desktop/images/common/ico_pin_ruby.png) no-repeat 0 0}
+.pinLevelFpt{background:url(/_ui/desktop/images/common/ico_pin_fpt.png) no-repeat 0 0}
+.pinLevelFruby{background:url(/_ui/desktop/images/common/ico_pin_fruby.png) no-repeat 0 0}
+.pinLevelPearl{background:url(/_ui/desktop/images/common/ico_pin_pearl.png) no-repeat 0 0}
+.pinLevelSap{background:url(/_ui/desktop/images/common/ico_pin_sap.png) no-repeat 0 0}
+.pinLevelFsap{background:url(/_ui/desktop/images/common/ico_pin_fsap.png) no-repeat 0 0}
+.pinLevelEme{background:url(/_ui/desktop/images/common/ico_pin_eme.png) no-repeat 0 0}
+.pinLevelFeme{background:url(/_ui/desktop/images/common/ico_pin_feme.png) no-repeat 0 0}
+.pinLevelDia{background:url(/_ui/desktop/images/common/ico_pin_dia.png) no-repeat 0 0}
+.pinLevelFdia{background:url(/_ui/desktop/images/common/ico_pin_fdia.png) no-repeat 0 0}
+.pinLevelExedia{background:url(/_ui/desktop/images/common/ico_pin_exedia.png) no-repeat 0 0}
+.pinLevelFexedia{background:url(/_ui/desktop/images/common/ico_pin_fexedia.png) no-repeat 0 0}
+.pinLevelDdia{background:url(/_ui/desktop/images/common/ico_pin_ddia.png) no-repeat 0 0}
+.pinLevelFddia{background:url(/_ui/desktop/images/common/ico_pin_fddia.png) no-repeat 0 0}
+.pinLevelTdia{background:url(/_ui/desktop/images/common/ico_pin_tdia.png) no-repeat 0 0}
+.pinLevelFtdia{background:url(/_ui/desktop/images/common/ico_pin_ftdia.png) no-repeat 0 0}
+.pinLevelCrown{background:url(/_ui/desktop/images/common/ico_pin_crown.png) no-repeat 0 0}
+.pinLevelFcrown{background:url(/_ui/desktop/images/common/ico_pin_fcrown.png) no-repeat 0 0}
+.pinLevelCrownamb{background:url(/_ui/desktop/images/common/ico_pin_crownamb.png) no-repeat 0 0}
+.pinLevelFcrownamb{background:url(/_ui/desktop/images/common/ico_pin_fcrownamb.png) no-repeat 0 0}
+.pinLevelFca40{background:url(/_ui/desktop/images/common/ico_pin_fca40.png) no-repeat 0 0}
+.pinLevelFca50{background:url(/_ui/desktop/images/common/ico_pin_fca50.png) no-repeat 0 0}
+.pinLevelFca60{background:url(/_ui/desktop/images/common/ico_pin_fca60.png) no-repeat 0 0}
+
+/* pin Level : 로그인 우측 회원등급 */
+span[class^=pinLevelLg]{overflow:hidden;width:22px;height:22px;line-height:0;font-size:0;text-indent:-9999px;}
+.pinLevelLgMember{background:url(/_ui/desktop/images/common/ico_pinl_member.png) no-repeat 0 0}
+.pinLevelLgAbo{background:url(/_ui/desktop/images/common/ico_pinl_abo.png) no-repeat 0 0}
+.pinLevelLgSps{background:url(/_ui/desktop/images/common/ico_pinl_sps.png) no-repeat 0 0}
+.pinLevelLgSp{background:url(/_ui/desktop/images/common/ico_pinl_sp.png) no-repeat 0 0}
+.pinLevelLgGp{background:url(/_ui/desktop/images/common/ico_pinl_gp.png) no-repeat 0 0}
+.pinLevelLgPt{background:url(/_ui/desktop/images/common/ico_pinl_pt.png) no-repeat 0 0}
+.pinLevelLgRuby{background:url(/_ui/desktop/images/common/ico_pinl_ruby.png) no-repeat 0 0}
+.pinLevelLgFpt{background:url(/_ui/desktop/images/common/ico_pinl_fpt.png) no-repeat 0 0}
+.pinLevelLgFruby{background:url(/_ui/desktop/images/common/ico_pinl_fruby.png) no-repeat 0 0}
+.pinLevelLgPearl{background:url(/_ui/desktop/images/common/ico_pinl_pearl.png) no-repeat 0 0}
+.pinLevelLgSap{background:url(/_ui/desktop/images/common/ico_pinl_sap.png) no-repeat 0 0}
+.pinLevelLgFsap{background:url(/_ui/desktop/images/common/ico_pinl_fsap.png) no-repeat 0 0}
+.pinLevelLgEme{background:url(/_ui/desktop/images/common/ico_pinl_eme.png) no-repeat 0 0}
+.pinLevelLgFeme{background:url(/_ui/desktop/images/common/ico_pinl_feme.png) no-repeat 0 0}
+.pinLevelLgDia{background:url(/_ui/desktop/images/common/ico_pinl_dia.png) no-repeat 0 0}
+.pinLevelLgFdia{background:url(/_ui/desktop/images/common/ico_pinl_fdia.png) no-repeat 0 0}
+.pinLevelLgExedia{background:url(/_ui/desktop/images/common/ico_pinl_exedia.png) no-repeat 0 0}
+.pinLevelLgFexedia{background:url(/_ui/desktop/images/common/ico_pinl_fexedia.png) no-repeat 0 0}
+.pinLevelLgDdia{background:url(/_ui/desktop/images/common/ico_pinl_ddia.png) no-repeat 0 0}
+.pinLevelLgFddia{background:url(/_ui/desktop/images/common/ico_pinl_fddia.png) no-repeat 0 0}
+.pinLevelLgTdia{background:url(/_ui/desktop/images/common/ico_pinl_tdia.png) no-repeat 0 0}
+.pinLevelLgFtdia{background:url(/_ui/desktop/images/common/ico_pinl_ftdia.png) no-repeat 0 0}
+.pinLevelLgCrown{background:url(/_ui/desktop/images/common/ico_pinl_crown.png) no-repeat 0 0}
+.pinLevelLgFcrown{background:url(/_ui/desktop/images/common/ico_pinl_fcrown.png) no-repeat 0 0}
+.pinLevelLgCrownamb{background:url(/_ui/desktop/images/common/ico_pinl_crownamb.png) no-repeat 0 0}
+.pinLevelLgFcrownamb{background:url(/_ui/desktop/images/common/ico_pinl_fcrownamb.png) no-repeat 0 0}
+.pinLevelLgFca40{background:url(/_ui/desktop/images/common/ico_pinl_fca40.png) no-repeat 0 0}
+.pinLevelLgFca50{background:url(/_ui/desktop/images/common/ico_pinl_fca50.png) no-repeat 0 0}
+.pinLevelLgFca60{background:url(/_ui/desktop/images/common/ico_pinl_fca60.png) no-repeat 0 0}
+
+ul.pinInfoList{overflow:hidden;width:711px;margin-top:5px;border-top:1px solid #e3e3e3;border-left:1px solid #e3e3e3;background:url("/_ui/desktop/images/content/bg_pininfolist.gif") no-repeat right bottom}
+ul.pinInfoList li{float:left;width:129px;height:29px;padding:6px 0 0 12px;border-right:1px solid #e3e3e3;border-bottom:1px solid #e3e3e3}
+ul.pinInfoList li.first{width:130px}
+ul.pinInfoList li span{margin-right:5px}
+
+
+/* ************* 아카데미 공통 가이드 ************* */
+/* ---- 아카데미 Main---- */
+.personalArea {height:42px;line-height:42px;box-sizing:border-box;background-color:#155213;color:#c8d2c7;}
+.personalArea a{color:#c8d2c7;font-size:12px;letter-spacing:-0.5px;text-decoration:none}
+.personalArea .none{display:none;}
+.personalArea .loginBefore{text-align:center;}
+.personalArea .loginBefore a{text-decoration:underline;}
+.personalArea .loginAfter{overflow:hidden;padding:0 15px;}
+.personalArea .loginAfter .currentSec{float:left;width:50%;padding-left:20px;background:url(/_ui/desktop/images/academy/ico_alram.png) no-repeat 0px 12px;}
+.personalArea .loginAfter .currentSec .more{margin-left:8px;margin-top:-1px;vertical-align:middle}
+.personalArea .loginAfter .level{float:right;width:320px;text-align:right;font-weight:bold;}
+.personalArea .loginAfter .level span{margin-right:2px;background-size:20px;}
+
+/* 	Core Owl Carousel CSS File v1.3.3 */
+.owl-carousel .owl-wrapper:after {content:".";display:block;clear:both;visibility:hidden;line-height:0;height:0}
+.owl-carousel .owl-wrapper{display:none;position: relative;-webkit-transform: translate3d(0px, 0px, 0px)}
+.owl-carousel .owl-wrapper-outer{overflow:hidden;position:relative;width:712px}
+.owl-carousel{display:none;position:relative;width:730px;}
+.owl-carousel .owl-item{float:left}
+.owl-controls .owl-page, .owl-controls .owl-buttons div{cursor:pointer}
+.owl-carousel .owl-wrapper-outer.autoHeight{-webkit-transition: height 500ms ease-in-out;-moz-transition: height 500ms ease-in-out;-ms-transition: height 500ms ease-in-out;-o-transition: height 500ms ease-in-out;transition: height 500ms ease-in-out}
+.owl-controls {-webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;-webkit-tap-highlight-color: rgba(0, 0, 0, 0)}
+
+/* fix */ 
+.owl-carousel .owl-wrapper,
+.owl-carousel .owl-item{-webkit-backface-visibility:hidden;-moz-backface-visibility:hidden;-ms-backface-visibility:hidden;-webkit-transform:translate3d(0,0,0);-moz-transform:translate3d(0,0,0);-ms-transform:translate3d(0,0,0)}
+.owl-theme .owl-controls .owl-page{display:inline-block;zoom:1;*display:inline;/*IE7 life-saver */}
+
+/* 메인 슬라이드 */
+.acMainslideWrap{position:relative;border-bottom:1px solid #cecece}
+.acMainslideWrap .owl-carousel{width:960px}
+.acMainslideWrap .owl-carousel .owl-wrapper-outer{width:960px}
+.acMainslider .item a{display:block;width:100%}
+.acMainslider .item img{display:block;width:100%;max-width:100%;height:320px;vertical-align:middle;border:0}
+.acMainslider .owl-controls{padding:0;text-align:center}
+.acMainslider .owl-controls .owl-buttons div{display:block;position:absolute;top:50%;margin-top:-32px;z-index:10;width:18px;height:45px;background:url(/_ui/desktop/images/academy/btn_slidePage.png) no-repeat;text-indent:-99999px}
+.acMainslider .owl-controls .owl-buttons .owl-prev{left:10px;background-position:0 0}
+.acMainslider .owl-controls .owl-buttons .owl-next{right:10px;background-position:-40px 0}
+.acMainslider .owl-controls .owl-pagination{position:absolute;bottom:20px;left:50%;margin-left:-25px}
+.acMainslider .owl-controls .owl-page span{display:block;width:11px;height:11px;margin:5px;background:url(/_ui/desktop/images/academy/btn_slide_off.png) no-repeat}
+.acMainslider .owl-controls .owl-page.active span{width:30px;height:11px;background:url(/_ui/desktop/images/academy/btn_slide_on.png) no-repeat}
+.acMainslideWrap .btnAutoplay{position:absolute;bottom:25px;left:50%;width:16px;height:16px;margin-left:0;z-index:12;background:url(/_ui/desktop/images/academy/btn_rollControl.gif) no-repeat;background-position:0 -24px}
+.acMainslideWrap .btnAutoplay.autoplay{background-position:0 0}
+
+/* 메인 추천 콘텐츠 */
+.acMainCon .hWrap h3{margin:35px 0 30px;padding:0;font-size:20px}
+.acMainCon .hWrap h3 img{vertical-align:top;}
+.acMainCon .hWrap h3 span{display:inline-block;padding-top:4px;padding-left:12px;color:#4b8c2f;font-size:12px;font-weight:normal;}
+.acMainCon .hWrap{position:relative;padding:0;border-bottom:0}
+.acMainCon .hWrap .rightWrap{top:-3px}
+
+.acMainContents a.btnBasicAcWXL{width:220px;height:40px;line-height:40px;color:#4b8c2f;font-size:12px;font-weight:bold;border:1px solid #dad8d8;background:#fff}
+.acMainContents .acItems{margin-left:-20px}
+
+/* 메인 레이어 팝업 : 카테고리 구독 설정 */
+.acMainPopup strong{color:#444}
+.acMainPopup p{margin-bottom:10px;color:#666;font-size:12px;line-height:150%}
+.acMainPopup .acInputWrap{width:340px;padding:20px 90px;margin:20px 0 10px;background-color:#fafafa;border:1px solid #d5d5d5;line-height:28px;text-align:center}
+.acMainPopup .acInputWrap input[type="checkbox"]{width:15px;height:15px}
+.acMainPopup .acInputWrap input[type="checkbox"] + label{color:#666;font-size:12px}
+.exclam{padding-left:18px;background:url(/_ui/desktop/images/academy/bg_exclam.gif) no-repeat;color:#e81135;font-size:12px}
+
+/*** header ***/
+.academyWrap .hWrap{border-bottom:0;margin-bottom:30px}
+.academyWrap h2{padding:35px 0 25px;font-size:16px;color:#333;line-height:0}
+
+/* 목록보기 토글 헤더 */
+.viewTypeBox{position:relative;overflow:auto;margin:0;padding-bottom:10px;min-height:35px}
+.toggleViewBox .viewTypeSet a{display:inline-block;width:113px;height:38px;overflow:hidden;text-indent:-999px;font-size:0;line-height:0;padding:0;margin-right:3px;background:url(/_ui/desktop/images/academy/btn_listview.gif) no-repeat 0 0}
+.toggleViewBox .viewTypeSet a.simple{background-position:-129px 0}
+.toggleViewBox .viewTypeSet a.schedule{width:126px;background-position:-254px 0}
+.toggleViewBox .viewTypeSet a.calender{width:132px;background-position:-392px 0}
+.toggleViewBox .viewTypeSet a.list2{width:132px;background-position:-540px 0}
+.toggleViewBox .viewTypeSet a.list.on{background-position:0 100%}
+.toggleViewBox .viewTypeSet a.simple.on{background-position:-129px 100%}
+.toggleViewBox .viewTypeSet a.schedule.on{background-position:-254px 100%}
+.toggleViewBox .viewTypeSet a.calender.on{background-position:-392px 100%}
+.toggleViewBox .viewTypeSet a.list2.on{background-position:-540px 100%}
+
+.rightWrap{position:absolute;top:8px;right:0}
+.rightWrap span{display:inline-block;vertical-align:middle}
+.rightWrap select{margin-left:4px;vertical-align:middle}
+.tblDetail .rightWrap{top:50%;right:10px;margin-top:-15px}
+
+.topRange{position:relative;min-height:42px}
+.topRange .rightWrap{top:0}
+.topRange .rightWrap.text{top:16px}
+
+.hrLine{border-top:1px solid #dbdbdb;height:20px}
+
+/* box */
+.academyWrap .lineBox{margin-top:40px}
+.academyWrap .lineBox .listDot li{background:url(/_ui/desktop/images/common/bul_dot7.gif) no-repeat 0 8px;padding:0 0 0 9px}
+.academyWrap .borderBox {margin-top:40px;border:1px solid #e2e2e2;padding:35px 0;text-align:center;background:#fff}
+.academyWrap .borderBox a{margin:0 10px}
+
+.lineBox2{margin:20px 0 40px;padding:20px;box-sizing:border-box;border:1px solid #d5d5d5}
+.lineBox3{margin-top:40px;margin-bottom:-30px;padding:20px 0;background-color:#fff;border:1px solid #e5e5e5;text-align:center;line-height:200%;}
+.grayBox{padding:12px 20px;background-color:#fafafa;font-size:12px;letter-spacing:-0.5px}
+.grayBox2{margin:15px 0;padding:25px 20px;background-color:#fafafa;border:1px solid #d5d5d5;font-size:12px;letter-spacing:-0.5px}
+.grayBox2 img{margin:0 10px}
+.grayBox2.pdL{padding:25px 20px 25px 65px}
+.radioBoxWrap span{display:inline-block;margin:7px 30px 7px 90px}
+.radioBoxWrap input[type="radio"] + label{color:#666}
+
+/* button */
+.academyWrap a:visited{color:inherit}
+.academyWrap a[class^=btn]{text-decoration:none}
+.academyWrap a[class^=btnBasic]:hover, .academyWrap a[class^=btnBasic]:focus, .academyWrap a[class^=btnBasic]:visited{color:#fff}
+
+a[class^=btnBasicAcG]{background-color:#6f6f6f;border:1px solid #575757;margin:0 6px;font-size:14px;color:#fff;font-weight:bold;box-sizing:border-box}
+a[class^=btnBasicAcGN]{background-color:#276c22;border:1px solid #575757;margin:0 6px;font-size:14px;color:#fff;font-weight:bold;box-sizing:border-box}
+
+.btnBasicAcWS{min-width:100px;height:29px !important;line-height:29px !important;padding:0 15px;background-color:#fff;border:1px solid #dad8d8;font-size:12px;color:#666 !important;box-sizing:border-box}
+.btnBasicAcGS, .btnBasicAcGNS {width:105px;height:35px !important;line-height:35px !important;}
+.btnBasicAcGL, .btnBasicAcGNL {width:150px;height:35px !important;line-height:35px !important;}
+.btnBasicAcGXL, .btnBasicAcGNXL{width:220px;height:40px !important;line-height:40px !important;}
+
+.btnWrapC2{overflow:hidden;height:35px;}
+.btnL a[class^=btnBasic], .btnL input[type="button"]{margin:0 5px 0 0;}
+.btnR a[class^=btnBasic], .btnR input[type="button"]{margin:0 0 0 5px;}
+
+input.btnBasicAcGS{width:70px;height:29px !important;line-height:29px !important;background-color:#6f6f6f;border:1px solid #575757;font-size:12px;color:#fff}
+input.btnBasicAcWS{min-width:80px}
+
+/* 테이블안 버튼*/
+.btnTblW{border:1px solid #c2c2c2;min-width:70px;height:23px;line-height:23px !important;color:#666;text-align:center;box-sizing:border-box;background:#fff}
+
+/* input */
+.academyWrap textarea{resize:none;border:1px solid #cccccc;padding:4px 5px 0 5px}
+.academyWrap input[type="text"],.academyWrap input[type="password"]{border:1px solid #dad8d8;height:27px;padding:0 5px;color:#666}
+.academyWrap input[readonly]{border:1px solid #dad8d8;background-color:#fafafa; height:16px}
+.academyWrap input[type="file"]{height:27px;border:1px solid #d4d4d4;background-color:#fafafa}
+.academyWrap select{border:1px solid #dad8d8;min-width:80px;height:29px;color:#666}
+.academyWrap input[type="checkbox"] + label,.academyWrap input[type="radio"] + label{margin:0 16px 0 4px;color:#666;letter-spacing:-1px} /* 레이블 간격 조정 */
+.academyWrap label + input[type="checkbox"]{ margin:0 0 3px 4px} /* 레이블 간격 조정 */
+
+/*** table ***/
+.monthlySchedule{margin:10px 0 10px;text-align:center;font-size:18px;color:#444}
+.monthlySchedule strong{margin:0 5px}
+.monthlySchedule a{display:inline-block;width:18px;height:18px;vertical-align:middle;font-size:0;text-indent:-999px;background:url(/_ui/desktop/images/academy/btn_monthly.gif) no-repeat 0 0}
+.monthlySchedule a.next{background-position:100% 0}
+
+.tblSchedule{width:100%;table-layout:fixed;border-top:2px solid #666;border-bottom:1px solid #bababa;line-height:160%}
+.tblSchedule th{padding:10px 0 9px;border-bottom:1px solid #bfbfbf}
+.tblSchedule td{border:1px solid #d3d3d3;border-width:1px 0 0 1px;color:#666;padding:10px 10px 9px;text-align:center}
+.tblSchedule tr:first-child td{border-top:0}
+.tblSchedule td:first-child{border-left:0}
+.tblSchedule td.brd{border-left:1px solid #d3d3d3}
+.tblSchedule tr.lastday td{background:#e5e5e5; color:#888}
+.tblSchedule tr.lastday td .btnTblW{background:#e5e5e5}
+.tblSchedule tr.lastday td .label2{background:#999}
+.tblSchedule tr.weekend td{background:#fafafa}
+.tblSchedule td.title{text-align:left;padding-left:15px}
+.tblSchedule td .label2{vertical-align:top}
+
+.tblEduCont .tblSchedule td{border-color:#ebebeb}
+.tblList th, .tblList td{font-size:12px}
+.tblList tbody th.bg{background-color:#f1f1f1;font-weight:bold}
+.numTop{margin:-25px 0 12px;overflow:hidden;text-align:right;font-size:12px}
+
+.academyWrap .tblDetailBtn {margin-top:30px;text-align:right}
+
+.academyWrap .tblDetail{width:100%;table-layout:fixed;border-top:2px solid #666;border-bottom:1px solid #bababa}
+.academyWrap .tblDetail td{color:#666;padding:15px;border-top:1px solid #d5d5d5;text-align:left}
+.academyWrap .tblDetail td.tit{background:#ebebeb;text-align:center}
+.academyWrap .tblDetail tbody th.tit{background:#ebebeb;border-top:1px solid #d5d5d5;text-align:center;font-weight:bold}
+.academyWrap .tblDetail thead th{padding:17px 0;background:#ebebeb;border-top:1px solid #d5d5d5;text-align:center;font-weight:bold}
+.academyWrap .tblDetail.lineLeft th{border-left:1px solid #d9d9d9}
+.academyWrap .tblDetail.lineLeft td{border-left:1px solid #d9d9d9; text-align:center}
+.academyWrap .tblDetail.lineLeft th:first-child,
+.academyWrap .tblDetail.lineLeft td:first-child{border-left:none}
+
+/* 검색 */
+.listSch{margin-top:30px;text-align:center}
+.listSch input[type="text"]{width:160px}
+
+/*** 상세보기 리스트 ***/
+.tblThumbView{width:100%;table-layout:fixed;border-top:2px solid #666}
+.tblThumbView td{padding:28px 0;border-bottom:1px solid #dad8d8;color:#666;vertical-align:top;line-height:160%}
+.tblThumbView td.pdNone{padding:0;border-bottom:0}
+.tblThumbView td .acThumbImg{height:140px}
+.tblThumbView td .acThumbImg img{width:223px;height:140px;border:1px solid #dad8d8;}
+.tblThumbView td .acThumbImg .catetype{top:0;}
+.tblThumbView td .title{display:block;margin-bottom:10px;padding-right:20px;font-size:14px;font-weight:bold;color:#333}
+.tblThumbView td .off{position:absolute;bottom:-1px;right:-1px;display:inline-block;padding:0 6px;height:20px;line-height:21px;color:#fff;font-size:11px;text-align:center;background:#4b8c2f;letter-spacing:-0.5px;vertical-align:top}
+.tblThumbView td .date{margin-top:12px}
+.tblThumbView td .date em{margin:0 5px}
+.tblThumbView td .contBox{position:relative}
+.tblThumbView .selected .checkIcon{position:absolute;top:0;right:0}
+.tblThumbView .selected .contBox *{color:#888 !important}
+.acItems .selected .time, .acItems .selected .menubox{color:#fff !important}
+
+
+/* sns */
+.snsZone{position:absolute;top:120px;right:0;text-align:right}
+.snsZone .snsLink{margin:0;display:inline-block;vertical-align:top;width:0;height:31px;overflow:hidden}
+.snsZone em{display:inline-block;font-size:11px;color:#888;vertical-align:middle}
+.snsZone a{display:inline-block;margin-left:3px;width:31px;height:31px;font-size:0;text-indent:-999px;background:url(/_ui/desktop/images/academy/ico_sns.gif) no-repeat 0 0;vertical-align:middle}
+.snsZone a.snsUrl{background-position:0 0}
+.snsZone a.snsCs{background-position:-38px 0}
+.snsZone a.snsBand{background-position:-76px 0}
+.snsZone a.snsFb{background-position:-114px 0}
+.snsZone a.share{background-position:-189px 0}
+.snsZone a.share.on{background-position:-151px 0}
+.snsZone a.save{background-position:-229px 0}
+.snsZone a.save.on{background-position:-269px 0}
+.snsZone a.like{background-position:-309px 0}
+.snsZone a.like.on{background-position:-349px 0}
+.snsZone .snsUrlBox .alert{top:31px;left:-84px}
+.snsZone .snsUrlBox a.btnClose{width:10px;height:18px;text-indent:0;background:none}
+
+.checkIcon{display:inline-block;width:17px;height:18px;margin:-2px 4px 0 8px;vertical-align:middle;background:url(/_ui/desktop/images/academy/ico_checked.gif) no-repeat}
+
+/*** 간략보기 리스트 ***/
+.acThumbImg{position:relative;display:block;width:223px;line-height:0;color:#666 !important;}
+.acThumbImg .catetype{position:absolute;top:-1px;left:15px;display:inline-block;width:32px;height:32px;background:#ff7628 url(/_ui/desktop/images/academy/bg_icon_con.png) no-repeat;text-indent:-999px;overflow:hidden;font-size:0;}
+.acThumbImg .catetype.avi{background-position:0 0}
+.acThumbImg .catetype.audio{background-position:-32px 0}
+.acThumbImg .catetype.doc{background-position:-64px 0}
+.acThumbImg .catetype.img{background-position:-96px 0}
+.acThumbImg .catetype.out{background-position:-128px 0}
+.acThumbImg .time{position:absolute;bottom:0;right:0;display:inline-block;padding:0 5px;height:16px;line-height:16px;background-color:#000;filter:alpha(opacity=50);background:rgba(0,0,0,0.5);color:#fff;font-size:11px;text-align:center}
+.acThumbImg .tit{display:block;padding-top:15px;color:#666;font-size:12px;line-height:150%}
+
+.acItems .item {position:relative;float:left;width:223px;min-height:265px;margin-left:20px;margin-bottom:35px;border:1px solid #dad8d8;}
+.acItems .item .acThumbImg img{width:223px;height:140px;}
+.acItems .item .acThumbImg .time{top:124px}
+.acItems .item .acThumbImg .tit{padding:15px 10px 0;height:80px}
+.acItems .item .acThumbImg .tit.type2{height:37px}
+.acItems .item .itemDelet{position:absolute;top:0;right:0;width:20px;height:20px;background:url(/_ui/desktop/images/academy/btn_delete2.gif) no-repeat top right;font-size:0;text-indent:-999px}
+.acItems .item>div{position:relative;display:block;margin:0 10px;padding:11px 40px 0 0;height:40px;box-sizing:border-box;border-top:1px solid #dad8d8;vertical-align:top;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.acItems .item>div>a{text-decoration:none;font-size:11px;font-weight:normal}
+.acItems .scLike{position:absolute;top:12px;right:0;display:inline-block;padding-left:19px;padding-top:2px;background:url(/_ui/desktop/images/academy/ico_like.gif) no-repeat 0 0;color:#888;font-size:11px;font-weight:normal}
+.acItems .scLike.on{background-position:-35px 0;}
+.acItems .menu{color:#4b8c2f;font-size:11px;font-weight:normal}
+.acItems .cate{font-weight:bold}
+.acItems .period{position:relative;padding:10px 10px;margin-top:8px;display:inline-block;font-size:11px;line-height:160%}
+.acItems .period:after{content:"";position:absolute;top:0;left:10px;width:20px;height:1px;background:#d1d1d1}
+.acItems .item.selected {background:#f9f9f9 url(/_ui/desktop/images/academy/ico_checked.gif) 195px 198px no-repeat}
+.acItems .item.finish {background:#f9f9f9}
+.acItems .item.finish .off{position:absolute;top:120px;right:0;display:inline-block;padding:0 6px;height:20px;line-height:21px;font-size:11px;color:#fff;background:#4b8c2f;letter-spacing:-0.5px}
+.acItems .item.finish > a{text-decoration:none;cursor:default}
+
+.simpleViewList{position:relative;border-top:2px solid #666}
+.simpleViewList h3{padding:30px 0 24px;font-size:14px;font-weight:bold}
+.simpleViewList .acItems{margin-top:-5px;margin-right:-18px;overflow:hidden}
+.simpleViewList .acItems .item{margin:32px 18px 0 0}
+
+.menubox{margin-right:5px;padding:4px 6px 3px;background-color:#157e00;color:#fff;font-size:11px;font-weight:normal;letter-spacing:-0.5px;vertical-align:middle}
+img.flag{vertical-align:middle;margin:0 4px 2px 0;}
+
+/* 컨텐츠 없을 때 */
+.commingSoon{margin:28px 0}
+.noItems{text-align:center;padding:40px 0;}
+.simpleViewList .noItems{width:712px;padding:75px 0 70px;border-bottom:1px solid #ebebeb;}
+.acMainContents .noItems{padding:80px 0;}
+
+/* 상세 테이블 */
+dl.tblDetailHeader{overflow:hidden;border-top:2px solid #666}
+dl.tblDetailHeader dt{position:relative;padding:15px 5px 15px 5px;color:#333;font-weight: bold;font-size: 14px;border-bottom:1px solid #ebebeb;word-break:break-all}
+dl.tblDetailHeader dd{position:relative;min-height:12px;padding: 13px 5px 13px 5px;color:#999;border-bottom:1px solid #bababa}
+dl.tblDetailHeader dd em{margin:0 6px}
+
+.snsLink.topSite{position:absolute;top:-77px;right:0;margin:0}
+
+.acDetailInfoBox{padding:30px 0;overflow:hidden}
+.acDetailInfoBox .imgBox{width:350px;float:left}
+.acDetailInfoBox .imgBox img{width:320px;height:200px;border:1px solid #dad8d8;}
+.acDetailInfoBox .detailInfoBox{padding-left:350px;width:360px;min-height:202px;line-height:150%;font-size:14px}
+.acDetailInfoBox .detailInfoBox .grayBox{width:320px;margin-top:25px;min-height:auto;}
+
+.inputBtnWrap{padding:30px 0px;border-bottom:1px solid #bababa;text-align:center;}
+.inputBtnWrap select{margin:0 30px 0 4px !important;}
+.inputBtnWrap input[type="checkbox"] + label{margin-left:0;margin-right:40px;}
+.inputBtnWrap > p{margin-top:15px;}
+.inputBtnWrap > p a{text-decoration:underline !important;}
+.inputBtnWrap a.btnBasicAcGXL{cursor:default;}
+.inputBtnWrap .textSL{font-size:14px;}
+
+.tblEduCont{width:100%;table-layout:fixed;}
+.tblEduCont tr:first-child .eduContWrap{margin-top:0}
+.eduContWrap{margin-top:15px; padding:15px 0;position:relative;border:1px solid #e5e5e5;overflow:hidden;background:url(/_ui/desktop/images/academy/bg_eduline.gif) no-repeat 100px 0}
+.eduContWrap:after{content:"";position:absolute;bottom:0;left:100px;display:block;width:1px;height:15px;background:#fff}
+.eduContWrap div{display:inline-block;box-sizing:border-box;vertical-align:middle}
+.eduContWrap div.eduTit{display:table-cell;width:100px;padding:0 15px;text-align:center;vertical-align:top;}
+.eduContWrap div.eduCont{display:table-cell;width:600px;padding:0 25px;line-height:150%;color:#444}
+
+/* 게시판 상세 */
+.academyWrap .tblDetailHeader .detailInfo{position:absolute;top:12px;right:8px; line-height:17px}
+.academyWrap .tblDetailHeader a.myDataRoom{display:inline-block;width:16px;height:15px;margin-right:10px;background:url(/_ui/desktop/images/academy/ico_dataroom.gif) 0 0 no-repeat;text-indent:-999px}
+.academyWrap .tblDetailHeader a.myDataRoom.on{background-position:100% 0}
+.academyWrap .tblDetailHeader a.myRecommand span{display:inline-block;width:15px;height:15px;background:url(/_ui/desktop/images/academy/ico_like.gif) 0 1px no-repeat;text-indent:-999px}
+.academyWrap .tblDetailHeader a.myRecommand.on span{background-position:-35px 1px}
+.academyWrap .tblDetailCont{overflow:hidden;margin:20px 0 0px;padding:0 0 40px;border-bottom:1px solid #bababa}
+.academyWrap .tblDetailCont.details{padding:0 0 10px;border-bottom:0}
+.academyWrap .tblDetailCont p{line-height:150%;word-break:break-all;text-align:left}
+.academyWrap .detailMovie,
+.academyWrap .detailDoc,
+.academyWrap .detailLink,
+.academyWrap .detailImage{margin:0 0 20px;text-align:center;}
+.academyWrap .detailAudio{margin:0;text-align:center;}
+.academyWrap .linkTitle{display:block;margin-top:35px;color:#666;font-size:14px;font-weight:bold;text-decoration:underline}
+.academyWrap .detailMovie p{margin:0 auto 10px;width:640px;text-align:left;}
+.academyWrap .detailMovie iframe{width:640px;height:360px;}
+
+.academyWrap .detailRefresh{padding-left:36px;padding-bottom:20px;margin-bottom:30px;border-bottom:1px solid #ebebeb;color:#999}
+.academyWrap .detailRefresh a{margin-right:12px;padding:7px 10px 6px 11px;background-color:#999;color:#fff}
+.academyWrap .detailRefresh a span{display:inline-block;height:17px;padding-left:25px;background: url(/_ui/desktop/images/academy/btn_bgRefresh.png) no-repeat;line-height:17px}
+
+.iframeZone {position:relative;overflow:hidden;height:130px;width:640px;margin:0 auto;}
+.iframeZone iframe{width:100%}
+ 
+/* 게시판 상세 이전,다음 */
+.acEduPaging{position:relative;margin-top:30px;height:190px;}
+.acEduPaging a.acThumbImg{position:absolute;left:244px;}
+.acEduPaging a.prev{left:0}
+.acEduPaging a.next{left:auto;right:0}
+.acEduPaging a img{width:223px;height:140px;max-width:100%}
+.acEduPaging .time{top:123px}
+.acEduPaging .bg{position:absolute;top:0;left:0;display:block;width:223px;height:140px;padding-top:70px;box-sizing:border-box;text-align:center;color:#fff;background:url(/_ui/desktop/images/academy/bg_opacity.png) repeat}
+
+/* 아크로벳리더 다운로드 */
+.acReader{border-top:1px solid #bababa;position:relative;margin-top:50px;padding-top:20px}
+.acReader a.btn{position:absolute;top:10px;right:0}
+
+.checkboxBox{clear:both;margin:7px 0 10px;padding:15px 25px;border:1px solid #e1e1e1}
+.checkboxBox label:last-child{margin-right:0 !important}
+
+/* 추천콘텐츠 */
+.acSlide01 span[class^=pinLevel]{margin-top:-3px;}
+.simpleViewList .owl-controls .owl-buttons div{position:absolute;top:46%;display:block;width:17px;height:33px;background: url(/_ui/desktop/images/academy/btn_controls.gif) no-repeat;text-indent:-99999px}
+.simpleViewList .owl-controls .owl-buttons .owl-prev{left:0;background-position:0 0}
+.simpleViewList .owl-controls .owl-buttons .owl-next{right:19px;background-position:0 -37px}
+/*.simpleViewList .owl-controls .owl-buttons .disabled{display:none;}*/
+
+.simpleViewList .owl-theme .owl-controls .owl-page{display:inline}
+.recomContents h3{padding:25px 0 0;border-top:1px solid #dad8d8;font-size:14px;color:#333}
+.recomContents .item{margin:25px 18px 20px 0 !important}
+
+.academyWrap .tabWrap{overflow:hidden;position:relative;height:30px;margin:20px 0 5px}
+.acContTab{overflow:hidden;height:30px}
+.acContTab li{float:left;height:28px;width:90px;border:1px solid #dad8d8;margin-right:-1px}
+.acContTab li a{display:block;width:100%;height:100%;background:#ff;color:#666;text-align:center;line-height:28px;text-decoration:none}
+.acContTab li.on a{color:#fff;background:#444;cursor:default}
+.btnRight{float:right;margin-top:-20px}
+
+/* 정규과정소개 */
+ul.standardClassList{border:1px solid #e5e5e5;padding:12px 0 12px 1px;background:#fff;overflow:hidden;}
+ul.standardClassList li{float:left;position:relative;padding:0 6px;}
+ul.standardClassList li:before{content:"|";position:absolute;top:0;left:-4px;color:#d7d7d7}
+ul.standardClassList li:first-child:before{content:"";}
+ul.standardClassList li a.on{font-weight:bold}
+p.standardClassTxt{margin:-15px 0 20px;}
+.standardClassCont{overflow:hidden;margin-top:10px;width:724px}
+.standardClassCont dl{float:left;width:328px;border:1px solid #e5e5e5;padding:0 10px;margin:0 12px 12px 0;}
+.standardClassCont dt{padding:14px 0;border-bottom:1px solid #f5f5f5;color:#333;font-weight:bold;}
+.standardClassCont dd{padding:14px 0;line-height:150%;}
+.standardClassCont dd p{margin-top:10px}
+
+
+/* 교육현황 */
+.acCalendarWrap .monthly{position:relative;display:inline-block;padding:0 24px;color:#474d63;font-size:29px;line-height:1}
+.acCalendarWrap .monthly>a{display:block;position:absolute;top:7px;width:7px;height:17px;color:#666;background:url(/_ui/desktop/images/academy/btn_monthly.gif) no-repeat}
+.acCalendarWrap .monthly>a>span{display:inline-block;position:absolute;left:-9999px;top:-9999px;width:0 !important;height:0 !important;font-size:0 !important;line-height:0 !important;margin:0;padding:0}
+.acCalendarWrap .monthly a.monthPrev {left:0;background-position:0 0}
+.acCalendarWrap .monthly a.monthNext {right:0;background-position:100% 0}
+
+.achWrap {position:relative;display:block;min-height:30px;padding-bottom:20px}
+.achWrap h2{position:absolute;top:0;left:136px;padding:5px 0 0 0}
+.achWrap h2.lft{left:0}
+.achWrap a{position:absolute;top:0;right:0}
+.acStateWrap{position:relative;overflow:hidden;margin-left:-12px;margin-bottom:36px}
+.acStateWrap:after{content:"";clear:both;display:block}
+.acStateWrap dl{float:left;margin:0 0 12px 12px;border:1px solid #e5e5e5;box-sizing:border-box}
+.acStateWrap dt{float:left;width:126px;height:95px;background-color:#eee;background-image:url(/_ui/desktop/images/academy/bg_acState01.png);background-repeat:no-repeat;box-sizing:border-box;color:#333}
+.acStateWrap dd{margin-bottom:12px;padding-right:15px;line-height:1;text-align:right}
+
+.acStateWrap dd.info{color:#000;line-height:1}
+.acStateWrap dd.info span{font-size:11px;color:#333}
+.acStateWrap dd.infotxt{font-size:11px;color:#888}
+.acStateWrap dd.infotxt>span{display:block;padding-top:12px;font-size:11px;color:#b3b3b3}
+
+.acStateWrap dd.infotxt1{padding-top:12px;margin-bottom:7px;text-align:left}
+.acStateWrap dd.infotxt1 >span{padding-left:12px;font-size:11px;color:#b3b3b3;text-align:left}
+.acStateWrap dd.info1{color:#000;line-height:1}
+.acStateWrap dd.info1 span{display:inline-block;padding-top:16px;color:#333;font-size:12px}
+.acStateWrap dd strong.num{padding-left:3px;color:#000;font-size:29px;font-weight:bold}
+.acStateWrap dd strong.num.point{color:#276c22}
+.acStateWrap dd em{color:#000;font-weight:bold;font-size:13px}
+
+.acStateWrap .acState01,
+.acStateWrap .acState02{width:350px;height:97px}
+.acStateWrap .acState01 dt{padding-left:14px;padding-top:67px;background-position:30px 18px;font-size:14px;font-weight:bold}
+.acStateWrap .acState01 dd.info{padding-top:32px}
+.acStateWrap .acState02 dt{padding-left:24px;padding-top:67px;background-position:30px -85px;font-size:14px;font-weight:bold}
+
+.acStateWrap .acState03,
+.acStateWrap .acState04,
+.acStateWrap .acState05,
+.acStateWrap .acState06{width:127px;height:198px}
+
+.acStateWrap .acState03 dt{background-position:21px -180px;font-size:14px;font-weight:bold}
+.acStateWrap .acState04 dt{background-position:21px -285px;font-size:14px;font-weight:bold}
+.acStateWrap .acState05 dt{background-position:21px -389px;font-size:14px;font-weight:bold}
+.acStateWrap .acState06 dt{background-position:21px -485px;font-size:14px;font-weight:bold}
+
+.acStateWrap .acState_sns{width:544px;height:55px}
+.acStateWrap .acState_sns dt{width:172px;height:54px;background-image:url(/_ui/desktop/images/academy/bg_acState02.png);background-position:25px -129px}
+.acStateWrap .acState_sns dd{float:left}
+.acStateWrap .acState_sns dd.info{width:178px;padding-top:12px}
+.acStateWrap .acState_sns dd.infotxt{float:right;width:160px;padding-top:12px}
+.acStateWrap .acState_sns dd.infotxt span{padding-top:6px;font-size:11px;color:#888}
+
+.acStateWrap .acState_complete{width:156px;height:266px;position:absolute;top:108px;right:0;border:2px solid #ccc}
+.acStateWrap .acState_complete dt{width:100%;height:126px;background-image:url(/_ui/desktop/images/academy/bg_acState02.png);background-position:15px 17px}
+.acStateWrap .acState_complete dd.info span{display:inline-block;padding-top:45px}
+.acStateWrap .acState_complete dd.infotxt span{font-size:12px;color:#888}
+
+/* 교육현황 버튼 */
+a.btnTblArrowR{display:inline-block;border:1px solid #e5e5e5;color:#666;font-size:12px;text-decoration:none}
+a.btnTblArrowR:hover, .btnTblArrowR:active{color:#666}
+a.btnTblArrowR span{display:inline-block;padding:8px 27px 8px 14px;background:url(/_ui/desktop/images/academy/bg_btnarrow.gif) 69px 8px no-repeat}
+
+.acStampWrapper{padding-top:10px;padding-bottom:20px;margin-bottom:30px}
+.acStampWrapper.brd{border-bottom:1px solid #d5d5d5}
+.acStampList:after{content:"";display:block;clear:both}
+.acStampList li{float:left;width:178px;height:160px;text-align:center}
+.acStampList li span{display:inline-block;width:140px;text-align:center}
+.acStampList li img{width:101px;}
+.acStampList.regular li img{width:112px;}
+.acStampList li em{display:block;margin-top:5px;color:#999;font-size:12px;text-align:center}
+.pbLayerContent .acStampWrapper{padding:0;margin:0}
+.pbLayerContent .acStampList li{width:160px;height:200px;}
+.pbLayerContent .acStampList.regular li{height:190px}
+.pbLayerContent .acStampList li em{font-size:12px;color:#666;line-height:150%;}
+
+/* LayerPopup: 목표설정 */
+.acGoalBox{clear:both;overflow:hidden;background-color:#fafafa;border:1px solid #e2e2e2;padding:22px 0;margin-top:30px}
+.acGoalBox .sec{float:left;width:70%;padding-left:74px;border-left:1px solid #d5d5d5;box-sizing:border-box}
+.acGoalBox .sec:first-child{width:30%;padding:6px 56px 0 48px;border-left:0;font-size:12px;text-align:center}
+.acGoalBox .sec:first-child span{padding-left:3px}
+.acGoalBox .sec:first-child strong{display:inline-block;margin-top:11px;color:#444;font-size:29px}
+.acGoalBox .selectBox{display:inline-block;width:280px}
+.acGoalBox .selectBox label{margin-right:17px;color:#444;font-size:12px}
+.acGoalBox .selectBox select{width:210px}
+.acGoalBox .inputBox{display:inline-block;width:280px;margin-top:10px}
+.acGoalBox .inputBox span{float:right;width:215px;margin-top:10px}
+.acGoalBox .inputBox span.lb{float:left;width:60px}
+
+/* 통합교육신청현황 */
+.inputTypeBox{padding:10px 0;border-bottom:1px solid #e2e2e2}
+.inputTypeBox strong{display:inline-block;width:70px}
+.inputTypeBox strong.tit2{margin-left:50px;width:40px}
+.lineBox .btnWrapC{padding-top:15px}
+
+.eduStateTitleBox{position:relative;}
+.eduStateTitleBox h2{padding:0 !important;margin-bottom:10px;line-height:1.4}
+.eduStateTitleBox .menubox{padding:4px 6px 3px}
+.eduGrade{display:inline-block;padding:3px 0 2px 30px;background:url(/_ui/desktop/images/academy/ico_eduGrade.gif) no-repeat 0 0}
+.eduStateTitleBox .rightWrap{position:absolute;top:0;right:0;}
+
+.btnTblDownR{padding:8px 11px 6px;background:#fff;border:1px solid #e5e5e5;color:#666;text-align:center}
+.btnTblDownR span{display:block;height:13px;padding-right:24px;background:url(/_ui/desktop/images/academy/btn_bgDown.gif) right 0 no-repeat}
+
+/* 통합교육신청 무권한 SNS공유 */
+.logoPage{width:712px;margin:0 auto;padding:100px 0 50px !important;background:url(/_ui/desktop/images/academy/h1-logo.jpg) 50% 0 no-repeat;}
+.logoPage #pbPopHeader{background:url(/_ui/desktop/images/common/bg_popup.gif) repeat-x 0 bottom}
+.logoPage #pbPopHeader h1 img{float:none;vertical-align:middle}
+.logoPage #pbPopHeader h1{color:#444;font-size:16px;vertical-align:middle}
+.logoPage #pbPopHeader h1 em{margin-left:12px;color:#e2e2e2;font-weight:normal}
+.logoPage #pbContent{float:none;z-index:0;padding-right:0;}
+
+h3.tblDetailHeader{position:relative;padding:0 5px 15px 5px;color:#333;font-weight: bold;font-size:18px;border-bottom:1px solid #ebebeb;word-break:break-all}
+.snsLink.topSite2{position:absolute;top:-40px;right:0;margin:0}
+
+/* 팝업 - 정규과정 평가 / 설문참여 */
+.testBox{padding:40px 20px 0;border:1px solid #d5d5d5;line-height:200%;color:#555;}
+.testBox.noline{border:0}
+.testBox .quest{margin-bottom:10px;font-weight:bold;font-size:14px}
+.testBox .formBox{margin:15px 0 40px;font-size:14px}
+.testBox .formBox input + label{margin:0 50px 0 4px}
+.testBox .formBox span.byte{display:block;text-align:right;font-size:12px;}
+.testBox .formBox textarea{width:650px;padding:5px 10px;text-align:left;line-height:150%;border-color:#ccc;color:#666;}
+.testBox .formBox input[type="text"]{width:660px;padding:0 5px;height:24px;border-color:#ccc;color:#666;}
+#pbPopWrap .btnWrapC{padding:0;margin-bottom:40px;}
+
+/* 맞춤쪽지 */
+.customNote .tblList{margin-top:20px;border-top:1px solid #d5d5d5}
+.customNote .tblList tbody th{background-color:#f1f1f1;font-weight:bold}
+.customNote .tblList tbody th.nobg{background-color:#fff}
+.customNote .tblList.borderT1 td{color:#444}
+.customNote .tblList td{line-height:150%;color:#666}
+.customNote .tblList td .btnTbl + .btnTbl{margin-left:2px}
+.customNote .tblList td p{margin-top:6px}
+.customNote .tblList td input[type=text] + label{margin-right:4px}
+.customNote .tblList td .line{display:inline-block;padding:2px 20px 2px 17px;border-right:1px solid #f1f1f1}
+.customNote .tblList td .line1{display:inline-block;padding:11px 20px 11px 17px;border-right:1px solid #f1f1f1}
+.customNote .note{display:inline-block;width:45px;height:40px;border-right:1px solid #f1f1f1;background:url(/_ui/desktop/images/academy/bg_note.gif) 0 -50px no-repeat;text-indent:-9999px}
+.customNote .note.new{background-position:0 0}

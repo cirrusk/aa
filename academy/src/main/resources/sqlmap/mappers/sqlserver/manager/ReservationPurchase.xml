@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.reservation.basicPackage.service.impl.ReservationPurchaseMapper">
+
+	<!-- 시설 예약 등록 -->
+	<insert id="roomReservationInsert" parameterType="egovMap">
+		INSERT INTO RSVRESERVATIONINFO(
+			  ACCOUNT
+			, TYPESEQ
+			, STARTDATETIME
+			, ENDDATETIME
+			, COOKMASTERCODE
+			, RSVTYPECODE
+			, PURCHASEDATE
+			, PAYMENTSTATUSCODE
+			, PAYMENTAMOUNT
+			, PAYMENTDATE
+			, PAYMENTOPTIONCODE
+			, PAYMENTINTERNALCODE
+			, PPSEQ
+			, ROOMSEQ
+			, RESERVATIONDATE
+			, EXPSESSIONSEQ
+			, RSVSESSIONSEQ
+			, ADMINFIRSTCODE
+			, CANCELCODE
+			, NOSHOWCODE
+			, STANDBYNUMBER
+			, TRANSACTIONTIME
+			, INSERTUSER
+			, INSERTDATE
+			, UPDATEUSER
+			, UPDATEDATE
+		)VALUES(
+			  #{account}
+			, #{typeSeq}
+			, #{startDateTime}
+			, #{endDateTime}
+			, #{cookMasterCode}
+			, 'R01'
+			, GETDATE()
+			, #{paymentStatusCode}
+			, #{price}
+			, GETDATE()
+			, NULL
+			, NULL
+			, #{ppSeq}
+			, #{roomSeq}
+			, #{reservationDate}
+			, NULL
+			, #{rsvSessionSeq}
+			, 'R02'
+			, 'B02'
+			, 'R01'
+			, #{standByNumber}
+			, #{transactionTime}
+			, #{account}
+			, GETDATE()
+			, NULL
+			, NULL
+		)
+		<selectKey resultType="String" keyProperty="rsvseq" order="AFTER">
+			SELECT IDENT_CURRENT('RSVRESERVATIONINFO')
+		</selectKey>
+	</insert>
+	
+	<!-- 시설 결제 이력정보 등록 -->
+	<insert id="roomPaymentInsert" parameterType="egovMap">
+		INSERT INTO RSVPAYMENTSTATUS(
+			  PAYMENTCODE
+			, RSVSEQ
+			, PROCESSDATE
+			, ACCOUNT
+			, INSERTUSER
+			, INSERTDATE
+		) VALUES (
+			  'P07'
+			, #{rsvseq}
+			, GETDATE()
+			, #{account}
+			, #{account}
+			, getdate()
+		)
+	</insert>
+
+	<select id="selectRoomPurchase" parameterType="egovMap" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM RSVPURCHASEINFO
+		WHERE RSVSEQ = #{rsvseq}
+	</select>
+
+	<insert id="roomPurchaseInsert" parameterType="egovMap">
+		INSERT INTO RSVPURCHASEINFO
+			( RSVSEQ
+			, ACCOUNT
+			, CARDCODE
+			, CARDNAME
+			, PURCHASEDATE
+			, CARDTRACENUMBER
+			, VIRTUALPURCHASENUMBER
+			, SKU
+			, PRICE
+			, REQUESTDATETIME
+			, VIRTUALDATETIME
+			, REGULARDATETIME
+			, INSERTUSER
+			, INSERTDATE 
+		) VALUES ( 
+			  #{rsvseq}
+			, #{account}
+			, #{bankid}
+			, #{bankname}
+			, CONVERT(VARCHAR(8), GETDATE(), 112)
+			, #{cardtracenumber}
+			, #{virtualpurchasenumber}
+			, #{sku}
+			, #{price}
+			, GETDATE()
+			, #{virtualdatetime}
+			, #{regulardatetime}
+			, #{insertuser}
+			, GETDATE()
+		)
+	</insert>
+	
+	<update id="resetCardTraceNumber">
+		UPDATE COMMENVIRONMENT
+		   SET NUMBERVALUE = '700000'
+		 WHERE SECTIONCODE = 'RSVCDNUM'
+	</update>
+	
+	<update id="increaseCardTraceNumber">
+		UPDATE COMMENVIRONMENT
+		   SET NUMBERVALUE = NUMBERVALUE + 1
+		 WHERE SECTIONCODE = 'RSVCDNUM'
+	</update>
+<!--
+
+	<select id="getCurrentCardTraceNumber" resultType="int">
+		SELECT NUMBERVALUE
+		  FROM COMMENVIRONMENT
+		 WHERE SECTIONCODE = 'RSVCDNUM'
+	</select>
+
+-->
+
+	<select id="getCurrentCardTraceNumber" resultType="int">
+		SELECT NEXT VALUE FOR COMTEST
+	</select>
+
+	<select id="selectKiccCompleteStep1" parameterType="reqBox" resultType="egovMap">
+		SELECT
+		  /* KICC - COMPLETE - STEP1 INFO */
+		  A.PPSEQ AS PP_SEQ,
+		  C.PPNAME AS PP_NAME,
+		  A.ROOMSEQ AS ROOM_SEQ,
+		  D.ROOMNAME AS ROOM_NAME
+		FROM RSVRESERVATIONINFO A
+		INNER JOIN RSVPURCHASEINFO B
+		  ON (A.RSVSEQ = B.RSVSEQ)
+		INNER JOIN RSVPPINFO C
+		  ON (A.PPSEQ = C.PPSEQ)
+		INNER JOIN RSVROOMINFO D
+		  ON (A.ROOMSEQ = D.ROOMSEQ)
+		WHERE B.VIRTUALPURCHASENUMBER = #{virtualPurchaseNumber}
+		GROUP BY A.PPSEQ, C.PPNAME, A.ROOMSEQ, D.ROOMNAME
+	</select>
+	
+	<select id="selectKiccCompleteStep2" parameterType="reqBox" resultType="egovMap">
+		SELECT
+		  /* KICC - COMPLETE - STEP2 INFO */
+		  CONVERT(VARCHAR(10), CONVERT(DATE, A.RESERVATIONDATE), 120) AS RESERVATION_DATE,
+		  SUBSTRING(DATENAME(DW, A.RESERVATIONDATE),1,1) AS RESERVATION_WEEK,
+		  C.SESSIONNAME AS SESSION_NAME,
+		  SUBSTRING(C.STARTDATETIME,1,2) + ':' + SUBSTRING(C.STARTDATETIME,3,2) AS START_TIME,
+		  SUBSTRING(C.ENDDATETIME,1,2) + ':' + SUBSTRING(C.ENDDATETIME,3,2) AS END_TIME,
+		  REPLACE(CONVERT(VARCHAR,CONVERT(MONEY, A.PAYMENTAMOUNT),1),'.00','') AS PAYMENT_AMOUNT
+		FROM RSVRESERVATIONINFO A
+		INNER JOIN RSVPURCHASEINFO B
+		  ON (A.RSVSEQ = B.RSVSEQ)
+		INNER JOIN RSVROOMSESSIONINFO C
+		  ON (A.RSVSESSIONSEQ = C.RSVSESSIONSEQ)
+		WHERE B.VIRTUALPURCHASENUMBER = #{virtualPurchaseNumber}
+	</select>
+	
+	<select id="selectKiccCompleteStep3" parameterType="reqBox" resultType="egovMap">
+		SELECT
+		  /* KICC - COMPLETE - STEP3 INFO */
+		  REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, SUM(A.PAYMENTAMOUNT)),1),'.00','') AS TOTAL_AMOUNT
+		FROM RSVRESERVATIONINFO A
+		INNER JOIN RSVPURCHASEINFO B
+		  ON (A.RSVSEQ = B.RSVSEQ)
+		WHERE B.VIRTUALPURCHASENUMBER = #{virtualPurchaseNumber}
+	</select>
+	
+	
+	
+</mapper>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.online.service.impl.LmsOnlineMapper">
+	
+	<!-- 서칭 권한 공통 조회조건 -->
+	<sql id="selectLmsCourseConditionSearch">
+	FROM LMSCOURSECONDITION 
+	WHERE 1 = 1
+		AND ( ABOTYPECODE = '' OR ABOTYPEABOVE  <![CDATA[ <= ]]> CONVERT(INT, #{abotypeorder}) )
+		AND ( PINCODE = '' OR CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER )
+		AND ( BONUSCODE = '' OR CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER )
+		AND ( AGECODE = '' OR CONVERT(INT, #{ageorder}) BETWEEN AGEABOVE AND AGEUNDER )
+		AND ( LOACODE = '' OR LOACODE LIKE '%' + #{loacode}  + '%' )
+		AND ( DIACODE = '' OR DIACODE LIKE '%' + #{diacode} + '%' )
+		AND ( GETDATE() BETWEEN STARTDATE AND ENDDATE  )
+		AND ( TARGETCODE = '' OR (TARGETMEMBER LIKE '%' + #{uid} + '%' AND CONVERT(VARCHAR(15), #{uid} ) != '' ) )
+	</sql>
+	
+	<select id="selectOnlineListCount" parameterType="reqBox" resultType="int">
+		/* LmsOnlineSQL.xml -- selectOnlineListCount  - 온라인강의 조회 총건수 */
+		SELECT   COUNT(*) AS TOTAL_CNT
+        FROM LMSCOURSE B
+            INNER JOIN LMSCATEGORY C 
+        			ON ( B.CATEGORYID = C.CATEGORYID )
+        	LEFT OUTER JOIN LMSSTUDENT E 
+   			       ON ( B.COURSEID = E.COURSEID
+                      	AND E.UID = #{uid} )
+		WHERE B.USEFLAG = 'Y'
+			AND B.OPENFLAG = 'Y' 
+			AND B.COURSEID IN (
+				SELECT COURSEID 
+				<include refid="selectLmsCourseConditionSearch" />
+				AND CONDITIONTYPE = #{conditiontype}
+				)
+		<choose>
+	    	<when test='categoryid != null and !categoryid.equals("")'>
+			AND B.CATEGORYID = #{categoryid} 
+	    	</when>
+	    	<otherwise>
+			AND C.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+	    	</otherwise>
+		</choose>
+		<if test='coursetype != null and !coursetype.equals("")'>
+            AND B.COURSETYPE = #{coursetype} 
+		</if>
+		<if test='finishflag != null and finishflag.equals("Y")'>
+        	AND E.FINISHFLAG = #{finishflag} 
+        </if>
+        <if test='finishflag != null and finishflag.equals("N")'>
+        	AND ISNULL(E.FINISHFLAG, 'N') = 'N'
+        </if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("t")'>
+		    AND B.COURSENAME LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("c")'>
+		    AND B.COURSECONTENT LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("w")'>
+		    AND B.SEARCHWORD LIKE '%' + #{searchTxt} + '%'
+		</if>
+		<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("M")'>
+		    AND ( B.COURSENAME LIKE '%' + #{searchTxt} + '%' OR B.COURSECONTENT LIKE '%' + #{searchTxt} + '%' )
+		</if>
+	</select>
+	
+	<select id="selectOnlineList" parameterType="reqBox" resultType="egovMap">
+		/* LmsOnlineSQL.xml -- selectOnlineList - 온라인강의 조회 */
+		SELECT BB.COURSEID
+     		, BB.CATEGORYID
+     		, BB.CATEGORYNAME
+     		, BB.COMPLIANCEFLAG
+     		, BB.COURSETYPE
+     		, BB.COURSETYPENAME
+			, BB.COURSENAME
+		    , BB.COURSECONTENT
+       	    , BB.DATATYPE
+     		, BB.PLAYTIME 
+     		, BB.COURSEIMAGE
+     		, BB.COURSEIMAGENOTE
+     		, BB.SNSFLAG
+     		, BB.MODIFYDATE
+     		, BB.REGISTRANTDATE
+     		, BB.FINISHFLAG
+     		, BB.SAVETYPE
+			, DBO.F_LMS_LIKECNT(BB.LIKECOUNT, '1' ) AS LIKECNT
+			, DBO.F_LMS_LIKECNT(BB.LIKECOUNT, '2' ) AS LIKECOUNT
+			, DBO.F_LMS_LIKECNT(BB.VIEWCOUNT, '1' ) AS VIEWCNT
+			, DBO.F_LMS_LIKECNT(BB.VIEWCOUNT, '2' ) AS VIEWCOUNT
+			, (SELECT COUNT(*) FROM LMSVIEWLOG WHERE VIEWTYPE='2' AND UID=#{uid} AND COURSEID = BB.COURSEID) AS MYLIKECNT
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY B.${sortOrderColumn} ${sortOrderType}, B.REGISTRANTDATE DESC, B.COURSEID DESC ) AS ROW_NUM 
+				, B.COURSEID
+	     		, B.CATEGORYID
+	     		, C.CATEGORYNAME
+	     		, C.COMPLIANCEFLAG
+	     		, B.COURSETYPE
+	     		, DBO.F_LMS_COURSETYPENAME(B.COURSETYPE) AS COURSETYPENAME
+	     		, B.COURSENAME
+			    , B.COURSECONTENT
+	       	    , B.DATATYPE
+	       	    , DBO.F_LMS_TIME_FORMAT(B.PLAYTIME, 'en') AS PLAYTIME 
+	     		, B.COURSEIMAGE
+	     		, B.COURSEIMAGENOTE
+	     		, B.SNSFLAG
+				, B.LIKECOUNT
+				, B.VIEWCOUNT
+				, DBO.F_LMS_DATETYPE(B.MODIFYDATE, '') AS MODIFYDATE
+				, DBO.F_LMS_DATETYPE(B.REGISTRANTDATE, '') AS REGISTRANTDATE
+	     		, E.FINISHFLAG
+	     		, F.SAVETYPE
+			FROM LMSCOURSE B
+	            INNER JOIN LMSCATEGORY C 
+	        			ON ( B.CATEGORYID = C.CATEGORYID )
+	        	LEFT OUTER JOIN LMSSTUDENT E 
+	   			       	ON ( B.COURSEID = E.COURSEID
+	                      	AND E.UID = #{uid} )
+				LEFT OUTER JOIN LMSSAVELOG F 
+						ON ( B.COURSEID = F.COURSEID
+	                     	AND F.UID = #{uid}
+	                     	AND F.SAVETYPE = '2' )
+			WHERE B.USEFLAG = 'Y'
+				AND B.OPENFLAG = 'Y' 
+				AND B.COURSEID IN (
+					SELECT COURSEID 
+					<include refid="selectLmsCourseConditionSearch" />
+					AND CONDITIONTYPE = #{conditiontype}
+					)
+			<choose>
+		    	<when test='categoryid != null and !categoryid.equals("")'>
+				AND B.CATEGORYID = #{categoryid} 
+		    	</when>
+		    	<otherwise>
+				AND C.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+		    	</otherwise>
+			</choose>
+			<if test='coursetype != null and !coursetype.equals("")'>
+	            AND B.COURSETYPE = #{coursetype} 
+			</if>
+			<if test='finishflag != null and finishflag.equals("Y")'>
+	        	AND E.FINISHFLAG = #{finishflag} 
+	        </if>
+	        <if test='finishflag != null and finishflag.equals("N")'>
+	        	AND ISNULL(E.FINISHFLAG, 'N') = 'N'
+	        </if>
+			<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("t")'>
+			    AND B.COURSENAME LIKE '%' + #{searchTxt} + '%'
+			</if>
+			<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("c")'>
+			    AND B.COURSECONTENT LIKE '%' + #{searchTxt} + '%'
+			</if>
+			<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("w")'>
+			    AND B.SEARCHWORD LIKE '%' + #{searchTxt} + '%'
+			</if>
+			<if test='searchTxt != null and !searchTxt.equals("") and searchType.equals("M")'>
+			    AND ( B.COURSENAME LIKE '%' + #{searchTxt} + '%' OR B.COURSECONTENT LIKE '%' + #{searchTxt} + '%' )
+			</if>
+		) BB
+		WHERE ROW_NUM BETWEEN ((#{pageIndex} -1) * #{rowPerPage} +1) AND (#{pageIndex} * #{rowPerPage})
+	</select>
+	
+	<select id="selectOnlineView" parameterType="reqBox" resultType="egovMap">
+		/* LmsOnlineSQL.xml -- selectOnlineView - 온라인강의 상세보기 */
+		SELECT B.COURSEID
+     		, B.CATEGORYID
+     		, C.CATEGORYNAME
+     		, B.COURSETYPE
+     		, B.COURSENAME 
+		    , B.COURSECONTENT 
+       	    , B.DATATYPE
+     		, DBO.F_LMS_TIME_FORMAT(B.PLAYTIME, 'en') AS PLAYTIME 
+     		, B.COURSEIMAGE
+     		, B.COURSEIMAGENOTE
+     		, B.SNSFLAG
+     		, DBO.F_LMS_LIKECNT(B.LIKECOUNT, '1' ) AS LIKECNT
+     		, DBO.F_LMS_LIKECNT(B.LIKECOUNT, '2' ) AS LIKECOUNT
+     		, DBO.F_LMS_LIKECNT(B.VIEWCOUNT, '1' ) AS VIEWCNT
+     		, DBO.F_LMS_LIKECNT(B.VIEWCOUNT, '2' ) AS VIEWCOUNT
+     		, DBO.F_LMS_DATETYPE(B.MODIFYDATE, '4') AS MODIFYDATE
+     		, DBO.F_LMS_DATETYPE(B.REGISTRANTDATE, '4') AS REGISTRANTDATE
+     		, D.ACTIVITYID
+     		, D.ACTIVITYCODE
+     		, E.FINISHFLAG
+     	FROM LMSCOURSE B
+            INNER JOIN LMSCATEGORY C 
+        			ON ( B.CATEGORYID = C.CATEGORYID )
+        	INNER JOIN LMSONLINE D 
+        			ON ( B.COURSEID = D.COURSEID )
+        	LEFT OUTER JOIN LMSSTUDENT E 
+   			       	ON ( B.COURSEID = E.COURSEID
+                      	AND E.UID = #{uid}
+                      	)
+		WHERE B.USEFLAG = 'Y'
+			AND B.OPENFLAG != 'N'
+			<if test='conditioncheck != null and conditioncheck.equals("Y")'> 
+			AND B.COURSEID IN (
+				SELECT COURSEID 
+				<include refid="selectLmsCourseConditionSearch" />
+				AND CONDITIONTYPE = #{conditiontype}
+			)
+			</if>
+		   	AND B.COURSEID = #{courseid}
+	</select>
+	
+	<select id="selectOnlineViewCount" parameterType="reqBox" resultType="int">
+		/* LmsOnlineSQL.xml -- selectOnlineViewCount  - 온라인강의 조회 권한체크 */
+		SELECT COUNT(*)
+     	FROM LMSCOURSE
+		WHERE USEFLAG = 'Y'
+		AND OPENFLAG != 'N'
+		AND COURSEID IN (
+			SELECT COURSEID 
+			FROM LMSCOURSECONDITION 
+			WHERE COURSEID = #{courseid}
+ 
+			AND ( ABOTYPECODE = '' OR ABOTYPEABOVE  <![CDATA[ <= ]]> CONVERT(INT, #{abotypeorder}) )
+			AND ( PINCODE = '' OR CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER )
+			AND ( BONUSCODE = '' OR CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER )
+			AND ( AGECODE = '' OR CONVERT(INT, #{ageorder}) BETWEEN AGEABOVE AND AGEUNDER )
+			AND ( LOACODE = '' OR LOACODE LIKE '%' + #{loacode}  + '%' )
+			AND ( DIACODE = '' OR DIACODE LIKE '%' + #{diacode} + '%' )
+			AND ( TARGETCODE = '' OR (TARGETMEMBER LIKE '%' + #{uid} + '%' AND CONVERT(VARCHAR(15), #{uid} ) != '' ) )
+			
+			AND CONDITIONTYPE = '2'
+		)
+		AND COURSEID = #{courseid}
+	</select>
+	
+</mapper>

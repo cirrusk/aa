@@ -1,0 +1,1129 @@
+﻿<!doctype html>
+<html lang="ko">
+<head>
+<!-- page common -->
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<!-- //page common -->
+<!-- page unique -->
+<meta name="Description" content="설명들어감">
+<meta http-equiv="Last-Modified" content="">
+<!-- //page unique -->
+<title>퀸룸/파티룸 예약 - ABN Korea</title>
+<!--[if lt IE 9]>
+<script src="/_ui/desktop/common/js/html5.js"></script>
+<script src="/_ui/desktop/common/js/ie.print.js"></script>
+<![endif]-->
+<link rel="stylesheet" href="/_ui/desktop/common/css/academy_default.css">
+<script src="/_ui/desktop/common/js/jquery-1.8.3.min.js"></script>
+<script src="/_ui/desktop/common/js/pbCommon2.js"></script>
+<script src="/_ui/desktop/common/js/pbCommonAcademy.js"></script>
+<script src="/_ui/desktop/common/js/pbLayerPopup.js"></script>
+<script src="/_ui/desktop/common/js/jquery.touchSlider.js"></script>
+<script type="text/javascript">
+function layerPopOpen(e){
+	var target = $(e);
+	var $target = $($(e));	
+		
+	$target.show();
+	$target.attr('tabindex','0');
+	
+	// 암막
+	var layerM =$('<div class="layerMask" id="layerMask" style="display:block"></div>');
+	$target.before(layerM);
+	$(document).scrollTop();
+	$target.css({ 'display':'block', 'position':'fixed', 'top':'50%', 'left':'50%', 'marginTop': - $target.height()/2, 'marginLeft': - $target.width()/2 });
+
+	$('#pbHeader').css({'z-index':'-1'});
+	$('#pbFooter').css({'z-index':'-1'});
+
+	if(target=="#uiLayerPop_prodDetail"){
+		$('#pbAside').css({'z-index':'-1'});
+	}
+
+	// layerPop center align - Close button
+	$(document).on('click', 'div[id^="uiLayerPop_"] .btnPopClose,.layerPopClose', function(){closeLayerPopup($target);return false;});
+	return false;	
+}
+
+function closeLayerPopup($target){
+	var $layerPop = $('div[id^="uiLayerPop_"]');
+	$layerPop.find('.btnPopClose, .layerPopClose').unbind('click');
+	$target.unbind('keydown');
+	$target.fadeOut(200);
+	var targetId=$target.attr('id');
+	$('.layerMask').fadeOut(200).remove();
+	$('a[href="#'+targetId+'').focus();
+	$target.attr('aria-hidden','true');
+	return false;
+};
+</script>
+</head>
+
+<body>
+<div id="pbSkipNavi"><a href="#pbContent">본문 바로가기</a><a href="#pbGnb">주메뉴 바로가기</a><a href="#pbLnb">서브메뉴 바로가기</a></div>
+<div id="pbWrap">
+	<!-- header area -->
+	<header id="pbHeader">header include</header>
+	<!-- //header area -->
+	<div id="pbContainer">
+		<!-- lnb include -->
+		<section id="pbLnb">business lnb include</section>
+		<!-- //lnb include -->
+		<div class="pageLocation">
+			<span class="hide">현재 페이지 위치</span>
+			<span>Home</span>&gt;<span>비지니스</span>&gt;<span>시설예약</span>&gt;<strong>퀸룸/파티룸예약</strong>
+		</div>
+
+		<!-- content area | ### academy IFRAME Start ### -->
+		<section id="pbContent" class="bizroom">
+			<div class="hWrap">
+				<h1><img src="/_ui/desktop/images/academy/h1_w020500100.gif" alt="퀸룸/파티룸예약"></h1>
+				<p><img src="/_ui/desktop/images/academy/txt_w020500100.gif" alt="요리 시연을 위한 AP 퀸룸의 내역을 확인하실 수 있습니다."></p>
+			</div>
+			<div class="brIntro">
+				<!-- @edit 20160701 인트로 토글 링크영역 변경 -->
+				<h2 class="hide">퀸룸/파티룸 예약 필수 안내</h2>
+				<a href="#uiToggle_01" class="toggleTitle"><strong>퀸룸/파티룸 예약 필수 안내</strong> <span class="btnArrow"><em class="hide">내용보기</em></span></a>				
+				<div id="uiToggle_01" class="toggleDetail"> <!-- //@edit 20160701 인트로 토글 링크영역 변경 -->
+					<!-- 20160822 수정 -->
+					<p class="pTit">예약 안내</p>
+					<ul class="listDotFS">
+						<li>예약은 월 4회 가능합니다.</li>
+						<li>3개월 이전부터 모든 세션에 대하여 예약 가능합니다. (예, 1월에 4월의 시설 임대 예약 가능)</li>
+						<li>광주 AP 교육장과 퀸룸 월 임대 예약 횟수 합은 최대 4회까지 입니다.</li>
+						<li>매월 예약 오픈일 오전 10시부터 예약 가능합니다.</li>
+					</ul>
+					<table class="tblInput">
+						<caption>예약 안내</caption>
+						<colgroup>
+							<col style="width:30%" />
+							<col style="width:auto" />
+						</colgroup>
+						<tbody>
+							<tr>
+								<th scope="row" class="thVerticalT">매월 12일(오전 10시) 오픈</th>
+								<td>FC멤버</td>
+							</tr>
+							<tr>
+								<th scope="row" class="thVerticalT">매월 15일(오전 10시) 오픈</th>
+								<td>해당 지역의 유자격 다이아몬드 이상</td>
+							</tr>
+							<tr>
+								<th scope="row" class="thVerticalT">매월 18일(오전 10시) 오픈</th>
+								<td>전국 유자격 다이아몬드 이상</td>
+							</tr>
+							<tr>
+								<th scope="row" class="thVerticalT">매월 21일(오전 10시) 오픈</th>
+								<td>해당 지역의 유자격 에메랄드 이상</td>
+							</tr>
+							<tr>
+								<th scope="row" class="thVerticalT">매월 23일(오전 10시) 오픈</th>
+								<td>전국 유자격 플래티늄 이상(강남AP 1층 퀸룸만 제외)</td>
+							</tr>
+						</tbody>
+					</table>
+					<p class="pTit">예약 취소 안내</p>
+					<ul class="listDotFS">
+						<li>사용 예정일 1일 전까지만 취소 가능합니다.</li>
+					</ul>
+					<p class="pTit">페널티 프로그램 안내</p>
+					<ul class="listDotFS">
+						<li>사용 예정일  당일 취소 및 환급은 불가합니다.</li>
+						<li>사용 예정일 1~7일 전 취소한 경우, 해당 시설 임대 금액의 10%를 취소 수수료로 공제 후 환급됩니다.</li>
+						<li>예약완료 당일 및 사용 예정일 8일 전까지 취소한 경우 전액 환급됩니다.</li>
+					</ul>
+					<p class="pTit">퀸룸/파티룸 이용안내</p>
+					<ul class="listDotFS">
+						<li>비품은 보상의 책임이 발생되오니 소중히 다루어 주시기 바랍니다.</li>
+						<li>원활한 룸 관리를 위하여 설거지 및 비품은 정해진 위치에 정리정돈 바랍니다.</li>
+					</ul>
+					<p class="pTit">요리명장 퀸룸 예약 안내</p>
+					<ul class="listDotFS">
+						<li>매월 15일 부터 해당 기수의 요리명장 ABO 대상으로 월 2회 무료 임대 가능합니다.</li>
+						<li>3개월 이전부터 모든 세션에 대하여 예약 가능합니다. (예, 1월에 4월의 시설 임대 예약 가능)</li>
+						<li>예약은 사용일 기준 3일 전까지 가능합니다.</li>
+						<li>사용예정일 1~7일 전까지 취소의 경우, 시설 이용한 것으로 간주하고 해당월 예약 횟수에 산정합니다.</li>
+						<li>취소 없이 사용하지 않을 경우, 익월 예약 불가합니다.</li>
+						<li>강남 AP의 경우, 파티룸을 임대 할 수 있습니다. (강남AP 1층 퀸룸은 요리명장 퀸룸 예약 시설에서 제외됨)</li>
+					</ul>
+					<p class="tiptextR">2016년 9월1일 최종 업데이트 되었습니다.</p>
+					<!-- //20160822 수정 -->
+				</div>
+			</div>
+			<div class="brWrapAll">
+				<span class="hide">퀸룸/파티룸 예약 스텝</span>
+				<!-- 스텝1 -->
+				<div class="brWrap current" id="step1">
+					<h2 class="stepTit">
+						<span class="close"><img src="/_ui/desktop/images/academy/h2_w02_aproom_01.gif" alt="Step1/지역,룸" /></span>
+						<span class="open"><img src="/_ui/desktop/images/academy/h2_w02_aproom_01_current.gif" alt="Step1/지역,룸-지역 선택 후 룸 타입을 선택하세요." /></span>
+					</h2>
+					<div class="brSelectWrapAll">
+						<div class="sectionWrap">
+							<section class="brSelectWrap">
+								<div class="relative">
+									<h3 class="mgNone"><img src="/_ui/desktop/images/academy/h3_w02_aproom_01.gif" alt="지역 선택"></h3>
+									<span class="btnR"><a href="#uiLayerPop_01" class="btnCont uiApBtnOpen"><span>AP 안내</span></a></span>
+								</div>
+								
+								<!-- layer popup -->
+								<div class="pbLayerWrap" id="uiLayerPop_01">
+									<div class="pbLayerHeader">
+										<strong><img src="/_ui/desktop/images/content/poptxt_w010200050.gif" alt="AP안내"></strong>
+									</div>
+									<div class="pbLayerContent">
+										<ul class="tabList uiApSelShow">
+											<li><a href="#uiAp01">분당ABC</a></li>
+											<li><a href="#uiAp80">송도BSC</a></li>
+											<li><a href="#uiAp03">강남</a></li>
+											<li><a href="#uiAp02">강서</a></li>
+											<li><a href="#uiAp07">대전</a></li>
+											<li><a href="#uiAp47">천안</a></li>
+											<li><a href="#uiAp48">청주</a></li>
+											<li><a href="#uiAp05">부산</a></li>
+											<li><a href="#uiAp08">대구</a></li>
+											<li><a href="#uiAp49">창원</a></li>
+											<li><a href="#uiAp46">울산</a></li>
+											<li><a href="#uiAp06">광주</a></li>
+											<li><a href="#uiAp41">전주</a></li>
+											<li><a href="#uiAp43">강릉</a></li>
+											<li><a href="#uiAp04">제주</a></li>
+										</ul>
+			
+										<div class="tabInfoWrap" id="uiApView01">
+											<strong class="txtHead">암웨이 플라자 분당ABC </strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_abc.jpg" alt="암웨이 플라자 분당ABC"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>경기도 성남시 분당구 구미동 159번지 베어캐슬 1,2층 한국 암웨이 브랜드 체험센터</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>경기도 성남시 분당구 탄천상로 151번길 20 베어캐슬 1,2층 한국 암웨이 브랜드 체험센터</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 031-786-1199</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일~일요일)
+														<p>(토요일은 모든 기능 이용가능, 일요일은 뉴트리라이트, 아티스트리, 홈테크 부스, 웰컴센타, 워터바 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+			
+											<!-- 20150417 : <div class="scroll"> 삽입 -->
+											<!--
+											<div class="scroll" tabindex="0">
+												<dl>
+													<dt>- 브랜드샵(매장)</dt>
+													<dd>평일(월~금) 10:00 ~ 20:30 / 주말(토~일) 10:00 ~ 18:00 <br>※ 휴무일 없음(법정공휴일 제외)</dd>
+													<dt>- 건강한 음료 라운지</dt>
+													<dd>평일(월~금) 10:00 ~ 20:30 / 주말(토~일) 10:00 ~ 18:00 <br>※ 휴무일 없음(법정공휴일 제외)</dd>
+													<dt>- 미술관</dt>
+													<dd>평일(월~금) 10:00 ~ 19:00 / 주말(토~일) 10:00 ~ 18:00 <br>※ 휴무일 없음(법정공휴일 제외)</dd>
+													<dt>- 상담부스, 소비자 보호센터</dt>
+													<dd>평일(월~금) 10:00 ~ 20:30 / 주말(토) 10:00 ~ 18:00 <br>※ 일요일, 법정공휴일 휴무</dd>
+												</dl>
+											</div>
+											-->
+											<!-- //20150417 : <div class="scroll"> 삽입 -->
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView80">
+											<strong class="txtHead">암웨이 플라자 송도BSC</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_bsc.jpg" alt="암웨이 플라자 송도BSC"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>인천광역시 연수구 송도동 29-13번지 송도국제업무단지 C8-2블록 업무복합시설 IBS타워 11층</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>인천광역시 연수구 센트럴로 263 (송도동) IBS 타워 11층</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 032-834-4334</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<strong class="stit">[BSC]</strong>
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일)
+														<p><em>※ 일요일 및 법정공휴일(설, 추석 당일)은 휴무입니다.</em></p>
+													</li>
+												</ul>
+												<strong class="stit">[My Beauty/My Kitchen/My Nutrition]</strong>
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일)
+														<p><em>※ 일요일 및 법정공휴일(설, 추석 당일)은 휴무입니다.</em></p>
+													</li>
+												</ul>
+												<strong class="stit">[My Hub]</strong>
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:00 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 17:00 (토요일)
+														<p><em>※ 일요일 및 법정공휴일(설, 추석 당일)은 휴무입니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView03">
+											<strong class="txtHead">암웨이 플라자 강남점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_gn.jpg" alt="암웨이 플라자 강남점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>서울특별시 서초구 반포동 1141 암웨이 플라자 강남점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>서울특별시 서초구 신반포로 23 암웨이 플라자 강남점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 02-420-4514~5</span></strong>
+												</div>
+											</div>
+			
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일~일요일)
+														<p>(토요일은 모든 기능 이용가능, 일요일은 뉴트리라이트, 아티스트리, 홈테크 부스, 웰컴센타, 워터바 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView02">
+											<strong class="txtHead">암웨이 플라자 강서점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_gs.jpg" alt="암웨이 플라자 강서점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>서울특별시 강서구 등촌동 73-1번지 아름다운아울렛 2층</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>서울특별시 강서구 양천로 476 아름다운아울렛 2층</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 02-3663-6127~8</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일~일요일)
+														<p>(토요일은 모든 기능 이용가능, 일요일은 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 아티스트리, 뉴트리라이트, 홈텍 부스 및 반품 창구는 Amway Plaza 영업 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView05">
+											<strong class="txtHead">암웨이 플라자 부산점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_bs.jpg" alt="암웨이 플라자 부산점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>부산광역시 동구 초량동 1188-1번지 암웨이 플라자 부산점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>부산광역시 동구 중앙대로 248번길 7-6 암웨이 플라자 부산점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 051-469-6366</span></strong>
+												</div>
+											</div>
+			
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일) </li>
+													<li>주말 : 10:00 ~ 18:00 (토요일~일요일)
+														<p>(토요일은 모든 기능 이용가능, 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 아티스트리, 뉴트리라이트, 홈텍 부스 및 반품 창구는 Amway Plaza 영업 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView08">
+											<strong class="txtHead">암웨이 플라자 대구점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_dg.jpg" alt="암웨이 플라자 대구점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>대구광역시 북구 산격2동 1579번지 암웨이 플라자 대구점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>대구광역시 북구 유통단지로 91 암웨이 플라자 대구점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 053-655-2383~4</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일) </li>
+													<li>주말 : 10:00 ~ 18:00 (토요일~일요일)
+														<p>(토요일은 모든 기능 이용가능, 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView46">
+											<strong class="txtHead">암웨이 플라자 울산점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_us.jpg" alt="암웨이 플라자 울산점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>울산광역시 남구 삼산동 211-4번지 암웨이 플라자 울산점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>울산광역시 남구 정동로 80번길 23 암웨이 플라자 울산점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 052-212-0058~9</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일, 마지막 주 일요일)
+														<p>(토요일은 모든 기능 이용가능, 마지막 주 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView49">
+											<strong class="txtHead">암웨이 플라자 창원점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_cw.jpg" alt="암웨이 플라자 창원점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>경상남도 창원시 마산 합포구 신포1가 42번지 암웨이 플라자 창원점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>경상남도 창원시 마산 합포구 해안대로 234 암웨이 플라자 창원점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 055-224-0010</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일, 마지막 주 일요일)
+														<p>(토요일은 모든 기능 이용가능, 마지막 주 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView07">
+											<strong class="txtHead">암웨이 플라자 대전점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_dj.jpg" alt="암웨이 플라자 대전점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>대전광역시 유성구 봉명동 692-5번지 암웨이 플라자 대전점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>대전광역시 유성구 온천동로 59 암웨이 플라자 대전점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 042-628-6476~7</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일~일요일)
+														<p>(토요일은 모든 기능 이용가능, 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView47">
+											<strong class="txtHead">암웨이 플라자 천안점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_ca.jpg" alt="암웨이 플라자 천안점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>충청남도 천안시 성정동 1178번지 크라운주차빌딩 1층 암웨이 플라자 천안점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>충청남도 천안시 서북구 성정중4길 39-3 크라운주차빌딩 1층 암웨이 플라자 천안점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 041-558-5661~2 / 041-558-5668 (정수기상담)</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일) </li>
+													<li>주말 : 10:00 ~ 18:00 (토요일, 마지막 주 일요일)
+														<p>(토요일은 모든 기능 이용가능, 마지막 주 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView48">
+											<strong class="txtHead">암웨이 플라자 청주점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_cj.jpg" alt="암웨이 플라자 청주점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>충청북도 청주시 흥덕구 송절동 112, 113 번지 암웨이 플라자 청주점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>충청북도 청주시 흥덕구 월명로 272 암웨이 플라자 청주점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 043-273-6832~3</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일) </li>
+													<li>주말 : 10:00 ~ 18:00 (토요일, 마지막 주 일요일)
+														<p>(토요일은 모든 기능 이용가능, 마지막 주 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView06">
+											<strong class="txtHead">암웨이 플라자 광주점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_gj.jpg" alt="암웨이 플라자 광주점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>광주광역시 서구 마륵동 171-5번지 암웨이 플라자 광주점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>광주광역시 서구 상무대로 695번길 14 암웨이 플라자 광주점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 062-371-9840~1</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일~일요일)
+														<p>(토요일은 모든 기능 이용가능, 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView41">
+											<strong class="txtHead">암웨이 플라자 전주점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_jj.jpg" alt="암웨이 플라자 전주점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>전라북도 전주시 덕진구 팔복동 3가 400번지 암웨이 플라자 전주점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>전라북도 전주시 덕진구 팔복로 181 암웨이 플라자 전주점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 063-212-9800~2</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일, 마지막 주 일요일)
+														<p>(토요일은 모든 기능 이용가능, 마지막 주 일요일은 통신부스, 뉴트리라이트, 아티스트리, 홈테크 부스 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView43">
+											<strong class="txtHead">암웨이 플라자 강릉점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_gg.jpg" alt="암웨이 플라자 강릉점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>강원도 강릉시 교동 133번지 대한통운 마트빌딩 암웨이 플라자 강릉점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>강원도 강릉시 강릉대로 293 대한통운 마트빌딩 암웨이 플라자 강릉점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 033-648-2843~4</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일) </li>
+													<li>주말 : 10:00 ~ 18:00 (토요일, 마지막 주 일요일)
+														<p>(토요일은 모든 기능 이용가능, 마지막 주 일요일은 뉴트리라이트, 아티스트리 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+			
+										<div class="tabInfoWrap" id="uiApView04">
+											<strong class="txtHead">암웨이 플라자 제주점</strong>
+											<div class="apPhoto">
+												<div class="photoZ"><img src="/_ui/desktop/images/content/ap/img_ap_je.jpg" alt="암웨이 플라자 제주점"></div>
+												<div class="addr">
+													<strong class="title">주소</strong>
+													<div class="addrDL">
+														<p><img src="/_ui/desktop/images/content/ico_addrtype01.gif" alt="지번주소"> <span>제주특별자치도 제주시 용담2동 2635-2번지 암웨이 플라자 제주점</span></p>
+														<p><img src="/_ui/desktop/images/content/ico_addrtype02.gif" alt="도로명주소"> <span>제주특별자치도 제주시 서광로 119 암웨이 플라자 제주점</span></p>
+													</div>
+													<strong class="title mgtM">전화번호 <span>: 064-712-6345</span></strong>
+												</div>
+											</div>
+											<strong class="title">영업시간</strong>
+											<div class="scroll" tabindex="0">
+												<!-- 20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+												<ul class="info">
+													<li>평일 : 10:00 ~ 20:30 (월요일~금요일)</li>
+													<li>주말 : 10:00 ~ 18:00 (토요일, 마지막 주 일요일)
+														<p>(토요일은 모든 기능 이용가능, 마지막 주 일요일은 뉴트리라이트, 아티스트리 휴무)<br><em>※ 법정공휴일은 휴무입니다.</em><br><em>※ 반품 창구는 Amway Plaza 운영 시간과 동일합니다.</em></p>
+													</li>
+												</ul>
+												<!-- //20150709 : 암웨이 플라자 영업시간과 동일 소스 -->
+											</div>
+										</div>
+									</div>
+									<a href="#" class="btnPopClose" id="uiApSelClose"><img src="/_ui/desktop/images/common/btn_close.gif" alt="AP안내 상세보기 닫기"></a>
+								</div>
+								<!--// layer popup -->
+						
+								<div class="brselectArea local">
+									<a href="#none">강남</a><a href="#none" class="on">강서</a><a href="#none">대전</a><a href="#none">부산</a><a href="#none">대구</a><a href="#none">창원</a>
+									<a href="#none">울산</a><a href="#none">광주</a><a href="#none">전주</a><a href="#none">분당ABC</a>
+								</div>
+							</section>
+							<section class="brSelectWrap">
+								<h3><img src="/_ui/desktop/images/academy/h3_w02_aproom_02.gif" alt="룸 선택"></h3>
+								<div class="brselectArea sizeM room">
+									<a href="#none">비전센타 1 (300명)</a><a href="#uiLayerPop_w02" class="on btnCont">강서 퀸룸 (30명)</a>
+								</div>
+								
+								<!-- layer popup -->
+								<div class="pbLayerWrap" id="uiLayerPop_w02" style="width:450px">
+									<div class="pbLayerHeader">
+										<strong><img src="/_ui/desktop/images/academy/h1_w020500100_pop.gif" alt="안내"></strong>
+										<a href="#" class="btnPopClose"><img src="/_ui/desktop/images/common/btn_close.gif" alt="안내 상세보기 닫기"></a>
+									</div>
+									<div class="pbLayerContent">
+										<p class="ptxt">선택하신 룸은 다목적 룸입니다.<br/>
+										일반 교육장으로 사용시에는 [교육장 예약신청]을 선택하시고, 요리시연 목적으로 퀸쿡웨어를 사용시에는 [퀸쿡/파티룸 예약신청] 을 선택하시기 바랍니다.</p>
+										<div class="btnWrapC">
+											<input type="button" class="btnBasicBL" value="교육장 예약신청" />
+											<input type="button" class="btnBasicBL btnL" value="퀸쿡/파티룸 예약신청" />
+										</div>
+									</div>
+								</div>
+								<!--// layer popup -->
+							</section>
+							<section class="brSelectWrap">
+								<div class="roomInfo">
+									<dl>
+										<dt>
+											<p class="tit">강서 AP <em>|</em> 퀸룸</p>
+											<p>강서 AP 비전센타에 대한 간략한 설명, 문구 및 안내사항을 입력하는 영역입니다.<br/>
+											교육장에서는 기본적인 장비만 제공되며, 자세한 사항은 예약하실 AP로 문의해주시기 바랍니다.</p>
+										</dt>
+										<dd>
+											<!-- @edit 2016.07.18 갤러리 형태로 수정-->
+											<div class="roomImg touchSliderWrap">
+												<a href="#none" class="btnPrev">이전</a>
+												<a href="#none" class="btnNext">다음</a>
+												<div class="touchSlider" id="touchSlider">
+													<ul>
+														<li><img src="/_ui/desktop/images/academy/ap/study_A_gs_001.jpg" alt="강서 AP 퀸룸" /></li>
+														<li><img src="/_ui/desktop/images/academy/ap/study_A_gs_002.jpg" alt="강서 AP 퀸룸" /></li>
+													</ul>
+												</div>
+												<div class="sliderPaging"></div>
+											</div>
+											<!-- //@edit 2016.07.18 갤러리 형태로 수정-->
+										</dd>
+									</dl>
+									<table class="roomInfoDetail">
+										<colgroup>
+											<col width="15%" />
+											<col width="35%" />
+											<col width="15%" />
+											<col width="35%" />
+										</colgroup>
+										<tr>
+											<td class="title"><span class="icon1">정원</span></td>
+											<td>170명</td>
+											<td class="title"><span class="icon2">이용시간</span></td>
+											<td>180분</td>
+										</tr>
+										<tr>
+											<td class="title"><span class="icon3">예약자격</span></td>
+											<td>PT이상<br/><span class="normal">핀별 예약일자<br/> 차등적용</span></td>
+											<td class="title"><span class="icon4">부대시설</span></td>
+											<td>퀸(대형프라이펜 *2), 인덕션 *2, 도마, 가위, 슬라이서나이프, 에이프런, 키친타올, 접시</td>
+										</tr>
+									</table>
+								</div>
+							</section>
+							<div class="btnWrapR">
+								<a href="#step2" class="btnBasicBS">다음</a>
+							</div>
+						</div>
+						<div class="result req"><p>강서 AP<em>|</em>비전센타 1 (170명)</p></div>
+					</div>
+					<!-- <div class="modifyBtn"><a href="#none"><img src="/_ui/desktop/images/academy/btn_down.gif" alt="변경하기" /></a></div> -->
+				</div>
+				<!-- //스텝1 -->
+				<!-- 스텝2 -->
+				<div class="brWrap" id="step2">
+					<h2 class="stepTit">
+						<span class="close"><img src="/_ui/desktop/images/academy/h2_w02_aproom_02.gif" alt="Step2/날짜, 세션" /></span>
+						<span class="open"><img src="/_ui/desktop/images/academy/h2_w02_aproom_02_current.gif" alt="Step2/날짜, 세션-날짜 선택 후 세션을 선택하세요." /></span>
+					</h2>
+					<div class="brSelectWrapAll">
+						<div class="sectionWrap">
+							<section class="calenderBookWrap">
+								<div class="hWrap">
+									<h3 class="mgNone"><img src="/_ui/desktop/images/academy/h3_w02_aproom_04.gif" alt="날짜선택"></h3>
+									<span class="btnR"><a href="#none" target="_blank" title="새창 열림" class="btnCont"><span>시설예약 현황확인</span></a></span>
+								</div>
+								<!-- 1월 jan, 2월 feb, 3월 mar, 4월 apr, 5월 may, 6월 june, 7월 july, 8월 aug, 9월 sep, 10월 oct, 11월 nov, 12월 dec -->
+								<div class="calenderHeader">
+									<span class="year"><img src="/_ui/desktop/images/academy/img_2016.gif" alt="2016년" /></span>
+									<div class="monthlyWrap">
+										<span><a href="#none" class="may on">5월</a></span>
+										<span><a href="#none" class="june">6월</a></span>
+										<span><a href="#none" class="july">7월</a></span>
+									</div>
+									<div class="hText">
+										<span>일 <strong>0</strong>회, 주 <strong>0</strong>회, 월 <strong>0</strong>회 예약가능</span>
+									</div>
+								</div>
+								<table class="tblBookCalendar">
+									<caption>캘린더형 - 날짜별 시설예약가능 시간</caption>
+									<colgroup>
+										<col style="width:15%" span="2">
+										<col style="width:14%" span="5">
+									</colgroup>
+									<thead>
+										<tr>
+											<th scope="col" class="weekSun">일</th>
+											<th scope="col" class="weekMon">월</th>
+											<th scope="col" class="weekTue">화</th>
+											<th scope="col" class="weekWed">수</th>
+											<th scope="col" class="weekThur">목</th>
+											<th scope="col" class="weekFri">금</th>
+											<th scope="col" class="weekSat">토</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td class="weekSun"></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td></td>
+											<td class="late"><a href="#none">1</a></td>
+											<td class="weekSat late"><a href="#none">2</a></td>
+										</tr>
+										<tr>
+											<td class="weekSun late">
+												<a href="#none">3</a>
+											</td>
+											<td class="late">
+												<a href="#none">4</a>
+											</td>
+											<td class="late">
+												<a href="#none">5</a>
+											</td>
+											<td class="late">
+												<a href="#none">6</a>
+											</td>
+											<td class="late">
+												<a href="#none">7</a>
+											</td>
+											<td class="late">
+												<a href="#none">8</a>
+											</td>
+											<td class="weekSat late">
+												<a href="#none">9</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="weekSun late">
+												<a href="#none">10</a>
+											</td>
+											<td>
+												<a href="#none" class="selcOn">11</a>
+											</td>
+											<td>
+												<a href="#none">12</a>
+											</td>
+											<td>
+												<a href="#none">13</a>
+											</td>
+											<td>
+												<a href="#none">14</a>
+											</td>
+											<td>
+												<a href="#none">15</a>
+											</td>
+											<td class="weekSat">
+												<a href="#none" class="selcOn">16</a>
+											</td>
+										</tr>
+										<tr>
+											<td class="weekSun">
+												<a href="#none">17</a>
+											</td>
+											<td>
+												<a href="#none">18</a>
+											</td>
+											<td>
+												<a href="#none">19</a>
+											</td>
+											<td class="late">
+												<a href="#none">20<span><em>예약마감</em></span></a>
+											</td>
+											<td>
+												<a href="#none">21</a>
+											</td>
+											<td>
+												<a href="#none">22</a>
+											</td>
+											<td class="weekSat">
+												<a href="#none">23<em class="reserv">(2)</em></a>
+											</td>
+										</tr>
+										<tr>
+											<td class="weekSun">
+												<a href="#none" class="selcOn">24<em class="reserv">(2)</em></a>
+											</td>
+											<td>
+												<a href="#none" class="selcOn">25<em class="reserv">(2)</em></a>
+											</td>
+											<td>
+												<a href="#none">26<em class="reserv">(2)</em></a>
+											</td>
+											<td>
+												<a href="#none">27</a>
+											</td>
+											<td>
+												<a href="#none">28</a>
+											</td>
+											<td>
+												<a href="#none">29</a>
+											</td>
+											<td class="weekSat">
+												<a href="#none">30</a>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+								<!-- @edit 20160701 문구추가 -->
+								<ul class="listWarning">
+									<li>※ 날짜를 선택하시면 예약가능 시간(세션)을 확인 할 수 있습니다.</li>
+									<li>※ 날짜 옆 괄호안 숫자는 예약 가능 세션 수 입니다.</li>
+								</ul>
+							</section>
+							<section class="brSessionWrap">
+								<div class="relative">
+									<h3><img src="/_ui/desktop/images/academy/h3_w02_aproom_05.gif" alt="세션 선택"></h3>
+									<span class="hText"><input type="checkbox" id="check1" name="" /><label for="check1">예약가능만 보기</label></span>
+								</div>
+								<!-- 20160907 수정 -->
+								<div class="noSelectDate">
+									<span>상단 캘린더에서 날짜를 선택해 주세요.</span>
+								</div>
+								<!-- //20160907 수정 -->
+								<!-- 20160804 input checkbox title 추가 -->
+								<table class="tblSession">
+									<caption>세션 선택</caption>
+									<colgroup>
+										<col width="130px" />
+										<col width="130px" />
+										<col width="*" />
+										<col width="100px" />
+									</colgroup>
+									<thead>
+										<tr>
+											<th scope="col" colspan="4">2016-05-25 (수)<a href="#none" class="btnDel">삭제</a></th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr class="fullBook">
+											<td><input type="checkbox" name="" title="Session 1" disabled /> Session 1</td>
+											<td>10:00~13:00</td>
+											<td class="price">321,000원</td>
+											<td>예약마감</td>
+										</tr>
+										<tr class="select">
+											<td><input type="checkbox" name="" title="Session 1" checked="checked" onclick="layerPopOpen(uiLayerPop_w03)" /> Session 1</td>
+											<td>10:00~13:00</td>
+											<td class="price"><span class="throught">321,000원</span><span><em>할인</em>150,000원</span></td>
+											<td class="able">예약가능</td>
+										</tr>
+										<tr>
+											<td><input type="checkbox" name="" title="Session 1" /> Session 1</td>
+											<td>10:00~13:00</td>
+											<td class="price">321,000원</td>
+											<td class="able">예약가능</td>
+										</tr>
+									</tbody>
+								</table>
+								
+								<!-- layer popup -->
+								<div class="pbLayerWrap" id="uiLayerPop_w03" style="width:400px;">
+									<div class="pbLayerHeader">
+										<strong><img src="/_ui/desktop/images/academy/h1_w020500100_pop.gif" alt="안내"></strong>
+										<a href="#" class="btnPopClose"><img src="/_ui/desktop/images/common/btn_close.gif" alt="안내 상세보기 닫기"></a>
+									</div>
+									<div class="pbLayerContent">
+										<p class="ptxt">요리명장으로 선정되어 월2회 무료사용이 가능합니다.<br /> 무료 또는 유료 예약여부를 선택해 주세요.<br /><br />※ 무료로 예약하는 경우, 사용예정일 1~7일 전까지 취소의 경우, 시설 이용한 것으로 간주하고 해당월 예약 횟수에 산정합니다.
+										</p><br/>
+										<div class="inputList">
+											<span><input type="radio" id="rado1" name="rado1" /><label for="rado1">무료로 예약</label></span>
+											<span><input type="radio" id="rado2" name="rado1" /><label for="rado2">유료로 예약</label></span>
+										</div>
+										<div class="btnWrapC">
+											<a href="#none" class="btnBasicBL">확인</a>
+										</div>
+									</div>
+								</div>
+								<!--// layer popup -->
+
+							</section>
+							<div class="btnWrapR">
+								<a href="#step2" class="btnBasicGS">이전</a>
+								<a href="#step3" class="btnBasicBS">다음</a>
+							</div>
+						</div>
+						<div class="result"><p>날짜와 세션을 선택해 주세요.</p></div>
+						<div class="result lines req" style="display:none">
+							<p class="total">총 2건<em>|</em>결제예정금액 : <span>150,000원</span></p>
+							<p>2016-05-25 (수)<em>|</em>Session 2(14:00~17:00)<em>|</em><span>150,000원</span></p>
+							<p>2016-05-29 (일)<em>|</em>Session 2(14:00~17:00)<em>|</em><span>150,000원</span></p>
+						</div>
+					</div>
+					<!-- <div class="modifyBtn"><a href="#none"><img src="/_ui/desktop/images/academy/btn_down.gif" alt="변경하기" /></a></div> -->
+				</div>
+				<!-- //스텝2 -->
+				<!-- 스텝3 -->
+				<div class="brWrap" id="step3">
+					<h2 class="stepTit">
+						<span class="close"><img src="/_ui/desktop/images/academy/h2_w02_aproom_03.gif" alt="Step3/동의, 결제" /></span>
+						<span class="open"><img src="/_ui/desktop/images/academy/h2_w02_aproom_03_current.gif" alt="Step3/동의, 결제-규정 및 주의사항에 동의해주시면 예약 및 결제가 진행됩니다." /></span>
+					</h2>
+					<div class="brSelectWrapAll">
+						<div class="sectionWrap">
+							<section class="brpolicyWrap">
+								<div class="hWrap">
+									<h2><img src="/_ui/desktop/images/academy/h2_w02_aproom_0301.gif" alt="약관 및 동의" /></h2>
+									<span class="btnR"><a href="#none" target="_blank" title="새창 열림" class="btnCont"><span>약관 및 동의 전체보기</span></a></span>
+								</div>
+								<h3 class="mgNone"><img src="/_ui/desktop/images/academy/h3_w02_aproom_06.gif" alt="교육장(퀸룸) 규정 동의" /></h3>
+								<div class="agreeBox">
+									<div class="termsWrapper" tabindex="0">
+										<ul>
+											<li>
+												<p class="titH2 mgNone">제1조(목적)</p>
+												이 규정은 AMWAY 프라자 교육장(이하 “교육장”이라 한다.)내 대관에 따른 시설물 사용 허가 및 기자재 관리와 운영에 관한 사항을 규정하는데 그 목적이 있다.
+											</li>
+											<li>
+												<p class="titH2">제2조 (대관의 정의)</p>
+												대관이라 함은 ‘교육’, ‘행사’ 등을 위하여 시설, 설비 및 부수장비를 소정의 절차를 거쳐 대관 사용하는 것과 관련 부수행위를 위하여 교육장의 시설설비를 임대 사용하는 것을 말한다.
+											</li>
+											<li>
+												<p class="titH2">제3조(대관의 범위)</p>
+												이 규정의 적용을 받는 대여시설 및 설비는 교육장과 관련된 제반시설 및 설비를 말한다. 
+											</li>
+											<li>
+												<p class="titH2">제4조(대관 시간과 비용) </p>
+												<ol>
+													<li>1. 대관료는 인건비, 시설유지비, 감가상각비 등 물가를 고려하여 “한국암웨이㈜” 에서 
+												    정하는 바에 따르며 교육 신청 시에 절차에 따라 납부해야 한다. </li>
+													<li>2. 대관자가 납부한 대관료는 반환하지 않는다, 다만 한국암웨이㈜에서 정하는 절차에 따라 
+												    반환을 요구할 경우 대관료를 반환할 수 있다. 3. 교육장의 대관 시간은 따로 정하는 
+												    바에 따른다.</li>
+												</ol>
+											</li>
+											<li>
+												<p class="titH2">제5조(시설 및 기자재 이용) </p>
+												교육장 시설 및 기자재 이용은 아래 각 호에 해당하는 자에 한하여 교육장내 시설물을 이용할 수 있다. 
+												<ol>
+													<li>1.AMWAY 프라자에서 실시되는 본사 교육과 행사 우선 원칙. </li>
+													<li>2. 한국암웨이㈜에서 정한 교육장 신청 기준에 맞는 ABO. </li>
+													<li>3. 기타 AMWAY 프라자의 허가를 득한 단체 및 개인. </li>
+												</ol>
+											</li>
+											<li>
+												<p class="titH2">제6조(사용 조건) </p>
+												본 교육장 사용자는 다음 각 호의 사용 조건을 준수하여야 한다. 단, 부득이한 경우 AMWAY 프라자와 사전 협의 조정할 수 있다 
+												<ol>
+													<li>1. 교육장 사용자는 교육장 시설물 및 비품 관리에 만전을 기하여야 한다. <br/>단, 부주의에 의한 시설물 및 비품 훼손 시 그에 상응한 보상처리를 하여야 한다. </li>
+													<li>2. 교육장 사용 기간과 시간은 신청한 일자와 시간을 벗어나 사용할 수 없다.</li>
+												</ol>
+											</li>
+											<li>
+												<p class="titH2">제7조(사용상 주의) </p>
+												교육장 시설 기자재 및 자료 사용자는 소중히 사용하여야 하며 망실 혹은 훼손하는 자는 원상회복에 해당하는 금액을 변상하는 것을 원칙으로 한다. 
+											</li>
+											<li>
+												<p class="titH2">제8조(사용자 제한) </p>
+												교육장 사용자 중 다음 각 호의 행위에 한 해 사용을 금지할 수 있다. 
+												<ol>
+													<li>1. 교육장 운영에 지장을 초래하는 행위 </li>
+													<li>2. 교육장 사용 계획의 본래 목적과 상반된 행위 </li>
+													<li>3. 교육장 내 기자재 등 비품을 소홀히 다루고 훼손하는 행위 </li>
+													<li>4. 기타 명시되지 아니한 사용 목적 중 명백히 한국암웨이의 이익에 위배되는 행위 </li>
+												</ol>
+											</li>
+											<li>
+												<p class="titH2">제 9조 </p>
+												<ol>
+													<li>1. ABO의 대관은 한조당 월 4회에 한하며, 신청 자격과 기간은 별도의 한국 암웨이가 정한 규정에 따라 가능하다. </li>
+													<li>2. 사용월 예약은 7일전에만 가능하다 제 10조(부칙) 본 규정은 2008년 6월 1일부터 시행한다.</li>
+												</ol>
+											</li>
+										</ul>
+									</div>
+								</div>
+								<!-- @edit 20160701 문구 및 동의형식 변경 20160804 input id, label for값 변경 -->
+								<div class="agreeBoxYN">
+									<span>교육장(퀸룸) 운영 규정을 숙지하였으며, 규정에 동의하십니까?</span> <span class="inputR"><input type="checkbox" id="agreeCheck" name="" /><label for="agreeCheck">동의합니다.</label></span>
+								</div>
+								<h3><img src="/_ui/desktop/images/academy/h3_w02_aproom_07.gif" alt="교육장(퀸룸) 제품 교육 시 주의사항" /></h3>
+								<div class="agreeBox">
+									<div class="termsWrapper" tabindex="0">
+										한국암웨이 뉴트리라이트 제품은 의약품이 아닌 건강기능식품으로, 제품 판매 또는 권유시 
+										세심한 주의가 요구됩니다. 건강기능식품의 경우 과대과장 광고 및 기타 불법 판매 행위에 
+										대한 지속적인 감시와 규제가 이루어지고 있으며, 다른 일반 제품과는 달리 지정기관에서의 
+										교육 수료 후, 영업신고를 하셔야 제품 판매가 가능합니다.
+										따라서 제품 교육시에는 반드시 한국암웨이를 통해 공식적으로 인정된 내용만이 언급
+										되어야 하며, 다음의 내용이 전달 되지 않도록 유의하여 주십시오. 
+										- 뉴트리라이트 제품이 질병의 치료나 예방에 효과가 있다는 내용의 전달
+										- 기타 의약품으로 이인할 수 있는 표현의 사용
+										- 제품의 소분/재가공 판매
+										- 권장 섭취량 이상의 제품 과량 섭취 권장 등
+										또한 재료비를 포함하여 어떠한 명목이나 형태로도 참가자에게 비용을 받을 수 없으며, 각종 
+										책자 및 컨텐츠 등의 사업 보조 물품을 판매하거나 홍보할 수 없습니다. 상기 규정의 위반시 
+										윤리강령상의 조치는 물론 법규 위반에 따른 법적 처벌까지 받을 수 있는 중대한 사안임을 
+										감안하시어, 적극적인 준수를 부탁드립니다.
+										주의사항을 충분히 숙지 하였으며, AP 교육시 상기원칙을 준수하겠습니다.
+									</div>
+								</div>
+								<!-- @edit 20160701 문구 및 동의형식 변경 -->
+								<div class="agreeBoxYN">
+									<span class="block pdbSs">주의사항을 충분히 숙지 하였으며, 교육장(퀸룸) 제품 교육시 상기원칙을 준수합니다.</span>
+									<span class="inputR"><input type="checkbox" id="check2" name="" /><label for="check2">동의합니다.</label></span>
+								</div>
+							</section>
+							<section  class="creditWrap">
+								<h3><img src="/_ui/desktop/images/academy/h3_w02_aproom_08.gif" alt="신용카드" /></h3>
+								<table class="tblInput">
+									<caption>신용카드</caption>
+									<colgroup>
+										<col style="width:23%" />
+										<col style="width:auto" />
+									</colgroup>
+									<tbody>
+										<tr>
+											<th scope="row" class="thVerticalT">결제 요청 금액</th>
+											<td>0 원(VAT 포함)</td>
+										</tr>
+									</tbody>
+								</table>
+								<div class="agreeBoxYN">
+								<!-- //@edit 20160701 약관관련 전반적인 구성 변경 -->
+									<span>주문하실 상품의 상품명, 가격, 배송정보를 확인하였으며, 이에 동의하십니까? <br />(전자상거래법 제8조 제2항)</span>
+									<span class="inputR"><input type="checkbox" id="check3" name="" /><label for="check3">동의합니다.</label></span>
+								</div>
+								<!-- @edit 20160627 문구 수정 20160714 페널티 수정 -->
+								<ul class="listWarning">
+								<li>※ 사용일 7일전 취소 시 결제 금액의 <strong>10%의 취소 수수료</strong> 제외 후 환불 처리됩니다. <br />(단 예약 당일취소 시 페널티가 적용되지 않습니다.)</li>
+								<li>※ 요리명장일 경우 사용일 7일전 취소 시 다음달 무료사용 1회가 차감되며, 취소 없이 미사용 할 경우 다음달 무료사용 2회가 차감됩니다.</li>
+								</ul>
+							</section>
+							<div class="btnWrapR">
+								<a href="#step2" class="btnBasicGS">이전</a>
+								<a href="#none" class="btnBasicBS">결제요청</a>
+							</div>
+						</div>
+						<div class="result">
+							<p>결제를 진행해 주세요.</p>
+						</div>
+						<div class="result req" style="display:none">
+							<p>신용카드<em>|</em>300,000원</p>
+						</div>
+					</div>
+					<!-- <div class="modifyBtn"><a href="#none"><img src="/_ui/desktop/images/academy/btn_down.gif" alt="변경하기" /></a></div> -->
+				</div>
+				<!-- //스텝3 -->
+				<!-- 예약완료 -->
+				<div class="brWrap" id="stepDone">
+					<p><img src="/_ui/desktop/images/academy/brTextDone.gif" alt="예약이 완료 되었습니다. 이용해 주셔서 감사합니다." /></p>
+					<div class="snsWrap">
+						<!-- 20150313 : SNS영역 수정 -->
+						<span class="snsLink">
+							<!-- @eidt 20160627 URL 복사 삭제 -->
+							<!-- 20161025 삭제 <a href="#" class="snsCt" title="새창열림" target="_blank"><span class="hide">카카오톡</span></a> -->
+							<a href="#" class="snsCs" title="새창열림" target="_blank"><span class="hide">카카오스토리</span></a>
+							<a href="#" class="snsBand" title="새창열림" target="_blank"><span class="hide">밴드</span></a>
+							<a href="#" class="snsFb" title="새창열림" target="_blank"><span class="hide">페이스북</span></a>
+						</span>
+						<!-- //20150313 : SNS영역 수정 -->
+						<span class="snsText"><img src="/_ui/desktop/images/academy/sns_text.gif" alt="예약내역공유" /></span>
+					</div>
+					<div class="btnWrapC">
+						<a href="#none" class="btnBasicGL">예약계속하기</a>
+						<a href="#none" class="btnBasicBL">예약현황확인</a>
+					</div>
+				</div>
+				<!-- //예약완료 -->
+			</div>
+			
+		</section>
+		<!-- //content area | ### academy IFRAME End ### -->
+
+		<!-- aside area -->
+		<aside id="pbAside">aside include</aside>
+		<!-- //aside area -->
+	</div>
+	<!--footer include -->
+	<footer id="pbFooter">footer include</footer>
+	<!--//footer include -->
+</div>
+<div class="skipNaviReturn"><a href="#pbSkipNavi">페이지 맨 위로 이동</a></div>
+
+</body>
+</html>

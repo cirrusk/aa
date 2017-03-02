@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.main.service.impl.LmsMainMapper">
+	
+	<!-- 서칭 권한 공통 조회조건 -->
+	<sql id="selectLmsCourseConditionSearch">
+	FROM LMSCOURSECONDITION 
+	WHERE 1 = 1
+		AND ( GETDATE() BETWEEN STARTDATE AND ENDDATE )
+		AND ( ABOTYPECODE = '' OR ABOTYPEABOVE  <![CDATA[ <= ]]> CONVERT(INT, #{abotypeorder}) )
+		AND ( PINCODE = '' OR CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER )
+		AND ( BONUSCODE = '' OR CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER )
+		AND ( AGECODE = '' OR CONVERT(INT, #{ageorder}) BETWEEN AGEABOVE AND AGEUNDER )
+		AND ( LOACODE = '' OR LOACODE LIKE '%' + #{loacode}  + '%' )
+		AND ( DIACODE = '' OR DIACODE LIKE '%' + #{diacode} + '%' )
+		AND ( TARGETCODE = '' OR (TARGETMEMBER LIKE '%' + #{uid} + '%' AND CONVERT(VARCHAR(15), #{uid} ) != '' ) )
+		AND ( CUSTOMERCODE = '' OR CUSTOMERCODE = #{customercode} )
+		AND ( CONSECUTIVECODE = '' OR CONSECUTIVECODE = #{consecutivecode} )
+		AND ( BUSINESSSTATUSCODE = '' OR BUSINESSSTATUSCODE IN (#{businessstatuscode1},#{businessstatuscode2},#{businessstatuscode3},#{businessstatuscode4}) )
+	</sql>
+	
+	<select id="selectCourseListCount" parameterType="reqBox" resultType="int">
+		/* LmsOnlineSQL.xml -- selectCourseListCount  - 과정조회조건 - Main 총건수 */
+		SELECT COUNT(*)
+		FROM LMSCOURSE A INNER JOIN LMSCATEGORY B
+		ON A.CATEGORYID = B.CATEGORYID
+		WHERE A.USEFLAG = 'Y'
+		AND A.OPENFLAG = 'Y'
+		AND A.COURSEID IN (
+			SELECT COURSEID 
+				<include refid="selectLmsCourseConditionSearch" />
+				AND CONDITIONTYPE = '3'
+			UNION
+			
+			SELECT C.COURSEID
+			FROM LMSSUBSCRIBE A INNER JOIN LMSCATEGORY B
+			ON A.CATEGORYID = B.CATEGORYID INNER JOIN LMSCOURSE C
+			ON B.CATEGORYID = C.CATEGORYID INNER JOIN LMSCOURSECONDITION D
+			ON C.COURSEID = D.COURSEID
+			WHERE A.UID = #{uid}
+			AND D.CONDITIONTYPE = '1'
+			AND GETDATE() BETWEEN D.STARTDATE AND D.ENDDATE
+			AND A.SUBSCRIBEDATE <![CDATA[ <= ]]> C.REGISTRANTDATE
+		)
+		AND B.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+		<if test='uid == null or uid.equals("")'>
+	    AND A.COURSETYPE = 'D' 
+	    </if>
+	</select>
+	
+	<select id="selectCourseList" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectCourseList - 과정조회조건 - Main */
+		SELECT BB.COURSEID
+   				, BB.CATEGORYID
+   				, BB.CATEGORYNAME
+   				, BB.COMPLIANCEFLAG
+   				, BB.COURSETYPE
+   				, BB.COURSETYPENAME
+   				, BB.COURSENAME
+   				, BB.REALCOURSENAME
+	    		, BB.COURSECONTENT 
+     	    	, BB.DATATYPE
+   				, BB.PLAYTIME 
+   				, BB.COURSEIMAGE
+   				, BB.COURSEIMAGENOTE
+   				, BB.SNSFLAG
+   				, BB.REQUESTSTARTDATE 
+  			    , BB.REQUESTENDDATE 
+  			    , BB.STARTDATE 
+		        , BB.ENDDATE 
+		      	, DBO.F_LMS_LIKECNT(BB.LIKECOUNT, '1' ) AS LIKECNT
+   				, DBO.F_LMS_LIKECNT(BB.LIKECOUNT, '2' ) AS LIKECOUNT
+   				, DBO.F_LMS_LIKECNT(BB.VIEWCOUNT, '1' ) AS VIEWCNT
+   				, DBO.F_LMS_LIKECNT(BB.VIEWCOUNT, '2' ) AS VIEWCOUNT 
+   				, BB.MODIFYDATE
+   				, BB.FINISHFLAG
+   				, BB.REQUESTFLAG
+   				, BB.APNAME
+				, (SELECT COUNT(*) FROM LMSSAVELOG WHERE SAVETYPE='2' AND UID=#{uid} AND COURSEID = BB.COURSEID) AS DEPOSITCNT
+				, (SELECT COUNT(*) FROM LMSVIEWLOG WHERE VIEWTYPE='2' AND UID=#{uid} AND COURSEID = BB.COURSEID) AS MYLIKECNT
+				, CASE WHEN 
+						CASE WHEN BB.COURSETYPE = 'O' OR BB.COURSETYPE = 'D' THEN ISNULL(BB.FINISHFLAG,'N')
+							ELSE ISNULL(BB.REQUESTFLAG,'N')  
+						END = 'Y' THEN '1' ELSE '0' 
+					END AS SAVETYPE
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (ORDER BY A.REGISTRANTDATE DESC, A.COURSEID DESC) AS ROW_NUM 
+				, A.COURSEID
+    				, A.CATEGORYID
+    				, B.CATEGORYNAME
+    				, B.COMPLIANCEFLAG
+    				, A.COURSETYPE
+    				, DBO.F_LMS_COURSETYPENAME(A.COURSETYPE) AS COURSETYPENAME
+    				, CASE WHEN DATALENGTH(A.COURSENAME) > 32 THEN SUBSTRING(A.COURSENAME, 1, 29) + '...' 
+	        		ELSE A.COURSENAME END AS COURSENAME
+	        	, A.COURSENAME AS REALCOURSENAME
+	    		, A.COURSECONTENT 
+      	    		, A.DATATYPE
+    				, DBO.F_LMS_TIME_FORMAT(A.PLAYTIME, 'en') AS PLAYTIME 
+    				, A.COURSEIMAGE
+    				, A.COURSEIMAGENOTE
+    				, A.SNSFLAG
+    				, DBO.F_LMS_DATETYPE(A.REQUESTSTARTDATE, '5') AS REQUESTSTARTDATE 
+  			    , DBO.F_LMS_DATETYPE(A.REQUESTENDDATE, '5') AS REQUESTENDDATE 
+  			    , DBO.F_LMS_DATETYPE(A.STARTDATE, '5') AS STARTDATE 
+		        , DBO.F_LMS_DATETYPE(A.ENDDATE, '5') AS ENDDATE 
+		      	, A.LIKECOUNT
+    				, A.VIEWCOUNT
+    				, A.MODIFYDATE
+    				, E.FINISHFLAG
+    				, E.REQUESTFLAG
+    				, F.APNAME
+			FROM LMSCOURSE A INNER JOIN LMSCATEGORY B
+			ON A.CATEGORYID = B.CATEGORYID LEFT OUTER JOIN LMSSTUDENT E 
+			ON ( A.COURSEID = E.COURSEID AND E.UID = #{uid} )
+			LEFT OUTER JOIN LMSOFFLINE F ON (A.COURSEID = F.COURSEID)
+			WHERE A.USEFLAG = 'Y'
+			AND A.OPENFLAG = 'Y'
+			AND A.COURSEID IN (
+				SELECT COURSEID 
+					<include refid="selectLmsCourseConditionSearch" />
+					AND CONDITIONTYPE = '3'
+				UNION
+				
+				SELECT C.COURSEID
+				FROM LMSSUBSCRIBE A INNER JOIN LMSCATEGORY B
+				ON A.CATEGORYID = B.CATEGORYID INNER JOIN LMSCOURSE C
+				ON B.CATEGORYID = C.CATEGORYID INNER JOIN LMSCOURSECONDITION D
+				ON C.COURSEID = D.COURSEID
+				WHERE A.UID = #{uid}
+				AND D.CONDITIONTYPE = '1'
+				AND GETDATE() BETWEEN D.STARTDATE AND D.ENDDATE
+				AND A.SUBSCRIBEDATE <![CDATA[ <= ]]> C.REGISTRANTDATE
+			)
+			AND B.COMPLIANCEFLAG <![CDATA[ <> ]]> 'Y'
+			<if test='uid == null or uid.equals("")'>
+		    AND A.COURSETYPE = 'D' 
+		    </if>
+		) BB
+		WHERE ROW_NUM BETWEEN ((#{pageIndex} -1) * #{rowPerPage} +1) AND (#{pageIndex} * #{rowPerPage})
+	</select>
+	
+	
+	<select id="selectCourseDetail" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectCourseDetail - 과정 기본정보 조회 */
+		SELECT A.COURSEID
+		      , A.CATEGORYID
+		      , A.COURSETYPE
+		      , A.COURSENAME
+		      , A.OPENFLAG
+		      , A.REQUESTSTARTDATE 
+  			  , A.REQUESTENDDATE 
+  			  , A.STARTDATE 
+		      , A.ENDDATE 
+		      , A.COURSECONTENT
+		      , A.DATATYPE
+		      , A.GROUPFLAG
+		      , DBO.F_LMS_TIME_FORMAT(A.PLAYTIME, 'en') AS PLAYTIME 
+     		  , A.COURSEIMAGE
+     		  , A.COURSEIMAGENOTE
+     		  , A.SNSFLAG
+     		  , DBO.F_LMS_LIKECNT(A.LIKECOUNT, '2' ) AS LIKECOUNT
+     		  , DBO.F_LMS_LIKECNT(A.VIEWCOUNT, '2' ) AS VIEWCOUNT 
+     		  , A.MODIFYDATE
+		FROM LMSCOURSE A 
+		    INNER JOIN LMSCOURSECONDITION C
+		        ON ( A.COURSEID = C.COURSEID 
+		            AND CONDITIONTYPE = '2' )
+		WHERE A.COURSEID = #{courseid}
+		  AND A.USEFLAG = 'Y'
+		  AND A.OPENFLAG NOT IN ('N')
+	</select>
+	
+	<select id="selectCourseStudentView" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectCourseStudentView - 수강신청정보 체크 */
+		SELECT A.COURSEID, A.UID
+				, IsNULL(A.REQUESTFLAG,'') AS REQUESTFLAG, A.REQUESTDATE
+				, A.PINCODE, A.REQUESTCHANNEL
+				, A.STUDYFLAG, A.STUDYDATE
+				, A.FINISHFLAG, A.FINISHDATE
+		FROM LMSSTUDENT A 
+		WHERE A.COURSEID = #{courseid}
+		  AND A.UID = #{uid}
+	</select>
+	
+	<update id="mergeLmsCourseStudentRequest" parameterType="reqBox">
+		/* LmsMainSQL.xml -- mergeLmsCourseStudentRequest - LMSSTUDENT 등록,수정 */
+		MERGE LMSSTUDENT A
+		USING (
+			SELECT #{courseid} AS COURSEID, #{uid} AS UID
+			) B
+				ON ( A.COURSEID = B.COURSEID
+					AND A.UID = B.UID 
+					 )
+		WHEN NOT MATCHED THEN 
+			INSERT (COURSEID, UID, REQUESTFLAG, REQUESTDATE, PINCODE, STUDYFLAG, STUDYDATE, FINISHFLAG ) VALUES ( #{courseid}, #{uid} , 'Y', GETDATE(), #{pincode}, 'Y', GETDATE(), 'N' )
+		WHEN MATCHED THEN
+			UPDATE SET A.REQUESTFLAG = 'Y'
+		;
+	</update>
+	
+	<insert id="insertLmsCourseStudentRequest" parameterType="reqBox">
+		/* LmsMainSQL.xml -- insertLmsCourseStudentRequest - 교육수강생 - 수강신청 등록 */
+		INSERT INTO LMSSTUDENT (
+			COURSEID, UID, REQUESTFLAG, REQUESTDATE, PINCODE, REQUESTCHANNEL
+			, STUDYFLAG, STUDYDATE, FINISHFLAG 
+		) VALUES (
+			#{courseid}, #{uid} , 'Y', GETDATE(), #{pincode}, 'O', 'Y', GETDATE(), 'N'
+		)
+	</insert>
+
+	<update id="updateLmsCourseStudentRequest" parameterType="reqBox">
+		/* LmsMainSQL.xml -- updateLmsCourseStudentRequest - 교육수강생 - 수강신청 수정 */
+		UPDATE LMSSTUDENT 
+			SET REQUESTFLAG = 'Y'
+		WHERE COURSEID = #{courseid}
+		    AND UID = #{uid}
+	</update>
+	
+	<select id="selectCategoryLevelONE" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectCategoryLevelONE - 카테고리 분류 1,2,3 단계를 1단계 CATEGORYID 값을 가져온다 */
+		SELECT CATEGORYID, CATEGORYUPID, CATEGORYLEVEL  
+		FROM LMSCATEGORY 
+		WHERE (CATEGORYID = #{categoryid} AND CATEGORYLEVEL = 1 )	/* 분류 1단계 */
+			OR (CATEGORYID = #{categoryid} AND CATEGORYLEVEL = 2 )  /* 분류 2단계 */
+			OR (CATEGORYID IN (SELECT CATEGORYUPID 
+								FROM LMSCATEGORY 
+								WHERE CATEGORYID = #{categoryid} 
+									AND CATEGORYLEVEL = 3)  )   /* 분류 3단계 */
+		ORDER BY CATEGORYID DESC
+	</select>
+	
+	<select id="selectCourseViewAcces" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectCourseViewAcces - 강의자료 보기전 허용여부 체크 */
+		SELECT A.COURSEID
+		      , A.CATEGORYID
+		      , A.COURSETYPE
+		      , A.COURSENAME
+		      , A.OPENFLAG
+		      , A.STARTDATE
+		      , A.ENDDATE
+		      , A.COURSECONTENT
+		      , A.DATATYPE
+		      , A.PLAYTIME
+		      , IsNULL(A.GROUPFLAG, '') AS GROUPFLAG
+		      , IsNULL(B.REQUESTFLAG, '') AS REQUESTFLAG
+		      , IsNULL(B.FINISHFLAG, '') AS FINISHFLAG
+		      , IsNULL(B.REQUESTCHANNEL, '') AS REQUESTCHANNEL
+		FROM LMSCOURSE A 
+			LEFT OUTER JOIN LMSSTUDENT B
+				ON ( B.COURSEID = A.COURSEID 
+					AND B.UID = #{uid} )
+		WHERE A.USEFLAG = 'Y'
+		  AND A.OPENFLAG NOT IN ('N')
+		  AND A.COURSEID = #{courseid}
+		  /* AND ( GETDATE() BETWEEN A.STARTDATE AND A.ENDDATE ) */
+	</select>
+	
+	<update id="updateLmsStudentFinish" parameterType="reqBox">
+		/* LmsMainSQL.xml -- updateLmsStudentFinish - 교육수강생 - 수료처리 수정 */
+		UPDATE LMSSTUDENT
+			SET FINISHFLAG = 'Y'
+			   , FINISHDATE = Getdate()
+		WHERE COURSEID = #{courseid}
+		  	AND UID = #{uid} 
+	</update>
+	
+	<select id="selectComplianceCount" parameterType="reqBox" resultType="int">
+		/* LmsMainSQL.xml -- selectComplianceCount - COMPLIANCEFLAG 조회 count */
+		SELECT   COUNT(*) AS CATE_CNT
+		FROM LMSCATEGORY
+        WHERE CATEGORYID IN (SELECT CATEGORYID FROM LMSCOURSE WHERE COURSEID = #{courseid} ) 
+        	AND COMPLIANCEFLAG = 'Y' 
+	</select>
+	
+	<select id="selectViewLogCount" parameterType="reqBox" resultType="int">
+		/* LmsMainSQL.xml -- selectViewLogCount - 조회 로그 count */
+		SELECT   COUNT(*) AS VIEW_CNT
+		FROM LMSVIEWLOG
+        WHERE VIEWTYPE = #{viewtype} 
+        	AND UID = #{uid} 
+        	AND COURSEID = #{courseid} 
+        <if test='viewmonth != null and !viewmonth.equals("")'>
+        	AND VIEWMONTH = CONVERT(CHAR(6), Getdate(), 112)
+        </if>
+	</select>
+	
+	<insert id="insertLmsViewLogCnt" parameterType="reqBox">
+		/* LmsMainSQL.xml -- insertLmsViewLogCnt - 로그 count - 등록 */
+		INSERT INTO LMSVIEWLOG (
+		   COURSEID
+		  ,VIEWTYPE
+		  ,VIEWMONTH
+		  ,UID
+		  ,VIEWCOUNT
+		) VALUES (
+		  #{courseid}
+		  ,#{viewtype}
+		  ,CONVERT(CHAR(6), Getdate(), 112)
+		  ,#{uid}
+		  , 1
+		)
+	</insert>
+	
+	<update id="updateLmsViewLogCnt" parameterType="reqBox">
+		/* LmsMainSQL.xml -- updateLmsViewLogCnt - 로그 count 1증가 - 수정 */
+		UPDATE LMSVIEWLOG
+			SET VIEWCOUNT = VIEWCOUNT +1
+		WHERE COURSEID = #{courseid}
+		  	AND VIEWTYPE = #{viewtype}
+		  	AND UID = #{uid}
+		    AND VIEWMONTH = CONVERT(CHAR(6), Getdate(), 112)
+	</update>
+	
+	<update id="mergeViewLogCount" parameterType="reqBox">
+		/* LmsMainSQL.xml -- mergeViewLogCount - LMSVIEWLOG 로그 count 등록,수정 */
+		MERGE LMSVIEWLOG A
+		USING (
+			SELECT #{courseid} AS COURSEID, #{viewtype} AS VIEWTYPE, CONVERT(CHAR(6), Getdate(), 112) AS VIEWMONTH, #{uid} AS UID
+			) B
+				ON ( A.VIEWTYPE = B.VIEWTYPE
+					AND A.UID = B.UID 
+					AND A.COURSEID = B.COURSEID
+					AND A.VIEWMONTH = B.VIEWMONTH 
+					 )
+		WHEN NOT MATCHED THEN 
+			INSERT (COURSEID, VIEWTYPE, VIEWMONTH, UID, VIEWCOUNT) VALUES (#{courseid}, #{viewtype}, CONVERT(CHAR(6), Getdate(), 112), #{uid}, 1)
+		WHEN MATCHED THEN
+			UPDATE SET A.VIEWCOUNT = A.VIEWCOUNT + 1
+		;
+	</update>
+	
+	<update id="updateLmsCourseLikeCnt" parameterType="reqBox">
+		/* LmsMainSQL.xml -- updateLmsCourseLikeCnt - 교육과정 좋아요 count 1증가 - 수정 */
+		UPDATE LMSCOURSE
+			SET LIKECOUNT = LIKECOUNT +1
+		WHERE COURSEID = #{courseid}
+	</update>
+	
+	<update id="updateLmsCourseViewCnt" parameterType="reqBox">
+		/* LmsMainSQL.xml -- updateLmsCourseViewCnt - 교육과정 조회수 1증가 - 수정 */
+		UPDATE LMSCOURSE
+			SET VIEWCOUNT = VIEWCOUNT +1
+		WHERE COURSEID = #{courseid}
+	</update>
+	
+	<select id="selectCourseLikeCount" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectCourseLikeCount - 교육과정 좋아요 count */
+		SELECT  DBO.F_LMS_LIKECNT(LIKECOUNT, '1' ) AS LIKECNT
+     		   , DBO.F_LMS_LIKECNT(LIKECOUNT, '2' ) AS LIKECOUNT
+		FROM LMSCOURSE
+        WHERE COURSEID = #{courseid} 
+	</select>
+	
+	<select id="selectCourseViewCount" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectCourseViewCount - 교육과정 조회수 */
+		SELECT DBO.F_LMS_LIKECNT(VIEWCOUNT, '1' ) AS VIEWCNT
+     		, DBO.F_LMS_LIKECNT(VIEWCOUNT, '2' ) AS VIEWCOUNT
+     	FROM LMSCOURSE
+        WHERE COURSEID = #{courseid} 
+	</select>
+	
+	<select id="selectSaveLogCount" parameterType="reqBox" resultType="int">
+		/* LmsMainSQL.xml -- selectSaveLogCount - 저장로그 count */
+		SELECT   COUNT(*) AS SAVETYPE_CNT
+		FROM LMSSAVELOG
+        WHERE SAVETYPE = #{savetype} 
+        AND UID = #{uid} 
+        AND COURSEID = #{courseid} 
+	</select>
+	
+	<insert id="insertLmsSaveLog" parameterType="reqBox">
+		/* LmsMainSQL.xml -- insertLmsSaveLog - 저장로그 등록 */
+		INSERT INTO LMSSAVELOG (
+		   UID
+		  ,COURSEID
+		  ,SAVETYPE
+		  ,SAVEDATE
+		) VALUES (
+		   #{uid}
+		  ,#{courseid}
+		  ,#{savetype}
+		  ,Getdate()
+		)
+	</insert>
+
+	<update id="updateLmsSaveLog" parameterType="reqBox">
+		/* LmsMainSQL.xml -- updateLmsSaveLog - 저장로그 - 수정 */
+		UPDATE LMSSAVELOG
+			SET SAVEDATE = Getdate()
+		WHERE COURSEID = #{courseid}
+		  	AND UID = #{uid}
+		  	AND SAVETYPE = #{savetype}
+	</update>
+		
+	<update id="mergeSaveLog" parameterType="reqBox">
+		/* LmsMainSQL.xml -- mergeSaveLog - LMSSAVELOG 로그 등록,수정 */
+		MERGE LMSSAVELOG A
+		USING (
+			SELECT #{courseid} AS COURSEID, #{uid} AS UID, #{savetype} AS SAVETYPE
+			) B
+				ON ( A.UID = B.UID 
+					AND A.COURSEID = B.COURSEID
+					AND A.SAVETYPE = B.SAVETYPE 
+					)
+		WHEN NOT MATCHED THEN 
+			INSERT (UID, COURSEID, SAVETYPE, SAVEDATE) VALUES (#{uid}, #{courseid}, #{savetype}, Getdate())
+		WHEN MATCHED THEN
+			UPDATE SET A.SAVEDATE = Getdate()
+		;
+	</update>
+	
+	<delete id="deleteLmsSaveLog" parameterType="reqBox">
+		/* LmsMainSQL.xml -- deleteLmsSaveLog - 저장로그 삭제 */
+		DELETE   
+		FROM  LMSSAVELOG 
+		WHERE UID = #{uid}
+  		AND COURSEID = #{courseid}
+  		AND SAVETYPE = #{savetype}
+	</delete>
+	
+	<select id="selectCategoryAgree" parameterType="reqBox" resultType="int">
+		/* LmsMainSQL.xml -- selectCategoryAgree - 저작권 동의 count - 저작권동의컬럼이 'Y'일때 동의여부 확인(저작권동의컬럼이 'N' 이면 99, 'Y' 이면 count 값 리턴) */
+		SELECT 
+			IsNULL((
+				SELECT 
+					CASE WHEN A.COPYRIGHTFLAG != 'Y' THEN 99 
+						ELSE IsNULL(B.AGREE_CNT,0) 
+					END 
+	      		FROM LMSCATEGORY A LEFT OUTER JOIN (
+	      			SELECT 
+	      				CATEGORYID
+	      				, UID
+	                    , COUNT(CATEGORYID) AS AGREE_CNT
+					FROM LMSAGREE
+	                WHERE UID = #{uid}
+	                AND CATEGORYID = #{categoryid} 
+					GROUP BY UID, CATEGORYID
+				) B
+	            ON ( 
+	            	A.CATEGORYID = B.CATEGORYID 
+	            )
+	       		WHERE A.CATEGORYID = #{categoryid} ), 99) AS AGREE_CNT
+	</select>
+	
+	<select id="selectAgreeCount" parameterType="reqBox" resultType="int">
+		/* LmsMainSQL.xml -- selectAgreeCount - 저작권동의 count (동의여부 확인) */
+		    SELECT COUNT(*)  AS AGREE_CNT
+			FROM LMSAGREE
+			WHERE UID = #{uid} 
+			  AND CATEGORYID = #{categoryid} 
+	</select>
+	
+	<insert id="insertLmsCategoryAgree" parameterType="reqBox">
+		/* LmsMainSQL.xml -- insertLmsCategoryAgree - 저작권동의 등록 */
+		INSERT INTO LMSAGREE (
+		   UID
+		  ,CATEGORYID
+		  ,AGREEDATE
+		) VALUES (
+		  #{uid}
+		  ,#{categoryid}
+		  ,Getdate()
+		)
+	</insert>
+	
+	<select id="selectMemberMessageCount" parameterType="reqBox" resultType="int">
+		/* LmsMainSQL.xml -- selectMemberMessageCount - 회원 쪽지 count */
+		SELECT COUNT(*)  AS NOTE_CNT
+		FROM NOTESEND
+        WHERE DELETEYN = 'N'
+          AND UID = #{uid}
+          AND GETDATE() >= SENDDATE
+	</select>
+	
+	<select id="selectMemberMessageList" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectCourseViewCount - 회원 쪽지 목록 */
+		SELECT
+				TOP 1 
+				NOTESENDSEQ
+		       , NOTESERVICE
+               , NAME
+               , UID
+               , NOTEITEM
+               , NOTECONTENT
+               , SENDDATE
+               , MODIFIER
+     	FROM NOTESEND
+        WHERE DELETEYN = 'N'
+          AND UID = #{uid}
+          AND GETDATE() >= SENDDATE
+        ORDER BY SENDDATE DESC, NOTESENDSEQ DESC
+	</select>
+	
+	<select id="selectStepunitList" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectStepunitList - LMSSTEPUNIT 조회 */
+		SELECT COURSEID, STEPSEQ, STEPCOURSEID, MUSTFLAG
+		FROM LMSSTEPUNIT
+		WHERE STEPCOURSEID = #{stepcourseid}
+		ORDER BY STEPSEQ DESC
+	</select>
+	
+	
+	<select id="selectLmsBannerList" parameterType="reqBox" resultType="egovMap">
+		/* LmsMainSQL.xml -- selectLmsBannerList - 배너목록 - Main */
+		SELECT BANNERID
+			, BANNERNAME
+			, PCLINK
+			, PCTARGET
+			, PCIMAGE
+			, PCIMAGENOTE
+			, MOBILELINK
+			, MOBILETARGET
+			, MOBILEIMAGE
+			, MOBILEIMAGENOTE
+			, FORMAT(REGISTRANTDATE,'yyMMdd') AS REGISTRANTDATE
+		FROM LMSBANNER
+		WHERE USEFLAG = 'Y'
+		AND OPENFLAG = 'Y'
+		AND (POSITION = 'A' OR POSITION = #{position}) 
+		AND BANNERID IN (
+			SELECT BANNERID	
+			FROM LMSBANNERCONDITION 
+			WHERE 1 = 1
+				AND ( ABOTYPECODE = '' OR ABOTYPEABOVE  <![CDATA[ <= ]]> CONVERT(INT, #{abotypeorder}) )
+				AND ( PINCODE = '' OR CONVERT(INT, #{pinorder}) BETWEEN PINABOVE AND PINUNDER )
+				AND ( BONUSCODE = '' OR CONVERT(INT, #{bonusorder}) BETWEEN BONUSABOVE AND BONUSUNDER )
+				AND ( AGECODE = '' OR CONVERT(INT, #{ageorder}) BETWEEN AGEABOVE AND AGEUNDER )
+				AND ( LOACODE = '' OR LOACODE LIKE '%' + #{loacode}  + '%' )
+				AND ( DIACODE = '' OR DIACODE LIKE '%' + #{diacode} + '%' )
+				AND ( GETDATE() BETWEEN STARTDATE AND ENDDATE  )
+				AND ( TARGETCODE = '' OR (TARGETMEMBER LIKE '%' + #{uid} + '%' AND CONVERT(VARCHAR(15), #{uid} ) != '' ) )
+		)
+		ORDER BY BANNERORDER ASC, BANNERID DESC
+	</select>
+	
+</mapper>

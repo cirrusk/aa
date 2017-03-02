@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.lms.myAcademy.service.impl.LmsMySurveyMapper">
+	
+	<select id="selectLmsSurvey" parameterType="reqBox" resultType="egovMap">
+		/* selectLmsTest */
+		SELECT 
+			A.COURSENAME AS SURVEYNAME
+			, CASE WHEN GETDATE() <![CDATA[ > ]]> A.ENDDATE THEN 'END' 
+					WHEN GETDATE() <![CDATA[ < ]]> A.STARTDATE THEN 'READY'
+					ELSE 'ING' 
+				END SURVEYSTATUS
+			, FORMAT(A.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+			, DBO.F_LMS_DATETYPE(A.STARTDATE,'3') AS STARTDATE
+			, DBO.F_LMS_DATETYPE(A.ENDDATE,'3') AS ENDDATE
+			, (SELECT COURSENAME FROM LMSCOURSE WHERE COURSEID = #{courseid} ) AS COURSENAME
+			, (SELECT COUNT(*) FROM LMSSURVEY WHERE COURSEID = A.COURSEID) AS SURVEYCOUNT
+			, (SELECT CASE WHEN ISNULL(FINISHDATE,'') = '' THEN 'N' ELSE 'Y' END FROM LMSSTUDENT WHERE COURSEID = A.COURSEID AND UID = #{uid}) AS SUBMITFLAG
+		FROM LMSCOURSE A
+		WHERE A.COURSEID = #{stepcourseid}
+	</select>
+	
+	<select id="selectLmsSurveyList" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			A.SURVEYSEQ
+			, A.SURVEYTYPE
+			, A.SURVEYNAME
+			, (SELECT COUNT(*) FROM LMSSURVEYSAMPLE WHERE COURSEID = A.COURSEID) AS SAMPLECOUNT  
+		FROM LMSSURVEY A
+		WHERE A.COURSEID = #{stepcourseid}
+		ORDER BY A.SURVEYSEQ ASC
+	</select>
+	
+	<select id="selectLmsSurveySampleList" parameterType="reqBox" resultType="egovMap">
+		SELECT
+			SURVEYSEQ
+			, SAMPLESEQ
+			, SAMPLENAME
+			, SAMPLEVALUE
+			, DIRECTYN
+		FROM LMSSURVEYSAMPLE
+		WHERE COURSEID = #{stepcourseid}
+		ORDER BY SURVEYSEQ ASC, SAMPLESEQ ASC
+	</select>
+	
+	<insert id="insertLmsSurveyResponse" parameterType="reqBox">
+		INSERT INTO LMSSURVEYRESPONSE (
+			COURSEID
+			, SURVEYSEQ
+			, UID
+			, OBJECTRESPONSE
+			, SUBJECTRESPONSE
+		) VALUES (
+			#{stepcourseid}
+			, #{surveyseq}
+			, #{uid}
+			, #{objectresponse}
+			, #{subjectresponse}
+		)
+	</insert>
+	
+	<insert id="insertLmsSurveyOpinion" parameterType="reqBox">
+		INSERT INTO LMSSURVEYOPINION (
+			COURSEID
+			, SURVEYSEQ
+			, UID
+			, OPINIONSEQ
+			, OPINIONCONTENT
+		) VALUES (
+			#{stepcourseid}
+			, #{surveyseq}
+			, #{uid}
+			, #{opinionseq}
+			, #{opinioncontent}
+		)
+	</insert>
+	
+	<update id="updateLmsStudentFinish" parameterType="reqBox">
+		/* updateLmsStudentFinish */
+		UPDATE LMSSTUDENT SET
+			STUDYFLAG = 'Y'
+			, STUDYDATE = GETDATE()
+			, FINISHFLAG = 'Y'
+			, FINISHDATE = GETDATE()
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+	</update>
+	
+</mapper>
