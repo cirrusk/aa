@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.MessageAddressGroupMapper">
+
+  
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageAddressGroupVO">
+	/* MessageAddressGroupMapper.delete */
+	UPDATE cs_message_address_group 
+	   SET cs_delete_yn = 'Y' ,
+	       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+	       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	  WHERE cs_delete_yn='N' 
+	       AND cs_address_group_seq = #{addressGroupSeq}
+    </update>
+
+	<!-- 주소록 그룹 등록 -->   
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageAddressGroupVO">
+    <selectKey resultType="Long" keyProperty="addressGroupSeq" order="AFTER">
+	SELECT @@IDENTITY
+	</selectKey>
+	/* MessageAddressGroupMapper.insert */
+	INSERT INTO cs_message_address_group
+	       (
+	           cs_group_name ,
+	           cs_use_count ,
+	           cs_reg_member_seq,
+			   cs_reg_dtime,
+			   cs_reg_ip,
+	           cs_upd_member_seq,
+			   cs_upd_dtime,
+			   cs_upd_ip
+	       )
+	       VALUES
+	       (
+	           #{groupName, jdbcType=VARCHAR} ,
+			   0,
+			   #{regMemberSeq, jdbcType=NUMERIC} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+	           #{regIp, jdbcType=VARCHAR} ,
+	           #{updMemberSeq, jdbcType=NUMERIC} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+	           #{updIp, jdbcType=VARCHAR}
+	       )
+    </insert> 
+    
+	<!-- 주소록 그룹명 변경 -->
+    <update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageAddressGroupVO">
+	/* MessageAddressGroupMapper.update */
+	UPDATE cs_message_address_group 
+	   SET cs_group_name = #{groupName, jdbcType=VARCHAR}, 
+	       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+	       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	 WHERE cs_delete_yn = 'N' 
+	       AND cs_address_group_seq = #{addressGroupSeq}
+    </update>  
+
+	<!-- 주소록 상세 -->
+	<resultMap id="detailResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMessageAddressGroupRS">
+    	<result column="ag.addressGroupSeq"  property="messageAddressGroup.addressGroupSeq" />
+    	<result column="ag.groupName"          property="messageAddressGroup.groupName" />      
+    </resultMap>
+    <select id="getDetail" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageAddressGroupVO" resultMap="detailResultMap">
+	/* MessageAddressGroupMapper.getDetail */
+	SELECT ag.cs_address_group_seq AS "ag.addressGroupSeq", 
+	       ag.cs_group_name           AS "ag.groupName"
+	  FROM cs_message_address_group ag
+	 WHERE ag.cs_delete_yn ='N'
+	       AND ag.cs_address_group_seq = #{addressGroupSeq}
+    </select>
+
+	<!-- 주소록 그룹 리스트 -->
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMessageAddressGroupRS">
+        <result column="ag.addressGroupSeq"   property="messageAddressGroup.addressGroupSeq" />
+        <result column="ag.groupName"         property="messageAddressGroup.groupName" />
+        <result column="ag.count"             property="messageAddressGroup.memberCount" />   
+    </resultMap> 
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageAddressGroupCondition" resultMap="listResultMap">
+    /* MessageAddressGroupMapper.getList */
+    <if test='currentPage != 0'>
+	SELECT
+		Z.* FROM
+		(SELECT Row_Number() OVER (
+			ORDER BY "ag.groupName" ASC
+		) AS rownumber, * FROM (
+	</if>
+	SELECT
+		  cs_address_group_seq            AS "ag.addressGroupSeq",
+	      cs_group_name                   AS "ag.groupName",
+	      cs_use_count					  AS "ag.count"
+	  FROM cs_message_address_group ag
+	  WHERE ag.cs_delete_yn = 'N'
+	  	AND ag.cs_reg_member_seq = #{regMemberSeq}
+        <if test='srchWord != null and !srchWord.equals("")'>
+       AND ag.cs_group_name LIKE '%' + #{srchWordDB} + '%'
+        </if>
+     	<if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+	</select>
+
+	<!-- 주소록 그룹 리스트 카운트 -->
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageAddressGroupCondition" resultType="int">
+	/* MessageAddressGroupMapper.countList */
+	SELECT COUNT(*)  
+	  FROM cs_message_address_group ag 
+	 WHERE ag.cs_delete_yn = 'N'
+	 	AND ag.cs_reg_member_seq = #{regMemberSeq}
+	    <if test='srchWord != null and !srchWord.equals("")'>       
+	       AND ag.cs_group_name LIKE '%' + #{srchWordDB} + '%'           
+        </if> 
+    </select>
+    
+    <!-- 주소록 그룹 멤버수 수정 -->
+    <update id="updateMemberCount" parameterType="Long">
+	/* MessageAddressGroupMapper.updateMemberCount */
+	UPDATE cs_message_address_group 
+	   SET cs_use_count = 
+	       (SELECT COUNT(*) 
+	         FROM cs_message_address a
+	         INNER JOIN cs_member m
+	         	ON a.cs_member_seq = m.cs_member_seq
+				  AND m.cs_delete_yn = 'N' 
+	        WHERE a.cs_address_group_seq = #{addressGroupSeq, jdbcType=NUMERIC} 
+	              AND a.cs_delete_yn = 'N'
+	       ) 
+	 WHERE cs_address_group_seq = #{addressGroupSeq} 
+	   AND cs_delete_yn = 'N'  
+    </update>
+
+</mapper>

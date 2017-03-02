@@ -1,0 +1,1432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveBbsMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveBbsVO">
+	/* UIUnivCourseActiveBbs.insert */
+	INSERT INTO cs_course_active_bbs 
+	       ( 
+				cs_bbs_seq ,
+				cs_course_active_seq ,
+				cs_board_type_cd ,
+				cs_copy_yn ,
+				cs_evaluate_yn ,
+				cs_popup_yn ,
+				cs_multi_reg_yn ,
+				cs_course_apply_seq,
+				cx_push_yn,
+				cs_reg_member_seq ,
+				cs_reg_dtime ,
+				cs_reg_ip ,
+				cs_upd_member_seq ,
+				cs_upd_dtime ,
+				cs_upd_ip
+	       ) 
+     VALUES (
+	           #{bbsSeq, jdbcType=NUMERIC} ,
+	           #{courseActiveSeq, jdbcType=NUMERIC} ,
+	           #{boardTypeCd, jdbcType=VARCHAR} ,
+	           #{copyYn, jdbcType=VARCHAR} ,
+	           #{evaluateYn, jdbcType=VARCHAR} ,
+	           #{popupYn, jdbcType=VARCHAR} ,
+	           #{multiRegYn, jdbcType=VARCHAR} ,
+	           #{courseApplySeq, jdbcType=NUMERIC},
+	           <choose>
+	           	<when test="pushYn == null">
+	           'N',
+	           	</when>
+	           	<otherwise>
+	           #{pushYn, jdbcType=VARCHAR},	
+	           	</otherwise>
+	           </choose>
+	           #{regMemberSeq, jdbcType=NUMERIC} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+	           #{regIp, jdbcType=VARCHAR} ,
+	           #{updMemberSeq, jdbcType=NUMERIC} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+	           #{updIp, jdbcType=VARCHAR}
+           )
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveBbsVO">
+	/* UIUnivCourseActiveBbs.update */
+	UPDATE cs_course_active_bbs 
+	   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+	   	   ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	       ,cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+	        <if test='copyYn != null'>
+	       ,cs_copy_yn = #{copyYn, jdbcType=VARCHAR}
+	        </if> 
+	        <if test='evaluateYn != null'>
+	       ,cs_evaluate_yn = #{evaluateYn, jdbcType=VARCHAR} 
+	        </if> 
+	        <if test='popupYn != null'>
+	       ,cs_popup_yn = #{popupYn, jdbcType=VARCHAR} 
+	        </if> 
+	        <if test='multiRegYn != null'>
+	       ,cs_multi_reg_yn = #{multiRegYn, jdbcType=VARCHAR} 
+	        </if>
+	        <if test='profViewYn != null'>
+	        ,cx_prof_view_yn = #{profViewYn, jdbcType=VARCHAR}
+	        </if>
+	 WHERE cs_bbs_seq = #{bbsSeq} 
+	   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateViewCount" parameterType="Long">
+	/* UIUnivCourseActiveBbs.updateViewCount */
+	UPDATE cs_bbs 
+	   SET cs_view_count = cs_view_count + 1 
+	 WHERE cs_bbs_seq = #{bbsSeq} 
+	   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateResetPopupYn" parameterType="map">
+	/* UIUnivCourseActiveBbs.updateResetPopupYn */
+	UPDATE cs_course_active_bbs 
+	   SET cs_popup_yn = 'N' 
+	 WHERE cs_bbs_seq != #{bbsSeq}
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveBbsVO">
+	/* UIUnivCourseActiveBbs.delete */
+	UPDATE cs_course_active_bbs 
+	   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() , 
+	   	   cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+	       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+	       cs_delete_yn = 'Y' 
+	 WHERE cs_bbs_seq = #{bbsSeq} 
+	   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="deleteCourseActiveSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveBbsVO">
+    /* UIUnivCourseActiveBbs.deleteCourseActiveSeq */
+    UPDATE cs_course_active_bbs 
+       SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() , 
+           cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+           cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+           cs_delete_yn = 'Y' 
+     WHERE cs_course_active_seq = #{courseActiveSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"      />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"      />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"       property="bbs.secretYn"      />
+        <result column="bbs.copyYn"         property="bbs.copyYn"        />
+        <result column="bbs.evaluateYn"     property="bbs.evaluateYn"    />
+        <result column="bbs.popupYn"        property="bbs.popupYn"       />
+        <result column="bbs.viewCount"      property="bbs.viewCount"     />
+        <result column="bbs.commentCount"   property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"      />
+        <result column="bbs.likeSum"       	property="bbs.likeSum"       />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"       property="bbs.regDtime"      />
+        <result column="bbs.regIp" 	        property="bbs.regIp"     	 />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"       property="bbs.updDtime"      />
+        <result column="bbs.updIp" 	        property="bbs.updIp"     	 />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName" />
+        <result column="bbs.updMemberName"  property="bbs.updMemberName" />
+        <result column="bbs.replyCount"     property="bbs.replyCount"    />
+        <result column="bbs.downloadYn"     property="bbs.downloadYn"  />
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=bbs.bbsSeq,referenceTablename=referenceTablename}" property="bbs.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+	/* UIUnivCourseActiveBbs.getDetail */
+	SELECT bbs.cs_bbs_seq        	AS "bbs.bbsSeq" ,
+	       bbs.cs_board_seq      	AS "bbs.boardSeq" ,
+	       bbs.cs_bbs_title      	AS "bbs.bbsTitle" ,
+	       bbs.cs_bbs_type_cd    	AS "bbs.bbsTypeCd" ,
+	       bbs.cs_always_top_yn  	AS "bbs.alwaysTopYn" ,
+	       bbs.cs_html_yn        	AS "bbs.htmlYn" ,
+	       bbs.cs_secret_yn      	AS "bbs.secretYn" ,
+	       activebbs.cs_copy_yn     AS "bbs.copyYn" ,
+	       activebbs.cs_evaluate_yn AS "bbs.evaluateYn" ,
+	       activebbs.cs_popup_yn    AS "bbs.popupYn" ,
+	       bbs.cs_view_count     	AS "bbs.viewCount" ,
+	       bbs.cs_comment_count  	AS "bbs.commentCount" ,
+	       bbs.cs_parent_seq     	AS "bbs.parentSeq" ,
+	       bbs.cs_group_seq      	AS "bbs.groupSeq" ,
+	       bbs.cs_group_level    	AS "bbs.groupLevel" ,
+	       bbs.cs_group_order    	AS "bbs.groupOrder" ,
+	       bbs.cs_delete_yn      	AS "bbs.deleteYn" ,
+	       bbs.cs_reg_member_seq 	AS "bbs.regMemberSeq" ,
+	       bbs.cs_reg_dtime      	AS "bbs.regDtime" ,
+	       bbs.cs_reg_ip	     	AS "bbs.regIp" ,
+	       bbs.cs_upd_member_seq 	AS "bbs.updMemberSeq" ,
+	       bbs.cs_upd_dtime      	AS "bbs.updDtime" ,
+	       bbs.cs_upd_ip		 	AS "bbs.updIp" ,
+	       bbs.cx_download_yn	    AS "bbs.downloadYn",
+	       bbs.cs_like_sum 			AS "bbs.likeSum",
+	       (select cs_member_name from cs_member where cs_member_seq = bbs.cs_upd_member_seq) AS "bbs.updMemberName" ,
+	       (select cs_member_name from cs_member where cs_member_seq = bbs.cs_reg_member_seq) AS "bbs.regMemberName" ,
+	       'cs_course_active_bbs' 	AS "referenceTablename" ,
+	       (SELECT COUNT(*)
+	          FROM cs_course_active_bbs
+	         WHERE cs_parent_seq = bbs.cs_bbs_seq
+	           AND cs_delete_yn = 'N'
+	       ) 						AS "bbs.replyCount"
+	  FROM cs_course_active_bbs activebbs
+INNER JOIN cs_bbs bbs
+	    ON activebbs.cs_bbs_seq = bbs.cs_bbs_seq
+	   AND bbs.cs_delete_yn = 'N'
+INNER JOIN cs_member member
+	    ON bbs.cs_reg_member_seq = member.cs_member_seq
+ 	 WHERE bbs.cs_bbs_seq = #{bbsSeq}
+     AND bbs.cs_delete_yn = 'N'
+    </select>
+    
+    <resultMap id="detailCourseBbsResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"         />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"       />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"       />
+        <result column="bbs.description"    property="bbs.description"    />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"      />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"    />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"         />
+        <result column="bbs.secretYn"       property="bbs.secretYn"       />
+        <result column="bbs.copyYn"         property="bbs.copyYn"         />
+        <result column="bbs.evaluateYn"     property="bbs.evaluateYn"     />
+        <result column="bbs.popupYn"        property="bbs.popupYn"        />
+        <result column="bbs.multiRegYn"     property="bbs.multiRegYn"     />
+        <result column="bbs.courseApplySeq" property="bbs.courseApplySeq" />
+        <result column="bbs.pushYn" 		property="bbs.pushYn" 		  />
+        <result column="bbs.viewCount"      property="bbs.viewCount"      />
+        <result column="bbs.commentCount"   property="bbs.commentCount"   />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"      />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"       />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"     />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"     />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"       />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"   />
+        <result column="bbs.regDtime"       property="bbs.regDtime"       />
+        <result column="bbs.regIp" 	        property="bbs.regIp"     	  />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"   />
+        <result column="bbs.updDtime"       property="bbs.updDtime"       />
+        <result column="bbs.updIp" 	        property="bbs.updIp"     	  />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName"  />
+        <result column="bbs.updMemberName"  property="bbs.updMemberName"  />
+        <result column="bbs.replyCount"     property="bbs.replyCount"     />
+        <result column="bbs.downloadYn"     property="bbs.downloadYn"     />
+        <result column="bbs.likeSum"       	property="bbs.likeSum"       />
+        <result column="bbs.likeYN" 		property="bbs.likeYn"       />
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=bbs.bbsSeq,referenceTablename=referenceTablename}" property="bbs.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetailCourseBbs" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveBbsVO" resultMap="detailCourseBbsResultMap">
+	/* UIUnivCourseActiveBbs.getDetailCourseBbs */
+	SELECT bbs.cs_bbs_seq        			AS "bbs.bbsSeq" ,
+	       bbs.cs_board_seq      			AS "bbs.boardSeq" ,
+	       bbs.cs_bbs_title      			AS "bbs.bbsTitle" ,
+	       bbs.cs_description    			AS "bbs.description" ,
+	       bbs.cs_bbs_type_cd    			AS "bbs.bbsTypeCd" ,
+	       bbs.cs_always_top_yn  			AS "bbs.alwaysTopYn" ,
+	       bbs.cs_html_yn        			AS "bbs.htmlYn" ,
+	       bbs.cs_secret_yn      			AS "bbs.secretYn" ,
+	       activebbs.cs_copy_yn     		AS "bbs.copyYn" ,
+	       activebbs.cs_evaluate_yn 		AS "bbs.evaluateYn" ,
+	       activebbs.cs_popup_yn    		AS "bbs.popupYn" ,
+	       activebbs.cs_multi_reg_yn    	AS "bbs.multiRegYn" ,
+	       activebbs.cs_course_apply_seq    AS "bbs.courseApplySeq" ,
+	       activebbs.cx_push_yn			    AS "bbs.pushYn" ,
+	       bbs.cs_view_count     			AS "bbs.viewCount" ,
+	       bbs.cs_comment_count  			AS "bbs.commentCount" ,
+	       bbs.cs_parent_seq     			AS "bbs.parentSeq" ,
+	       bbs.cs_group_seq      			AS "bbs.groupSeq" ,
+	       bbs.cs_group_level    			AS "bbs.groupLevel" ,
+	       bbs.cs_group_order    			AS "bbs.groupOrder" ,
+	       bbs.cs_delete_yn      			AS "bbs.deleteYn" ,
+	       bbs.cs_reg_member_seq 			AS "bbs.regMemberSeq" ,
+	       bbs.cs_reg_dtime      			AS "bbs.regDtime" ,
+	       bbs.cs_reg_ip	     			AS "bbs.regIp" ,
+	       bbs.cs_upd_member_seq 			AS "bbs.updMemberSeq" ,
+	       bbs.cs_upd_dtime      			AS "bbs.updDtime" ,
+	       bbs.cs_upd_ip		 			AS "bbs.updIp" ,
+	       bbs.cx_download_yn	   			AS "bbs.downloadYn",
+	       bbs.cs_like_sum 					AS "bbs.likeSum",
+	       CASE WHEN (SELECT COUNT(*)
+			  FROM cs_like_history
+			  WHERE CS_REFERENCE_TABLENAME = 'cs_bbs'
+			  AND CS_DELETE_YN = 'N'
+			  AND CS_REG_MEMBER_SEQ = member.cs_member_seq
+			  AND CS_REFERENCE_SEQ = bbs.cs_bbs_seq 
+			)  >  0 THEN 'Y' ELSE 'N' END as "bbs.likeYN",	       
+	       (select CS_NICKNAME from cs_member where cs_member_seq = bbs.cs_upd_member_seq) AS "bbs.updMemberName" ,
+	       (select CS_NICKNAME from cs_member where cs_member_seq = bbs.cs_reg_member_seq) AS "bbs.regMemberName" ,
+	       'cs_course_active_bbs' 		AS "referenceTablename" ,
+	       (SELECT COUNT(*)
+	          FROM cs_course_active_bbs
+	         WHERE cs_parent_seq = bbs.cs_bbs_seq
+	           AND cs_delete_yn = 'N')		AS "bbs.replyCount"
+	  FROM cs_course_active_bbs activebbs
+INNER JOIN cs_bbs bbs
+	    ON activebbs.cs_bbs_seq = bbs.cs_bbs_seq
+	   AND bbs.cs_delete_yn = 'N'
+INNER JOIN cs_member member
+	    ON bbs.cs_reg_member_seq = member.cs_member_seq
+ 	 WHERE bbs.cs_bbs_seq = #{bbsSeq}
+ 	 AND activebbs.cs_course_active_seq = #{courseActiveSeq}
+     AND bbs.cs_delete_yn = 'N'
+    </select>    
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"      />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"      />
+        <result column="bbs.description"    property="bbs.description"   />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"       property="bbs.secretYn"      />
+        <result column="bbs.copyYn"         property="bbs.copyYn"        />
+        <result column="bbs.evaluateYn"     property="bbs.evaluateYn"    />
+        <result column="bbs.popupYn"        property="bbs.popupYn"       />
+        <result column="bbs.viewCount"      property="bbs.viewCount"     />
+        <result column="bbs.commentCount"   property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"      />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"       property="bbs.regDtime"      />
+        <result column="bbs.regIp" 	        property="bbs.regIp"     	 />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"       property="bbs.updDtime"      />
+        <result column="bbs.activeBbsUpdDtime"       property="bbs.activeBbsUpdDtime"      />
+        <result column="bbs.updIp" 	        property="bbs.updIp"     	 />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName" />
+        <result column="bbs.updMemberName"  property="bbs.updMemberName" />
+        <result column="bbs.attachCount"    property="bbs.attachCount"   />
+        <result column="bbs.downloadYn"     property="bbs.downloadYn"  />
+        <result column="bbs.likeSum"       	property="bbs.likeSum"       />
+        <result column="bbs.regMemberPhoto" property="bbs.regMemberPhoto"       />
+        <result column="bbs.companyName" property="bbs.companyName"       />
+        <result column="bbs.position" property="bbs.position"       />
+        <result column="bbs.profViewYn" property="bbs.profViewYn"       />
+        <result column="bbs.likeYN" 		property="bbs.likeYn"       />
+        <result column="bbs.commSeq" 	property="bbs.commSeq"       />
+        <result column="bbs.commDescription" 	property="bbs.commDescription"       />
+        <result column="bbs.commRegDtime" 	property="bbs.commRegDtime"       />
+        <result column="bbs.commSecretYn" 	property="bbs.commSecretYn"       />
+        
+        <collection column="{referenceSeq=bbs.bbsSeq,referenceTablename=referenceTablename}" property="bbs.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultMap="listResultMap">
+	/* UIUnivCourseActiveBbs.getList */
+	        <if test='currentPage != 0'>
+	SELECT Z.* FROM (SELECT Row_Number() OVER (
+	        <choose>
+	        	<when test='srchBbsSeq != null and !srchBbsSeq.equals("")'>
+	        		ORDER BY "bbs.bbsSeq" ASC
+        		</when>
+        		<when test='srchUpdDtime != null and !srchUpdDtime.equals("")'>
+	        		ORDER BY "bbs.activeBbsUpdDtime" ASC
+        		</when>
+	            <when test='orderby == 1'>ORDER BY "bbs.regDtime" ASC</when>
+	            <when test='orderby == -1'>ORDER BY "bbs.regDtime" DESC</when>
+	            <when test='orderby == 2'>ORDER BY "bbs.bbsTitle" ASC</when>
+	            <when test='orderby == -2'>ORDER BY "bbs.bbsTitle" DESC</when>
+	            <when test='orderby == 3'>ORDER BY "bbs.bbsTypeCd" ASC</when>
+	            <when test='orderby == -3'>ORDER BY "bbs.bbsTypeCd" DESC</when>
+	            <otherwise>ORDER BY "bbs.alwaysTopYn" DESC,"bbs.groupSeq" DESC, "bbs.groupOrder" ASC, "bbs.bbsSeq" ASC</otherwise>
+	        </choose>
+	) AS rownumber, * FROM (
+	        </if>
+	SELECT bbs.cs_bbs_seq        	AS "bbs.bbsSeq" ,
+	       bbs.cs_board_seq      	AS "bbs.boardSeq" ,
+	       bbs.cs_bbs_title			AS "bbs.bbsTitle" ,
+	       bbs.cs_description	    AS "bbs.description",
+	       bbs.cs_bbs_type_cd    	AS "bbs.bbsTypeCd" ,
+	       bbs.cs_always_top_yn  	AS "bbs.alwaysTopYn" ,
+	       bbs.cs_html_yn        	AS "bbs.htmlYn" ,
+	       bbs.cs_secret_yn      	AS "bbs.secretYn" ,
+	       activebbs.cs_copy_yn     AS "bbs.copyYn" ,
+	       activebbs.cs_evaluate_yn AS "bbs.evaluateYn" ,
+	       activebbs.cs_popup_yn    AS "bbs.popupYn" ,
+	       bbs.cs_view_count     	AS "bbs.viewCount" ,
+	       bbs.cs_comment_count  	AS "bbs.commentCount" ,
+	       bbs.cs_parent_seq     	AS "bbs.parentSeq" ,
+	       bbs.cs_group_seq      	AS "bbs.groupSeq" ,
+	       bbs.cs_group_level    	AS "bbs.groupLevel" ,
+	       bbs.cs_group_order    	AS "bbs.groupOrder" ,
+	       bbs.cs_delete_yn      	AS "bbs.deleteYn" ,
+	       bbs.cs_reg_member_seq 	AS "bbs.regMemberSeq" ,
+	       bbs.cs_reg_dtime      	AS "bbs.regDtime" ,
+	       bbs.cs_reg_ip	     	AS "bbs.regIp" ,
+	       bbs.cs_upd_member_seq 	AS "bbs.updMemberSeq" ,
+	       bbs.cs_upd_dtime      	AS "bbs.updDtime" ,
+	       bbs.cs_upd_ip		 	AS "bbs.updIp" ,
+	       member.cs_nickname 		AS "bbs.regMemberName" ,
+	       bbs.cx_download_yn	   	AS "bbs.downloadYn",
+	       bbs.cs_like_sum 			AS "bbs.likeSum",
+	       member.cs_photo 			AS "bbs.regMemberPhoto",
+	       member.cx_company_name 			AS "bbs.companyName",
+	       member.cx_position 			AS "bbs.position",
+	       activebbs.cx_prof_view_yn 			AS "bbs.profViewYn",
+	       activebbs.cs_upd_dtime      	AS "bbs.activeBbsUpdDtime" ,
+	       (SELECT COUNT(*)
+	          FROM cs_attach
+	         WHERE cs_reference_seq = bbs.cs_bbs_seq
+	           AND cs_reference_tablename = 'cs_course_active_bbs'
+	           AND cs_delete_yn = 'N'
+	       ) AS "bbs.attachCount",
+		  CASE WHEN (SELECT COUNT(*)
+		  FROM cs_like_history
+		  WHERE CS_REFERENCE_TABLENAME = 'cs_bbs'
+		  AND CS_DELETE_YN = 'N'
+		  AND CS_REG_MEMBER_SEQ = member.cs_member_seq
+		  AND CS_REFERENCE_SEQ = bbs.cs_bbs_seq 
+		  )  >  0 THEN 'Y' ELSE 'N' END as "bbs.likeYN", 	       
+	       'cs_course_active_bbs' 					AS "referenceTablename",
+	      comm.CS_COMMENT_SEQ AS "bbs.commSeq",
+		  comm.cs_description AS "bbs.commDescription",
+          comm.cs_reg_dtime AS "bbs.commRegDtime",
+          (SELECT CS_SECRET_YN FROM CS_BOARD WHERE CS_BOARD_SEQ = bbs.CS_BOARD_SEQ) AS "bbs.commSecretYn"	       
+	  FROM cs_course_active_bbs activebbs
+		INNER JOIN cs_bbs bbs
+	    	ON activebbs.cs_bbs_seq = bbs.cs_bbs_seq
+	    	AND bbs.cs_delete_yn = 'N'
+		INNER JOIN cs_member member
+	    	ON bbs.cs_reg_member_seq = member.cs_member_seq
+		INNER JOIN CS_COURSE_ACTIVE active
+            ON activebbs.CS_COURSE_ACTIVE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		LEFT OUTER JOIN(SELECT TOP 1 * FROM   cs_comment ORDER  BY cs_reg_dtime DESC) comm
+            ON comm.cs_bbs_seq = bbs.CS_BBS_SEQ                     		
+	 WHERE activebbs.cs_course_active_seq = #{srchCourseActiveSeq}
+	   AND activebbs.cs_board_type_cd = #{srchBoardTypeCd}
+	   AND activebbs.cs_delete_yn = 'N'
+<!-- 	   <if test='srchSearchYn != null and !srchSearchYn.equals("")'>
+	   		<if test='srchSearchYn == "Y" and srchSearchYn.equals("Y")'>
+	   			AND bbs.CS_REG_MEMBER_SEQ = #{srchMemberSeq}
+	   		</if>
+	   </if> -->
+       <if test='srchCopyYn != null and !srchCopyYn.equals("")'>
+       AND activebbs.cs_copy_yn = #{srchCopyYn}
+       </if>
+       <if test='srchProfViewYn != null and !srchProfViewYn.equals("")'>
+        AND activebbs.cx_prof_view_yn = #{srchProfViewYn}
+        </if>   
+	   <if test='srchBoardTypeCd.equals("${CD.BOARD_TYPE.DYNAMIC}")'>
+	   AND bbs.cs_board_seq = #{srchBoardSeq}
+	   </if>
+	   <if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("")'>
+       AND bbs.cs_bbs_type_cd = #{srchBbsTypeCd}         
+       </if>
+       <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       AND bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND bbs.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+       </if>
+       <if test='srchBbsSeq != null and !srchBbsSeq.equals("")'>
+       		<choose>
+      			<when test='srchBeforeAfter.equals("after")'>
+					AND bbs.cs_bbs_seq > #{srchBbsSeq}      			
+      			</when>
+      			<otherwise>
+      				AND bbs.cs_bbs_seq <![CDATA[<]]> #{srchBbsSeq}
+      			</otherwise>
+      		</choose>
+       </if>
+       <if test='srchUpdDtime != null and !srchUpdDtime.equals("")'>
+			AND activebbs.cs_upd_dtime <![CDATA[>]]> #{srchUpdDtime}
+       </if>
+       <if test='srchAlwaysTopYn != null and !srchAlwaysTopYn.equals("")'>
+       AND bbs.cs_always_top_yn = #{srchAlwaysTopYn}
+       </if>
+       <if test='srchRecentDay != null and !srchRecentDay.equals("")'>
+        AND  bbs.cs_reg_dtime > REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(DD, #{srchRecentDay}, GETDATE()), 120), '-', ''), ':', ''), ' ', '')
+       </if>
+       <if test='srchRegMemberSeq != null and !srchRegMemberSeq.equals("")'>
+       AND (member.cs_member_seq = #{srchRegMemberSeq} OR 
+       		(SELECT subBbs.cs_reg_member_seq 
+       		   FROM cs_course_active_bbs subBbs 
+       		  WHERE subBbs.cs_bbs_seq = bbs.cs_parent_seq 
+       		    AND subBbs.cs_delete_yn = 'N' ) = #{srchRegMemberSeq})
+       </if>
+       <if test='srchClassificationCode != null and !srchClassificationCode.equals("")'>
+        AND bbs.cx_classification_code = #{srchClassificationCode}
+        </if>          
+        <if test='currentPage == 0'>
+        	<choose>
+        		<when test='srchProfViewYn != null and !srchProfViewYn.equals("")'>
+        			ORDER BY activebbs.cs_upd_dtime DESC
+        		</when>
+        		<when test='srchProfViewYn == null or srchProfViewYn.equals("")'>
+        			ORDER BY bbs.cs_bbs_seq DESC
+        		</when>
+        		<otherwise>ORDER BY bbs.cs_bbs_seq DESC</otherwise>
+        	</choose>
+	   </if>
+	   <if test='currentPage != 0'>
+	) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber  
+			<if test='srchBbsSeq != null and !srchBbsSeq.equals("")'>desc</if>
+			<if test='srchUpdDtime != null and !srchUpdDtime.equals("")'>desc</if>
+	   </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultType="int">
+	/* UIUnivCourseActiveBbs.countList */
+		SELECT COUNT(*)
+		  FROM cs_course_active_bbs activebbs
+	INNER JOIN cs_bbs bbs
+		    ON activebbs.cs_bbs_seq = bbs.cs_bbs_seq
+		   AND bbs.cs_delete_yn = 'N'
+	INNER JOIN cs_member member
+		    ON bbs.cs_reg_member_seq = member.cs_member_seq
+		 WHERE activebbs.cs_course_active_seq = #{srchCourseActiveSeq}
+		   AND activebbs.cs_board_type_cd = #{srchBoardTypeCd}
+		   AND activebbs.cs_delete_yn = 'N'
+		   <if test='srchCopyYn != null and !srchCopyYn.equals("")'>
+           AND activebbs.cs_copy_yn = #{srchCopyYn}
+           </if>
+           <if test='srchBoardTypeCd.equals("${CD.BOARD_TYPE.DYNAMIC}")'>
+		   AND bbs.cs_board_seq = #{srchBoardSeq}
+		   </if>		   
+	        <if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("")'>
+	       AND bbs.cs_bbs_type_cd = #{srchBbsTypeCd}         
+	        </if>
+	        <if test='srchWord != null and !srchWord.equals("")'>
+	            <if test='srchKey.equals("title")'>
+	       AND bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%'
+	            </if>
+	            <if test='srchKey.equals("description")'>
+	       AND bbs.cs_description LIKE '%' + #{srchWordDB} + '%'
+	            </if>
+	            <if test='srchKey.equals("regMemberName")'>
+	       AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+	            </if>
+	        </if>
+	        <if test='srchBbsSeq != null and !srchBbsSeq.equals("")'>
+	       		<choose>
+	      			<when test='srchBeforeAfter.equals("after")'>
+						AND bbs.cs_bbs_seq > #{srchBbsSeq}      			
+	      			</when>
+	      			<otherwise>
+	      				AND bbs.cs_bbs_seq <![CDATA[<]]> #{srchBbsSeq}
+	      			</otherwise>
+	      		</choose>
+	       </if>
+	        <if test='srchUpdDtime != null and !srchUpdDtime.equals("")'>
+				AND activebbs.cs_upd_dtime <![CDATA[>]]> #{srchUpdDtime}
+	       </if>
+	       <if test='srchRecentDay != null and !srchRecentDay.equals("")'>
+	        AND  bbs.cs_reg_dtime > REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(DD, #{srchRecentDay}, GETDATE()), 120), '-', ''), ':', ''), ' ', '')
+	       </if>
+	        <if test='srchAlwaysTopYn != null and !srchAlwaysTopYn.equals("")'>
+	       AND bbs.cs_always_top_yn = #{srchAlwaysTopYn}
+	        </if>
+	        <if test='srchRegMemberSeq != null and !srchRegMemberSeq.equals("")'>
+	       AND (member.cs_member_seq = #{srchRegMemberSeq} OR 
+	       		(SELECT subBbs.cs_reg_member_seq 
+	       		   FROM cs_course_active_bbs subBbs 
+	       		  WHERE subBbs.cs_bbs_seq = bbs.cs_parent_seq 
+	       		    AND subBbs.cs_delete_yn = 'N' ) = #{srchRegMemberSeq})
+	        </if>  
+	        <if test='srchClassificationCode != null and !srchClassificationCode.equals("")'>
+	        AND bbs.cx_classification_code = #{srchClassificationCode}
+	        </if>     
+    </select>
+
+    <resultMap id="listReplyResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"      />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"      />
+        <result column="bbs.description"    property="bbs.description"   />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"       property="bbs.secretYn"      />
+        <result column="bbs.copyYn"         property="bbs.copyYn"        />
+        <result column="bbs.evaluateYn"     property="bbs.evaluateYn"    />
+        <result column="bbs.popupYn"        property="bbs.popupYn"       />
+        <result column="bbs.viewCount"      property="bbs.viewCount"     />
+        <result column="bbs.commentCount"   property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"      />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"       property="bbs.regDtime"      />
+        <result column="bbs.regIp"          property="bbs.regIp"         />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"       property="bbs.updDtime"      />
+        <result column="bbs.updIp"          property="bbs.updIp"         />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName" />
+        <result column="bbs.attachCount"    property="bbs.attachCount"   />
+        <result column="bbs.downloadYn"     property="bbs.downloadYn"  />
+    </resultMap>
+    <select id="getListReply" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultMap="listReplyResultMap">
+/* UIUnivCourseActiveBbs.getListReply */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "bbs.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "bbs.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "bbs.bbsTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "bbs.bbsTitle" DESC</when>
+            <when test='orderby == 3'>ORDER BY "bbs.bbsTypeCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "bbs.bbsTypeCd" DESC</when>
+            <otherwise>ORDER BY "bbs.groupSeq" DESC, "bbs.groupOrder" ASC, "bbs.bbsSeq" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+	SELECT bbs.cs_bbs_seq        AS "bbs.bbsSeq" ,
+	       bbs.cs_board_seq      AS "bbs.boardSeq" ,
+	       bbs.cs_bbs_title      AS "bbs.bbsTitle" ,
+	       bbs.cs_description    AS "bbs.description" ,
+	       bbs.cs_bbs_type_cd    AS "bbs.bbsTypeCd" ,
+	       bbs.cs_always_top_yn  AS "bbs.alwaysTopYn" ,
+	       bbs.cs_html_yn        AS "bbs.htmlYn" ,
+	       bbs.cs_secret_yn      	AS "bbs.secretYn" ,
+	       activebbs.cs_copy_yn     AS "bbs.copyYn" ,
+	       activebbs.cs_evaluate_yn AS "bbs.evaluateYn" ,
+	       activebbs.cs_popup_yn    AS "bbs.popupYn" ,
+	       bbs.cs_view_count     AS "bbs.viewCount" ,
+	       bbs.cs_comment_count  AS "bbs.commentCount" ,
+	       bbs.cs_parent_seq     AS "bbs.parentSeq" ,
+	       bbs.cs_group_seq      AS "bbs.groupSeq" ,
+	       bbs.cs_group_level    AS "bbs.groupLevel" ,
+	       bbs.cs_group_order    AS "bbs.groupOrder" ,
+	       bbs.cs_delete_yn      AS "bbs.deleteYn" ,
+	       bbs.cs_reg_member_seq AS "bbs.regMemberSeq" ,
+	       bbs.cs_reg_dtime      AS "bbs.regDtime" ,
+	       bbs.cs_reg_ip         AS "bbs.regIp" ,
+	       bbs.cs_upd_member_seq AS "bbs.updMemberSeq" ,
+	       bbs.cs_upd_dtime      AS "bbs.updDtime" ,
+	       bbs.cs_upd_ip         AS "bbs.updIp" ,
+	       member.cs_member_name AS "bbs.regMemberName" ,
+	       bbs.cx_download_yn	 AS "bbs.downloadYn",
+	       (SELECT COUNT(*)
+	          FROM cs_attach
+	         WHERE cs_reference_seq = bbs.cs_bbs_seq
+	           AND cs_reference_tablename = 'cs_course_active_bbs'
+	           AND cs_delete_yn = 'N'
+	       ) AS "bbs.attachCount"
+	  FROM cs_course_active_bbs activebbs
+INNER JOIN cs_bbs bbs
+	    ON activebbs.cs_bbs_seq = bbs.cs_bbs_seq
+	   AND bbs.cs_delete_yn = 'N'
+INNER JOIN cs_member member
+	    ON bbs.cs_reg_member_seq = member.cs_member_seq
+	 WHERE bbs.cs_parent_seq = #{srchParentSeq}
+       AND bbs.cs_delete_yn = 'N'
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countListReply" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultType="int">
+	/* UIUnivCourseActiveBbs.countListReply */
+	SELECT COUNT(*)
+	  FROM cs_course_active_bbs activebbs
+INNER JOIN cs_bbs bbs
+	    ON activebbs.cs_bbs_seq = bbs.cs_bbs_seq
+	   AND bbs.cs_delete_yn = 'N'
+INNER JOIN cs_member member
+	    ON bbs.cs_reg_member_seq = member.cs_member_seq
+	 WHERE bbs.cs_parent_seq = #{srchParentSeq}
+       AND bbs.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listAlwaysTopResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"      />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"      />
+        <result column="bbs.description" 	property="bbs.description"	 />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"       property="bbs.secretYn"      />
+        <result column="bbs.copyYn"         property="bbs.copyYn"        />
+        <result column="bbs.evaluateYn"     property="bbs.evaluateYn"    />
+        <result column="bbs.popupYn"        property="bbs.popupYn"       />
+        <result column="bbs.viewCount"      property="bbs.viewCount"     />
+        <result column="bbs.commentCount"   property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"      />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"       property="bbs.regDtime"      />
+        <result column="bbs.regIp" 	        property="bbs.regIp"     	 />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"       property="bbs.updDtime"      />
+        <result column="bbs.updIp" 	        property="bbs.updIp"     	 />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName" />
+        <result column="bbs.updMemberName"  property="bbs.updMemberName" />
+        <result column="bbs.attachCount"    property="bbs.attachCount"   />
+    </resultMap>
+    <select id="getListAlwaysTop" parameterType="Long" resultMap="listAlwaysTopResultMap">
+	/* UIUnivCourseActiveBbs.getListAlwaysTop */
+	SELECT bbs.cs_bbs_seq        AS "bbs.bbsSeq" ,
+	       bbs.cs_board_seq      AS "bbs.boardSeq" ,
+	       bbs.cs_bbs_title      AS "bbs.bbsTitle" ,
+	       bbs.cs_description 	 AS "bbs.description" ,
+	       bbs.cs_bbs_type_cd    AS "bbs.bbsTypeCd" ,
+	       bbs.cs_always_top_yn  AS "bbs.alwaysTopYn" ,
+	       bbs.cs_html_yn        AS "bbs.htmlYn" ,
+	       bbs.cs_secret_yn      AS "bbs.secretYn" ,
+	       bbs.cs_copy_yn        AS "bbs.copyYn" ,
+	       bbs.cs_evaluate_yn    AS "bbs.evaluateYn" ,
+	       bbs.cs_popup_yn       AS "bbs.popupYn" ,
+	       bbs.cs_view_count     AS "bbs.viewCount" ,
+	       bbs.cs_comment_count  AS "bbs.commentCount" ,
+	       bbs.cs_parent_seq     AS "bbs.parentSeq" ,
+	       bbs.cs_group_seq      AS "bbs.groupSeq" ,
+	       bbs.cs_group_level    AS "bbs.groupLevel" ,
+	       bbs.cs_group_order    AS "bbs.groupOrder" ,
+	       bbs.cs_delete_yn      AS "bbs.deleteYn" ,
+	       bbs.cs_reg_member_seq AS "bbs.regMemberSeq" ,
+	       bbs.cs_reg_dtime      AS "bbs.regDtime" ,
+	       bbs.cs_reg_ip	     AS "bbs.regIp" ,
+	       bbs.cs_upd_member_seq AS "bbs.updMemberSeq" ,
+	       bbs.cs_upd_dtime      AS "bbs.updDtime" ,
+	       bbs.cs_upd_ip		 AS "bbs.updIp" ,
+	       member.cs_member_name AS "bbs.regMemberName" ,
+	       (SELECT COUNT(*)
+	          FROM cs_attach
+	         WHERE cs_reference_seq = bbs.cs_bbs_seq
+	           AND cs_reference_tablename = 'cs_course_active_bbs'
+	           AND cs_delete_yn = 'N'
+	       ) AS "bbs.attachCount"
+	  FROM cs_course_active_bbs bbs
+INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+	 WHERE bbs.cs_board_seq = #{boardSeq}
+       AND bbs.cs_always_top_yn = 'Y'
+       AND bbs.cs_delete_yn = 'N'
+  ORDER BY bbs.cs_reg_dtime DESC
+    </select>
+    
+     <resultMap id="listMyPageResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"           		property="bbs.bbsSeq"          				/>
+        <result column="bbs.bbsTitle"         		property="bbs.bbsTitle"        				/>
+        <result column="bbs.description" 			property="bbs.description"	 				/>
+        <result column="bbs.courseActiveSeq"        property="bbs.courseActiveSeq"       		/>
+        <result column="bbs.bbsTypeCd"        		property="bbs.bbsTypeCd"       				/>
+        <result column="bbs.regMemberSeq"     		property="bbs.regMemberSeq"    				/>
+        <result column="bbs.regDtime"				property="bbs.regDtime"        				/>
+        <result column="bbs.regMemberName"			property="bbs.regMemberName"   				/>
+        <result column="bbs.replyCount"				property="bbs.replyCount"      				/>
+        <result column="active.courseActiveTitle"	property="courseActive.courseActiveTitle"	/>
+        <result column="active.division"       		property="courseActive.division"      		/>
+        <result column="active.courseTypeCd"		property="courseActive.courseTypeCd"      	/>
+        <result column="active.periodNumber"		property="courseActive.periodNumber"      	/>
+        <result column="category.categoryTypeCd"	property="category.categoryTypeCd"      	/>
+    </resultMap>
+    <select id="getMyPageList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultMap="listMyPageResultMap">
+	/* UIUnivCourseActiveBbs.getMyPageList */
+	SELECT g.cs_bbs_seq 							AS "bbs.bbsSeq", 
+	       g.cs_bbs_title 							AS "bbs.bbsTitle", 
+	       d.cs_course_active_seq 					AS "bbs.courseActiveSeq", 
+	       g.cs_bbs_type_cd 						AS "bbs.bbsTypeCd", 
+	       g.cs_reg_member_seq 						AS "bbs.regMemberSeq", 
+	       g.cs_reg_dtime 							AS "bbs.regDtime", 
+		   member.cs_member_name 					AS "bbs.regMemberName", 
+		   (SELECT COUNT(*)
+	          FROM cs_bbs sub
+	         WHERE sub.cs_parent_seq = c.cs_bbs_seq
+	           AND sub.cs_delete_yn = 'N') 			AS "bbs.replyCount",
+		   d.cs_course_active_title 				AS "active.courseActiveTitle", 
+	       d.cs_division 							AS "active.division", 
+	       d.cs_course_type_cd 						AS "active.courseTypeCd", 
+	       d.cs_period_number 						AS "active.periodNumber",
+	       f.cs_category_type_cd 					AS "category.categoryTypeCd"
+	  FROM cs_board a 
+INNER JOIN cs_bbs_seq b 
+        ON a.cs_board_seq = b.cs_board_seq 
+       AND a.cs_delete_yn = 'N' 
+INNER JOIN cs_course_active_bbs c 
+        ON c.cs_bbs_seq = b.cs_bbs_seq 
+	   AND c.cs_delete_yn = 'N' 
+INNER JOIN cs_bbs g
+	    ON c.cs_bbs_seq = g.cs_bbs_seq 
+	   AND g.cs_group_level = 1
+	   AND g.cs_delete_yn = 'N' 
+INNER JOIN cs_course_active d 
+        ON d.cs_course_active_seq = a.cs_reference_seq 
+	   AND d.cs_delete_yn = 'N' 
+INNER JOIN cs_course_active_lecturer e 
+        ON e.cs_course_active_seq = d.CS_COURSE_ACTIVE_SEQ 
+       AND e.cs_use_yn = 'Y' 
+       AND e.cs_delete_yn = 'N'
+INNER JOIN cs_category f
+		ON f.cs_category_seq = d.cs_category_organization_seq
+	   AND f.cs_delete_yn = 'N' 
+INNER JOIN cs_member member
+		ON member.cs_member_seq = g.cs_reg_member_seq
+	   AND member.cs_delete_yn = 'N'
+	 WHERE a.cs_delete_yn = 'N' 
+       AND a.cs_board_type_cd = #{srchBoardTypeCd}
+       AND a.cs_reference_type = 'course'
+       AND e.cs_member_seq = #{srchMemberSeq}
+  ORDER BY c.cs_reg_dtime
+		<if test='srchBoardTypeCd != null and !srchBoardTypeCd.equals("${CD.BOARD_TYPE.QNA}")'>
+		DESC
+		</if>
+    </select>
+    
+    <select id="getListCourseAlwaysTop" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultMap="listAlwaysTopResultMap">
+	/* UIUnivCourseActiveBbs.getListCourseAlwaysTop */
+	SELECT bbs.cs_bbs_seq        	AS "bbs.bbsSeq" ,
+	       bbs.cs_board_seq      	AS "bbs.boardSeq" ,
+	       bbs.cs_bbs_title      	AS "bbs.bbsTitle" ,
+	       bbs.cs_description 	 	AS "bbs.description" ,
+	       bbs.cs_bbs_type_cd    	AS "bbs.bbsTypeCd" ,
+	       bbs.cs_always_top_yn  	AS "bbs.alwaysTopYn" ,
+	       bbs.cs_html_yn        	AS "bbs.htmlYn" ,
+	       bbs.cs_secret_yn      	AS "bbs.secretYn" ,
+	       activebbs.cs_copy_yn     AS "bbs.copyYn" ,
+	       activebbs.cs_evaluate_yn AS "bbs.evaluateYn" ,
+	       activebbs.cs_popup_yn    AS "bbs.popupYn" ,
+	       bbs.cs_view_count     	AS "bbs.viewCount" ,
+	       bbs.cs_comment_count  	AS "bbs.commentCount" ,
+	       bbs.cs_parent_seq     	AS "bbs.parentSeq" ,
+	       bbs.cs_group_seq      	AS "bbs.groupSeq" ,
+	       bbs.cs_group_level    	AS "bbs.groupLevel" ,
+	       bbs.cs_group_order    	AS "bbs.groupOrder" ,
+	       bbs.cs_delete_yn      	AS "bbs.deleteYn" ,
+	       bbs.cs_reg_member_seq 	AS "bbs.regMemberSeq" ,
+	       bbs.cs_reg_dtime      	AS "bbs.regDtime" ,
+	       bbs.cs_reg_ip	     	AS "bbs.regIp" ,
+	       bbs.cs_upd_member_seq 	AS "bbs.updMemberSeq" ,
+	       bbs.cs_upd_dtime      	AS "bbs.updDtime" ,
+	       bbs.cs_upd_ip		 	AS "bbs.updIp" ,
+	       member.cs_member_name 	AS "bbs.regMemberName" ,
+	       bbs.cx_download_yn	    AS "bbs.downloadYn",
+	       (SELECT COUNT(*)
+	          FROM cs_attach
+	         WHERE cs_reference_seq = bbs.cs_bbs_seq
+	           AND cs_reference_tablename = 'cs_course_active_bbs'
+	           AND cs_delete_yn = 'N'
+	       ) AS "bbs.attachCount"
+		  FROM cs_course_active_bbs activebbs
+	INNER JOIN cs_bbs bbs
+		    ON activebbs.cs_bbs_seq = bbs.cs_bbs_seq
+		   AND bbs.cs_delete_yn = 'N'
+	INNER JOIN cs_member member
+		    ON bbs.cs_reg_member_seq = member.cs_member_seq
+		 WHERE activebbs.cs_course_active_seq = #{srchCourseActiveSeq}
+		   AND activebbs.cs_board_type_cd = #{srchBoardTypeCd}
+		   AND activebbs.cs_delete_yn = 'N'
+	       AND bbs.cs_always_top_yn = 'Y'
+		   <if test='srchBoardTypeCd.equals("${CD.BOARD_TYPE.DYNAMIC}")'>
+		   AND bbs.cs_board_seq = #{srchBoardSeq}
+		   </if>
+           <if test='srchCopyYn != null and !srchCopyYn.equals("")'>
+           AND activebbs.cs_copy_yn = #{srchCopyYn}
+           </if>		       
+	ORDER BY bbs.cs_reg_dtime DESC
+    </select>    
+
+	
+	
+	 <resultMap id="getMyPageBbsAlwaysTopListResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"         				property="bbs.bbsSeq"        	 />
+        <result column="bbs.boardSeq"       				property="bbs.boardSeq"      	 />
+        <result column="bbs.bbsTitle"       				property="bbs.bbsTitle"      	 />
+        <result column="bbs.bbsTypeCd"      				property="bbs.bbsTypeCd"     	 />
+        <result column="bbs.alwaysTopYn"    				property="bbs.alwaysTopYn"  	 />
+        <result column="bbs.htmlYn"         				property="bbs.htmlYn"        	 />
+        <result column="bbs.secretYn"       				property="bbs.secretYn"      	 />
+        <result column="bbs.viewCount"      				property="bbs.viewCount"     	 />
+        <result column="bbs.commentCount"   				property="bbs.commentCount"  	 />
+        <result column="bbs.parentSeq"      				property="bbs.parentSeq"     	 />
+        <result column="bbs.groupSeq"       				property="bbs.groupSeq"      	 />
+        <result column="bbs.groupLevel"     				property="bbs.groupLevel"    	 />
+        <result column="bbs.groupOrder"     				property="bbs.groupOrder"    	 />
+        <result column="bbs.regDtime"       				property="bbs.regDtime"      	 />
+        <result column="bbs.regMemberName"  				property="bbs.regMemberName" 	 />
+        <result column="bbs.bbsCount"  						property="bbs.bbsCount" 	 	 />
+        <result column="course.courseActiveTitle"  			property="courseActive.courseActiveTitle" />
+        <result column="course.year"  						property="courseActive.year" />
+        <result column="course.yearTerm"  					property="courseActive.yearTerm" />
+        <result column="course.term"  						property="courseActive.term" />
+        <result column="cate.categoryTypeCd"  				property="category.categoryTypeCd" />
+        <result column="bbs.attachCount"    				property="bbs.attachCount"   	 />
+        <result column="bbs.replyCount"     				property="bbs.replyCount"   	 />
+        <result column="bbs.downloadYn"     			    property="bbs.downloadYn"  />
+    </resultMap>
+	<select id="getMyPageBbsAlwaysTopList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultMap="getMyPageBbsAlwaysTopListResultMap">
+	/* UIUnivCourseActiveBbs.getMyPageBbsAlwaysTopList */
+		SELECT 
+			   bbs.cs_bbs_seq 					AS "bbs.bbsSeq" , 
+		       bbs.cs_board_seq 				AS "bbs.boardSeq" , 
+		       bbs.cs_bbs_title 				AS "bbs.bbsTitle" , 
+		       bbs.cs_bbs_type_cd 				AS "bbs.bbsTypeCd" , 
+		       bbs.cs_always_top_yn 			AS "bbs.alwaysTopYn" , 
+		       bbs.cs_html_yn 					AS "bbs.htmlYn" , 
+		       bbs.cs_secret_yn 				AS "bbs.secretYn" , 
+		       bbs.cs_view_count 				AS "bbs.viewCount" , 
+		       bbs.cs_comment_count 			AS "bbs.commentCount" , 
+		       bbs.cs_parent_seq 				AS "bbs.parentSeq" , 
+		       bbs.cs_group_seq 				AS "bbs.groupSeq" , 
+		       bbs.cs_group_level 				AS "bbs.groupLevel" , 
+		       bbs.cs_group_order 				AS "bbs.groupOrder" , 
+		       bbs.cs_reg_dtime 				AS "bbs.regDtime" , 
+		       member.cs_member_name 			AS "bbs.regMemberName", 
+		       b.courseCnt						AS "bbs.bbsCount",
+		       bbs.cx_download_yn	 			AS "bbs.downloadYn",
+		       c.cs_course_active_title			AS "course.courseActiveTitle" ,
+		       c.cs_year						AS "course.year",
+			   c.cs_yearterm					AS "course.yearTerm",
+			   SUBSTRING(c.cs_yearterm,5,2)     AS "course.term",
+			   e.cs_category_type_cd			AS "cate.categoryTypeCd",
+		       (SELECT COUNT(*) 
+		         FROM cs_attach 
+		        WHERE cs_reference_seq = bbs.cs_bbs_seq 
+		              AND cs_reference_tablename = 'cs_course_active_bbs' 
+		              AND cs_delete_yn = 'N' 
+		       ) 								AS "bbs.attachCount", 
+		       ISNULL(replyCnt.replyCount, 0) 	AS "bbs.replyCount"
+		  FROM cs_bbs bbs 
+		   INNER JOIN (SELECT cs_bbs_seq , 
+		              		  count(cs_bbs_seq) AS courseCnt ,
+							  MIN(cs_course_active_seq) AS courseActiveSeq 
+					   FROM cs_course_active_bbs
+		   					WHERE cs_delete_yn = 'N'
+							AND cs_board_type_cd = #{srchBoardTypeCd}
+					   Group by cs_bbs_seq 
+					   ) b  
+		       ON bbs.cs_bbs_seq = b.cs_bbs_seq 
+		   INNER JOIN cs_member member 
+		       ON bbs.cs_reg_member_seq = member.cs_member_seq 
+		       AND member.cs_delete_yn = 'N' 
+		   INNER JOIN cs_course_active c 
+		       ON c.cs_course_active_seq = b.courseActiveSeq 
+		       AND c.cs_delete_yn= 'N'
+	       INNER JOIN cs_category e
+			   ON  e.cs_category_seq = c.cs_category_organization_seq
+			   AND e.cs_delete_yn = 'N'		       
+		<if test='srchTargetRolegroup != null and !srchTargetRolegroup.equals("ADM")'>		       
+		   INNER JOIN cs_course_active_lecturer d 
+		       ON c.cs_course_active_seq = d.cs_course_active_seq 
+		       AND d.cs_use_yn = 'Y' 
+		       AND d.cs_delete_yn = 'N'	       
+		       AND d.cs_member_seq = #{srchMemberSeq}
+		</if>		        
+		   LEFT OUTER JOIN 
+		       (SELECT sub.cs_parent_seq, 
+		              COUNT(*) AS replyCount 
+		         FROM cs_bbs sub 
+		        WHERE cs_delete_yn = 'N' 
+		        GROUP BY sub.cs_parent_seq
+		       ) replyCnt 
+		       ON replyCnt.cs_parent_seq = bbs.cs_bbs_seq
+	   WHERE bbs.cs_delete_yn = 'N'
+       		AND bbs.cs_always_top_yn = 'Y'        
+		 GROUP BY bbs.cs_bbs_seq , 
+		       bbs.cs_board_seq , 
+		       bbs.cs_bbs_title , 
+		       bbs.cs_bbs_type_cd , 
+		       bbs.cs_always_top_yn , 
+		       bbs.cs_html_yn , 
+		       bbs.cs_secret_yn , 
+		       bbs.cs_view_count , 
+		       bbs.cs_comment_count , 
+		       bbs.cs_parent_seq , 
+		       bbs.cs_group_seq , 
+		       bbs.cs_group_level , 
+		       bbs.cs_group_order , 
+		       bbs.cs_reg_dtime , 
+		       member.cs_member_name, 
+		       b.courseCnt,
+		       c.cs_course_active_title,
+		       c.cs_year,
+			   c.cs_yearterm,
+			   e.cs_category_type_cd, 
+		       replyCnt.replyCount  	
+	</select>
+
+     <!-- 마이페이지 게시판 -->
+    <resultMap id="getMyPageBbsListResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"         				property="bbs.bbsSeq"        	 />
+        <result column="bbs.boardSeq"       				property="bbs.boardSeq"      	 />
+        <result column="bbs.bbsTitle"       				property="bbs.bbsTitle"      	 />
+        <result column="bbs.bbsTypeCd"      				property="bbs.bbsTypeCd"     	 />
+        <result column="bbs.alwaysTopYn"    				property="bbs.alwaysTopYn"  	 />
+        <result column="bbs.htmlYn"         				property="bbs.htmlYn"        	 />
+        <result column="bbs.secretYn"       				property="bbs.secretYn"      	 />
+        <result column="bbs.viewCount"      				property="bbs.viewCount"     	 />
+        <result column="bbs.commentCount"   				property="bbs.commentCount"  	 />
+        <result column="bbs.parentSeq"      				property="bbs.parentSeq"     	 />
+        <result column="bbs.groupSeq"       				property="bbs.groupSeq"      	 />
+        <result column="bbs.groupLevel"     				property="bbs.groupLevel"    	 />
+        <result column="bbs.groupOrder"     				property="bbs.groupOrder"    	 />
+        <result column="bbs.regDtime"       				property="bbs.regDtime"      	 />
+        <result column="bbs.regMemberName"  				property="bbs.regMemberName" 	 />
+        <result column="bbs.bbsCount"  						property="bbs.bbsCount" 	 	 />
+        <result column="course.courseActiveTitle"  			property="courseActive.courseActiveTitle" />
+        <result column="course.year"  						property="courseActive.year" />
+        <result column="course.yearTerm"  					property="courseActive.yearTerm" />
+        <result column="course.term"  						property="courseActive.term" />
+        <result column="cate.categoryTypeCd"  				property="category.categoryTypeCd" />
+        <result column="bbs.attachCount"    				property="bbs.attachCount"   	 />
+        <result column="bbs.replyCount"     				property="bbs.replyCount"   	 />
+        <result column="bbs.downloadYn"     				property="bbs.downloadYn"  />
+    </resultMap>
+    <select id="getMyPageBbsList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultMap="getMyPageBbsListResultMap">
+	/* UIUnivCourseActiveBbs.getMyPageBbsList */
+	    <if test='currentPage != 0'>
+	SELECT Z.* FROM (SELECT Row_Number() OVER (
+	        <choose>
+	            <when test='orderby == 1'>ORDER BY "bbs.bbsTitle" ASC</when>
+	            <when test='orderby == -1'>ORDER BY "bbs.bbsTitle" DESC</when>
+	           	<when test='orderby == 2'>ORDER BY "bbs.regDtime" ASC</when>
+	            <when test='orderby == -2'>ORDER BY "bbs.regDtime" DESC</when>
+	            <otherwise>ORDER BY "bbs.groupSeq" DESC, "bbs.groupOrder" ASC, "bbs.bbsSeq" ASC</otherwise>
+	        </choose>
+	) AS rownumber, * FROM (
+	  	</if>
+		SELECT 
+			   bbs.cs_bbs_seq 					AS "bbs.bbsSeq" , 
+		       bbs.cs_board_seq 				AS "bbs.boardSeq" , 
+		       bbs.cs_bbs_title 				AS "bbs.bbsTitle" , 
+		       bbs.cs_bbs_type_cd 				AS "bbs.bbsTypeCd" , 
+		       bbs.cs_always_top_yn 			AS "bbs.alwaysTopYn" , 
+		       bbs.cs_html_yn 					AS "bbs.htmlYn" , 
+		       bbs.cs_secret_yn 				AS "bbs.secretYn" , 
+		       bbs.cs_view_count 				AS "bbs.viewCount" , 
+		       bbs.cs_comment_count 			AS "bbs.commentCount" , 
+		       bbs.cs_parent_seq 				AS "bbs.parentSeq" , 
+		       bbs.cs_group_seq 				AS "bbs.groupSeq" , 
+		       bbs.cs_group_level 				AS "bbs.groupLevel" , 
+		       bbs.cs_group_order 				AS "bbs.groupOrder" , 
+		       bbs.cs_reg_dtime 				AS "bbs.regDtime" , 
+		       member.cs_member_name 			AS "bbs.regMemberName", 
+		       tempBbs.courseCnt 				AS "bbs.bbsCount",
+		       bbs.cx_download_yn	 			AS "bbs.downloadYn",
+		       c.cs_course_active_title			AS "course.courseActiveTitle" ,
+		       c.cs_year						AS "course.year",
+			   c.cs_yearterm					AS "course.yearTerm",
+			   SUBSTRING(c.cs_yearterm,5,2)     AS "course.term",
+			   e.cs_category_type_cd			AS "cate.categoryTypeCd",
+		       (SELECT COUNT(*) 
+		         FROM cs_attach 
+		        WHERE cs_reference_seq = bbs.cs_bbs_seq 
+		              AND cs_reference_tablename = 'cs_course_active_bbs' 
+		              AND cs_delete_yn = 'N' 
+		       ) 								AS "bbs.attachCount", 
+		       ISNULL(replyCnt.replyCount, 0) 	AS "bbs.replyCount"
+		  FROM cs_bbs bbs 
+		   INNER JOIN (SELECT activeBbs.cs_bbs_seq ,
+				              MIN(activeBbs.cs_course_active_seq) AS courseActiveSeq
+				        FROM cs_course_active_bbs activeBbs
+				          INNER JOIN cs_course_active active
+				              ON active.cs_course_active_seq = activeBbs.cs_course_active_seq
+				              AND active.cs_delete_yn = 'N'
+				          INNER JOIN cs_category category
+				              ON category.cs_category_seq = active.cs_category_organization_seq
+				              AND category.cs_delete_yn = 'N'
+				        WHERE activeBbs.cs_delete_yn = 'N'
+				              AND activeBbs.cs_board_type_cd = #{srchBoardTypeCd}
+				              AND category.cs_category_type_cd = #{srchCategoryTypeCd}
+						<if test='srchCourseTitle != null and !srchCourseTitle.equals("")'>
+				              AND active.cs_course_active_title LIKE '%' + #{srchCourseTitleDB} + '%'
+				        </if>
+				        <if test='srchCategoryTypeCd != null and !srchCategoryTypeCd.equals("")'>
+				       		<choose>
+            					<when test='srchCategoryTypeCd.equals("${CD.CATEGORY_TYPE.DEGREE}")'>
+          							AND active.cs_yearterm = #{srchYearTerm}
+            					</when>
+            					<otherwise>
+          							AND active.cs_year = #{srchYear}
+            					</otherwise>
+            				</choose>
+				        </if>
+				        GROUP BY activeBbs.cs_bbs_seq
+					   ) b
+		       ON bbs.cs_bbs_seq = b.cs_bbs_seq 
+		   INNER JOIN cs_member member 
+		       ON bbs.cs_reg_member_seq = member.cs_member_seq 
+		       AND member.cs_delete_yn = 'N' 
+		   INNER JOIN cs_course_active c 
+		       ON c.cs_course_active_seq = b.courseActiveSeq 
+		       AND c.cs_delete_yn= 'N'
+	       INNER JOIN cs_category e
+			   ON  e.cs_category_seq = c.cs_category_organization_seq
+			   AND e.cs_delete_yn = 'N'
+		   INNER JOIN
+		       (SELECT cs_bbs_seq ,
+		              count(cs_bbs_seq) AS courseCnt
+		         FROM cs_course_active_bbs
+		        WHERE cs_delete_yn = 'N'
+		              AND cs_board_type_cd = #{srchBoardTypeCd}
+		        GROUP BY cs_bbs_seq
+		       ) tempBbs
+		       ON bbs.cs_bbs_seq = tempBbs.cs_bbs_seq			   		       
+		<if test='srchTargetRolegroup != null and !srchTargetRolegroup.equals("ADM")'>		       
+		   INNER JOIN cs_course_active_lecturer d 
+		       ON c.cs_course_active_seq = d.cs_course_active_seq 
+		       AND d.cs_use_yn = 'Y' 
+		       AND d.cs_delete_yn = 'N'	       
+		       AND d.cs_member_seq = #{srchMemberSeq}
+		</if>		        
+		   LEFT OUTER JOIN 
+		       (SELECT sub.cs_parent_seq, 
+		              COUNT(*) AS replyCount 
+		         FROM cs_bbs sub 
+		        WHERE cs_delete_yn = 'N' 
+		        GROUP BY sub.cs_parent_seq
+		       ) replyCnt 
+		       ON replyCnt.cs_parent_seq = bbs.cs_bbs_seq
+	   WHERE bbs.cs_delete_yn = 'N'
+	   <if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("")'>
+       AND bbs.cs_bbs_type_cd = #{srchBbsTypeCd}         
+       </if>
+       <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       AND bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND bbs.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+       </if>
+       <if test='srchAlwaysTopYn != null and !srchAlwaysTopYn.equals("")'>
+       AND bbs.cs_always_top_yn = #{srchAlwaysTopYn}
+       </if>
+       <if test='srchReplyOnlyCheckYn != null and srchReplyOnlyCheckYn.equals("Y")'>
+       AND bbs.cs_group_level = 1
+       AND ISNULL(replyCnt.replyCount, 0) = 0
+       </if>
+		 GROUP BY bbs.cs_bbs_seq , 
+		       bbs.cs_board_seq , 
+		       bbs.cs_bbs_title , 
+		       bbs.cs_bbs_type_cd , 
+		       bbs.cs_always_top_yn , 
+		       bbs.cs_html_yn , 
+		       bbs.cs_secret_yn , 
+		       bbs.cs_view_count , 
+		       bbs.cs_comment_count , 
+		       bbs.cs_parent_seq , 
+		       bbs.cs_group_seq , 
+		       bbs.cs_group_level , 
+		       bbs.cs_group_order , 
+		       bbs.cs_reg_dtime , 
+		       member.cs_member_name, 
+		       tempBbs.courseCnt,
+		       c.cs_course_active_title,
+		       c.cs_year,
+			   c.cs_yearterm,
+			   e.cs_category_type_cd, 
+		       replyCnt.replyCount        
+	   <if test='currentPage != 0'>
+	) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+	   </if>
+    </select>
+
+
+	<!-- 마이페이지 게시판 카운트 --> 
+	<select id="countMypageBbsList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultType="int">
+	/* UIUnivCourseActiveBbs.countMypageBbsList */
+		SELECT
+			count(*)
+		FROM
+		(
+		SELECT 
+			bbs.cs_bbs_seq
+		  FROM cs_bbs bbs 
+		   INNER JOIN (SELECT 
+		   					  activeBbs.cs_bbs_seq ,
+				              MIN(activeBbs.cs_course_active_seq) AS courseActiveSeq
+				        FROM cs_course_active_bbs activeBbs
+				          INNER JOIN cs_course_active active
+				              ON active.cs_course_active_seq = activeBbs.cs_course_active_seq
+				              AND active.cs_delete_yn = 'N'
+				          INNER JOIN cs_category category
+				              ON category.cs_category_seq = active.cs_category_organization_seq
+				              AND category.cs_delete_yn = 'N'
+				        WHERE activeBbs.cs_delete_yn = 'N'
+				              AND activeBbs.cs_board_type_cd = #{srchBoardTypeCd}
+				              AND category.cs_category_type_cd = #{srchCategoryTypeCd}
+						<if test='srchCourseTitle != null and !srchCourseTitle.equals("")'>
+				              AND active.cs_course_active_title LIKE '%' + #{srchCourseTitleDB} + '%'
+				        </if>
+				        <if test='srchCategoryTypeCd != null and !srchCategoryTypeCd.equals("")'>
+				       		<choose>
+            					<when test='srchCategoryTypeCd.equals("${CD.CATEGORY_TYPE.DEGREE}")'>
+          							AND active.cs_yearterm = #{srchYearTerm}
+            					</when>
+            					<otherwise>
+          							AND active.cs_year = #{srchYear}
+            					</otherwise>
+            				</choose>
+				        </if>
+				        GROUP BY activeBbs.cs_bbs_seq
+					   ) b  
+		       ON bbs.cs_bbs_seq = b.cs_bbs_seq 
+		   INNER JOIN cs_member member 
+		       ON bbs.cs_reg_member_seq = member.cs_member_seq 
+		       AND member.cs_delete_yn = 'N' 
+		   INNER JOIN cs_course_active c 
+		       ON c.cs_course_active_seq = b.courseActiveSeq 
+		       AND c.cs_delete_yn= 'N'
+	       INNER JOIN cs_category e
+			   ON  e.cs_category_seq = c.cs_category_organization_seq
+			   AND e.cs_delete_yn = 'N'
+		   INNER JOIN
+		       (SELECT cs_bbs_seq ,
+		              count(cs_bbs_seq) AS courseCnt
+		         FROM cs_course_active_bbs
+		        WHERE cs_delete_yn = 'N'
+		              AND cs_board_type_cd = #{srchBoardTypeCd}
+		        GROUP BY cs_bbs_seq
+		       ) tempBbs
+		       ON bbs.cs_bbs_seq = tempBbs.cs_bbs_seq				   			       
+		<if test='srchTargetRolegroup != null and !srchTargetRolegroup.equals("ADM")'>			        
+		   INNER JOIN cs_course_active_lecturer d 
+		       ON c.cs_course_active_seq = d.cs_course_active_seq 
+		       AND d.cs_use_yn = 'Y' 
+		       AND d.cs_delete_yn = 'N'
+		       AND d.cs_member_seq = #{srchMemberSeq} 
+		</if>
+		   LEFT OUTER JOIN 
+		       (SELECT sub.cs_parent_seq, 
+		              COUNT(*) AS replyCount 
+		         FROM cs_bbs sub 
+		        WHERE cs_delete_yn = 'N' 
+		        GROUP BY sub.cs_parent_seq
+		       ) replyCnt 
+		       ON replyCnt.cs_parent_seq = bbs.cs_bbs_seq
+	   WHERE bbs.cs_delete_yn = 'N'
+	   <if test='srchBoardTypeCd.equals("${CD.BOARD_TYPE.DYNAMIC}")'>
+	   AND bbs.cs_board_seq = #{srchBoardSeq}
+	   </if>
+	   <if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("")'>
+       AND bbs.cs_bbs_type_cd = #{srchBbsTypeCd}         
+       </if>
+       <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       AND bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND bbs.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+       </if>
+       <if test='srchAlwaysTopYn != null and !srchAlwaysTopYn.equals("")'>
+       AND bbs.cs_always_top_yn = #{srchAlwaysTopYn}
+       </if>
+       <if test='srchReplyOnlyCheckYn != null and srchReplyOnlyCheckYn.equals("Y")'>
+       AND bbs.cs_group_level = 1
+       AND ISNULL(replyCnt.replyCount, 0) = 0
+       </if>       
+	   GROUP BY bbs.cs_bbs_seq) bbs
+	</select>
+
+	
+	<!-- 마이페이지 게시판 상세 -->
+    <resultMap id="getMyPageBbsDetailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"            property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"          property="bbs.boardSeq"      />
+        <result column="bbs.bbsTitle"          property="bbs.bbsTitle"      />
+        <result column="bbs.description"       property="bbs.description"   />
+        <result column="bbs.bbsTypeCd"         property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"       property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"            property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"          property="bbs.secretYn"      />
+        <result column="bbs.viewCount"         property="bbs.viewCount"     />
+        <result column="bbs.commentCount"      property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"         property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"          property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"        property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"        property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"          property="bbs.deleteYn"      />
+        <result column="bbs.regMemberSeq"      property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"          property="bbs.regDtime"      />
+        <result column="bbs.regIp"             property="bbs.regIp"         />
+        <result column="bbs.updMemberSeq"      property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"          property="bbs.updDtime"      />
+        <result column="bbs.updIp"             property="bbs.updIp"     	/>
+        <result column="bbs.updMemberName"     property="bbs.updMemberName" />
+        <result column="bbs.regMemberName"     property="bbs.regMemberName" />
+        <result column="bbs.replyCount"        property="bbs.replyCount"    />
+        <result column="bbs.downloadYn"    	   property="bbs.downloadYn"  />
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=bbs.bbsSeq,referenceTablename=referenceTablename}" property="bbs.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getMyPageBbsDetail" parameterType="Long" resultMap="getMyPageBbsDetailResultMap">
+    /* UIUnivCourseActiveBbs.getMyPageBbsDetail */	
+	SELECT 
+	 bbs.cs_bbs_seq        						AS "bbs.bbsSeq" ,
+	 bbs.cs_board_seq      						AS "bbs.boardSeq" ,
+	 bbs.cs_bbs_title      						AS "bbs.bbsTitle" ,
+	 bbs.cs_description    						AS "bbs.description" ,
+	 bbs.cs_bbs_type_cd    						AS "bbs.bbsTypeCd" ,
+	 bbs.cs_always_top_yn  						AS "bbs.alwaysTopYn" ,
+	 bbs.cs_html_yn        						AS "bbs.htmlYn" ,
+	 bbs.cs_secret_yn      						AS "bbs.secretYn" ,
+	 bbs.cs_view_count     						AS "bbs.viewCount" ,
+	 bbs.cs_comment_count  						AS "bbs.commentCount" ,
+	 bbs.cs_parent_seq     						AS "bbs.parentSeq" ,
+	 bbs.cs_group_seq      						AS "bbs.groupSeq" ,
+	 bbs.cs_group_level    						AS "bbs.groupLevel" ,
+	 bbs.cs_group_order    						AS "bbs.groupOrder" ,
+	 bbs.cs_delete_yn      						AS "bbs.deleteYn" ,
+	 bbs.cs_reg_member_seq 						AS "bbs.regMemberSeq" ,
+	 bbs.cs_reg_dtime      						AS "bbs.regDtime" ,
+	 bbs.cs_reg_ip	     						AS "bbs.regIp" ,
+	 bbs.cs_upd_member_seq 						AS "bbs.updMemberSeq" ,
+	 bbs.cs_upd_dtime      						AS "bbs.updDtime" ,
+	 bbs.cs_upd_ip		 						AS "bbs.updIp" ,
+	 bbs.cx_download_yn	 						AS "bbs.downloadYn",
+	 (SELECT cs_member_name 
+       FROM cs_member 
+      WHERE cs_member_seq = bbs.cs_upd_member_seq
+     ) AS "bbs.updMemberName" , 
+     (SELECT cs_member_name 
+       FROM cs_member 
+      WHERE cs_member_seq = bbs.cs_reg_member_seq
+     ) AS "bbs.regMemberName" , 
+	 'cs_course_active_bbs' 					AS "referenceTablename" ,
+	 (SELECT COUNT(*)
+	    FROM cs_bbs
+	   WHERE cs_parent_seq = bbs.cs_bbs_seq
+	     AND cs_delete_yn = 'N'
+	 ) 											AS "bbs.replyCount"
+	FROM 
+		cs_bbs bbs
+	WHERE
+		bbs.cs_delete_yn = 'N'
+		AND bbs.cs_bbs_seq = #{bbsSeq}
+	</select>
+	
+	
+	<resultMap id="getMyPageCourseActiveBbsListResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="bbs.bbsSeq"                  property="bbs.bbsSeq"        				/>
+        <result column="bbs.copyYn"                  property="bbs.copyYn"        				/>
+        <result column="bbs.evaluateYn"              property="bbs.evaluateYn"    				/>
+        <result column="bbs.popupYn"                 property="bbs.popupYn"       				/>
+        <result column="bbs.multiRegYn"              property="bbs.multiRegYn"       			/>
+        <result column="bbs.courseApplySeq"          property="bbs.courseApplySeq"       		/>
+        <result column="course.courseActiveSeq"      property="courseActive.courseActiveSeq"    />
+        <result column="course.courseActiveTitle"  	 property="courseActive.courseActiveTitle"  />
+        <result column="course.year"  				 property="courseActive.year" 				/>
+        <result column="course.yearTerm"  			 property="courseActive.yearTerm" 			/>
+        <result column="course.term"  				 property="courseActive.term" 				/>
+        <result column="cate.categoryTypeCd"  		 property="category.categoryTypeCd" 		/>
+    </resultMap>
+	<select id="getMyPageCourseActiveBbsList" parameterType="Long" resultMap="getMyPageCourseActiveBbsListResultMap">
+	/* UIUnivCourseActiveBbs.getMyPageCourseActiveBbsList */
+	SELECT
+		bbs.cs_bbs_seq    				 	AS "bbs.bbsSeq" , 
+		bbs.cs_copy_yn     				 	AS "bbs.copyYn" ,
+	    bbs.cs_evaluate_yn 					AS "bbs.evaluateYn" ,
+	    bbs.cs_popup_yn    				 	AS "bbs.popupYn" ,
+	    bbs.cs_multi_reg_yn					AS "bbs.multiRegYn" ,
+	    bbs.cs_course_apply_seq				AS "bbs.courseApplySeq" ,
+	    active.cs_course_active_seq			AS "course.courseActiveSeq" ,
+		active.cs_course_active_title    	AS "course.courseActiveTitle" , 
+		active.cs_year                   	AS "course.year",               
+		active.cs_yearterm               	AS "course.yearTerm",           
+		SUBSTRING(active.cs_yearterm,5,2)   AS "course.term",               
+		cate.cs_category_type_cd         	AS "cate.categoryTypeCd"
+	FROM cs_course_active_bbs bbs
+	INNER JOIN cs_course_active active
+		ON bbs.CS_COURSE_ACTIVE_SEQ = active.cs_course_active_seq
+		AND active.cs_delete_yn = 'N'
+	INNER JOIN cs_category cate
+		ON cate.cs_category_seq = active.cs_category_organization_seq
+		AND cate.cs_delete_yn = 'N'
+	WHERE cs_bbs_seq = #{bbsSeq}
+	</select>
+	
+	
+	<delete id="dropMyPageCourseActiveBbs" parameterType="Long">
+		/* UIUnivCourseActiveBbs.dropMyPageCourseActiveBbs */
+		DELETE 
+			FROM cs_course_active_bbs
+		WHERE	
+	 		cs_delete_yn = 'N'
+		AND cs_bbs_seq = #{bbsSeq}
+	</delete>
+    
+    <resultMap id="listCopyBbsResultMap" type="com._4csoft.aof.univ.vo.UnivCourseActiveBbsVO">
+        <result column="cs_board_seq"         property="boardSeq"        />
+        <result column="cs_bbs_title"         property="bbsTitle"        />
+        <result column="cs_description"       property="description"     />
+        <result column="cs_bbs_type_cd"       property="bbsTypeCd"       />
+        <result column="cs_always_top_yn"     property="alwaysTopYn"     />
+        <result column="cs_html_yn"           property="htmlYn"          />
+        <result column="cs_secret_yn"         property="secretYn"        />
+        <result column="cs_target_rolegroup"  property="targetRolegroup" />
+        <result column="cs_view_count"        property="viewCount"       />
+        <result column="cs_comment_count"     property="commentCount"    />
+        <result column="cs_parent_seq"        property="parentSeq"       />
+        <result column="cs_group_seq"         property="groupSeq"        />
+        <result column="cs_group_level"       property="groupLevel"      />
+        <result column="cs_group_order"       property="groupOrder"      />
+        <result column="cs_board_type_cd"     property="boardTypeCd"     />
+        <result column="cs_evaluate_yn"       property="evaluateYn"      />
+        <result column="cs_multi_reg_yn"      property="multiRegYn"      />
+        <result column="cs_popup_yn"          property="popupYn"         />
+        <result column="cs_copy_yn"           property="copyYn"          />
+        
+    </resultMap>
+    <select id="getListCopyBbs" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveBbsVO" resultMap="listCopyBbsResultMap">
+/* UIUnivCourseActiveBbs.getListCopyBbs */
+SELECT #{boardSeq}             AS cs_board_seq,
+       bbs.cs_bbs_title        ,
+       bbs.cs_description      ,
+       bbs.cs_bbs_type_cd      ,
+       bbs.cs_always_top_yn    ,
+       bbs.cs_html_yn          ,
+       bbs.cs_secret_yn        ,
+       bbs.cs_target_rolegroup ,
+       0                       AS cs_view_count,
+       bbs.cs_comment_count    ,
+       bbs.cs_parent_seq       ,
+       bbs.cs_group_seq        ,
+       bbs.cs_group_level      ,
+       bbs.cs_group_order      ,
+       cab.cs_board_type_cd    , 
+       cab.cs_copy_yn, 
+       cab.cs_evaluate_yn, 
+       cab.cs_multi_reg_yn, 
+       cab.cs_popup_yn
+  FROM cs_board board
+ INNER JOIN cs_bbs bbs
+    ON bbs.cs_delete_yn = 'N'
+   AND board.cs_board_seq = bbs.cs_board_seq
+ INNER JOIN cs_course_active_bbs cab
+    ON bbs.cs_bbs_seq = cab.cs_bbs_seq
+   AND cab.cs_delete_yn = 'N'
+   AND cab.cs_copy_yn = 'Y'
+   AND cab.cs_course_active_seq = #{courseActiveSeq}
+ WHERE board.cs_delete_yn = 'N'
+   AND board.cs_reference_seq = #{courseActiveSeq}
+   AND board.cs_reference_type = 'course'
+   AND board.cs_board_type_cd = #{boardTypeCd}
+    </select>
+
+</mapper>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.univ.mapper.UIUnivCourseActiveSurveyMapper">
+
+ <resultMap id="detailSurveyResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveSurveyRS">
+		<result column="cas.courseActiveSurveySeq"  property="courseActiveSurvey.courseActiveSurveySeq" />
+		<result column="cas.courseActiveSeq"        property="courseActiveSurvey.courseActiveSeq"       />
+		<result column="cas.surveyPaperSeq"         property="courseActiveSurvey.surveyPaperSeq"        />
+		<result column="cas.sortOrder"              property="courseActiveSurvey.sortOrder"             />
+		<result column="cas.surveyAnswer1Count"     property="courseActiveSurvey.surveyAnswer1Count"    />
+		<result column="cas.surveyAnswer2Count"     property="courseActiveSurvey.surveyAnswer2Count"    />
+		<result column="cas.surveyAnswer3Count"     property="courseActiveSurvey.surveyAnswer3Count"    />
+		<result column="cas.surveyAnswer4Count"     property="courseActiveSurvey.surveyAnswer4Count"    />
+		<result column="cas.surveyAnswer5Count"     property="courseActiveSurvey.surveyAnswer5Count"    />
+		<result column="cas.surveyAnswer6Count"     property="courseActiveSurvey.surveyAnswer6Count"    />
+		<result column="cas.surveyAnswer7Count"     property="courseActiveSurvey.surveyAnswer7Count"    />
+		<result column="cas.surveyScore"            property="courseActiveSurvey.surveyScore"           />
+		<result column="cas.regMemberSeq"           property="courseActiveSurvey.regMemberSeq"          />
+		<result column="cas.regDtime"               property="courseActiveSurvey.regDtime"              />
+		<result column="cas.regIp"                  property="courseActiveSurvey.regIp"                 />
+		<result column="cas.updMemberSeq"           property="courseActiveSurvey.updMemberSeq"          />
+		<result column="cas.updDtime"               property="courseActiveSurvey.updDtime"              />
+		<result column="cas.updIp"                  property="courseActiveSurvey.updIp"                 />
+		<result column="css.startDtime"             property="surveySubject.startDtime"            		/>
+		<result column="css.endDtime"               property="surveySubject.endDtime"              		/>
+		<result column="css.startDay"             	property="surveySubject.startDay"            		/>
+		<result column="css.endDay"               	property="surveySubject.endDay"              		/>
+		<result column="css.accessMenu"             property="surveySubject.accessMenu"            		/>
+		<result column="css.mandatoryYn"            property="surveySubject.mandatoryYn"           		/>
+		<result column="css.surveySubjectSeq"       property="surveySubject.surveySubjectSeq"           />
+		<result column="css.useYn"       			property="surveySubject.useYn"           			/>
+		<result column="css.surveyTitle"       		property="surveySubject.surveyTitle"           		/>
+		<result column="css.statusCd"          		property="surveySubject.statusCd"         			/>
+		<result column="cas.surveyPaperTitle"       property="surveyPaper.surveyPaperTitle"      		/>
+		<result column="cas.totalMemberCount"       property="courseActiveSurvey.totalMemberCount"      />
+		<result column="cas.totalAnswerCount"       property="courseActiveSurvey.totalAnswerCount"      />
+		<result column="cas.regMemberName"          property="courseActiveSurvey.regMemberName"         />
+		<result column="cas.updMemberName"          property="courseActiveSurvey.updMemberName"         />
+		<result column="caspa.surveyYn"          	property="surveyPaperAnswer.surveyYn"		        />
+	</resultMap>
+	
+	<select id="getDetailSurvey" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSurveyVO" resultMap="detailSurveyResultMap">
+/* UIUnivCourseActiveSurvey.getDetailSurvey */
+SELECT cas.cs_course_active_survey_seq 	           AS "cas.courseActiveSurveySeq" ,
+       cas.cs_course_active_seq			           AS "cas.courseActiveSeq" ,
+       cas.cs_survey_paper_seq                     AS "cas.surveyPaperSeq" ,
+       cas.cs_sort_order                           AS "cas.sortOrder" ,       
+       cas.cs_survey_answer1_count                 AS "cas.surveyAnswer1Count" ,   
+       cas.cs_survey_answer2_count                 AS "cas.surveyAnswer2Count" ,   
+       cas.cs_survey_answer3_count                 AS "cas.surveyAnswer3Count" ,   
+       cas.cs_survey_answer4_count                 AS "cas.surveyAnswer4Count" ,   
+       cas.cs_survey_answer5_count                 AS "cas.surveyAnswer5Count" ,   
+       cas.cs_survey_answer6_count                 AS "cas.surveyAnswer6Count" ,   
+       cas.cs_survey_answer7_count                 AS "cas.surveyAnswer7Count" ,   
+       cas.cs_survey_score                         AS "cas.surveyScore" ,     
+       cas.cs_reg_member_seq                       AS "cas.regMemberSeq" ,    
+       cas.cs_reg_dtime                            AS "cas.regDtime" ,        
+       cas.cs_reg_ip                               AS "cas.regIp" ,           
+       cas.cs_upd_member_seq                       AS "cas.updMemberSeq" ,    
+       cas.cs_upd_dtime                            AS "cas.updDtime" ,        
+       cas.cs_upd_ip                               AS "cas.updIp",
+       css.cs_start_dtime                          AS "css.startDtime" ,
+       css.cs_end_dtime                            AS "css.endDtime" ,
+       css.cs_start_day							   AS "css.startDay" ,        
+       css.cs_end_day							   AS "css.endDay" ,        
+       css.cs_access_menu                          AS "css.accessMenu" ,      
+       css.cs_mandatory_yn                         AS "css.mandatoryYn" ,
+       css.cs_survey_subject_seq				   AS "css.surveySubjectSeq" ,
+       css.cx_use_yn                         	   AS "css.useYn" ,     
+       css.cs_survey_title		                   AS "css.surveyTitle" ,
+       csp.cs_survey_paper_title				   AS "cas.surveyPaperTitle",
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = cas.cs_reg_member_seq 
+       ) AS "cas.regMemberName" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = cas.cs_reg_member_seq 
+       ) AS "cas.updMemberName" ,
+       (
+        SELECT summary.cs_member_count
+          FROM cs_course_active_summary summary
+         WHERE summary.cs_course_active_seq = cas.cs_course_active_seq
+        ) AS "cas.totalMemberCount" ,
+        (
+         SELECT COUNT(*)
+           FROM cs_course_active_survey_paper_answer answer
+          WHERE answer.cs_delete_yn = 'N'
+            AND answer.cs_course_active_survey_seq = cas.cs_course_active_survey_seq
+        ) AS "cas.totalAnswerCount",
+       CASE WHEN css.cs_start_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR() THEN 'R'
+            WHEN css.cs_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND  cs_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() THEN 'D'
+            WHEN css.cs_end_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() THEN 'E' END AS "css.statusCd"
+        <if test="courseApplySeq != null">
+        ,CASE WHEN cs_send_dtime IS NULL 
+        	  THEN 'N' 
+        	  ELSE 'Y' END AS "caspa.surveyYn" 
+        </if>
+  FROM cs_course_active_survey cas
+  INNER JOIN cs_survey_subject css
+     ON css.cs_survey_subject_seq = cas.cs_survey_subject_seq
+    AND css.cs_delete_yn = 'N'
+  LEFT OUTER JOIN cs_survey_paper csp
+    ON cas.cs_survey_paper_seq = csp.cs_survey_paper_seq
+   AND csp.cs_delete_yn = 'N'
+       <if test="courseApplySeq != null">
+  LEFT OUTER JOIN cs_course_active_survey_paper_answer caspa 
+    ON caspa.cs_course_active_survey_seq = cas.cs_course_active_survey_seq 
+   AND caspa.cs_delete_yn = 'N' 
+   AND caspa.cs_course_apply_seq = #{courseApplySeq}
+       </if>
+ WHERE cas.cs_delete_yn = 'N'
+   AND cas.cs_course_active_survey_seq = #{courseActiveSurveySeq}       	
+	</select>
+</mapper>

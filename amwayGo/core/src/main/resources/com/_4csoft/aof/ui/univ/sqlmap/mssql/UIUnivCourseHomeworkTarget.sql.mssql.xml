@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseHomeworkTargetMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkTargetVO">
+			/* UnivCourseHomeworkTargetMapper.insert */
+			INSERT INTO cs_course_homework_target
+			       ( 
+						cs_homework_seq ,
+						cs_course_apply_seq ,
+			           	cs_delete_yn , 
+			           	cs_reg_member_seq , 
+			           	cs_upd_member_seq , 
+			           	cs_reg_dtime , 
+			           	cs_upd_dtime , 
+			           	cs_reg_ip , 
+			           	cs_upd_ip 
+			       ) 
+			   VALUES
+			   	   (
+			   	   		#{homeworkSeq ,   	 jdbcType=NUMERIC} ,
+						#{courseApplySeq ,   jdbcType=NUMERIC} ,
+			   		   	'N' ,
+			           	#{regMemberSeq,   jdbcType=NUMERIC} ,
+			           	#{updMemberSeq,   jdbcType=NUMERIC} ,
+			           	dbo.FN_NOW_TO_CHAR() ,
+			           	dbo.FN_NOW_TO_CHAR() ,
+			           	#{regIp,          jdbcType=VARCHAR} ,
+			            #{updIp,          jdbcType=VARCHAR}
+			   	   )
+    </insert>
+    
+	<insert id="insertFirstSupplement" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO">
+			/* UnivCourseHomeworkTargetMapper.insertFirstSupplement */
+			INSERT INTO cs_course_homework_target
+			       ( 
+						cs_homework_seq ,
+						cs_course_apply_seq ,
+			           	cs_delete_yn , 
+			           	cs_reg_member_seq , 
+			           	cs_upd_member_seq , 
+			           	cs_reg_dtime , 
+			           	cs_upd_dtime , 
+			           	cs_reg_ip , 
+			           	cs_upd_ip 
+			       ) 
+			SELECT
+				#{homeworkSeq ,  jdbcType=NUMERIC} ,
+				home.cs_course_apply_seq ,
+				'N' ,
+				#{regMemberSeq,   jdbcType=NUMERIC} ,
+				#{updMemberSeq,   jdbcType=NUMERIC} ,
+				dbo.FN_NOW_TO_CHAR() ,
+				dbo.FN_NOW_TO_CHAR() ,
+				#{regIp,          jdbcType=VARCHAR} ,
+				#{updIp,          jdbcType=VARCHAR}
+			FROM
+			(
+				SELECT
+					home.cs_homework_seq,
+					home.cs_course_active_seq,
+					apply.cs_course_apply_seq,
+					home.cs_use_yn,
+					ISNULL(CASE
+						WHEN home.cs_use_yn = 'Y' AND answer.cs_send_degree = 2 THEN
+							CONVERT(INT, (CONVERT(FLOAT, ISNULL(answer.cs_homework_score,0)) / CONVERT(FLOAT, 100)) * ISNULL(home.cs_rate2, 0))
+						ELSE
+							answer.cs_homework_score
+					END, 0) AS cs_homework_score
+				FROM
+					cs_course_apply apply
+				INNER JOIN cs_course_homework home
+				   ON  apply.cs_course_active_seq = home.cs_course_active_seq
+				   AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+				   AND apply.cs_delete_yn = 'N'
+				   AND apply.cs_course_active_seq = #{courseActiveSeq}
+				LEFT OUTER JOIN cs_course_homework_answer answer
+				   ON  home.cs_homework_seq = answer.cs_homework_seq
+				   AND apply.cs_course_apply_seq = answer.cs_course_apply_seq
+				   AND answer.cs_delete_yn = 'N'
+				WHERE
+					home.cs_homework_seq = #{referenceSeq}
+			) home
+			WHERE
+				<![CDATA[
+				home.cs_homework_score <= #{limitScore}
+				]]>
+    </insert>
+    
+	<insert id="insertFirstSupplementExam" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO">
+			/* UnivCourseHomeworkTargetMapper.insertFirstSupplementExam */
+			INSERT INTO cs_course_homework_target
+			       ( 
+						cs_homework_seq ,
+						cs_course_apply_seq ,
+			           	cs_delete_yn , 
+			           	cs_reg_member_seq , 
+			           	cs_upd_member_seq , 
+			           	cs_reg_dtime , 
+			           	cs_upd_dtime , 
+			           	cs_reg_ip , 
+			           	cs_upd_ip 
+			       ) 
+			SELECT
+				#{homeworkSeq ,  jdbcType=NUMERIC} ,
+				target.cs_course_apply_seq ,
+				'N' ,
+				#{regMemberSeq,   jdbcType=NUMERIC} ,
+				#{updMemberSeq,   jdbcType=NUMERIC} ,
+				dbo.FN_NOW_TO_CHAR() ,
+				dbo.FN_NOW_TO_CHAR() ,
+				#{regIp,          jdbcType=VARCHAR} ,
+				#{updIp,          jdbcType=VARCHAR}
+			FROM
+			(
+				SELECT
+					apply.cs_course_active_seq ,
+					apply.cs_course_apply_seq ,
+					ISNULL(target.cs_take_score,0) AS CS_TAKE_SCORE
+				FROM
+					cs_course_apply apply
+				INNER JOIN cs_course_active_exam_paper paper
+				   ON  apply.cs_course_active_seq = paper.cs_course_active_seq
+				   AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+				   AND apply.cs_delete_yn = 'N'
+				   AND apply.cs_course_active_seq = #{courseActiveSeq}
+				LEFT OUTER JOIN cs_course_active_exam_paper_target target
+				   ON  paper.cs_course_active_exam_paper_seq = target.cs_course_active_exam_paper_seq
+				   AND apply.cs_course_apply_seq = target.cs_course_apply_seq
+				WHERE
+				   paper.cs_course_active_exam_paper_seq = #{referenceSeq}
+			) target
+			WHERE
+				target.cs_take_score <![CDATA[<=]]> #{limitScore}
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkTargetVO">
+		/* UnivCourseHomeworkTargetMapper.update */
+		UPDATE cs_course_homework_target         
+		   SET cs_upd_dtime  		= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 	= #{updMemberSeq, 	jdbcType=NUMERIC} ,
+		       cs_upd_ip         	= #{updIp, 			jdbcType=VARCHAR} 
+		 WHERE cs_homework_seq 		= #{homeworkSeq, 	jdbcType=NUMERIC}
+		   AND cs_course_apply_seq 	= #{courseApplySeq, jdbcType=VARCHAR}
+		   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkTargetVO">
+		/* UnivCourseHomeworkTargetMapper.delete */
+		UPDATE cs_course_homework_target 
+		   SET cs_upd_dtime      		= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip        		= #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn      		= 'Y' 
+		 WHERE cs_homework_seq 		= #{homeworkSeq}
+		   AND cs_course_apply_seq 	= #{courseApplySeq}
+		   AND cs_delete_yn = 'N'
+    </update>
+
+    <delete id="drop" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkTargetVO">
+		/* UnivCourseHomeworkTargetMapper.delete */
+		DELETE FROM cs_course_homework_target 
+		 WHERE cs_homework_seq 		= #{homeworkSeq}
+		   AND cs_course_apply_seq 	= #{courseApplySeq}
+    </delete>
+
+    <delete id="dropAllByHomeworkSeq" parameterType="Long">
+		/* UnivCourseHomeworkTargetMapper.dropAllByHomeworkSeq */
+		DELETE FROM cs_course_homework_target 
+		 WHERE cs_homework_seq 		= #{homeworkSeq}
+    </delete>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkTargetRS">
+    	<result column="target.courseApplySeq"       	property="target.courseApplySeq"       />
+   	 	<result column="target.courseApplySeq"       	property="target.courseApplySeq"       />
+   	 	<result column="target.deleteYn"           		property="target.deleteYn"       />
+   	 	<result column="target.regMemberSeq"           	property="target.regMemberSeq"       />
+   	 	<result column="target.updMemberSeq"           	property="target.updMemberSeq"       />
+   	 	<result column="target.regDtime"          		property="target.regDtime"       />
+   	 	<result column="target.updDtime"           		property="target.updDtime"       />
+   	 	<result column="target.regIp"           		property="target.regIp"       />
+   	 	<result column="target.updIp"           		property="target.updIp"       />
+    </resultMap>
+    
+    <select id="getDetail" parameterType="map" resultMap="detailResultMap">
+		/* UnivCourseHomeworkTargetMapper.getDetail */
+    	SELECT
+    		target.cs_course_apply_seq			AS "target.courseApplySeq" ,
+    		target.cs_homework_seq				AS "target.homeworkSeq" ,
+			target.cs_delete_yn 				AS "target.deleteYn" ,                
+			target.cs_reg_member_seq 			AS "target.regMemberSeq" ,           
+			target.cs_upd_member_seq 			AS "target.updMemberSeq" ,           
+			target.cs_reg_dtime 				AS "target.regDtime" ,                
+			target.cs_upd_dtime 				AS "target.updDtime" ,                
+			target.cs_reg_ip 					AS "target.regIp" ,                   
+			target.cs_upd_ip                    AS "target.updIp" 
+		FROM
+			cs_course_homework_target target
+		WHERE  cs_delete_yn = 'N' 
+		   AND cs_course_apply_seq 	= #{courseApplySeq}
+		   AND cs_homework_seq 		= #{homeworkSeq}
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkTargetRS">
+   	 	<result column="target.courseApplySeq"       	property="target.courseApplySeq"       />
+   	 	<result column="target.homeworkSeq"       		property="target.homeworkSeq"       />
+   	 	<result column="target.deleteYn"           		property="target.deleteYn"       />
+   	 	<result column="target.regMemberSeq"           	property="target.regMemberSeq"       />
+   	 	<result column="target.updMemberSeq"           	property="target.updMemberSeq"       />
+   	 	<result column="target.regDtime"          		property="target.regDtime"       />
+   	 	<result column="target.updDtime"           		property="target.updDtime"       />
+   	 	<result column="target.regIp"           		property="target.regIp"       />
+   	 	<result column="target.updIp"           		property="target.updIp"       />
+	</resultMap>          
+	
+	<select id="getList" parameterType="Long" resultMap="listResultMap">
+		/* UnivCourseHomeworkTargetMapper.getList */
+    	SELECT
+    		target.cs_course_apply_seq			AS "target.courseApplySeq" ,
+    		target.cs_homework_seq				AS "target.homeworkSeq" ,
+			target.cs_delete_yn 				AS "target.deleteYn" ,                
+			target.cs_reg_member_seq 			AS "target.regMemberSeq" ,           
+			target.cs_upd_member_seq 			AS "target.updMemberSeq" ,           
+			target.cs_reg_dtime 				AS "target.regDtime" ,                
+			target.cs_upd_dtime 				AS "target.updDtime" ,                
+			target.cs_reg_ip 					AS "target.regIp" ,                   
+			target.cs_upd_ip                    AS "target.updIp" 
+		FROM
+			cs_course_homework_target target
+		WHERE  cs_delete_yn = 'N' 
+		   AND cs_homework_seq 		= #{homeworkSeq}
+    </select>
+    
+    <select id="countList" parameterType="Long" resultType="int">
+		/* UnivCourseHomeworkTargetMapper.countList */
+		SELECT
+			COUNT(*)
+		FROM
+			cs_course_homework_target target
+		WHERE  cs_delete_yn = 'N' 
+		   AND cs_homework_seq 		= #{homeworkSeq}
+    </select>
+    
+    <select id="countByScoreTarget" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultType="int">
+    	/* UnivCourseHomeworkTargetMapper.countByScoreTarget */
+    	SELECT
+			COUNT(*)
+		FROM
+		(
+			SELECT
+				home.cs_homework_seq,
+				home.cs_course_active_seq,
+				apply.cs_course_apply_seq,
+				home.cs_use_yn,
+				ISNULL(CASE
+					WHEN home.cs_use_yn = 'Y' AND answer.cs_send_degree = 2 THEN
+						CONVERT(INT, (CONVERT(FLOAT, ISNULL(answer.cs_homework_score,0)) / CONVERT(FLOAT, 100)) * ISNULL(home.cs_rate2, 0))
+					ELSE
+						answer.cs_homework_score
+				END, 0) AS cs_homework_score
+			FROM
+				cs_course_apply apply
+				INNER JOIN cs_course_homework home
+				   ON  apply.cs_course_active_seq = home.cs_course_active_seq
+				   AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+				   AND apply.cs_delete_yn = 'N'
+				   AND apply.cs_course_active_seq = #{courseActiveSeq}
+				LEFT OUTER JOIN cs_course_homework_answer answer
+				   ON  home.cs_homework_seq = answer.cs_homework_seq
+				   AND apply.cs_course_apply_seq = answer.cs_course_apply_seq
+				   AND answer.cs_delete_yn = 'N'
+			WHERE
+				home.cs_homework_seq = #{referenceSeq}
+		) home
+		WHERE
+			home.cs_homework_score <![CDATA[<=]]> #{limitScore}
+    </select>
+    
+    <resultMap id="listTargetResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkTargetRS">
+   	 	<result column="target.homeworkSeq"       	property="target.homeworkSeq"       />
+   	 	<result column="target.courseApplySeq"      property="target.courseApplySeq"       />
+   	 	<result column="target.homeworkScore"       property="target.homeworkScore"       />
+   	 	<result column="mem.memberSeq"       		property="member.memberSeq"       />
+   	 	<result column="mem.memberName"       		property="member.memberName"       />
+   	 	<result column="mem.memberId"       		property="member.memberId"       />
+   	 	<result column="mem.studentYear"       		property="member.studentYear"       />
+	</resultMap>     
+    
+    <select id="getListTarget" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseHomeworkCondition" resultMap="listTargetResultMap">
+    	/* UnivCourseHomeworkTargetMapper.getListTarget */
+  SELECT Y.* FROM (
+	    	SELECT
+				target.cs_homework_seq 			AS "target.homeworkSeq" ,
+				target.cs_course_apply_seq		AS "target.courseApplySeq" ,
+				target.cs_homework_score		AS "target.homeworkScore" ,
+				target.cs_member_seq			AS "mem.memberSeq" ,
+				mem.cs_member_name				AS "mem.memberName" ,
+				mem.cs_member_id				AS "mem.memberId" ,
+				mem.cs_student_year				AS "mem.studentYear"
+			FROM
+			(
+				SELECT
+					home.cs_homework_seq,
+					home.cs_course_active_seq,
+					apply.cs_course_apply_seq,
+					home.cs_use_yn,
+					ISNULL(CASE
+						WHEN home.cs_use_yn = 'Y' AND answer.cs_send_degree = 2 THEN
+							CONVERT(INT, (CONVERT(FLOAT, ISNULL(answer.cs_homework_score,0)) / CONVERT(FLOAT, 100)) * ISNULL(home.cs_rate2, 0))
+						ELSE
+							answer.cs_homework_score
+					END, 0) AS cs_homework_score,
+					apply.cs_member_seq
+				FROM
+					cs_course_apply apply
+					INNER join cs_course_homework home
+					ON  apply.cs_course_active_seq = home.cs_course_active_seq
+						  AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+						  AND apply.cs_delete_yn = 'N'
+						  AND apply.cs_course_active_seq = #{courseActiveSeq}
+					LEFT OUTER JOIN cs_course_homework_answer answer
+					      ON  home.cs_homework_seq = answer.cs_homework_seq
+					      AND apply.cs_course_apply_seq = answer.cs_course_apply_seq
+					      AND answer.cs_delete_yn = 'N'
+				WHERE
+					home.cs_homework_seq = #{referenceSeq}
+			) target
+			INNER JOIN cs_member mem
+			   ON  target.cs_member_seq = mem.cs_member_seq
+			   AND mem.cs_delete_yn = 'N'
+			<if test='editYn.equals("Y")'>
+			INNER JOIN cs_course_homework_target hometarg
+			   ON target.cs_course_apply_seq = hometarg.cs_course_apply_seq
+			   AND hometarg.cs_homework_seq = #{homeworkSeq}
+		   	   AND hometarg.cs_delete_yn = 'N'
+			</if>
+			WHERE
+				  mem.cs_delete_yn = 'N'
+			  <if test='editYn.equals("N")'>
+			    AND target.cs_homework_score <![CDATA[<=]]> #{limitScore}
+			  </if>
+			  <if test='srchTargetWord != null and !srchTargetWord.equals("")'>
+	            <if test='srchTargetKey.equals("memberName")'>
+	       		AND mem.cs_member_name LIKE '%' + #{srchTargetWordDB} + '%'
+	            </if>
+	            <if test='srchTargetKey.equals("memberId")'>
+	       		AND mem.cs_member_id LIKE '%' + #{srchTargetWordDB} + '%'
+	            </if>
+	          </if>
+        ) Y
+        <choose>
+            <when test='orderbyTarget == 1'> ORDER BY "mem.memberName" ASC</when>
+            <when test='orderbyTarget == -1'>ORDER BY "mem.memberName" DESC</when>
+            <when test='orderbyTarget == 2'> ORDER BY "mem.memberId" ASC</when>
+            <when test='orderbyTarget == -2'>ORDER BY "mem.memberId" DESC</when>
+            <when test='orderbyTarget == 3'> ORDER BY "mem.studentYear" ASC</when>
+            <when test='orderbyTarget == -3'>ORDER BY "mem.studentYear" DESC</when>
+            <when test='orderbyTarget == 4'> ORDER BY "target.homeworkScore" ASC</when>
+            <when test='orderbyTarget == -4'>ORDER BY "target.homeworkScore" DESC</when>
+            <otherwise>ORDER BY "mem.memberName" ASC</otherwise>
+        </choose>
+    </select>
+    
+    <resultMap id="listNonTargetResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkTargetRS">
+   	 	<result column="target.homeworkSeq"       	property="target.homeworkSeq"       />
+   	 	<result column="target.courseApplySeq"      property="target.courseApplySeq"       />
+   	 	<result column="target.homeworkScore"       property="target.homeworkScore"       />
+   	 	<result column="mem.memberSeq"       		property="member.memberSeq"       />
+   	 	<result column="mem.memberName"       		property="member.memberName"       />
+   	 	<result column="mem.memberId"       		property="member.memberId"       />
+   	 	<result column="mem.studentYear"       		property="member.studentYear"       />
+	</resultMap>     
+    
+    <select id="getListNonTarget" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseHomeworkCondition" resultMap="listNonTargetResultMap">
+    	/* UnivCourseHomeworkTargetMapper.getListNonTarget */
+   SELECT Y.* FROM (
+	    	SELECT
+				target.cs_homework_seq 			AS "target.homeworkSeq" ,
+				target.cs_course_apply_seq		AS "target.courseApplySeq" ,
+				target.cs_homework_score		AS "target.homeworkScore" ,
+				target.cs_member_seq			AS "mem.memberSeq" ,
+				mem.cs_member_name				AS "mem.memberName" ,
+				mem.cs_member_id				AS "mem.memberId" ,
+				mem.cs_student_year				AS "mem.studentYear"
+			FROM
+			(
+				SELECT
+					home.cs_homework_seq,
+					home.cs_course_active_seq,
+					apply.cs_course_apply_seq,
+					home.cs_use_yn,
+					ISNULL(CASE
+						WHEN home.cs_use_yn = 'Y' AND answer.cs_send_degree = 2 THEN
+							CONVERT(INT, (CONVERT(FLOAT, ISNULL(answer.cs_homework_score,0)) / CONVERT(FLOAT, 100)) * ISNULL(home.cs_rate2, 0))
+						ELSE
+							answer.cs_homework_score
+					END, 0) AS cs_homework_score,
+					apply.cs_member_seq
+				FROM
+					cs_course_apply apply
+					INNER join cs_course_homework home
+					ON  apply.cs_course_active_seq = home.cs_course_active_seq
+						  AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+						  AND apply.cs_delete_yn = 'N'
+						  AND apply.cs_course_active_seq = #{courseActiveSeq}
+					LEFT OUTER JOIN cs_course_homework_answer answer
+					      ON  home.cs_homework_seq = answer.cs_homework_seq
+					      AND apply.cs_course_apply_seq = answer.cs_course_apply_seq
+					      AND answer.cs_delete_yn = 'N'
+				WHERE
+					home.cs_homework_seq = #{referenceSeq}
+			) target
+			INNER JOIN cs_member mem
+			   ON  target.cs_member_seq = mem.cs_member_seq
+			   AND mem.cs_delete_yn = 'N'
+		<if test='editYn.equals("Y")'>
+			LEFT OUTER JOIN cs_course_homework_target hometarg
+			  ON target.cs_course_apply_seq = hometarg.cs_course_apply_seq
+			  AND hometarg.cs_homework_seq = #{homeworkSeq}
+			  AND hometarg.cs_delete_yn = 'N'
+		</if>
+			WHERE
+				  mem.cs_delete_yn = 'N'
+		    <if test='editYn.equals("Y")'>
+		      AND hometarg.cs_homework_seq IS NULL
+		    </if>
+			<if test='editYn.equals("N")'>
+			  AND target.cs_homework_score <![CDATA[>]]> #{limitScore}
+			</if>
+			<if test='srchLimitScore != null and !srchLimitScore.equals("")'>
+			  AND target.cs_homework_score <![CDATA[<=]]> #{srchLimitScore}
+			</if>
+			<if test='srchNonTargetWord != null and !srchNonTargetWord.equals("")'>
+	            <if test='srchNonTargetKey.equals("memberName")'>
+	       		AND mem.cs_member_name LIKE '%' + #{srchNonTargetWordDB} + '%'
+	            </if>
+	            <if test='srchNonTargetKey.equals("memberId")'>
+	       		AND mem.cs_member_id LIKE '%' + #{srchNonTargetWordDB} + '%'
+	            </if>
+	        </if>
+        ) Y
+        <choose>
+            <when test='orderbyNonTarget == 1'> ORDER BY "mem.memberName" ASC</when>
+            <when test='orderbyNonTarget == -1'>ORDER BY "mem.memberName" DESC</when>
+            <when test='orderbyNonTarget == 2'> ORDER BY "mem.memberId" ASC</when>
+            <when test='orderbyNonTarget == -2'>ORDER BY "mem.memberId" DESC</when>
+            <when test='orderbyNonTarget == 3'> ORDER BY "mem.studentYear" ASC</when>
+            <when test='orderbyNonTarget == -3'>ORDER BY "mem.studentYear" DESC</when>
+            <when test='orderbyNonTarget == 4'> ORDER BY "target.homeworkScore" ASC</when>
+            <when test='orderbyNonTarget == -4'>ORDER BY "target.homeworkScore" DESC</when>
+            <otherwise>ORDER BY "mem.memberName" ASC</otherwise>
+        </choose>
+    </select>
+    
+    <resultMap id="listTargetExamResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkTargetRS">
+   	 	<result column="target.courseApplySeq"      property="target.courseApplySeq"       />
+   	 	<result column="target.homeworkScore"       property="target.homeworkScore"       />
+   	 	<result column="mem.memberSeq"       		property="member.memberSeq"       />
+   	 	<result column="mem.memberName"       		property="member.memberName"       />
+   	 	<result column="mem.memberId"       		property="member.memberId"       />
+   	 	<result column="mem.studentYear"       		property="member.studentYear"       />
+	</resultMap>     
+    
+    <select id="getListTargetExam" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseHomeworkCondition" resultMap="listTargetExamResultMap">
+    	/* UnivCourseHomeworkTargetMapper.getListTargetExam */
+  SELECT Y.* FROM (
+	    	SELECT
+				target.cs_course_apply_seq		AS "target.courseApplySeq" ,
+				target.cs_homework_score		AS "target.homeworkScore" ,
+				target.cs_member_seq			AS "mem.memberSeq" ,
+				mem.cs_member_name				AS "mem.memberName" ,
+				mem.cs_member_id				AS "mem.memberId" ,
+				mem.cs_student_year				AS "mem.studentYear"
+			FROM
+			(
+				SELECT
+					apply.cs_course_active_seq ,
+					apply.cs_course_apply_seq ,
+					ISNULL(target.cs_take_score,0) AS cs_homework_score ,
+					apply.cs_member_seq
+				FROM
+					cs_course_apply apply
+				INNER JOIN cs_course_active_exam_paper paper
+				   ON  apply.cs_course_active_seq = paper.cs_course_active_seq
+				   AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+				   AND apply.cs_delete_yn = 'N'
+				   AND apply.cs_course_active_seq = #{courseActiveSeq}
+				LEFT OUTER JOIN cs_course_active_exam_paper_target target
+				   ON  paper.cs_course_active_exam_paper_seq = target.cs_course_active_exam_paper_seq
+				   AND apply.cs_course_apply_seq = target.cs_course_apply_seq
+				WHERE
+				   paper.cs_course_active_exam_paper_seq = #{referenceSeq}
+			) target
+			INNER JOIN cs_member mem
+			   ON  target.cs_member_seq = mem.cs_member_seq
+			   AND mem.cs_delete_yn = 'N'
+			<if test='editYn.equals("Y")'>
+			INNER JOIN cs_course_homework_target hometarg
+			   ON target.cs_course_apply_seq = hometarg.cs_course_apply_seq
+			   AND hometarg.cs_homework_seq = #{homeworkSeq}
+		   	   AND hometarg.cs_delete_yn = 'N'
+			</if>
+			WHERE
+				  mem.cs_delete_yn = 'N'
+			  <if test='editYn.equals("N")'>
+			    AND target.cs_homework_score <![CDATA[<=]]> #{limitScore}
+			  </if>
+			  <if test='srchTargetWord != null and !srchTargetWord.equals("")'>
+	            <if test='srchTargetKey.equals("memberName")'>
+	       		AND mem.cs_member_name LIKE '%' + #{srchTargetWordDB} + '%'
+	            </if>
+	            <if test='srchTargetKey.equals("memberId")'>
+	       		AND mem.cs_member_id LIKE '%' + #{srchTargetWordDB} + '%'
+	            </if>
+	          </if>
+        ) Y
+        <choose>
+            <when test='orderbyTarget == 1'> ORDER BY "mem.memberName" ASC</when>
+            <when test='orderbyTarget == -1'>ORDER BY "mem.memberName" DESC</when>
+            <when test='orderbyTarget == 2'> ORDER BY "mem.memberId" ASC</when>
+            <when test='orderbyTarget == -2'>ORDER BY "mem.memberId" DESC</when>
+            <when test='orderbyTarget == 3'> ORDER BY "mem.studentYear" ASC</when>
+            <when test='orderbyTarget == -3'>ORDER BY "mem.studentYear" DESC</when>
+            <when test='orderbyTarget == 4'> ORDER BY "target.homeworkScore" ASC</when>
+            <when test='orderbyTarget == -4'>ORDER BY "target.homeworkScore" DESC</when>
+            <otherwise>ORDER BY "mem.memberName" ASC</otherwise>
+        </choose>
+    </select>
+    
+    <resultMap id="listNonTargetExamResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkTargetRS">
+   	 	<result column="target.courseApplySeq"      property="target.courseApplySeq"       />
+   	 	<result column="target.homeworkScore"       property="target.homeworkScore"       />
+   	 	<result column="mem.memberSeq"       		property="member.memberSeq"       />
+   	 	<result column="mem.memberName"       		property="member.memberName"       />
+   	 	<result column="mem.memberId"       		property="member.memberId"       />
+   	 	<result column="mem.studentYear"       		property="member.studentYear"       />
+	</resultMap>     
+    
+    <select id="getListNonTargetExam" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseHomeworkCondition" resultMap="listNonTargetExamResultMap">
+    	/* UnivCourseHomeworkTargetMapper.getListNonTargetExam */
+   SELECT Y.* FROM (
+   			SELECT
+				target.cs_course_apply_seq		AS "target.courseApplySeq" ,
+				target.cs_homework_score		AS "target.homeworkScore" ,
+				target.cs_member_seq			AS "mem.memberSeq" ,
+				mem.cs_member_name				AS "mem.memberName" ,
+				mem.cs_member_id				AS "mem.memberId" ,
+				mem.cs_student_year				AS "mem.studentYear"
+   			FROM
+   			(
+	    	    SELECT
+					apply.cs_course_active_seq ,
+					apply.cs_course_apply_seq ,
+					ISNULL(target.cs_take_score,0) AS cs_homework_score ,
+					apply.cs_member_seq
+				FROM
+					cs_course_apply apply
+				INNER JOIN cs_course_active_exam_paper paper
+				   ON  apply.cs_course_active_seq = paper.cs_course_active_seq
+				   AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+				   AND apply.cs_delete_yn = 'N'
+				   AND apply.cs_course_active_seq = #{courseActiveSeq}
+				LEFT OUTER JOIN cs_course_active_exam_paper_target target
+				   ON  paper.cs_course_active_exam_paper_seq = target.cs_course_active_exam_paper_seq
+				   AND apply.cs_course_apply_seq = target.cs_course_apply_seq
+				WHERE
+				   paper.cs_course_active_exam_paper_seq = #{referenceSeq}
+			) target
+			INNER JOIN cs_member mem
+			   ON  target.cs_member_seq = mem.cs_member_seq
+			   AND mem.cs_delete_yn = 'N'
+		<if test='editYn.equals("Y")'>
+			LEFT OUTER JOIN cs_course_homework_target hometarg
+			  ON target.cs_course_apply_seq = hometarg.cs_course_apply_seq
+			  AND hometarg.cs_homework_seq = #{homeworkSeq}
+			  AND hometarg.cs_delete_yn = 'N'
+		</if>
+			WHERE
+				  mem.cs_delete_yn = 'N'
+		    <if test='editYn.equals("Y")'>
+		      AND hometarg.cs_homework_seq IS NULL
+		    </if>
+			<if test='editYn.equals("N")'>
+			  AND target.cs_homework_score <![CDATA[>]]> #{limitScore}
+			</if>
+			<if test='srchLimitScore != null and !srchLimitScore.equals("")'>
+			  AND target.cs_homework_score <![CDATA[<=]]> #{srchLimitScore}
+			</if>
+			<if test='srchNonTargetWord != null and !srchNonTargetWord.equals("")'>
+	            <if test='srchNonTargetKey.equals("memberName")'>
+	       		AND mem.cs_member_name LIKE '%' + #{srchNonTargetWordDB} + '%'
+	            </if>
+	            <if test='srchNonTargetKey.equals("memberId")'>
+	       		AND mem.cs_member_id LIKE '%' + #{srchNonTargetWordDB} + '%'
+	            </if>
+	        </if>
+        ) Y
+        <choose>
+            <when test='orderbyNonTarget == 1'> ORDER BY "mem.memberName" ASC</when>
+            <when test='orderbyNonTarget == -1'>ORDER BY "mem.memberName" DESC</when>
+            <when test='orderbyNonTarget == 2'> ORDER BY "mem.memberId" ASC</when>
+            <when test='orderbyNonTarget == -2'>ORDER BY "mem.memberId" DESC</when>
+            <when test='orderbyNonTarget == 3'> ORDER BY "mem.studentYear" ASC</when>
+            <when test='orderbyNonTarget == -3'>ORDER BY "mem.studentYear" DESC</when>
+            <when test='orderbyNonTarget == 4'> ORDER BY "target.homeworkScore" ASC</when>
+            <when test='orderbyNonTarget == -4'>ORDER BY "target.homeworkScore" DESC</when>
+            <otherwise>ORDER BY "mem.memberName" ASC</otherwise>
+        </choose>
+    </select>
+    
+    <select id="countByUseMember" parameterType="map" resultType="int">
+    	/* UnivCourseHomeworkTargetMapper.countByUseMember */
+    	SELECT
+    		COUNT(*)
+		FROM
+			cs_course_homework_target target
+		WHERE  cs_delete_yn = 'N' 
+		   AND cs_course_apply_seq 	= #{courseApplySeq}
+		   AND cs_homework_seq 		= #{homeworkSeq}	
+    </select>    
+    
+    
+</mapper>

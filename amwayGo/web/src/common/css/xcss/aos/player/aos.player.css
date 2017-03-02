@@ -1,0 +1,194 @@
+@charset "utf-8";
+
+.aos-player {
+	position:relative;
+	vertical-align:top;
+	font-size:11px;
+	font-family:Arial;
+	line-height:11px;
+	width:100%;
+	overflow:hidden;
+}
+.aos-player .aosp-video {
+	width:100%;
+	height:100%;
+	background:#000 url('images/loading.gif') no-repeat;
+	background-position:center;
+}
+.aos-player .aosp-video .aosp-object {
+	width:100%;
+	height:100%;
+	background-color:#000;
+}
+.aos-player .aosp-audio {
+	
+}
+.aos-player .aosp-audio .aosp-object {
+	width:0;
+	height:0;
+	visibility:hidden;
+}
+.aos-player .aosp-control {
+	position:relative;
+	width:100%;
+	height:30px;
+	margin:0;
+	padding:0;
+	background-color:#4c4c4c;
+	z-index:2;
+	overflow:hidden;
+}
+.aos-player .aosp-iframe {
+	position:absolute;
+	bottom:0;
+	left:0;
+	width:100%;
+	height:30px;
+    overflow:hidden;
+    border:none;
+    background-color:#4c4c4c;
+    -moz-opacity:0;
+    opacity:0;
+    background-color:#fff;
+    filter:alpha(opacity=0);
+    z-index:1;
+}
+.aos-player .aosp-control .aosp-notsupport {
+	position:absolute;
+	bottom:0;
+	left:0;
+	width:100%;
+	height:30px;
+	line-height:30px;
+	text-align:center;
+    overflow:hidden;
+    border:none;
+    background-color:#4c4c4c;
+    z-index:3;
+    color:#fff;
+}
+.aos-player .aosp-control div {
+	float:left;
+	margin:0;
+	padding:0;
+	border:0;
+}
+.aos-player .aosp-control .aosp-button {
+	width:25px;
+	height:30px;
+}
+.aos-player .aosp-control .aosp-button button {
+	cursor:pointer;
+	margin:7px 7px;
+	padding:0;
+	height:16px;
+	width:16px;
+	border:0;
+	background-image:url('images/control.png');
+	background-color:#4c4c4c;
+}
+.aos-player .aosp-control .aosp-button button:hover {
+	outline:solid 1px #eee;
+}
+.aos-player .aosp-control .aosp-play button {
+	background-position:0 0;
+}
+.aos-player .aosp-control .aosp-pause button {
+	background-position:0 -16px;
+}
+.aos-player .aosp-control .aosp-stop button {
+	background-position:-112px 0;
+}
+.aos-player .aosp-control .aosp-fullscreen button {
+	background-position:-32px 0;
+}
+.aos-player .aosp-control .aosp-unfullscreen button {
+	background-position:-32px -16px;
+}
+.aos-player .aosp-control .aosp-unmute button {
+	background-position:-16px -16px;
+}
+.aos-player .aosp-control .aosp-mute button {
+	background-position:-16px 0;
+}
+.aos-player .aosp-control .aosp-time {
+	color:#fff;
+	height:30px;
+	width:auto;
+	overflow:hidden;
+	text-align:center;
+}
+.aos-player .aosp-control .aosp-time span {
+	display:block;
+	margin:10px 0 0 2px; *margin-top:8px;
+	width:auto;
+}
+.aos-player .aosp-control .aosp-slider {
+	width:auto;
+	height:30px;
+	margin:0 5px;
+}
+.aos-player .aosp-control .aosp-slider .aosp-slider-total {
+	height:6px;
+	margin:12px 0;
+	background:#333;
+	position:relative;
+	-webkit-border-radius:2px;
+	-moz-border-radius:2px;
+	border-radius:2px;
+	overflow:hidden;
+}
+.aos-player .aosp-control .aosp-slider .aosp-time-total {
+	width:60px;
+}
+.aos-player .aosp-control .aosp-slider .aosp-volume-total {
+	width:60px;
+}
+.aos-player .aosp-control .aosp-slider span {
+	display:block;
+	position:absolute;
+	width:0;
+	height:6px;
+	-webkit-border-radius:2px;
+	-moz-border-radius:2px;
+	border-radius:2px;
+	cursor:pointer;
+}
+.aos-player .aosp-control .aosp-slider .aosp-slider-time-buffering {
+	background:#222;
+}
+.aos-player .aosp-control .aosp-slider .aosp-slider-current {
+	background:#3caac8;
+}
+.aos-player .aosp-control .aosp-slider .aosp-slider-time-float {
+	position:absolute;
+	top:-12px;
+	left:-0px;
+	width:50px;
+	height:10px;
+	line-height:10px;
+	padding:0 2px;
+	background-color:#8f8e8c;
+	text-align:center;
+	-webkit-border-radius:3px;
+	-moz-border-radius:3px;
+	border-radius:3px;
+	display:none;
+}
+.aos-player .aosp-control .aosp-slider .aosp-slider-time-float em {
+	color:#ffffff;
+	*margin-top:-2px;
+	*line-height:11px;
+	*display:block;
+}
+.aos-player .aosp-control .aosp-slider .aosp-slider-time-float .aosp-slider-time-float-arrow {
+	display:block;
+	position:absolute;
+	top:8px;
+	left:22px;
+	width:0;
+	height:0;
+	line-height:0;
+	border:solid 5px yellow;
+	border-color:#8f8e8c transparent transparent transparent;
+}

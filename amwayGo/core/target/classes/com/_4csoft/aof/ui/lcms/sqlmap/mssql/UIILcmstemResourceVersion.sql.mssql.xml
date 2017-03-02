@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsItemResourceVersionMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsItemResourceVersionVO">
+        <selectKey resultType="Long" keyProperty="versionSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UILcmsItemResourceVersionMapper.insert */
+INSERT INTO cs_lcms_item_resource_version 
+       ( 
+           cs_resource_seq ,
+           cs_href_original ,
+           cs_href_backup ,
+           cs_version ,
+           cs_description ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{resourceSeq} ,
+           #{hrefOriginal} ,
+           #{hrefBackup} ,
+           #{version} ,
+           #{description} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       )
+    </insert>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsItemResourceVersionVO">
+/* UILcmsItemResourceVersionMapper.delete */
+UPDATE cs_lcms_item_resource_version 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_version_seq = #{versionSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsItemResourceVersionRS">
+        <result column="irv.versionSeq"     property="itemResourceVersion.versionSeq" />
+        <result column="irv.resourceSeq"    property="itemResourceVersion.resourceSeq" />
+        <result column="irv.hrefOriginal"   property="itemResourceVersion.hrefOriginal" />
+        <result column="irv.hrefBackup"     property="itemResourceVersion.hrefBackup" />
+        <result column="irv.version"        property="itemResourceVersion.version" />
+        <result column="irv.description"    property="itemResourceVersion.description" />
+        <result column="irv.deleteYn"       property="itemResourceVersion.deleteYn" />
+        <result column="irv.regMemberSeq"   property="itemResourceVersion.regMemberSeq" />
+        <result column="irv.regDtime"       property="itemResourceVersion.regDtime" />
+        <result column="irv.regIp"          property="itemResourceVersion.regIp" />
+        <result column="irv.updMemberSeq"   property="itemResourceVersion.updMemberSeq" />
+        <result column="irv.updDtime"       property="itemResourceVersion.updDtime" />
+        <result column="irv.updIp"          property="itemResourceVersion.updIp" />
+    </resultMap>
+    <select id="getList" parameterType="map" resultMap="getList_result">
+/* UILcmsItemResourceVersionMapper.getList */
+SELECT irv.cs_version_seq       AS "irv.versionSeq" ,
+       irv.cs_resource_seq      AS "irv.resourceSeq" ,
+       irv.cs_href_original     AS "irv.hrefOriginal" ,
+       irv.cs_href_backup       AS "irv.hrefBackup" ,
+       irv.cs_version           AS "irv.version" ,
+       irv.cs_description       AS "irv.description" ,
+       irv.cs_delete_yn         AS "irv.deleteYn" ,
+       irv.cs_reg_member_seq    AS "irv.regMemberSeq" ,
+       irv.cs_reg_dtime         AS "irv.regDtime" ,
+       irv.cs_reg_ip            AS "irv.regIp" ,
+       irv.cs_upd_member_seq    AS "irv.updMemberSeq" ,
+       irv.cs_upd_dtime         AS "irv.updDtime" , 
+       irv.cs_upd_ip            AS "irv.updIp" 
+  FROM cs_lcms_item_resource_version irv 
+ WHERE irv.cs_href_original = #{hrefOriginal} 
+       AND irv.cs_resource_seq = #{resourceSeq} 
+       AND irv.cs_delete_yn = 'N'
+ORDER BY irv.cs_version DESC
+    </select>
+
+</mapper>

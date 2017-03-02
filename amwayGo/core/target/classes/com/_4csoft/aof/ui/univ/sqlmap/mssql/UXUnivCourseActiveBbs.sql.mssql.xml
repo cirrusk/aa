@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.univ.mapper.UIUnivCourseActiveBbsMapper">
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveBbsRS">
+        <result column="cs_member_seq"         		property="member.memberSeq" />
+        <result column="cs_member_name"   	   		property="member.memberName"  />
+        <result column="cs_member_id"   	   		property="member.memberId"  />
+        <result column="cs_course_active_seq"   	property="courseActive.courseActiveSeq" />
+        <result column="cs_course_active_title"   	property="courseActive.courseActiveTitle" />
+        <result column="cx_team_bbs_count"   	   	property="bbs.teamBbsCount"  />
+        <result column="cx_team_comment_count"   	property="bbs.teamCommentCount"  />
+        <result column="cx_free_bbs_count"   	   	property="bbs.freeBbsCount"  />
+        <result column="cx_free_comment_count"   	property="bbs.freeCommentCount"  />
+    </resultMap>
+    <select id="getListBbsStatistics" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultMap="listResultMap">
+	/* UIUnivCourseActiveBbs.getListBbsStatistics */
+	        <if test='currentPage != 0'>
+	SELECT Z.* FROM (SELECT Row_Number() OVER (
+	        <choose>
+	            <when test='orderby == 1'>ORDER BY cs_course_active_title ASC</when>
+	            <when test='orderby == -1'>ORDER BY cs_course_active_title DESC</when>
+	            <when test='orderby == 2'>ORDER BY cx_team_bbs_count ASC</when>
+	            <when test='orderby == -2'>ORDER BY cx_team_bbs_count DESC</when>
+	            <when test='orderby == 3'>ORDER BY cx_team_comment_count ASC</when>
+	            <when test='orderby == -3'>ORDER BY cx_team_comment_count DESC</when>
+	            <when test='orderby == 4'>ORDER BY cx_free_bbs_count ASC</when>
+	            <when test='orderby == -4'>ORDER BY cx_free_bbs_count DESC</when>
+	            <when test='orderby == 5'>ORDER BY cx_free_comment_count ASC</when>
+	            <when test='orderby == -5'>ORDER BY cx_free_comment_count DESC</when>
+	            <otherwise>ORDER BY cs_member_name</otherwise>
+	        </choose>
+	) AS rownumber, * FROM (
+	        </if>
+			SELECT ca.cs_course_active_seq, 
+			       ca.cs_course_active_title, 
+			       cs_course_apply_seq, 
+			       st.cs_member_seq, 
+			       mm.cs_member_name, 
+			       mm.cs_member_id,
+			       cx_team_bbs_count, 
+			       cx_team_comment_count, 
+			       cx_free_bbs_count, 
+			       cx_free_comment_count 
+			  FROM cs_course_master cm 
+	    INNER JOIN cs_course_active ca 
+		        ON cm.cs_course_master_seq = ca.cs_course_master_seq 
+		       AND ca.cs_delete_yn = 'N'
+		           <if test='srchWord != null and !srchWord.equals("")'>
+					   <if test='srchKey.equals("courseActiveTitle")'>
+			   AND ca.cs_course_active_title LIKE '%' + #{srchWordDB} + '%'				
+					   </if>
+				   </if> 
+	    INNER JOIN (SELECT cs_course_active_seq, 
+			               cs_course_apply_seq, 
+			               cs_member_seq, 
+			               SUM(cx_team_bbs_count)     as cx_team_bbs_count, 
+			               SUM(cx_team_comment_count) as cx_team_comment_count, 
+			               SUM(cx_free_bbs_count)     as cx_free_bbs_count, 
+			               SUM(cx_free_comment_count) as cx_free_comment_count 
+			         FROM 
+			             (SELECT cap.cs_course_active_seq, 
+			                     cap.cs_course_apply_seq, 
+			                     cap.cs_member_seq, 
+			                     CASE WHEN bbs.cs_board_type_cd = '${CD.BOARD_TYPE.TEAMPROJECT}' 
+			                          THEN cx_bbs_count 
+			                          ELSE 0 END AS cx_team_bbs_count, 
+			                     CASE WHEN bbs.cs_board_type_cd = '${CD.BOARD_TYPE.FREE}' 
+			                          THEN cx_bbs_count 
+			                          ELSE 0 END AS cx_free_bbs_count, 
+			                     CASE WHEN cmm.cs_board_type_cd = '${CD.BOARD_TYPE.TEAMPROJECT}' 
+			                          THEN cx_comment_count 
+			                          ELSE 0 END AS cx_team_comment_count, 
+			                     CASE WHEN cmm.cs_board_type_cd = '${CD.BOARD_TYPE.FREE}' 
+			                          THEN cx_comment_count 
+			                          ELSE 0 END AS cx_free_comment_count 
+			                FROM cs_course_apply cap 
+                 LEFT OUTER JOIN (SELECT b.cs_board_type_cd, 
+			                             bs.cs_reg_member_seq as cs_member_seq, 
+			                             count( * )           as cx_bbs_count, 
+			                             cs_reference_seq 
+			                        FROM cs_board b 
+			                  INNER JOIN cs_bbs_seq bs 
+			                          ON b.cs_board_seq = bs.cs_board_seq 
+			                         AND bs.cs_delete_yn = 'N' 
+			                       WHERE b.cs_board_type_cd in ( '${CD.BOARD_TYPE.TEAMPROJECT}', '${CD.BOARD_TYPE.FREE}') 
+			                    GROUP BY b.cs_board_type_cd, 
+			                             bs.cs_reg_member_seq, 
+			                             b.cs_reference_seq 
+			                     ) bbs 
+			                  ON cap.cs_member_seq = bbs.cs_member_seq 
+			                 AND cap.cs_course_active_seq = bbs.cs_reference_seq 
+			     LEFT OUTER JOIN (SELECT cs_board_type_cd, 
+			                             cs_reg_member_seq as cs_member_seq, 
+			                             cs_reference_seq, 
+			                             SUM(cx_comment_count) as cx_comment_count 
+			                       FROM 
+			                            (SELECT b.cs_board_type_cd, 
+			                                    cm.cs_reg_member_seq, 
+			                                    CASE WHEN cs_comment_seq is null 
+			                                         THEN 0 
+			                                         ELSE 1 END AS cx_comment_count, 
+			                                    b.cs_reference_seq 
+			                               FROM cs_board b 
+			                         INNER JOIN cs_bbs_seq bs 
+			                                 ON b.cs_board_seq = bs.cs_board_seq 
+			                                AND bs.cs_delete_yn = 'N' 
+			                    LEFT OUTER JOIN cs_comment cm 
+			                                 ON bs.cs_bbs_seq = cm.cs_bbs_seq 
+			                                AND cm.cs_delete_yn = 'N' 
+			                              WHERE b.cs_board_type_cd in ( '${CD.BOARD_TYPE.TEAMPROJECT}', '${CD.BOARD_TYPE.FREE}')
+			                            ) a 
+			                   GROUP BY a.cs_board_type_cd, 
+			                            a.cs_reg_member_seq, 
+			                            a.cs_reference_seq 
+			                     ) cmm 
+		                      ON cap.cs_member_seq = cmm.cs_member_seq 
+		                     AND cap.cs_course_active_seq = cmm.cs_reference_seq 
+			               WHERE cap.cs_delete_yn = 'N' 
+		                     AND cap.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+			              ) a 
+			     GROUP BY cs_course_active_seq, 
+			              cs_course_apply_seq, 
+			              cs_member_seq 
+			       ) st 
+			    ON ca.cs_course_active_seq = st.cs_course_active_seq 
+ 	    INNER JOIN cs_member mm 
+		        ON mm.cs_member_seq = st.cs_member_seq 
+		       AND mm.cs_delete_yn = 'N'
+		       	   <if test='srchWord != null and !srchWord.equals("")'>
+					   <if test='srchKey.equals("memberName")'>
+			   AND mm.cs_member_name LIKE '%' + #{srchWordDB} + '%'				
+					   </if>
+				   </if>
+		    <if test='currentPage != 0'>
+		 ) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo}
+		    </if>
+    </select>
+
+    <select id="countListBbsStatistics" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultType="int">
+	/* UIUnivCourseActiveBbs.countListBbsStatistics */
+			SELECT COUNT(*)
+			  FROM cs_course_master cm 
+	    INNER JOIN cs_course_active ca 
+		        ON cm.cs_course_master_seq = ca.cs_course_master_seq 
+		       AND ca.cs_delete_yn = 'N'
+		           <if test='srchWord != null and !srchWord.equals("")'>
+					   <if test='srchKey.equals("courseActiveTitle")'>
+			   AND ca.cs_course_active_title LIKE '%' + #{srchWordDB} + '%'				
+					   </if>
+				   </if> 
+	    INNER JOIN (SELECT cs_course_active_seq, 
+			               cs_course_apply_seq, 
+			               cs_member_seq, 
+			               SUM(cx_team_bbs_count)     as cx_team_bbs_count, 
+			               SUM(cx_team_comment_count) as cx_team_comment_count, 
+			               SUM(cx_free_bbs_count)     as cx_free_bbs_count, 
+			               SUM(cx_free_comment_count) as cx_free_comment_count 
+			         FROM 
+			             (SELECT cap.cs_course_active_seq, 
+			                     cap.cs_course_apply_seq, 
+			                     cap.cs_member_seq, 
+			                     CASE WHEN bbs.cs_board_type_cd = '${CD.BOARD_TYPE.TEAMPROJECT}' 
+			                          THEN cx_bbs_count 
+			                          ELSE 0 END AS cx_team_bbs_count, 
+			                     CASE WHEN bbs.cs_board_type_cd = '${CD.BOARD_TYPE.FREE}' 
+			                          THEN cx_bbs_count 
+			                          ELSE 0 END AS cx_free_bbs_count, 
+			                     CASE WHEN cmm.cs_board_type_cd = '${CD.BOARD_TYPE.TEAMPROJECT}' 
+			                          THEN cx_comment_count 
+			                          ELSE 0 END AS cx_team_comment_count, 
+			                     CASE WHEN cmm.cs_board_type_cd = '${CD.BOARD_TYPE.FREE}' 
+			                          THEN cx_comment_count 
+			                          ELSE 0 END AS cx_free_comment_count 
+			                FROM cs_course_apply cap 
+                 LEFT OUTER JOIN (SELECT b.cs_board_type_cd, 
+			                             bs.cs_reg_member_seq as cs_member_seq, 
+			                             count( * )           as cx_bbs_count, 
+			                             cs_reference_seq 
+			                        FROM cs_board b 
+			                  INNER JOIN cs_bbs_seq bs 
+			                          ON b.cs_board_seq = bs.cs_board_seq 
+			                         AND bs.cs_delete_yn = 'N' 
+			                       WHERE b.cs_board_type_cd in ( '${CD.BOARD_TYPE.TEAMPROJECT}', '${CD.BOARD_TYPE.FREE}') 
+			                    GROUP BY b.cs_board_type_cd, 
+			                             bs.cs_reg_member_seq, 
+			                             b.cs_reference_seq 
+			                     ) bbs 
+			                  ON cap.cs_member_seq = bbs.cs_member_seq 
+			                 AND cap.cs_course_active_seq = bbs.cs_reference_seq 
+			     LEFT OUTER JOIN (SELECT cs_board_type_cd, 
+			                             cs_reg_member_seq as cs_member_seq, 
+			                             cs_reference_seq, 
+			                             SUM(cx_comment_count) as cx_comment_count 
+			                       FROM 
+			                            (SELECT b.cs_board_type_cd, 
+			                                    cm.cs_reg_member_seq, 
+			                                    CASE WHEN cs_comment_seq is null 
+			                                         THEN 0 
+			                                         ELSE 1 END AS cx_comment_count, 
+			                                    b.cs_reference_seq 
+			                               FROM cs_board b 
+			                         INNER JOIN cs_bbs_seq bs 
+			                                 ON b.cs_board_seq = bs.cs_board_seq 
+			                                AND bs.cs_delete_yn = 'N' 
+			                    LEFT OUTER JOIN cs_comment cm 
+			                                 ON bs.cs_bbs_seq = cm.cs_bbs_seq 
+			                                AND cm.cs_delete_yn = 'N' 
+			                              WHERE b.cs_board_type_cd in ( '${CD.BOARD_TYPE.TEAMPROJECT}', '${CD.BOARD_TYPE.FREE}')
+			                            ) a 
+			                   GROUP BY a.cs_board_type_cd, 
+			                            a.cs_reg_member_seq, 
+			                            a.cs_reference_seq 
+			                     ) cmm 
+		                      ON cap.cs_member_seq = cmm.cs_member_seq 
+		                     AND cap.cs_course_active_seq = cmm.cs_reference_seq 
+			               WHERE cap.cs_delete_yn = 'N' 
+		                     AND cap.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+			              ) a 
+			     GROUP BY cs_course_active_seq, 
+			              cs_course_apply_seq, 
+			              cs_member_seq 
+			       ) st 
+			    ON ca.cs_course_active_seq = st.cs_course_active_seq 
+ 	    INNER JOIN cs_member mm 
+		        ON mm.cs_member_seq = st.cs_member_seq 
+		       AND mm.cs_delete_yn = 'N'
+			       <if test='srchWord != null and !srchWord.equals("")'>
+					   <if test='srchKey.equals("memberName")'>
+			   AND mm.cs_member_name LIKE '%' + #{srchWordDB} + '%'				
+					   </if>
+				   </if>
+    </select>
+
+</mapper>

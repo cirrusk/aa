@@ -1,0 +1,70 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if IE 9]><html lang="ko" class="modern ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>AOF5-UNIV WWW DEMO</title>
+<link rel="stylesheet" href="../../css/www/base.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/common.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/content.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/style.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/learning.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/classroom.css" type="text/css"/>
+<script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="../../js/select.js"></script>
+</head>
+<body>
+	<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-dialog-custom" style="display: block; z-index: 1003; outline: 0px none; height: auto; width: 1006px; top: 0px; left: 170px; padding: 0px;">
+		<div class="learning" style="height:738px;">
+			<!-- section-head -->
+			<!-- 
+			<div class="section-head">
+				<div class="title" style="width:735px;">가로세로 테스트</div>
+				<div class="timer warning">
+					<span>남은시간 : </span>
+					<span id="remainTimer">00:00:00</span>
+				</div>
+			</div>
+			-->
+			<div class="pop-header">
+				<h3><span class="pop-header-test"></span>가로세로 테스트</h3>
+				<div class="timer warning">
+					<span>남은시간 : </span>
+					<span id="remainTimer">00:00:00</span>
+				</div>
+			</div>
+			<!-- //section-head -->
+			<!-- section-contents -->
+			<div class="section-contents">
+				<div class="data scroller" style="width:735px; height:673px;">
+					시험 컨텐츠
+				</div>
+			</div>
+			<!-- //section-contents -->
+			<!-- section-answer -->
+			<div class="section-answer">
+				<div class="scroller" style="height:627px; overflow-x:hidden; overflow-y:auto;"></div>
+				<ul class="buttons" style="padding:5px; border-top:solid 1px #fff;">
+					<li class="align-c">
+						<a class="btn black" title="제출" onclick="SUB.doAnswer('Y')"><span class="small">제출</span></a>
+						<a class="btn black" title="임시저장" onclick="SUB.doAnswer('N');"><span class="small">임시저장</span></a>
+					</li>
+				</ul>
+			</div>
+			<!-- //section-answer -->
+			<!-- tabs-bottom-left -->
+			<div class="tabs-bottom-left">
+				<a class="tab" onclick="SUB.doToggleTab(this, 'exam-info')">시험지 정보</a>
+			</div>
+			<!-- //tabs-bottom-left -->
+			<!-- tabs-content -->
+			<div class="tabs-content"></div>
+			<!-- //tabs-content -->
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.course.service.impl.LmsCourseMapper">
+
+	<!-- 과정 기본 정보 삭제 -->
+ 	<update id="deleteLmsCourse" parameterType="reqBox">
+		/* deleteLmsCourse */
+		UPDATE LMSCOURSE
+			SET
+				 USEFLAG = 'N' 
+		WHERE COURSEID  IN
+			<foreach collection="courseids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+
+	<!-- 과정 기본 정보 상세 -->
+	<select id="selectLmsCourse" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsCourse */
+			SELECT
+				COURSEID ,
+				CATEGORYID ,
+				COURSETYPE ,
+				COURSENAME ,
+				THEMENAME ,
+				THEMESEQ ,
+				OPENFLAG ,
+				REQUESTSTARTDATE ,
+				REQUESTENDDATE ,
+				STARTDATE ,
+				FORMAT(STARTDATE, 'yyyy-MM-dd') AS STARTDATEYYMMDD ,
+				FORMAT(STARTDATE, 'HH') AS STARTDATEHH ,
+				FORMAT(STARTDATE, 'mm') AS STARTDATEMM ,
+				DBO.F_LMS_DATETYPE(STARTDATE, '5') AS STARTDATE5 ,
+				ENDDATE ,
+				FORMAT(ENDDATE, 'yyyy-MM-dd') AS ENDDATEYYMMDD ,
+				FORMAT(ENDDATE, 'HH') AS ENDDATEHH ,
+				FORMAT(ENDDATE, 'mm') AS ENDDATEMM ,
+				REGISTRANTDATE ,
+				MODIFYDATE ,
+				COURSECONTENT ,
+				DATATYPE ,
+				PLAYTIME ,
+				COURSEIMAGE ,
+				COURSEIMAGENOTE ,
+				SNSFLAG ,
+				GROUPFLAG ,
+				USEFLAG ,
+				REGISTRANT ,
+				MODIFIER ,
+				TARGET ,
+				SEARCHWORD ,
+				CANCELTERM ,
+				LIKECOUNT ,
+				VIEWCOUNT ,
+				SUBSTRING(PLAYTIME,1,2) AS PLAYTIMEHH ,
+				SUBSTRING(PLAYTIME,4,2) AS PLAYTIMEMM ,
+				SUBSTRING(PLAYTIME,7,2) AS PLAYTIMESS
+			FROM LMSCOURSE
+			WHERE COURSEID = #{courseid}
+	</select>
+
+	<!-- 과정 테마 목록 -->
+	<select id="selectLmsThemeList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsThemeList */
+			SELECT
+				THEMESEQ,
+				MIN(THEMENAME)
+				<if test='!"R".equals(coursetype)'>
+				+ ' [' + FORMAT(MIN(REGISTRANTDATE), 'yyyy-MM-dd') + '] ' 
+				</if>
+				 AS THEMENAME ,
+				 MIN(THEMENAME) AS MINTHEMENAME ,
+				 FORMAT(MIN(REGISTRANTDATE), 'yyyy-MM-dd') AS REGISTRANTDATE
+			FROM LMSCOURSE
+			WHERE COURSETYPE = #{coursetype}
+				<if test='!"R".equals(coursetype)'>
+				AND REGISTRANTDATE <![CDATA[  >= ]]> DATEADD(YEAR, -2, GETDATE())
+				</if>
+				<if test='"F".equals(coursetype)'>
+					<if test='"C".equals(openflag)'>
+					AND OPENFLAG = 'C'
+					</if> 
+					<if test='!"C".equals(openflag)'>
+					AND OPENFLAG != 'C'  
+					</if> 
+				</if>
+			GROUP BY THEMESEQ
+			ORDER BY MIN(THEMENAME) ASC
+	</select>
+	
+	<select id="selectLmsCourseConditionList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsCourseConditionList */
+		SELECT
+			AA.*
+			, AA.ROW_NUM AS NO
+			, CASE WHEN AA.CONDITIONTYPE = '1' THEN '노출권한'
+				WHEN AA.CONDITIONTYPE = '2' THEN '이용권한'
+				ELSE '추천권한' END CONDITIONTYPENAME
+			, AA.STARTDATE + ' ~ ' + AA.ENDDATE AS EDUDATE
+			, SUBSTRING(
+				ABOTYPECODENAME+PINCODENAME+BONUSCODENAME+AGECODENAME+LOACODENAME+DIACODENAME+CUSTOMERCODENAME+CONSECUTIVECODENAME+BUSINESSSTATUSCODENAME+TARGETMEMBERNAME
+				,1,LEN(ABOTYPECODENAME+PINCODENAME+BONUSCODENAME+AGECODENAME+LOACODENAME+DIACODENAME+CUSTOMERCODENAME+CONSECUTIVECODENAME+BUSINESSSTATUSCODENAME+TARGETMEMBERNAME)-1
+			) AS CONDITIONNAME
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER ( 
+					ORDER BY CONDITIONTYPE ASC, CONDITIONSEQ ASC
+				) AS ROW_NUM 
+				, COURSEID
+				, CONDITIONTYPE
+				, CONDITIONSEQ
+				, ABOTYPECODE
+				, CASE WHEN LEN(ISNULL(ABOTYPECODE,'')) > 0 THEN '회원타입,' ELSE '' END ABOTYPECODENAME1
+				, CASE WHEN LEN(ISNULL(ABOTYPECODE,'')) > 0 THEN (SELECT MAX(TARGETCODENAME) + ',' FROM TARGETCODE WHERE TARGETMASTERSEQ='ABOTYPE' AND TARGETCODESEQ = A.ABOTYPECODE) ELSE '' END ABOTYPECODENAME
+				, ABOTYPEABOVE
+				, PINCODE
+				, CASE WHEN LEN(ISNULL(PINCODE,'')) > 0 THEN '핀레벨,' ELSE '' END PINCODENAME1
+				, CASE WHEN LEN(ISNULL(PINCODE,'')) > 0 THEN (SELECT TARGETRULENAME + ',' FROM TARGETRULE WHERE TARGETRULESEQ = A.PINCODE) ELSE '' END PINCODENAME
+				, PINABOVE
+				, PINUNDER
+				, BONUSCODE
+				, CASE WHEN LEN(ISNULL(BONUSCODE,'')) > 0 THEN '보너스레벨,' ELSE '' END BONUSCODENAME1
+				, CASE WHEN LEN(ISNULL(BONUSCODE,'')) > 0 THEN (SELECT TARGETRULENAME + ',' FROM TARGETRULE WHERE TARGETRULESEQ = A.BONUSCODE) ELSE '' END BONUSCODENAME
+				, BONUSUNDER
+				, BONUSABOVE
+				, AGECODE
+				, CASE WHEN LEN(ISNULL(AGECODE,'')) > 0 THEN '나이,' ELSE '' END AGECODENAME1
+				, CASE WHEN LEN(ISNULL(AGECODE,'')) > 0 THEN (SELECT TARGETRULENAME + ',' FROM TARGETRULE WHERE TARGETRULESEQ = A.AGECODE) ELSE '' END AGECODENAME
+				, AGEUNDER
+				, AGEABOVE
+				, LOACODE
+				, CASE WHEN LEN(ISNULL(LOACODE,'')) > 0 THEN 'LOA,' ELSE '' END LOACODENAME
+				, DIACODE
+				, CASE WHEN LEN(ISNULL(DIACODE,'')) > 0 THEN 'Diamond Group,' ELSE '' END DIACODENAME
+				, CUSTOMERCODE
+				, CASE WHEN LEN(ISNULL(CUSTOMERCODE,'')) > 0 THEN '다운라인구매,' ELSE '' END CUSTOMERCODENAME
+				, CONSECUTIVECODE
+				, CASE WHEN LEN(ISNULL(CONSECUTIVECODE,'')) > 0 THEN '연속주문횟수,' ELSE '' END CONSECUTIVECODENAME
+				, BUSINESSSTATUSCODE
+				, CASE WHEN LEN(ISNULL(BUSINESSSTATUSCODE,'')) > 0 THEN '비즈니스상태,' ELSE '' END BUSINESSSTATUSCODENAME
+				, TARGETCODE
+				, TARGETMEMBER
+				, CASE WHEN LEN(ISNULL(TARGETCODE,''))>0 THEN '대상자입력,' ELSE '' END TARGETMEMBERNAME
+				, FORMAT(STARTDATE, 'yyyy-MM-dd HH:mm') STARTDATE	  
+				, FORMAT(ENDDATE, 'yyyy-MM-dd HH:mm') ENDDATE
+			FROM LMSCOURSECONDITION AS A
+			WHERE COURSEID = #{courseid}
+		) AA	
+	</select>
+	
+	<select id="selectLmsCourseConditionDiaList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsCourseConditionDiaList */
+		SELECT
+			TARGETCODESEQ AS DIACODE
+			, TARGETCODENAME AS DIACODENAME
+		FROM TARGETCODE
+		WHERE TARGETMASTERSEQ = #{targetmasterseq}
+		AND CASEONE = #{loacode}
+		AND USEYN = 'Y'
+		ORDER BY TARGETCODEORDER ASC
+	</select>
+	
+	<select id="selectLmsTargetCodeList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsTargetCodeList */
+		SELECT
+			TARGETMASTERSEQ
+			, TARGETCODESEQ
+			, TARGETCODENAME
+			, TARGETCODEACCOUNT
+			, TARGETCODEORDER
+			, CASEONE
+			, CASETWO
+		FROM TARGETCODE
+		WHERE TARGETMASTERSEQ = #{targetmasterseq}
+		<if test=' "ABOTYPE".equals(targetmasterseq)'>
+			<if test=' coursetype == null or !"D".equals(coursetype)'>
+			AND TARGETCODESEQ != 'N'
+			</if>
+		</if>
+		AND USEYN = 'Y'
+		ORDER BY TARGETCODEORDER ASC
+	</select>
+	
+	<select id="selectLmsTargetConditionList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsTargetConditionList */
+		SELECT 
+			TARGETRULESEQ AS TARGETMASTERSEQ
+			, TARGETRULESEQ AS TARGETCODESEQ
+			, TARGETRULENAME AS TARGETCODENAME
+			, '' AS TARGETCODEACCOUNT
+			, TARGETRULESEQ AS TARGETCODEORDER
+			, '' AS CASEONE
+			, '' AS CASETWO
+		<if test='"AGECODE".equals(targetmasterseq)'>
+			, RULESTART AS TARGETCODEORDERABOVE
+			, RULEEND AS TARGETCODEORDERUNDER
+		</if>
+		<if test='!"AGECODE".equals(targetmasterseq)'>
+			, DBO.F_TARGET_ORDER(TARGETRULESEQ, RULESTART) AS TARGETCODEORDERABOVE
+			, DBO.F_TARGET_ORDER(TARGETRULESEQ, RULEEND) AS TARGETCODEORDERUNDER
+		</if>
+		FROM TARGETRULE
+		WHERE TARGETCODEGUBUN = #{targetmasterseq}
+			AND RULEGUBUN = 2 
+		ORDER BY TARGETRULESEQ ASC
+	</select>
+	
+	<!-- 과정 기본 정보 테마 멕스값 가져오기 -->
+	<select id="selectLmsCourseMaxThemeSeq" parameterType="reqBox" resultType="int">
+		/* selectLmsCourseMaxThemeSeq */
+			SELECT
+				ISNULL(MAX(THEMESEQ), 0) + 1 AS MAXTHEMESEQ
+			FROM LMSCOURSE
+	</select>
+
+	<!-- 과정 기본 정보 등록 -->
+ 	<insert id="insertLmsCourse" parameterType="reqBox">
+	    <selectKey resultType="int" keyProperty="maxcourseid" order="BEFORE">
+	        SELECT ISNULL(MAX(COURSEID),0)+1 AS MAXCOURSEID FROM LMSCOURSE        
+	    </selectKey> 
+		/* insertLmsCourse */
+			INSERT INTO LMSCOURSE(
+				COURSEID ,
+				CATEGORYID ,
+				COURSETYPE ,
+				COURSENAME ,
+				THEMENAME ,
+				THEMESEQ ,
+				OPENFLAG ,
+				REQUESTSTARTDATE ,
+				REQUESTENDDATE ,
+				STARTDATE ,
+				ENDDATE ,
+				REGISTRANTDATE ,
+				MODIFYDATE ,
+				COURSECONTENT ,
+				DATATYPE ,
+				PLAYTIME ,
+				COURSEIMAGE ,
+				COURSEIMAGENOTE ,
+				SNSFLAG ,
+				GROUPFLAG ,
+				USEFLAG ,
+				REGISTRANT ,
+				MODIFIER ,
+				TARGET ,
+				SEARCHWORD ,
+				CANCELTERM ,
+				LIKECOUNT ,
+				VIEWCOUNT 
+				)
+			VALUES(
+				#{maxcourseid} ,
+				#{categoryid} ,
+				#{coursetype} ,
+				#{coursename} ,
+				#{themename} ,
+				#{themeseq} ,
+				#{openflag} ,
+				#{requeststartdate} ,
+				#{requestenddate} ,
+				#{startdate} ,
+				#{enddate} ,
+				getdate() ,
+				getdate() ,
+				#{coursecontent} ,
+				#{datatype} ,
+				#{playtime} ,
+				#{courseimagefile} ,
+				#{courseimagenote} ,
+				#{snsflag} ,
+				#{groupflag} ,
+				'Y' ,
+				#{adminid} ,
+				#{adminid} ,
+				#{target} ,
+				#{searchword} ,
+				#{cancelterm} ,
+				0 ,
+				0 
+				)
+	</insert>
+
+	<!-- 과정 업데이트 -->
+ 	<update id="updateLmsCourse" parameterType="reqBox">
+		/* updateLmsCourse */
+			UPDATE LMSCOURSE SET
+				CATEGORYID = #{categoryid },
+				COURSENAME = #{coursename } ,
+				THEMENAME = #{themename } ,
+				THEMESEQ = #{themeseq } ,
+				OPENFLAG = #{openflag } ,
+				REQUESTSTARTDATE = #{requeststartdate } ,
+				REQUESTENDDATE = #{requestenddate } ,
+				STARTDATE = #{startdate } ,
+				ENDDATE = #{enddate } ,
+				MODIFYDATE = getdate() ,
+				COURSECONTENT = #{coursecontent } ,
+				DATATYPE = #{datatype } ,
+				PLAYTIME = #{playtime } ,
+				COURSEIMAGE = #{courseimagefile } ,
+				COURSEIMAGENOTE = #{courseimagenote } ,
+				SNSFLAG = #{snsflag } ,
+				GROUPFLAG = #{groupflag } ,
+				MODIFIER = #{adminid } ,
+				TARGET = #{target } ,
+				SEARCHWORD = #{searchword } ,
+				CANCELTERM = #{cancelterm }  
+			WHERE COURSEID = #{courseid} 
+	</update>
+
+	<insert id="insertLmsCourseCondition" parameterType="reqBox">
+		/* insertLmsCourseCondition */
+			INSERT INTO LMSCOURSECONDITION(
+				COURSEID
+				, CONDITIONTYPE
+				, CONDITIONSEQ
+				, ABOTYPECODE
+				, ABOTYPEABOVE
+				, PINCODE
+				, PINUNDER
+				, PINABOVE
+				, BONUSCODE
+				, BONUSUNDER
+				, BONUSABOVE
+				, AGECODE
+				, AGEUNDER
+				, AGEABOVE
+				, LOACODE
+				, DIACODE
+				, CUSTOMERCODE
+				, CONSECUTIVECODE
+				, BUSINESSSTATUSCODE
+				, TARGETCODE
+				, TARGETMEMBER
+				, STARTDATE
+				, ENDDATE
+			) VALUES (
+				#{courseid}
+				, #{conditiontype}
+				, #{conditionseq}
+				, #{abotypecode}
+				, #{abotypeabove}
+				, #{pincode}
+				, #{pinunder}
+				, #{pinabove}
+				, #{bonuscode}
+				, #{bonusunder}
+				, #{bonusabove}
+				, #{agecode}
+				, #{ageunder}
+				, #{ageabove}
+				, #{loacode}
+				, #{diacode}
+				, #{customercode}
+				, #{consecutivecode}
+				, #{businessstatuscode}
+				, #{targetcode}
+				, #{targetmember}
+				, #{startdate}
+				, #{enddate}
+			)
+	</insert>
+	
+	<update id="updateLmsCourseRequestDate" parameterType="reqBox">
+		/* updateLmsCourseRequestDate */
+			UPDATE A
+			SET 
+				A.REQUESTSTARTDATE = B.STARTDATE
+				, A.REQUESTENDDATE = B.ENDDATE
+			FROM LMSCOURSE A INNER JOIN (
+				SELECT
+					#{courseid} AS COURSEID 
+					, MIN(STARTDATE) AS STARTDATE
+					, MAX(ENDDATE) AS ENDDATE 
+				FROM LMSCOURSECONDITION
+				WHERE COURSEID = #{courseid}
+				AND CONDITIONTYPE = '2'
+			) B
+			ON A.COURSEID = B.COURSEID 
+			WHERE A.COURSEID = #{courseid}
+	</update>
+	
+	<delete id="deleteLmsCourseCondition" parameterType="reqBox">
+		/* updateLmsCourseRequestDate */
+		DELETE FROM LMSCOURSECONDITION
+		WHERE COURSEID = #{courseid}
+	</delete>
+	
+	<insert id="copyLmsCourseAjax" parameterType="reqBox">
+	    <selectKey resultType="int" keyProperty="maxcourseid" order="BEFORE">
+	        SELECT ISNULL(MAX(COURSEID),0)+1 AS MAXCOURSEID FROM LMSCOURSE
+	    </selectKey> 
+		/* copyLmsCourseAjax */
+		INSERT INTO LMSCOURSE(
+			COURSEID ,
+			CATEGORYID ,
+			COURSETYPE ,
+			COURSENAME ,
+			THEMENAME ,
+			THEMESEQ ,
+			OPENFLAG ,
+			REQUESTSTARTDATE ,
+			REQUESTENDDATE ,
+			STARTDATE ,
+			ENDDATE ,
+			REGISTRANTDATE ,
+			MODIFYDATE ,
+			COURSECONTENT ,
+			DATATYPE ,
+			PLAYTIME ,
+			COURSEIMAGE ,
+			COURSEIMAGENOTE ,
+			SNSFLAG ,
+			GROUPFLAG ,
+			USEFLAG ,
+			REGISTRANT ,
+			MODIFIER ,
+			TARGET ,
+			SEARCHWORD ,
+			CANCELTERM ,
+			LIKECOUNT ,
+			VIEWCOUNT 
+		)
+		SELECT
+			#{maxcourseid}
+			, CATEGORYID 
+			, COURSETYPE 
+			, '복사-' + COURSENAME 
+			, THEMENAME 
+			, THEMESEQ 
+			, OPENFLAG 
+			, REQUESTSTARTDATE 
+			, REQUESTENDDATE 
+			, STARTDATE 
+			, ENDDATE 
+			, getdate() 
+			, getdate() 
+			, COURSECONTENT 
+			, DATATYPE 
+			, PLAYTIME 
+			, COURSEIMAGE 
+			, COURSEIMAGENOTE 
+			, SNSFLAG 
+			, GROUPFLAG 
+			, USEFLAG 
+			, #{adminid} 
+			, #{adminid} 
+			, TARGET 
+			, SEARCHWORD 
+			, CANCELTERM 
+			, 0 
+			, 0
+		FROM LMSCOURSE
+		WHERE COURSEID = #{courseid}
+	</insert>
+	
+	<insert id="copyLmsConditionAjax" parameterType="reqBox">
+		/* copyLmsConditionAjax */
+		INSERT INTO LMSCOURSECONDITION(
+			COURSEID
+			, CONDITIONTYPE
+			, CONDITIONSEQ
+			, ABOTYPECODE
+			, ABOTYPEABOVE
+			, PINCODE
+			, PINUNDER
+			, PINABOVE
+			, BONUSCODE
+			, BONUSUNDER
+			, BONUSABOVE
+			, AGECODE
+			, AGEUNDER
+			, AGEABOVE
+			, LOACODE
+			, DIACODE
+			, CUSTOMERCODE
+			, CONSECUTIVECODE
+			, BUSINESSSTATUSCODE
+			, TARGETCODE
+			, TARGETMEMBER
+			, STARTDATE
+			, ENDDATE
+		) 
+		SELECT
+			#{maxcourseid}
+			, CONDITIONTYPE
+			, CONDITIONSEQ
+			, ABOTYPECODE
+			, ABOTYPEABOVE
+			, PINCODE
+			, PINUNDER
+			, PINABOVE
+			, BONUSCODE
+			, BONUSUNDER
+			, BONUSABOVE
+			, AGECODE
+			, AGEUNDER
+			, AGEABOVE
+			, LOACODE
+			, DIACODE
+			, CUSTOMERCODE
+			, CONSECUTIVECODE
+			, BUSINESSSTATUSCODE
+			, TARGETCODE
+			, TARGETMEMBER
+			, STARTDATE
+			, ENDDATE
+		FROM LMSCOURSECONDITION
+		WHERE COURSEID = #{courseid}
+	</insert>
+	
+</mapper>

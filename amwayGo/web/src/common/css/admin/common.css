@@ -1,0 +1,64 @@
+﻿@charset "utf-8";
+
+/* global */
+body,th,td,input,select,textarea,button {font-size:12px;line-height:1.5;font-family:Nanum Gothic, dotum, "돋움", sans-serif;}
+body{*word-break:keep-all;word-break:break-all;} /*단어별로 끊어줌.*/
+/* .old body {overflow-x:hidden;} */
+
+/* align, float */
+.align-l {text-align:left !important;}
+.align-c {text-align:center !important;}
+.align-r {text-align:right !important;}
+.bold {font-weight:bold !important;}
+.clear:after {clear:both;display:block;content:"";}
+.float-l {float:left;}
+.float-r {float:right;}
+.vspace {display:block;clear:both;height:4px;}
+.vmid {vertical-align:middle !important;}
+.vtop {vertical-align:top !important;}
+.vbom {vertical-align:bottom !important;}
+
+/* layout box */
+.lybox {padding:10px;}
+.lybox.search {text-align:left;}
+.lybox-nobg {padding:10px;}
+.lybox-btn {*zoom:1;}
+.lybox-btn-r {float:right;margin:10px 10px 10px 0;}
+.lybox-btn-l {float:left;margin:10px 0 10px 10px;}
+.lybox-btn-c {text-align:center;margin:10px;}
+.lybox-btn:after, .lybox-title:after, .lybox-tbl:after {display:block;clear:both;content:'';}
+.lybox-dv {padding:10px 10px 20px 10px;border:2px solid #777;}
+
+/* margin */
+.mv10 {margin:10px 0;}
+.mv20 {margin:20px 0;}
+.ml10 {margin-left:10px;}
+.ml20 {margin-left:20px;}
+.mr10 {margin-right:10px;}
+.mr20 {margin-right:20px;}
+.mt10 {margin-top:10px;}
+.mt20 {margin-top:20px;}
+.mb10 {margin-bottom:10px;}
+.mb20 {margin-bottom:20px;}
+
+/* form */
+select {height:19px;}
+textarea {resize:none;padding:5px;font-size:12px;}
+input[type="text"], input[type="password"] {height:18px;padding:2px;line-height:18px;} /* input[type="radio"] */
+
+/* textarea-expand */
+.textarea-expand {width:100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; display:block; margin:0 auto; *width:96%; /* IE7 */}
+
+/* common */
+.ellipsis {text-overflow:ellipsis;white-space:nowrap;overflow:hidden;}
+.strong {font-weight:bold !important;}
+.scroll-x {overflow-x:auto;overflow-y:hidden;*padding-bottom:17px;}
+.scroll-y {overflow-y:auto;overflow-x:hidden;*overflow-y:scroll;*position:relative;*padding-right:17px;}
+.scroll-xy {overflow:auto;*overflow:scroll;*padding-right:17px;*padding-bottom:17px;}
+.uploader {display:inline-block; *zoom:1; vertical-align:middle !important;}
+.inline-block {display:inline-block; *display:inline; *zoom:1;}
+.inline {display:inline;} /* form */
+.block {display:block;}
+.datepicker {width:70px; text-align:center;}
+.cursor-pointer {cursor:pointer;}
+.cursor-default {cursor:default;}

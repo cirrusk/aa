@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.reservation.baseRegion.service.impl.BaseRegionMapper">
+
+
+	<select id="allCityCodeList" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			CITYCODE AS CODE,
+			CITYNAME AS NAME
+		FROM RSVCITYINFO
+		WHERE REGIONCODE = #{regionCode}
+	</select>
+
+	<!-- 지역군 정보 목록 조회 -->
+	<select id="reservationRegionList" parameterType="reqBox" resultType="dataBox"><![CDATA[
+		SELECT * FROM(
+		
+			SELECT
+			  ROW_NUMBER() OVER(ORDER BY MODIFYDATETIME DESC) AS SEQ,
+			  ROW_NUMBER() OVER(ORDER BY MODIFYDATETIME DESC) AS ROW_NUM,
+			  CITYGROUPCODE,
+			  CITYGROUPNAME,
+			  CASE WHEN 0 < CITYCOUNT THEN CONCAT(REGIONNAME , '외 ' , CITYCOUNT , '개') ELSE REGIONNAME END AS CITYCOUNT,
+			  MODIFYDATETIME,
+			  MODIFIER,
+			  STATUSCODE,
+			  CASE WHEN STATUSCODE = 'B01' THEN '사용중' ELSE '사용안함' END AS STATUSNAME 
+			FROM (
+			    SELECT
+						CITYGROUPCODE,
+						MAX(CITYGROUPNAME) AS CITYGROUPNAME,
+						MAX(CITYCOUNT) - 1 AS CITYCOUNT,
+			    		MAX(REGIONNAME) AS REGIONNAME,
+						UPDATEDATE AS MODIFYDATETIME,
+						UPDATEUSER AS MODIFIER,
+						MAX(STATUSCODE) AS STATUSCODE
+				FROM (
+						SELECT
+							A.CITYGROUPCODE,
+							A.CITYGROUPNAME,
+							COUNT(*) OVER(PARTITION BY A.CITYGROUPCODE)AS CITYCOUNT,
+			    			C.REGIONNAME,
+							ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER,
+							ISNULL(Format(A.UPDATEDATE, N'yyyy-MM-dd HH:mm:ss'), Format(A.INSERTDATE, N'yyyy-MM-dd HH:mm:ss')) AS UPDATEDATE,
+							A.STATUSCODE
+						FROM RSVCITYGROUPMASTER A
+						INNER JOIN RSVCITYGROUPMAP B ON (A.CITYGROUPCODE = B.CITYGROUPCODE)
+			    		INNER JOIN RSVREGIONINFO C ON (B.REGIONCODE = C.REGIONCODE)
+					) X
+				GROUP BY CITYGROUPCODE, UPDATEDATE, UPDATEUSER
+			) Y
+				
+		) AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}				
+	]]>
+	</select>
+	
+	<!-- 지역군 정보 목록 조회 카운트 -->
+	<select id="reservationRegionListCount" parameterType="reqBox" resultType="java.lang.Integer">
+		<![CDATA[
+		SELECT 
+			COUNT(*) AS CNT
+		FROM (
+		SELECT
+				ROW_NUMBER() OVER(ORDER BY MODIFYDATETIME DESC) AS SEQ,
+				ROW_NUMBER() OVER(ORDER BY MODIFYDATETIME DESC) AS ROW_NUM,
+				CITYGROUPCODE,
+				CITYGROUPNAME,
+				CASE WHEN 0 < CITYCOUNT THEN CONCAT(REGIONNAME , '외 ' , CITYCOUNT , '개') ELSE REGIONNAME END AS CITYCOUNT,
+				MODIFYDATETIME,
+				MODIFIER,
+				STATUSCODE,
+				CASE WHEN STATUSCODE = 'B01' THEN '사용중' ELSE '사용안함' END AS STATUSNAME
+		FROM (
+				SELECT
+						CITYGROUPCODE,
+						MAX(CITYGROUPNAME) AS CITYGROUPNAME,
+						MAX(CITYCOUNT) - 1 AS CITYCOUNT,
+						MAX(REGIONNAME) AS REGIONNAME,
+						UPDATEDATE AS MODIFYDATETIME,
+						UPDATEUSER AS MODIFIER,
+						MAX(STATUSCODE) AS STATUSCODE
+				FROM (
+						SELECT
+								A.CITYGROUPCODE,
+								A.CITYGROUPNAME,
+								COUNT(*) OVER(PARTITION BY A.CITYGROUPCODE)AS CITYCOUNT,
+								C.REGIONNAME,
+								ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER,
+								ISNULL(Format(A.UPDATEDATE, N'yyyy-MM-dd HH:mm:ss'), Format(A.INSERTDATE, N'yyyy-MM-dd HH:mm:ss')) AS UPDATEDATE,
+								A.STATUSCODE
+						FROM RSVCITYGROUPMASTER A
+						INNER JOIN RSVCITYGROUPMAP B ON (A.CITYGROUPCODE = B.CITYGROUPCODE)
+						INNER JOIN RSVREGIONINFO C ON (B.REGIONCODE = C.REGIONCODE)
+				) X
+		GROUP BY CITYGROUPCODE, UPDATEDATE, UPDATEUSER
+		) Y
+		) AS BB
+	]]>
+	</select>
+	
+	<!-- 지역군 상세 조회 목록 -->
+	<select id="cityGroupDetailList" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY A.CITYGROUPCODE, B.REGIONCODE) AS SEQ,
+		    A.CITYGROUPCODE,
+		    B.REGIONCODE,
+		    B.REGIONNAME,
+		    C.CITYCODE,
+		    C.CITYNAME
+		FROM RSVCITYGROUPMAP A
+		LEFT OUTER JOIN RSVREGIONINFO B ON (A.REGIONCODE = B.REGIONCODE)
+		LEFT OUTER JOIN RSVCITYINFO C ON (A.CITYCODE = C.CITYCODE)
+		WHERE A.CITYGROUPCODE = #{cityGroupCode}
+	</select>
+	
+	<select id="cityGroupDetailListCount" parameterType="reqBox" resultType="java.lang.Integer">
+		SELECT
+		    COUNT(*) AS CNT
+		FROM RSVCITYGROUPMAP A
+		LEFT OUTER JOIN RSVREGIONINFO B ON (A.REGIONCODE = B.REGIONCODE)
+		LEFT OUTER JOIN RSVCITYINFO C ON (A.CITYCODE = C.CITYCODE)
+		WHERE A.CITYGROUPCODE = #{cityGroupCode}
+	</select>
+
+	<select id="cityGroupDetail" parameterType="reqBox" resultType="dataBox">
+		SELECT
+		    CITYGROUPCODE,
+		    CITYGROUPNAME,
+		    STATUSCODE
+		FROM RSVCITYGROUPMASTER 
+		WHERE CITYGROUPCODE = #{cityGroupCode}	
+	</select>
+
+	<!-- 지역군 명 등록 -->
+	<insert id="cityGroupMasterInsert" parameterType="reqBox">
+		INSERT INTO RSVCITYGROUPMASTER (CITYGROUPNAME, STATUSCODE, INSERTUSER, INSERTDATE)
+		VALUES (#{citygroupname}, #{statuscode}, #{sessionAccount}, getdate())
+		<selectKey resultType="int" keyProperty="citygroupcode" order="AFTER">
+			SELECT IDENT_CURRENT('RSVCITYGROUPMASTER')
+		</selectKey>
+	</insert>
+
+	<!-- 지역군 명 갱신 -->
+	<update id="cityGroupMasterUpdate" parameterType="reqBox">
+		UPDATE RSVCITYGROUPMASTER
+		SET CITYGROUPNAME = #{citygroupname},
+			STATUSCODE = #{statuscode},
+			MODIFYDATETIME = getdate(),
+			MODIFIER = #{sessionAccount},
+			UPDATEDATE = getdate(),
+			UPDATEUSER = #{sessionAccount}
+		WHERE CITYGROUPCODE = #{citygroupcode}
+	</update>
+	
+
+	<!-- 지역군 삭제 -->
+	<delete id="cityGroupDelete" parameterType="reqBox">
+		DELETE RSVCITYGROUPMAP
+		WHERE CITYGROUPCODE = #{citygroupcode}
+	</delete>
+	
+	<!-- 지역군 저장및 수정 -->
+	<insert id="cityGroupInsert" parameterType="reqBox">
+		INSERT INTO RSVCITYGROUPMAP (CITYGROUPCODE, REGIONCODE, CITYCODE)
+		VALUES (#{citygroupcode}, #{regioncode}, #{citycode})
+	</insert>
+	
+	<!-- 지역군 맵삭제 -->
+	<delete id="deleteRegion" parameterType="reqBox">
+		DELETE RSVCITYGROUPMASTER
+		WHERE CITYGROUPCODE = #{citygroupcode}
+	</delete>
+</mapper>

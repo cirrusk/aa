@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseExamExampleMapper">
+	
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamExampleVO">
+/* UnivCourseExamExampleMapper.insert */
+		<selectKey resultType="Long" keyProperty="examExampleSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+INSERT INTO cs_course_exam_example
+	(
+		cs_exam_item_seq ,
+		cs_exam_item_example_title ,
+		cs_correct_yn ,
+		cs_exam_file_type_cd ,
+		cs_file_path ,
+		cs_file_path_type ,
+		cs_sort_order ,
+		cs_reg_member_seq ,
+        cs_reg_dtime ,
+        cs_reg_ip ,
+        cs_upd_member_seq ,
+        cs_upd_dtime ,
+        cs_upd_ip
+	)
+	VALUES
+	(
+		#{examItemSeq, jdbcType=NUMERIC} ,
+		#{examItemExampleTitle, jdbcType=VARCHAR} ,
+		#{correctYn, jdbcType=VARCHAR} ,
+		#{examFileTypeCd, jdbcType=VARCHAR} ,
+		#{filePath, jdbcType=VARCHAR} ,
+		#{filePathType, jdbcType=VARCHAR} ,
+		#{sortOrder, jdbcType=NUMERIC} ,
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)        
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamExampleVO">
+/* UnivCourseExamExampleMapper.update */
+UPDATE cs_course_exam_example 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_exam_item_example_title = #{examItemExampleTitle, jdbcType=NUMERIC} ,
+       cs_correct_yn = #{correctYn, jdbcType=VARCHAR} ,
+	   cs_exam_file_type_cd = #{examFileTypeCd, jdbcType=VARCHAR} ,  
+	   cs_file_path = #{filePath, jdbcType=VARCHAR} ,        
+	   cs_file_path_type = #{filePathType, jdbcType=VARCHAR} ,    
+	   cs_sort_order = #{sortOrder, jdbcType=NUMERIC}        
+ WHERE cs_exam_example_seq = #{examExampleSeq} 
+       AND cs_delete_yn = 'N'	
+	</update>
+	
+	<update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamExampleVO">
+/* UnivCourseExamExampleMapper.delete */
+UPDATE cs_course_exam_example 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_exam_example_seq = #{examExampleSeq} 
+   AND cs_delete_yn = 'N'		
+	</update>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamExampleRS">
+		 <result column="ceex.examExampleSeq"         property="courseExamExample.examExampleSeq"        />
+		 <result column="ceex.examItemSeq"            property="courseExamExample.examItemSeq"           />
+		 <result column="ceex.examItemExampleTitle"   property="courseExamExample.examItemExampleTitle"  />
+		 <result column="ceex.correctYn"              property="courseExamExample.correctYn"             />
+		 <result column="ceex.examFileTypeCd"         property="courseExamExample.examFileTypeCd"        />
+		 <result column="ceex.filePath"               property="courseExamExample.filePath"              />
+		 <result column="ceex.filePathType"           property="courseExamExample.filePathType"          />
+		 <result column="ceex.sortOrder"              property="courseExamExample.sortOrder"             />
+	</resultMap>
+	
+	<select id="getList" parameterType="Long" resultMap="listResultMap">
+/* UnivCourseExamExampleMapper.getList */
+SELECT ceex.cs_exam_example_seq 		AS "ceex.examExampleSeq" ,
+	   ceex.cs_exam_item_seq 			AS "ceex.examItemSeq" ,
+	   ceex.cs_exam_item_example_title 	AS "ceex.examItemExampleTitle" ,
+	   ceex.cs_correct_yn 				AS "ceex.correctYn" ,
+	   ceex.cs_exam_file_type_cd 		AS "ceex.examFileTypeCd" ,
+	   ceex.cs_file_path 				AS "ceex.filePath" ,
+       ceex.cs_file_path_type 			AS "ceex.filePathType" ,
+	   ceex.cs_sort_order 				AS "ceex.sortOrder"
+  FROM cs_course_exam_example ceex 
+ WHERE ceex.cs_exam_item_seq = #{examItemSeq} 
+   AND ceex.cs_delete_yn = 'N'
+ORDER BY ceex.cs_sort_order ASC	    	
+	</select>
+	
+</mapper>

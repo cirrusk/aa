@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.LoginHistoryMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UILoginHistoryVO">
+        <selectKey resultType="Long" keyProperty="loginHistorySeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UILoginHistoryMapper.insert */
+INSERT INTO cs_login_history 
+       ( 
+           cs_member_seq ,
+           cs_rolegroup_seq ,
+           cs_session_id ,
+           cs_user_agent ,
+           cs_site ,
+           cs_device ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{memberSeq, jdbcType=NUMERIC} ,
+           #{rolegroupSeq, jdbcType=NUMERIC} ,
+           #{sessionId, jdbcType=VARCHAR} ,
+           #{userAgent, jdbcType=VARCHAR} ,
+           #{site, jdbcType=VARCHAR} ,
+           #{device, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       ) 
+    </insert>
+
+
+    <resultMap id="listStatisticsResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UILoginHistoryRS">
+        <result column="loginHistory.statisticsDate"   property="loginHistory.statisticsDate"  />
+        <result column="loginHistory.statisticsCount"  property="loginHistory.statisticsCount" />
+    </resultMap>
+    <select id="getListStatistics" parameterType="com._4csoft.aof.ui.infra.vo.condition.UILoginHistoryCondition" resultMap="listStatisticsResultMap">
+/* UILoginHistoryMapper.getListStatistics */
+SELECT loginHistory.regDate AS "loginHistory.statisticsDate" ,
+       COUNT(*)             AS "loginHistory.statisticsCount" 
+  FROM 
+       (SELECT 
+        <choose>
+            <when test='srchStatisticsType != null and srchStatisticsType.equals("month")'>
+               SUBSTRING(cs_reg_dtime, 5, 2) AS regDate 
+            </when>
+            <when test='srchStatisticsType != null and srchStatisticsType.equals("hour")'>
+               SUBSTRING(cs_reg_dtime, 9, 2) AS regDate 
+            </when>
+            <otherwise>
+               SUBSTRING(cs_reg_dtime, 7, 2) AS regDate 
+            </otherwise>
+        </choose>
+          FROM cs_login_history 
+         WHERE cs_reg_dtime BETWEEN #{srchStartRegDate} AND #{srchEndRegDate} 
+       ) loginHistory 
+GROUP BY loginHistory.regDate 
+ORDER BY loginHistory.regDate 
+    </select>
+    
+    <resultMap id="detailStatisticsResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UILoginHistoryRS">
+        <result column="loginHistory.totalCount"       property="loginHistory.totalCount"      />
+        <result column="loginHistory.todayCount"       property="loginHistory.todayCount"      />
+        <result column="loginHistory.yesterdayCount"   property="loginHistory.yesterdayCount"  />
+        <result column="loginHistory.thisMonthCount"   property="loginHistory.thisMonthCount"  />
+    </resultMap>
+    <select id="getDetailStatistics" resultMap="detailStatisticsResultMap">
+/* UILoginHistoryMapper.getDetailStatistics */
+SELECT 
+       (SELECT COUNT(*) 
+         FROM cs_login_history 
+       ) AS "loginHistory.totalCount", 
+       (SELECT COUNT(*) 
+         FROM cs_login_history 
+        WHERE cs_reg_dtime LIKE CONVERT(VARCHAR(8), GETDATE(), 112) + '%' 
+       ) AS "loginHistory.todayCount", 
+       (SELECT COUNT(*) 
+         FROM cs_login_history 
+        WHERE cs_reg_dtime LIKE CONVERT(VARCHAR(8), GETDATE() - 1, 112) + '%' 
+       ) AS "loginHistory.yesterdayCount", 
+       (SELECT COUNT(*) 
+         FROM cs_login_history 
+        WHERE cs_reg_dtime LIKE CONVERT(VARCHAR(6), GETDATE(), 112) + '%' 
+       ) AS "loginHistory.thisMonthCount" 
+    </select>
+
+</mapper>

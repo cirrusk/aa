@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsCommentMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsCommentVO">
+        <selectKey resultType="Long" keyProperty="commentSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsCommentMapper.insert */
+INSERT INTO cs_cdms_comment 
+       ( 
+           cs_project_seq ,
+           cs_section_index ,
+           cs_output_index ,
+           cs_module_index ,
+           cs_output_status_cd ,
+           cs_description ,
+           cs_ip ,
+           cs_auto_yn ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{projectSeq, jdbcType=NUMERIC} ,
+           #{sectionIndex, jdbcType=NUMERIC} ,
+           #{outputIndex, jdbcType=NUMERIC} ,
+           #{moduleIndex, jdbcType=NUMERIC} ,
+           #{outputStatusCd, jdbcType=VARCHAR} ,
+           #{description, jdbcType=VARCHAR} ,
+           #{ip, jdbcType=VARCHAR} ,
+           #{autoYn, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsCommentVO">
+/* UICdmsCommentMapper.update */
+UPDATE cs_cdms_comment 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_description = #{description, jdbcType=VARCHAR} ,
+       cs_ip = #{ip, jdbcType=VARCHAR}
+ WHERE cs_comment_seq = #{commentSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsCommentVO">
+/* UICdmsCommentMapper.delete */
+UPDATE cs_cdms_comment 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_comment_seq = #{commentSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsCommentRS">
+        <result column="cmmt.commentSeq"      property="comment.commentSeq"/>
+        <result column="cmmt.projectSeq"      property="comment.projectSeq"/>
+        <result column="cmmt.sectionIndex"    property="comment.sectionIndex"/>
+        <result column="cmmt.outputIndex"     property="comment.outputIndex"/>
+        <result column="cmmt.moduleIndex"     property="comment.moduleIndex"/>
+        <result column="cmmt.outputStatusCd"  property="comment.outputStatusCd"/>
+        <result column="cmmt.description"     property="comment.description"/>
+        <result column="cmmt.ip"              property="comment.ip"/>
+        <result column="cmmt.autoYn"          property="comment.autoYn"/>
+        <result column="cmmt.deleteYn"        property="comment.deleteYn"/>
+        <result column="cmmt.regMemberSeq"    property="comment.regMemberSeq"/>
+        <result column="cmmt.regDtime"        property="comment.regDtime"/>
+        <result column="cmmt.regIp"           property="comment.regIp"/>
+        <result column="cmmt.updMemberSeq"    property="comment.updMemberSeq"/>
+        <result column="cmmt.updDtime"        property="comment.updDtime"/>
+        <result column="cmmt.updIp"           property="comment.updIp"/>
+        <result column="memb.memberSeq"       property="member.memberSeq"/>
+        <result column="memb.memberName"      property="member.memberName"/>
+        <result column="memb.memberId"        property="member.memberId"/>
+        <result column="memb.nickname"        property="member.nickname"/>
+        <result column="memb.photo"           property="member.photo"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="Long" resultMap="getDetail_result">
+/* UICdmsCommentMapper.getDetail */
+SELECT cmmt.cs_comment_seq       AS "cmmt.commentSeq" ,
+       cmmt.cs_project_seq       AS "cmmt.projectSeq" ,
+       cmmt.cs_section_index     AS "cmmt.sectionIndex" ,
+       cmmt.cs_output_index      AS "cmmt.outputIndex" ,
+       cmmt.cs_module_index      AS "cmmt.moduleIndex" ,
+       cmmt.cs_output_status_cd  AS "cmmt.outputStatusCd" ,
+       cmmt.cs_description       AS "cmmt.description" ,
+       cmmt.cs_ip                AS "cmmt.ip" ,
+       cmmt.cs_auto_yn           AS "cmmt.autoYn" ,
+       cmmt.cs_delete_yn         AS "cmmt.deleteYn" ,
+       cmmt.cs_reg_member_seq    AS "cmmt.regMemberSeq" ,
+       cmmt.cs_reg_dtime         AS "cmmt.regDtime" ,
+       cmmt.cs_reg_ip      	     AS "cmmt.regIp" ,
+       cmmt.cs_upd_member_seq    AS "cmmt.updMemberSeq" ,
+       cmmt.cs_upd_dtime         AS "cmmt.updDtime" ,
+       cmmt.cs_upd_ip            AS "cmmt.updIp" ,
+       memb.cs_member_seq        AS "memb.memberSeq" ,
+       memb.cs_member_name       AS "memb.memberName" ,
+       memb.cs_member_id         AS "memb.memberId" ,
+       memb.cs_nickname          AS "memb.nickname" ,
+       memb.cs_photo             AS "memb.photo" 
+  FROM cs_cdms_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq 
+ WHERE cmmt.cs_comment_seq = #{commentSeq} 
+       AND cmmt.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsCommentRS">
+        <result column="cmmt.commentSeq"      property="comment.commentSeq"/>
+        <result column="cmmt.projectSeq"      property="comment.projectSeq"/>
+        <result column="cmmt.sectionIndex"    property="comment.sectionIndex"/>
+        <result column="cmmt.outputIndex"     property="comment.outputIndex"/>
+        <result column="cmmt.moduleIndex"     property="comment.moduleIndex"/>
+        <result column="cmmt.outputStatusCd"  property="comment.outputStatusCd"/>
+        <result column="cmmt.description"     property="comment.description"/>
+        <result column="cmmt.ip"              property="comment.ip"/>
+        <result column="cmmt.autoYn"          property="comment.autoYn"/>
+        <result column="cmmt.deleteYn"        property="comment.deleteYn"/>
+        <result column="cmmt.regMemberSeq"    property="comment.regMemberSeq"/>
+        <result column="cmmt.regDtime"        property="comment.regDtime"/>
+        <result column="cmmt.regIp"           property="comment.regIp"/>
+        <result column="cmmt.updMemberSeq"    property="comment.updMemberSeq"/>
+        <result column="cmmt.updDtime"        property="comment.updDtime"/>
+        <result column="cmmt.updIp"           property="comment.updIp"/>
+        <result column="memb.memberSeq"       property="member.memberSeq"/>
+        <result column="memb.memberName"      property="member.memberName"/>
+        <result column="memb.memberId"        property="member.memberId"/>
+        <result column="memb.nickname"        property="member.nickname"/>
+        <result column="memb.photo"           property="member.photo"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsCommentCondition" resultMap="getList_result">
+/* UICdmsCommentMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "cmmt.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "cmmt.regDtime" DESC</when>
+            <otherwise>ORDER BY "cmmt.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT cmmt.cs_comment_seq       AS "cmmt.commentSeq" ,
+       cmmt.cs_project_seq       AS "cmmt.projectSeq" ,
+       cmmt.cs_section_index     AS "cmmt.sectionIndex" ,
+       cmmt.cs_output_index      AS "cmmt.outputIndex" ,
+       cmmt.cs_module_index      AS "cmmt.moduleIndex" ,
+       cmmt.cs_output_status_cd  AS "cmmt.outputStatusCd" ,
+       cmmt.cs_description       AS "cmmt.description" ,
+       cmmt.cs_ip                AS "cmmt.ip" ,
+       cmmt.cs_auto_yn           AS "cmmt.autoYn" ,
+       cmmt.cs_delete_yn         AS "cmmt.deleteYn" ,
+       cmmt.cs_reg_member_seq    AS "cmmt.regMemberSeq" ,
+       cmmt.cs_reg_dtime         AS "cmmt.regDtime" ,
+       cmmt.cs_reg_ip      	     AS "cmmt.regIp" ,
+       cmmt.cs_upd_member_seq    AS "cmmt.updMemberSeq" ,
+       cmmt.cs_upd_dtime         AS "cmmt.updDtime" ,
+       cmmt.cs_upd_ip            AS "cmmt.updIp" ,
+       memb.cs_member_seq        AS "memb.memberSeq" ,
+       memb.cs_member_name       AS "memb.memberName" ,
+       memb.cs_member_id         AS "memb.memberId" ,
+       memb.cs_nickname          AS "memb.nickname" ,
+       memb.cs_photo             AS "memb.photo" 
+  FROM cs_cdms_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq 
+ WHERE cmmt.cs_project_seq = #{srchProjectSeq} 
+       AND cmmt.cs_section_index = #{srchSectionIndex}
+       AND cmmt.cs_output_index = #{srchOutputIndex}
+       AND cmmt.cs_delete_yn = 'N'
+       
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsCommentCondition" resultType="int">
+/* UICdmsCommentMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_cdms_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq 
+ WHERE cmmt.cs_project_seq = #{srchProjectSeq}
+       AND cmmt.cs_section_index = #{srchSectionIndex}
+       AND cmmt.cs_output_index = #{srchOutputIndex}
+       AND cmmt.cs_delete_yn = 'N' 
+    </select>
+
+    <resultMap id="getListProcess_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsCommentRS">
+        <result column="cmmt.commentSeq"      property="comment.commentSeq"/>
+        <result column="cmmt.projectSeq"      property="comment.projectSeq"/>
+        <result column="cmmt.outputIndex"     property="comment.outputIndex"/>
+        <result column="cmmt.sectionIndex"    property="comment.sectionIndex"/>
+        <result column="cmmt.moduleIndex"     property="comment.moduleIndex"/>
+        <result column="cmmt.outputStatusCd"  property="comment.outputStatusCd"/>
+        <result column="cmmt.description"     property="comment.description"/>
+        <result column="cmmt.ip"              property="comment.ip"/>
+        <result column="cmmt.autoYn"          property="comment.autoYn"/>
+        <result column="cmmt.deleteYn"        property="comment.deleteYn"/>
+        <result column="cmmt.regMemberSeq"    property="comment.regMemberSeq"/>
+        <result column="cmmt.regDtime"        property="comment.regDtime"/>
+        <result column="cmmt.regIp"           property="comment.regIp"/>
+        <result column="cmmt.updMemberSeq"    property="comment.updMemberSeq"/>
+        <result column="cmmt.updDtime"        property="comment.updDtime"/>
+        <result column="cmmt.updIp"           property="comment.updIp"/>
+        <result column="memb.memberSeq"       property="member.memberSeq"/>
+        <result column="memb.memberName"      property="member.memberName"/>
+        <result column="memb.memberId"        property="member.memberId"/>
+        <result column="memb.nickname"        property="member.nickname"/>
+        <result column="memb.photo"           property="member.photo"/>
+        <result column="section.projectSeq"   property="section.projectSeq"/>
+        <result column="section.sectionIndex" property="section.sectionIndex"/>
+        <result column="section.sectionName"  property="section.sectionName"/>
+        <result column="output.projectSeq"    property="output.projectSeq"/>
+        <result column="output.sectionIndex"  property="output.sectionIndex"/>
+        <result column="output.outputIndex"   property="output.outputIndex"/>
+        <result column="output.outputCd"      property="output.outputCd"/>
+        <result column="output.outputName"    property="output.outputName"/>
+        <result column="output.endDate"       property="output.endDate"/>
+    </resultMap>
+    <select id="getListProcess" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsCommentCondition" resultMap="getListProcess_result">
+/* UICdmsCommentMapper.getListProcess */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "cmmt.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "cmmt.regDtime" DESC</when>
+            <otherwise>ORDER BY "cmmt.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT cmmt.cs_comment_seq      AS "cmmt.commentSeq" ,
+       cmmt.cs_project_seq      AS "cmmt.projectSeq" ,
+       cmmt.cs_section_index    AS "cmmt.sectionIndex" ,
+       cmmt.cs_output_index     AS "cmmt.outputIndex" ,
+       cmmt.cs_module_index     AS "cmmt.moduleIndex" ,
+       cmmt.cs_output_status_cd AS "cmmt.outputStatusCd" ,
+       cmmt.cs_description      AS "cmmt.description" ,
+       cmmt.cs_ip               AS "cmmt.ip" ,
+       cmmt.cs_auto_yn          AS "cmmt.autoYn" ,
+       cmmt.cs_delete_yn        AS "cmmt.deleteYn" ,
+       cmmt.cs_reg_member_seq   AS "cmmt.regMemberSeq" ,
+       cmmt.cs_reg_dtime        AS "cmmt.regDtime" ,
+       cmmt.cs_reg_ip      	    AS "cmmt.regIp" ,
+       cmmt.cs_upd_member_seq   AS "cmmt.updMemberSeq" ,
+       cmmt.cs_upd_dtime        AS "cmmt.updDtime" ,
+       cmmt.cs_upd_ip           AS "cmmt.updIp" ,
+       memb.cs_member_seq       AS "memb.memberSeq" ,
+       memb.cs_member_name      AS "memb.memberName" ,
+       memb.cs_member_id        AS "memb.memberId" ,
+       memb.cs_nickname         AS "memb.nickname" ,
+       memb.cs_photo            AS "memb.photo" ,
+       section.cs_project_seq   AS "section.projectSeq" ,
+       section.cs_section_index AS "section.sectionIndex" ,
+       section.cs_section_name  AS "section.sectionName" ,
+       output.cs_project_seq    AS "output.projectSeq" ,
+       output.cs_section_index  AS "output.sectionIndex" ,
+       output.cs_output_index   AS "output.outputIndex" ,
+       output.cs_output_cd      AS "output.outputCd" ,
+       output.cs_output_name    AS "output.outputName" ,
+       output.cs_end_date       AS "output.endDate"
+  FROM cs_cdms_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq
+   INNER JOIN cs_cdms_section section 
+       ON section.cs_project_seq = cmmt.cs_project_seq
+       AND section.cs_section_index = cmmt.cs_section_index
+       AND section.cs_delete_yn = 'N'
+   INNER JOIN cs_cdms_output output
+       ON output.cs_project_seq = cmmt.cs_project_seq 
+       AND output.cs_section_index = cmmt.cs_section_index
+       AND output.cs_output_index = cmmt.cs_output_index
+       AND output.cs_delete_yn = 'N'
+   <if test="srchMemberCdmsTypeCd != null and srchMemberSeq != null">
+   INNER JOIN cs_cdms_project_member projectm
+		on projectm.cs_member_seq = cmmt.CS_REG_MEMBER_SEQ
+		and projectm.cs_delete_yn = 'N'
+		and projectm.cs_member_cdms_type_cd = #{srchMemberCdmsTypeCd}
+		and projectm.cs_member_seq = #{srchMemberSeq}
+   </if>
+ WHERE cmmt.cs_project_seq = #{srchProjectSeq} 
+       AND cmmt.cs_auto_yn = 'Y'
+       AND cmmt.cs_delete_yn = 'N'
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countListProcess" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsCommentCondition" resultType="int">
+/* UICdmsCommentMapper.countListProcess */
+SELECT COUNT(*) 
+  FROM cs_cdms_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq 
+   INNER JOIN cs_cdms_section section 
+       ON section.cs_project_seq = cmmt.cs_project_seq
+       AND section.cs_section_index = cmmt.cs_section_index
+       AND section.cs_delete_yn = 'N'
+   INNER JOIN cs_cdms_output output
+       ON output.cs_project_seq = cmmt.cs_project_seq 
+       AND output.cs_section_index = cmmt.cs_section_index
+       AND output.cs_output_index = cmmt.cs_output_index
+       AND output.cs_delete_yn = 'N'
+   <if test="srchMemberCdmsTypeCd != null and srchMemberSeq != null">
+   INNER JOIN cs_cdms_project_member projectm
+		on projectm.cs_member_seq = cmmt.CS_REG_MEMBER_SEQ
+		and projectm.cs_delete_yn = 'N'
+		and projectm.cs_member_cdms_type_cd = #{srchMemberCdmsTypeCd}
+		and projectm.cs_member_seq = #{srchMemberSeq}
+   </if>
+ WHERE cmmt.cs_project_seq = #{srchProjectSeq}
+       AND cmmt.cs_auto_yn = 'Y' 
+       AND cmmt.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getListTop3ByProject_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsCommentRS">
+        <result column="cmmt.commentSeq"      property="comment.commentSeq"/>
+        <result column="cmmt.projectSeq"      property="comment.projectSeq"/>
+        <result column="cmmt.sectionIndex"    property="comment.sectionIndex"/>
+        <result column="cmmt.outputIndex"     property="comment.outputIndex"/>
+        <result column="cmmt.moduleIndex"     property="comment.moduleIndex"/>
+        <result column="cmmt.outputStatusCd"  property="comment.outputStatusCd"/>
+        <result column="cmmt.description"     property="comment.description"/>
+        <result column="cmmt.ip"              property="comment.ip"/>
+        <result column="cmmt.autoYn"          property="comment.autoYn"/>
+        <result column="cmmt.deleteYn"        property="comment.deleteYn"/>
+        <result column="cmmt.regMemberSeq"    property="comment.regMemberSeq"/>
+        <result column="cmmt.regDtime"        property="comment.regDtime"/>
+        <result column="cmmt.regIp"           property="comment.regIp"/>
+        <result column="cmmt.updMemberSeq"    property="comment.updMemberSeq"/>
+        <result column="cmmt.updDtime"        property="comment.updDtime"/>
+        <result column="cmmt.updIp"           property="comment.updIp"/>
+        <result column="memb.memberSeq"       property="member.memberSeq"/>
+        <result column="memb.memberName"      property="member.memberName"/>
+        <result column="memb.memberId"        property="member.memberId"/>
+        <result column="memb.nickname"        property="member.nickname"/>
+        <result column="memb.photo"           property="member.photo"/>
+    </resultMap>
+    <select id="getListTop3ByProject" parameterType="Long" resultMap="getListTop3ByProject_result">
+/* UICdmsCommentMapper.getListTop3ByProject */
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+ORDER BY "cmmt.regDtime" DESC
+) AS rownumber, * FROM (
+SELECT cmmt.cs_comment_seq       AS "cmmt.commentSeq" ,
+       cmmt.cs_project_seq       AS "cmmt.projectSeq" ,
+       cmmt.cs_section_index     AS "cmmt.sectionIndex" ,
+       cmmt.cs_output_index      AS "cmmt.outputIndex" ,
+       cmmt.cs_module_index      AS "cmmt.moduleIndex" ,
+       cmmt.cs_output_status_cd  AS "cmmt.outputStatusCd" ,
+       cmmt.cs_description       AS "cmmt.description" ,
+       cmmt.cs_ip                AS "cmmt.ip" ,
+       cmmt.cs_auto_yn           AS "cmmt.autoYn" ,
+       cmmt.cs_delete_yn         AS "cmmt.deleteYn" ,
+       cmmt.cs_reg_member_seq    AS "cmmt.regMemberSeq" ,
+       cmmt.cs_reg_dtime         AS "cmmt.regDtime" ,
+       cmmt.cs_reg_ip      	     AS "cmmt.regIp" ,
+       cmmt.cs_upd_member_seq    AS "cmmt.updMemberSeq" ,
+       cmmt.cs_upd_dtime         AS "cmmt.updDtime" ,
+       cmmt.cs_upd_ip            AS "cmmt.updIp" ,
+       memb.cs_member_seq        AS "memb.memberSeq" ,
+       memb.cs_member_name       AS "memb.memberName" ,
+       memb.cs_member_id         AS "memb.memberId" ,
+       memb.cs_nickname          AS "memb.nickname" ,
+       memb.cs_photo             AS "memb.photo" 
+  FROM cs_cdms_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq 
+   INNER JOIN cs_cdms_section section 
+       ON section.cs_project_seq = cmmt.cs_project_seq
+       AND section.cs_section_index = cmmt.cs_section_index
+       AND section.cs_delete_yn = 'N'
+   INNER JOIN cs_cdms_output output
+       ON output.cs_project_seq = cmmt.cs_project_seq 
+       AND output.cs_section_index = cmmt.cs_section_index
+       AND output.cs_output_index = cmmt.cs_output_index
+       AND output.cs_delete_yn = 'N'
+ WHERE cmmt.cs_project_seq = #{projectSeq}
+       AND cmmt.cs_delete_yn = 'N'
+) Y ) Z WHERE Z.rownumber BETWEEN 1 AND 3
+    </select>
+</mapper>

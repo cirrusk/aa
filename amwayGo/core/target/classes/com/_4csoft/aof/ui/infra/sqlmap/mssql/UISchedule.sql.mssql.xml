@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.ScheduleMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIScheduleVO">
+        <selectKey resultType="Long" keyProperty="scheduleSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIScheduleMapper.insert */
+INSERT INTO cs_schedule 
+       ( 
+           cs_schedule_title ,
+           cs_member_seq ,
+           cs_start_dtime ,
+           cs_end_dtime ,
+           cs_schedule_type_cd ,
+           cs_repeat_yn ,
+           cs_repeat_type_cd ,
+           cs_repeat_cycle ,
+           cs_repeat_week ,
+           cs_repeat_end_date ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{scheduleTitle, jdbcType=VARCHAR} ,
+           #{memberSeq, jdbcType=NUMERIC} ,
+           #{startDtime, jdbcType=VARCHAR} ,
+           #{endDtime, jdbcType=VARCHAR} ,
+           #{scheduleTypeCd, jdbcType=VARCHAR} ,
+           #{repeatYn, jdbcType=VARCHAR} ,
+           #{repeatTypeCd, jdbcType=VARCHAR} ,
+           #{repeatCycle, jdbcType=NUMERIC} ,
+           #{repeatWeek, jdbcType=VARCHAR} ,
+           #{repeatEndDate, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UIScheduleVO">
+/* UIScheduleMapper.update */
+UPDATE cs_schedule 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_schedule_title = #{scheduleTitle, jdbcType=VARCHAR} ,
+       cs_start_dtime = #{startDtime, jdbcType=VARCHAR} , 
+       cs_end_dtime = #{endDtime, jdbcType=VARCHAR} ,
+       cs_schedule_type_cd = #{scheduleTypeCd, jdbcType=VARCHAR} ,
+       cs_repeat_yn = #{repeatYn, jdbcType=VARCHAR} ,
+       cs_repeat_type_cd = #{repeatTypeCd, jdbcType=VARCHAR} , 
+       cs_repeat_cycle = #{repeatCycle, jdbcType=NUMERIC} , 
+       cs_repeat_week = #{repeatWeek, jdbcType=VARCHAR} , 
+       cs_repeat_end_date = #{repeatEndDate, jdbcType=VARCHAR}
+ WHERE cs_schedule_seq = #{scheduleSeq} 
+       AND cs_delete_yn = 'N'  
+    </update>
+
+    <update id="updateDate" parameterType="com._4csoft.aof.ui.infra.vo.UIScheduleVO">
+/* UIScheduleMapper.updateDate */
+UPDATE cs_schedule 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_start_dtime = #{startDtime, jdbcType=VARCHAR} , 
+       cs_end_dtime = #{endDtime, jdbcType=VARCHAR}
+ WHERE cs_schedule_seq = #{scheduleSeq} 
+       AND cs_delete_yn = 'N'  
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIScheduleVO">
+/* UIScheduleMapper.delete */
+UPDATE cs_schedule 
+       SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_schedule_seq = #{scheduleSeq} 
+       AND cs_delete_yn = 'N'  
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIScheduleRS">
+        <result column="schedule.scheduleSeq"     property="schedule.scheduleSeq"     />
+        <result column="schedule.scheduleTitle"   property="schedule.scheduleTitle"   />
+        <result column="schedule.memberSeq"       property="schedule.memberSeq"       />
+        <result column="schedule.startDtime"      property="schedule.startDtime"      />
+        <result column="schedule.endDtime"        property="schedule.endDtime"        />
+        <result column="schedule.scheduleTypeCd"  property="schedule.scheduleTypeCd"  />
+        <result column="schedule.repeatYn"        property="schedule.repeatYn"        />
+        <result column="schedule.repeatTypeCd"    property="schedule.repeatTypeCd"    />
+        <result column="schedule.repeatCycle"     property="schedule.repeatCycle"     />
+        <result column="schedule.repeatWeek"      property="schedule.repeatWeek"      />
+        <result column="schedule.repeatEndDate"   property="schedule.repeatEndDate"   />
+        <result column="schedule.deleteYn"        property="schedule.deleteYn"        />
+        <result column="schedule.regMemberSeq"    property="schedule.regMemberSeq"    />
+        <result column="schedule.regDtime"        property="schedule.regDtime"        />
+        <result column="schedule.regIp"           property="schedule.regIp"           />
+        <result column="schedule.updMemberSeq"    property="schedule.updMemberSeq"    />
+        <result column="schedule.updDtime"        property="schedule.updDtime"        />
+        <result column="schedule.updIp"           property="schedule.updIp"           />
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIScheduleMapper.getDetail */
+SELECT schedule.cs_schedule_seq      AS "schedule.scheduleSeq" ,
+       schedule.cs_schedule_title    AS "schedule.scheduleTitle" ,
+       schedule.cs_member_seq        AS "schedule.memberSeq" ,
+       schedule.cs_start_dtime       AS "schedule.startDtime" ,
+       schedule.cs_end_dtime         AS "schedule.endDtime" ,
+       schedule.cs_schedule_type_cd  AS "schedule.scheduleTypeCd" ,
+       schedule.cs_repeat_yn         AS "schedule.repeatYn" ,
+       schedule.cs_repeat_type_cd    AS "schedule.repeatTypeCd" ,
+       schedule.cs_repeat_cycle      AS "schedule.repeatCycle" ,
+       schedule.cs_repeat_week       AS "schedule.repeatWeek" ,
+       schedule.cs_repeat_end_date   AS "schedule.repeatEndDate" ,
+       schedule.cs_delete_yn         AS "schedule.deleteYn" ,
+       schedule.cs_reg_member_seq    AS "schedule.regMemberSeq" ,
+       schedule.cs_reg_dtime         AS "schedule.regDtime" ,
+       schedule.cs_reg_ip            AS "schedule.regIp" ,
+       schedule.cs_upd_member_seq    AS "schedule.updMemberSeq" ,
+       schedule.cs_upd_dtime         AS "schedule.updDtime" ,
+       schedule.cs_upd_ip            AS "schedule.updIp" 
+  FROM cs_schedule schedule
+ WHERE schedule.cs_schedule_seq = #{scheduleSeq} 
+       AND schedule.cs_delete_yn = 'N'  
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIScheduleRS">
+        <result column="schedule.scheduleSeq"     property="schedule.scheduleSeq"     />
+        <result column="schedule.scheduleTitle"   property="schedule.scheduleTitle"   />
+        <result column="schedule.memberSeq"       property="schedule.memberSeq"       />
+        <result column="schedule.startDtime"      property="schedule.startDtime"      />
+        <result column="schedule.endDtime"        property="schedule.endDtime"        />
+        <result column="schedule.scheduleTypeCd"  property="schedule.scheduleTypeCd"  />
+        <result column="schedule.repeatYn"        property="schedule.repeatYn"        />
+        <result column="schedule.repeatTypeCd"    property="schedule.repeatTypeCd"    />
+        <result column="schedule.repeatCycle"     property="schedule.repeatCycle"     />
+        <result column="schedule.repeatWeek"      property="schedule.repeatWeek"      />
+        <result column="schedule.repeatEndDate"   property="schedule.repeatEndDate"   />
+        <result column="schedule.deleteYn"        property="schedule.deleteYn"        />
+        <result column="schedule.regMemberSeq"    property="schedule.regMemberSeq"    />
+        <result column="schedule.regDtime"        property="schedule.regDtime"        />
+        <result column="schedule.regIp"           property="schedule.regIp"           />
+        <result column="schedule.updMemberSeq"    property="schedule.updMemberSeq"    />
+        <result column="schedule.updDtime"        property="schedule.updDtime"        />
+        <result column="schedule.updIp"           property="schedule.updIp"           />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIScheduleCondition" resultMap="listResultMap">
+/* UIScheduleMapper.getList */
+SELECT schedule.cs_schedule_seq      AS "schedule.scheduleSeq" ,
+       schedule.cs_schedule_title    AS "schedule.scheduleTitle" ,
+       schedule.cs_member_seq        AS "schedule.memberSeq" ,
+       schedule.cs_start_dtime       AS "schedule.startDtime" ,
+       schedule.cs_end_dtime         AS "schedule.endDtime" ,
+       schedule.cs_schedule_type_cd  AS "schedule.scheduleTypeCd" ,
+       schedule.cs_repeat_yn         AS "schedule.repeatYn" ,
+       schedule.cs_repeat_type_cd    AS "schedule.repeatTypeCd" ,
+       schedule.cs_repeat_cycle      AS "schedule.repeatCycle" ,
+       schedule.cs_repeat_week       AS "schedule.repeatWeek" ,
+       schedule.cs_repeat_end_date   AS "schedule.repeatEndDate" ,
+       schedule.cs_delete_yn         AS "schedule.deleteYn" ,
+       schedule.cs_reg_member_seq    AS "schedule.regMemberSeq" ,
+       schedule.cs_reg_dtime         AS "schedule.regDtime" ,
+       schedule.cs_reg_ip            AS "schedule.regIp" ,
+       schedule.cs_upd_member_seq    AS "schedule.updMemberSeq" ,
+       schedule.cs_upd_dtime         AS "schedule.updDtime" ,
+       schedule.cs_upd_ip            AS "schedule.updIp" 
+  FROM cs_schedule schedule
+ WHERE schedule.cs_member_seq = #{srchMemberSeq} 
+       AND schedule.cs_delete_yn = 'N' 
+        <choose>
+            <when test='srchRepeatYn.equals("Y")'>
+       AND schedule.cs_repeat_yn = 'Y'
+       AND (
+           schedule.cs_start_dtime BETWEEN #{srchStartDtime} AND #{srchEndDtime}
+           OR
+           schedule.cs_repeat_end_date >= #{srchEndDtime}
+       )
+            </when>
+            <otherwise>
+       AND schedule.cs_repeat_yn = 'N'
+       AND (
+           schedule.cs_start_dtime BETWEEN #{srchStartDtime} AND #{srchEndDtime}
+           OR
+           schedule.cs_end_dtime BETWEEN #{srchStartDtime} AND #{srchEndDtime}
+       )
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIScheduleCondition" resultType="int">
+/* UIScheduleMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_schedule schedule
+ WHERE schedule.cs_member_seq = #{srchMemberSeq} 
+       AND schedule.cs_delete_yn = 'N' 
+        <choose>
+            <when test='srchRepeatYn.equals("Y")'>
+       AND schedule.cs_repeat_yn = 'Y'
+       AND (
+           schedule.cs_start_dtime BETWEEN #{srchStartDtime} AND #{srchEndDtime}
+           OR
+           schedule.cs_repeat_end_date >= #{srchEndDtime}
+       )
+            </when>
+            <otherwise>
+       AND schedule.cs_repeat_yn = 'N'
+       AND (
+           schedule.cs_start_dtime BETWEEN #{srchStartDtime} AND #{srchEndDtime}
+           OR
+           schedule.cs_end_dtime BETWEEN #{srchStartDtime} AND #{srchEndDtime}
+       )
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

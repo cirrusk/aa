@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsBbsMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsBbsVO">
+/* CdmsBbsMapper.insert */
+INSERT INTO cs_cdms_bbs 
+       ( 
+           cs_bbs_seq ,
+           cs_board_seq ,
+           cs_project_seq ,
+           cs_section_index ,
+           cs_bbs_title ,
+           cs_description ,
+           cs_bbs_type_cd ,
+           cs_always_top_yn ,
+           cs_html_yn ,
+           cs_secret_yn ,
+           cs_parent_seq ,
+           cs_group_seq ,
+           cs_group_level ,
+           cs_group_order ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+     SELECT
+           #{bbsSeq, jdbcType=NUMERIC} ,
+           #{boardSeq, jdbcType=NUMERIC} ,
+           #{projectSeq, jdbcType=NUMERIC} ,
+           #{sectionIndex, jdbcType=NUMERIC} ,
+           #{bbsTitle, jdbcType=VARCHAR} ,
+           #{description, jdbcType=VARCHAR} ,
+           #{bbsTypeCd, jdbcType=VARCHAR} ,
+           #{alwaysTopYn, jdbcType=VARCHAR} ,
+           #{htmlYn, jdbcType=VARCHAR} ,
+           #{secretYn, jdbcType=VARCHAR} ,
+           #{parentSeq, jdbcType=NUMERIC} ,
+           #{groupSeq, jdbcType=NUMERIC} ,
+           #{groupLevel, jdbcType=NUMERIC} ,
+           (CASE WHEN #{groupLevel} = '1' THEN '001'
+            ELSE 
+                (SELECT cs_group_order
+                   FROM cs_cdms_bbs 
+                  WHERE cs_delete_yn = 'N' 
+                    AND cs_bbs_seq = #{parentSeq}
+                ) +
+                dbo.FN_LPAD(ISNULL(
+                (SELECT MAX(CONVERT(INT, cs_group_order)) % 1000 + 1
+                   FROM cs_cdms_bbs 
+                  WHERE cs_delete_yn = 'N' 
+                    AND cs_bbs_seq = #{parentSeq}
+                ), 1), 3, '0')    
+            END),
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsBbsVO">
+/* CdmsBbsMapper.update */
+UPDATE cs_cdms_bbs 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+   	   ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+       ,cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       <if test='projectSeq != null'> 
+       ,cs_project_seq = #{projectSeq, jdbcType=NUMERIC}
+       </if>
+       <if test='sectionIndex != null'> 
+       ,cs_section_index = #{sectionIndex, jdbcType=NUMERIC}
+       </if>
+        <if test='bbsTitle != null'> 
+       ,cs_bbs_title = #{bbsTitle, jdbcType=VARCHAR}
+        </if> 
+        <if test='description != null'>
+       ,cs_description = #{description, jdbcType=VARCHAR}
+        </if> 
+        <if test='bbsTypeCd != null'>
+       ,cs_bbs_type_cd = #{bbsTypeCd, jdbcType=VARCHAR} 
+        </if> 
+        <if test='alwaysTopYn != null'>
+       ,cs_always_top_yn = #{alwaysTopYn, jdbcType=VARCHAR}
+        </if> 
+        <if test='htmlYn != null'>
+       ,cs_html_yn = #{htmlYn, jdbcType=VARCHAR}
+        </if> 
+        <if test='secretYn != null'>
+       ,cs_secret_yn = #{secretYn, jdbcType=VARCHAR} 
+        </if> 
+ WHERE cs_bbs_seq = #{bbsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateViewCount" parameterType="Long">
+/* CdmsBbsMapper.updateViewCount */
+UPDATE cs_cdms_bbs 
+   SET cs_view_count = cs_view_count + 1 
+ WHERE cs_bbs_seq = #{bbsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsBbsVO">
+/* CdmsBbsMapper.delete */
+UPDATE cs_cdms_bbs 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() , 
+   	   cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+       cs_delete_yn = 'Y' 
+ WHERE cs_bbs_seq = #{bbsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"      />
+        <result column="bbs.projectSeq"     property="bbs.projectSeq"    />
+        <result column="bbs.sectionIndex"   property="bbs.sectionIndex"  />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"      />
+        <result column="bbs.description"    property="bbs.description"   />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"       property="bbs.secretYn"      />
+        <result column="bbs.viewCount"      property="bbs.viewCount"     />
+        <result column="bbs.commentCount"   property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"      />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"       property="bbs.regDtime"      />
+        <result column="bbs.regIp" 	        property="bbs.regIp"     	 />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"       property="bbs.updDtime"      />
+        <result column="bbs.updIp" 	        property="bbs.updIp"     	 />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName" />
+        <result column="bbs.updMemberName"  property="bbs.updMemberName" />
+        <result column="bbs.replyCount"     property="bbs.replyCount"    />
+        <result column="project.projectSeq"   property="project.projectSeq"/>
+        <result column="project.projectName"  property="project.projectName"/>
+        <result column="section.projectSeq"   property="section.projectSeq"/>
+        <result column="section.sectionIndex" property="section.sectionIndex"/>
+        <result column="section.sectionName"  property="section.sectionName"/>
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=bbs.bbsSeq,referenceTablename=referenceTablename}" property="bbs.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* CdmsBbsMapper.getDetail */
+SELECT bbs.cs_bbs_seq        AS "bbs.bbsSeq" ,
+       bbs.cs_board_seq      AS "bbs.boardSeq" ,
+       bbs.cs_project_seq    AS "bbs.projectSeq" ,
+       bbs.cs_section_index  AS "bbs.sectionIndex" ,
+       bbs.cs_bbs_title      AS "bbs.bbsTitle" ,
+       bbs.cs_description    AS "bbs.description" ,
+       bbs.cs_bbs_type_cd    AS "bbs.bbsTypeCd" ,
+       bbs.cs_always_top_yn  AS "bbs.alwaysTopYn" ,
+       bbs.cs_html_yn        AS "bbs.htmlYn" ,
+       bbs.cs_secret_yn      AS "bbs.secretYn" ,
+       bbs.cs_view_count     AS "bbs.viewCount" ,
+       bbs.cs_comment_count  AS "bbs.commentCount" ,
+       bbs.cs_parent_seq     AS "bbs.parentSeq" ,
+       bbs.cs_group_seq      AS "bbs.groupSeq" ,
+       bbs.cs_group_level    AS "bbs.groupLevel" ,
+       bbs.cs_group_order    AS "bbs.groupOrder" ,
+       bbs.cs_delete_yn      AS "bbs.deleteYn" ,
+       bbs.cs_reg_member_seq AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime      AS "bbs.regDtime" ,
+       bbs.cs_reg_ip	     AS "bbs.regIp" ,
+       bbs.cs_upd_member_seq AS "bbs.updMemberSeq" ,
+       bbs.cs_upd_dtime      AS "bbs.updDtime" ,
+       bbs.cs_upd_ip		 AS "bbs.updIp" ,
+       (SELECT umem.cs_member_name FROM cs_member umem WHERE umem.cs_member_seq = bbs.cs_upd_member_seq) AS "bbs.updMemberName" ,
+       (SELECT rmem.cs_member_name FROM cs_member rmem WHERE rmem.cs_member_seq = bbs.cs_reg_member_seq)  AS "bbs.regMemberName" ,
+       'cs_cdms_bbs' AS "referenceTablename" ,
+       (SELECT COUNT(*)
+          FROM cs_cdms_bbs
+         WHERE cs_parent_seq = bbs.cs_bbs_seq
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.replyCount" ,
+       project.cs_project_seq   AS "project.projectSeq" ,
+       project.cs_project_name  AS "project.projectName" ,
+       section.cs_project_seq   AS "section.projectSeq" ,
+       section.cs_section_index AS "section.sectionIndex" ,
+       section.cs_section_name  AS "section.sectionName" 
+  FROM cs_cdms_bbs bbs
+   LEFT OUTER JOIN cs_cdms_project project
+       ON bbs.cs_project_seq = project.cs_project_seq  
+   LEFT OUTER JOIN cs_cdms_section section
+       ON bbs.cs_project_seq = section.cs_project_seq  
+       AND bbs.cs_section_index = section.cs_section_index  
+ WHERE bbs.cs_bbs_seq = #{bbsSeq}
+       AND bbs.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"      />
+        <result column="bbs.projectSeq"     property="bbs.projectSeq"    />
+        <result column="bbs.sectionIndex"   property="bbs.sectionIndex"  />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"      />
+        <result column="bbs.description"    property="bbs.description"   />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"       property="bbs.secretYn"      />
+        <result column="bbs.viewCount"      property="bbs.viewCount"     />
+        <result column="bbs.commentCount"   property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"      />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"       property="bbs.regDtime"      />
+        <result column="bbs.regIp" 	        property="bbs.regIp"     	 />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"       property="bbs.updDtime"      />
+        <result column="bbs.updIp" 	        property="bbs.updIp"     	 />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName" />
+        <result column="bbs.updMemberName"  property="bbs.updMemberName" />
+        <result column="bbs.attachCount"    property="bbs.attachCount"   />
+        <result column="project.projectSeq"   property="project.projectSeq"/>
+        <result column="project.projectName"  property="project.projectName"/>
+        <result column="section.projectSeq"   property="section.projectSeq"/>
+        <result column="section.sectionIndex" property="section.sectionIndex"/>
+        <result column="section.sectionName"  property="section.sectionName"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsBbsCondition" resultMap="listResultMap">
+/* CdmsBbsMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "bbs.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "bbs.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "bbs.bbsTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "bbs.bbsTitle" DESC</when>
+            <when test='orderby == 3'>ORDER BY "bbs.bbsTypeCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "bbs.bbsTypeCd" DESC</when>
+            <otherwise>ORDER BY "bbs.groupSeq" DESC, "bbs.groupOrder" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT bbs.cs_bbs_seq        AS "bbs.bbsSeq" ,
+       bbs.cs_board_seq      AS "bbs.boardSeq" ,
+       bbs.cs_project_seq    AS "bbs.projectSeq" ,
+       bbs.cs_section_index  AS "bbs.sectionIndex" ,
+       bbs.cs_bbs_title      AS "bbs.bbsTitle" ,
+       bbs.cs_description    AS "bbs.description" ,
+       bbs.cs_bbs_type_cd    AS "bbs.bbsTypeCd" ,
+       bbs.cs_always_top_yn  AS "bbs.alwaysTopYn" ,
+       bbs.cs_html_yn        AS "bbs.htmlYn" ,
+       bbs.cs_secret_yn      AS "bbs.secretYn" ,
+       bbs.cs_view_count     AS "bbs.viewCount" ,
+       bbs.cs_comment_count  AS "bbs.commentCount" ,
+       bbs.cs_parent_seq     AS "bbs.parentSeq" ,
+       bbs.cs_group_seq      AS "bbs.groupSeq" ,
+       bbs.cs_group_level    AS "bbs.groupLevel" ,
+       bbs.cs_group_order    AS "bbs.groupOrder" ,
+       bbs.cs_delete_yn      AS "bbs.deleteYn" ,
+       bbs.cs_reg_member_seq AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime      AS "bbs.regDtime" ,
+       bbs.cs_reg_ip	     AS "bbs.regIp" ,
+       bbs.cs_upd_member_seq AS "bbs.updMemberSeq" ,
+       bbs.cs_upd_dtime      AS "bbs.updDtime" ,
+       bbs.cs_upd_ip		 AS "bbs.updIp" ,
+       member.cs_member_name AS "bbs.regMemberName" ,
+       (SELECT COUNT(*)
+          FROM cs_attach
+         WHERE cs_reference_seq = bbs.cs_bbs_seq
+           AND cs_reference_tablename = 'cs_cdms_bbs'
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.attachCount" ,
+       project.cs_project_seq   AS "project.projectSeq" ,
+       project.cs_project_name  AS "project.projectName" ,
+       section.cs_project_seq   AS "section.projectSeq" ,
+       section.cs_section_index AS "section.sectionIndex" ,
+       section.cs_section_name  AS "section.sectionName" 
+  FROM cs_cdms_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+   LEFT OUTER JOIN cs_cdms_project project
+       ON bbs.cs_project_seq = project.cs_project_seq  
+   LEFT OUTER JOIN cs_cdms_section section
+       ON bbs.cs_project_seq = section.cs_project_seq  
+       AND bbs.cs_section_index = section.cs_section_index  
+ WHERE bbs.cs_board_seq = #{srchBoardSeq}
+       AND bbs.cs_delete_yn = 'N'
+        <if test='srchProjectSeq != null and !srchProjectSeq.equals("")'>
+       AND bbs.cs_project_seq = #{srchProjectSeq}         
+        </if>
+        <if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("")'>
+       AND bbs.cs_bbs_type_cd = #{srchBbsTypeCd}         
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       AND bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND bbs.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='srchAlwaysTopYn != null and !srchAlwaysTopYn.equals("")'>
+       AND bbs.cs_always_top_yn = #{srchAlwaysTopYn}
+        </if>
+        
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsBbsCondition" resultType="int">
+/* CdmsBbsMapper.countList */
+SELECT COUNT(*)
+  FROM cs_cdms_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+   LEFT OUTER JOIN cs_cdms_project project
+       ON bbs.cs_project_seq = project.cs_project_seq  
+   LEFT OUTER JOIN cs_cdms_section section
+       ON bbs.cs_project_seq = section.cs_project_seq  
+       AND bbs.cs_section_index = section.cs_section_index  
+ WHERE bbs.cs_board_seq = #{srchBoardSeq}
+       AND bbs.cs_delete_yn = 'N'
+        <if test='srchProjectSeq != null and !srchProjectSeq.equals("")'>
+       AND bbs.cs_project_seq = #{srchProjectSeq}         
+        </if>
+        <if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("")'>
+       AND bbs.cs_bbs_type_cd = #{srchBbsTypeCd}         
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       AND bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND bbs.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='srchAlwaysTopYn != null and !srchAlwaysTopYn.equals("")'>
+       AND bbs.cs_always_top_yn = #{srchAlwaysTopYn}
+        </if>
+    </select>
+
+    <resultMap id="listReplyResultMap" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"      />
+        <result column="bbs.projectSeq"     property="bbs.projectSeq"    />
+        <result column="bbs.sectionIndex"   property="bbs.sectionIndex"  />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"      />
+        <result column="bbs.description"    property="bbs.description"   />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"       property="bbs.secretYn"      />
+        <result column="bbs.viewCount"      property="bbs.viewCount"     />
+        <result column="bbs.commentCount"   property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"      />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"       property="bbs.regDtime"      />
+        <result column="bbs.regIp"          property="bbs.regIp"         />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"       property="bbs.updDtime"      />
+        <result column="bbs.updIp"          property="bbs.updIp"         />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName" />
+        <result column="bbs.attachCount"    property="bbs.attachCount"   />
+    </resultMap>
+    <select id="getListReply" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsBbsCondition" resultMap="listReplyResultMap">
+/* CdmsBbsMapper.getListReply */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "bbs.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "bbs.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "bbs.bbsTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "bbs.bbsTitle" DESC</when>
+            <when test='orderby == 3'>ORDER BY "bbs.bbsTypeCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "bbs.bbsTypeCd" DESC</when>
+            <otherwise>ORDER BY "bbs.groupSeq" DESC, "bbs.groupOrder" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT bbs.cs_bbs_seq        AS "bbs.bbsSeq" ,
+       bbs.cs_board_seq      AS "bbs.boardSeq" ,
+       bbs.cs_project_seq    AS "bbs.projectSeq" ,
+       bbs.cs_section_index  AS "bbs.sectionIndex" ,
+       bbs.cs_bbs_title      AS "bbs.bbsTitle" ,
+       bbs.cs_description    AS "bbs.description" ,
+       bbs.cs_bbs_type_cd    AS "bbs.bbsTypeCd" ,
+       bbs.cs_always_top_yn  AS "bbs.alwaysTopYn" ,
+       bbs.cs_html_yn        AS "bbs.htmlYn" ,
+       bbs.cs_secret_yn      AS "bbs.secretYn" ,
+       bbs.cs_view_count     AS "bbs.viewCount" ,
+       bbs.cs_comment_count  AS "bbs.commentCount" ,
+       bbs.cs_parent_seq     AS "bbs.parentSeq" ,
+       bbs.cs_group_seq      AS "bbs.groupSeq" ,
+       bbs.cs_group_level    AS "bbs.groupLevel" ,
+       bbs.cs_group_order    AS "bbs.groupOrder" ,
+       bbs.cs_delete_yn      AS "bbs.deleteYn" ,
+       bbs.cs_reg_member_seq AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime      AS "bbs.regDtime" ,
+       bbs.cs_reg_ip         AS "bbs.regIp" ,
+       bbs.cs_upd_member_seq AS "bbs.updMemberSeq" ,
+       bbs.cs_upd_dtime      AS "bbs.updDtime" ,
+       bbs.cs_upd_ip         AS "bbs.updIp" ,
+       member.cs_member_name AS "bbs.regMemberName" ,
+       (SELECT COUNT(*)
+          FROM cs_attach
+         WHERE cs_reference_seq = bbs.cs_bbs_seq
+           AND cs_reference_tablename = 'cs_cdms_bbs'
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.attachCount"
+  FROM cs_cdms_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+ WHERE bbs.cs_parent_seq = #{srchParentSeq}
+       AND bbs.cs_delete_yn = 'N'
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countListReply" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsBbsCondition" resultType="int">
+/* CdmsBbsMapper.countListReply */
+SELECT COUNT(*)
+  FROM cs_cdms_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+ WHERE bbs.cs_parent_seq = #{srchParentSeq}
+       AND bbs.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listAlwaysTopResultMap" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsBbsRS">
+        <result column="bbs.bbsSeq"         property="bbs.bbsSeq"        />
+        <result column="bbs.boardSeq"       property="bbs.boardSeq"      />
+        <result column="bbs.projectSeq"     property="bbs.projectSeq"    />
+        <result column="bbs.sectionIndex"   property="bbs.sectionIndex"  />
+        <result column="bbs.bbsTitle"       property="bbs.bbsTitle"      />
+        <result column="bbs.description"    property="bbs.description"   />
+        <result column="bbs.bbsTypeCd"      property="bbs.bbsTypeCd"     />
+        <result column="bbs.alwaysTopYn"    property="bbs.alwaysTopYn"   />
+        <result column="bbs.htmlYn"         property="bbs.htmlYn"        />
+        <result column="bbs.secretYn"       property="bbs.secretYn"      />
+        <result column="bbs.viewCount"      property="bbs.viewCount"     />
+        <result column="bbs.commentCount"   property="bbs.commentCount"  />
+        <result column="bbs.parentSeq"      property="bbs.parentSeq"     />
+        <result column="bbs.groupSeq"       property="bbs.groupSeq"      />
+        <result column="bbs.groupLevel"     property="bbs.groupLevel"    />
+        <result column="bbs.groupOrder"     property="bbs.groupOrder"    />
+        <result column="bbs.deleteYn"       property="bbs.deleteYn"      />
+        <result column="bbs.regMemberSeq"   property="bbs.regMemberSeq"  />
+        <result column="bbs.regDtime"       property="bbs.regDtime"      />
+        <result column="bbs.regIp" 	        property="bbs.regIp"     	 />
+        <result column="bbs.updMemberSeq"   property="bbs.updMemberSeq"  />
+        <result column="bbs.updDtime"       property="bbs.updDtime"      />
+        <result column="bbs.updIp" 	        property="bbs.updIp"     	 />
+        <result column="bbs.regMemberName"  property="bbs.regMemberName" />
+        <result column="bbs.updMemberName"  property="bbs.updMemberName" />
+        <result column="bbs.attachCount"    property="bbs.attachCount"   />
+        <result column="project.projectSeq"   property="project.projectSeq"/>
+        <result column="project.projectName"  property="project.projectName"/>
+        <result column="section.projectSeq"   property="section.projectSeq"/>
+        <result column="section.sectionIndex" property="section.sectionIndex"/>
+        <result column="section.sectionName"  property="section.sectionName"/>
+    </resultMap>
+    <select id="getListAlwaysTop" parameterType="Long" resultMap="listAlwaysTopResultMap">
+/* CdmsBbsMapper.getListAlwaysTop */
+SELECT bbs.cs_bbs_seq        AS "bbs.bbsSeq" ,
+       bbs.cs_board_seq      AS "bbs.boardSeq" ,
+       bbs.cs_project_seq    AS "bbs.projectSeq" ,
+       bbs.cs_section_index  AS "bbs.sectionIndex" ,
+       bbs.cs_bbs_title      AS "bbs.bbsTitle" ,
+       bbs.cs_description    AS "bbs.description" ,
+       bbs.cs_bbs_type_cd    AS "bbs.bbsTypeCd" ,
+       bbs.cs_always_top_yn  AS "bbs.alwaysTopYn" ,
+       bbs.cs_html_yn        AS "bbs.htmlYn" ,
+       bbs.cs_secret_yn      AS "bbs.secretYn" ,
+       bbs.cs_view_count     AS "bbs.viewCount" ,
+       bbs.cs_comment_count  AS "bbs.commentCount" ,
+       bbs.cs_parent_seq     AS "bbs.parentSeq" ,
+       bbs.cs_group_seq      AS "bbs.groupSeq" ,
+       bbs.cs_group_level    AS "bbs.groupLevel" ,
+       bbs.cs_group_order    AS "bbs.groupOrder" ,
+       bbs.cs_delete_yn      AS "bbs.deleteYn" ,
+       bbs.cs_reg_member_seq AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime      AS "bbs.regDtime" ,
+       bbs.cs_reg_ip	     AS "bbs.regIp" ,
+       bbs.cs_upd_member_seq AS "bbs.updMemberSeq" ,
+       bbs.cs_upd_dtime      AS "bbs.updDtime" ,
+       bbs.cs_upd_ip		 AS "bbs.updIp" ,
+       member.cs_member_name AS "bbs.regMemberName" ,
+       (SELECT COUNT(*)
+          FROM cs_attach
+         WHERE cs_reference_seq = bbs.cs_bbs_seq
+           AND cs_reference_tablename = 'cs_cdms_bbs'
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.attachCount" ,
+       project.cs_project_seq   AS "project.projectSeq" ,
+       project.cs_project_name  AS "project.projectName" ,
+       section.cs_project_seq   AS "section.projectSeq" ,
+       section.cs_section_index AS "section.sectionIndex" ,
+       section.cs_section_name  AS "section.sectionName" 
+  FROM cs_cdms_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+   LEFT OUTER JOIN cs_cdms_project project
+       ON bbs.cs_project_seq = project.cs_project_seq  
+   LEFT OUTER JOIN cs_cdms_section section
+       ON bbs.cs_project_seq = section.cs_project_seq  
+       AND bbs.cs_section_index = section.cs_section_index  
+ WHERE bbs.cs_board_seq = #{boardSeq}
+       AND bbs.cs_always_top_yn = 'Y'
+       AND bbs.cs_delete_yn = 'N'
+ORDER BY bbs.cs_reg_dtime DESC
+    </select>
+
+</mapper>

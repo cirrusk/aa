@@ -1,0 +1,260 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if IE 9]><html lang="ko" class="modern ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>AOF5-UNIV OCW</title>
+<link href="../../css/www/base.css" rel="stylesheet" type="text/css" />
+<link href="../../css/www/common.css" rel="stylesheet" type="text/css" />
+<link href="../../css/www/content.css" rel="stylesheet" type="text/css" />
+<link href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" rel="stylesheet" type="text/css" />
+<link href="../../css/www/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/www/ocw.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript">
+jQuery(function($){
+	/* tab */
+	$.fn.tabContainer = function(){
+		return this.each(function(){
+			var tabAnchor = $(this).find('> li');
+			tabAnchor.each(function(){
+				var $menu = $(this);
+				var $targetEl = $('#' + $menu.find('>a').attr('href').split('#')[1]);
+				$targetEl.css('display', 'none');
+				if ($menu.hasClass('on')) {
+					$targetEl.css('display', 'block');
+				};
+
+				$menu.click(function(){
+					if (!$(this).hasClass('on')) {
+						tabAnchor.removeClass('on');
+						tabAnchor.each(function(){
+							$('#' + $(this).find('>a').attr('href').split('#')[1]).css('display', 'none');
+						});
+					$menu.addClass('on');
+					$targetEl.css('display', 'block');
+					};
+					return false;
+				});
+			});
+		});
+	};
+	$('.lecture-txt ul').tabContainer(); //main 공지사항
+});
+</script>
+</head>
+<body>
+<!-- skip -->
+<div id="skip">
+	<a href="#lnb">메인메뉴 바로가기</a>
+	<a href="#snb">좌측메뉴 바로가기</a>
+	<a href="#content">본문 바로가기</a>
+</div>
+<!-- //skip -->
+<div class="ocw">
+	<!-- header -->
+	<div class="header">
+		<div class="section">
+			<div class="gnb">
+				<ul class="service">
+					<li><a href="#" class="grad">학사서비스</a></li>
+					<li><a href="#" class="favor">즐겨찾기</a></li>
+				</ul>
+				<div class="log">
+					<fieldset>
+						<legend>로그인</legend>
+						<p class="enter">
+							<label class="lab" for="user-id">아이디</label>
+							<input id="user-id" type="text" class="text" />
+						</p>
+						<p class="enter">
+							<label class="lab" for="user-pw">비밀번호</label>
+							<input id="user-pw" type="password" class="text" />
+						</p>
+						<button type="submit" class="btn-log">로그인</button>
+					</fieldset>
+				</div>
+			</div>
+			<h1 class="logo"><a href="#"><img src="../../images/www/common/logo_ocw.gif" alt="4CSoft" /></a></h1>
+			<div id="lnb">
+				<h2 class="blind">메인 메뉴</h2>
+				<ul>
+					<li class="on"><a href="#">메뉴_01</a></li>
+					<li><a href="#">메뉴_02</a></li>
+					<li><a href="#">메뉴_03</a></li>
+					<li><a href="#">메뉴_04</a></li>
+					<li><a href="#">메뉴_05</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<!-- //haeder -->
+	<!--container-->
+	<div id="container">
+		<div id="snb">
+			<h2>OCW</h2>
+			<ul>
+				<li class="on"><a href="#">서브_01</a>
+					<ul>
+						<li class="on"><a href="#">서브_01_01</a></li>
+						<li><a href="#">서브_01_02</a></li>
+					</ul>
+				</li>
+				<li><a href="#">서브_02</a></li>
+				<li><a href="#">서브_03</a></li>
+				<li><a href="#">서브_04</a></li>
+			</ul>
+		</div>
+		<div id="content">
+			<div class="foreword">
+				<p class="location">
+					<img src="../../images/www/common/location_home_ocw.gif" alt="HOME "/> <span class="next">›</span> Course <span class="next">›</span> ategory <span class="next">›</span> <span class="current">details</span>
+				</p>
+				<h3>Course</h3>
+			</div>
+			<!-- 본문 내용 -->
+			<div class="lecture-top">
+				<h3 class="tit">1945년 이후 미국 소설 – 1강. 들어가며(Introductions)</h3>
+				<p class="lecturer">강사 : 최진혁</p>
+				<div class="rating">
+					<img src="../../images/www/icon/icon_stars_full.png" alt="별 한개" />
+					<img src="../../images/www/icon/icon_stars_full.png" alt="별 한개" />
+					<img src="../../images/www/icon/icon_stars_full.png" alt="별 한개" />
+					<img src="../../images/www/icon/icon_stars_half.png" alt="별 반개" />
+					<img src="../../images/www/icon/icon_stars_empty.png" alt="빈 별" />
+				</div>
+				<p class="date">2014.02.20</p>
+			</div>
+			<div class="lecture-play">
+				<img src="../../images/www/common/lecture_view_temp.gif" alt="" class="img" />
+				<a href="#" class="btn-play"><img src="../../images/www/btn/btn_lec_play.png" alt="play" /></a>
+			</div>
+			<div class="sub-head">
+				<h4 class="sub-tit">강의소개</h4>
+				<div class="sns-area">
+					<a href="#" class="twitter"><span>twitter</span></a>
+					<a href="#" class="facebook"><span>facebook</span></a>
+					<a href="#" class="rating">별점주기</a>
+					<div class="rating-star">
+						<a href="#"><img src="../../images/www/icon/rating_star_full.png" alt="별 한개" /></a>
+						<a href="#"><img src="../../images/www/icon/rating_star_full.png" alt="별 한개" /></a>
+						<a href="#"><img src="../../images/www/icon/rating_star_full.png" alt="별 한개" /></a>
+						<a href="#"><img src="../../images/www/icon/rating_star_full.png" alt="별 한개" /></a>
+						<a href="#"><img src="../../images/www/icon/rating_star_empty.png" alt="빈 별" /></a>
+						<span class="arrow"></span>
+					</div>
+				</div>
+			</div>
+			<div class="lecture-intro">
+				<ul class="info-list">
+					<li class="offer"><span class="tit">제공자 : </span>방송대학</li>
+					<li><span class="tit">출처 : </span><a href="#">http://www.academicearth.org/lectures/plato-existence-soul</a></li>
+					<li><span class="tit">보조자료 : </span>영어교과 논리 및 논술.pdf <span class="download">다운로드 수 : 234</span></li>
+					<li class="refer"><span class="tit">참고서적 : </span>영어교과 논리 및 논술 [크라운출판사] /2013</li>
+					<li><span class="tit">키워드 : </span><a href="#">미국 소설</a>, <a href="#">1946</a>, <a href="#">미국 출판 시장</a>, <a href="#">소설 형식</a>, <a href="#">미국 문화</a></li>
+				</ul>
+				<p class="desc">영어교육에 필요한 논술의 기초 지식을 다룬다. 이 교과는 3부분으로 나눈다. 첫 번째는 중교고 교육과정해설 “쓰기” 부분의 대강을 검토 하고 논술 논리의 기본 사항을 연구한다. 두 번째는 영어 텍스트로 된 논술문 읽기를 익히고, 이를 통해 주어진 텍스트의 논지 정당화 과정 을 분석하고 재구성하는 작업을 다룬다. 세 번째 논술 쓰기 부분에서는 아이디어를 얻어내고, 배열하며, 언어화하는, 논술의 작성 과정을 다룬다.<br /><br />
+				영어교육에 필요한 논술의 기초 지식을 다룬다. 이 교과는 3부분으로 나눈다. 첫 번째는 중교고 교육과정해설 “쓰기” 부분의 대강을 검토 하고 논술 논리의 기본 사항을 연구한다. 두 번째는 영어 텍스트로 된 논술문 읽기를 익히고, 이를 통해 주어진 텍스트의 논지 정당화 과정 을 분석하고 재구성하는 작업을 다룬다. 세 번째 논술 쓰기 부분에서는 아이디어를 얻어내고, 배열하며, 언어화하는, 논술의 작성 과정을 다룬다.</p>
+			</div>
+			<div class="lecture-txt">
+				<ul>
+					<li class="on"><a href="#ko">한글스크립트</a></li>
+					<li><a href="#origin">원문스크립트</a></li>
+				</ul>
+				<div class="txt">
+					<div id="ko">영어교육에 필요한 논술의 기초 지식을 다룬다. 이 교과는 3부분으로 나눈다. 첫 번째는 중교고 교육과정해설 “쓰기” 부분의 대강을 검토하고 논술 논리의 기본 사항을 연구한다. 두 번째는 영어 텍스트로 된 논술문 읽기를 익히고, 이를 통해 주어진 텍스트의 논지 정당화 과정을 분석하고 재구성하는 작업을 다룬다. 세 번째 논술 쓰기 부분에서는 아이디어를 얻어내고, 배열하며, 언어화하는, 논술의 작성과정을 다룬다.</div>
+					<div id="origin">Lecture Material only instead of full trascripts(pdf version download): http://ocw.mit.edu/courses/foreign-languages-and-literatures/21f-223-listening-speaking-and-pronunciation-fall-2004/study-materials/compounds.pdf</div>
+				</div>
+			</div>
+			<h4 class="sub-tit">총 15강</h4>
+			<div class="lecture-themes">
+				<div class="section first">
+					<div class="lecture">
+						<span class="group blue">주제별강의>인문학</span>
+						<h4>[2014년] 영어교과논리및 논술</h4>
+						<p class="lecturer">강사 : 최진혁</p>
+						<div class="rating">
+							<img src="../../images/www/icon/icon_stars_full.png" alt="별 한개" />
+							<img src="../../images/www/icon/icon_stars_full.png" alt="별 한개" />
+							<img src="../../images/www/icon/icon_stars_full.png" alt="별 한개" />
+							<img src="../../images/www/icon/icon_stars_half.png" alt="별 반개" />
+							<img src="../../images/www/icon/icon_stars_empty.png" alt="빈 별" />
+						</div>
+						<p class="account">이를 통해 주어진 텍스트의 논지 정당화 과정을 분석하고 재구성하는 작업을 다룬다. 세 번째 논술 쓰기 부분에서는 아이디어를 얻어내고, 배열하며, 언어화하는, 논술의 작성과정을 다룬다</p>
+						<p class="info">
+							<span class="offer">제공자 : </span>방송대학
+							<span>출처 : </span>포씨소프트
+							<span>등록자 : </span>안재현
+						</p>
+						<p class="date">2014.02.20</p>
+					</div>
+					<p class="thum"><img src="../../images/www/common/lecture_thum_temp.gif" alt="강의 사진" /></p>
+				</div>
+			</div>
+			<p class="lecture-key">
+				<span>키워드</span>
+				<a href="#">미국 소설</a>, <a href="#">1946</a>, <a href="#">미국 출판 시장</a>, <a href="#">소설 형식</a>
+			</p>
+			<!-- comment 등록 -->
+			<div class="group-comment">
+				<div class="info">
+					<div class="float-l">
+						<span class="secret-comment"><strong>0</strong> / 800 byte</span>
+					</div>
+				</div>
+				<div class="desc">
+					<textarea name="" id="" cols="" rows="">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget</textarea>
+					<a href="#" class="btn com"><span class="mid">등록</span></a>
+				</div>
+			</div>
+			<!-- //comment 등록 -->
+			<!-- comment 상세 -->
+			<div class="group-comment bg">
+				<div class="info">
+					<div class="float-l">
+						<span class="name">김철수</span>
+						<span class="date">2013-10-28 14:39:41</span>
+					</div>
+					<div class="float-r">
+						<span class="like-area"><span class="like">추천 <strong>0</strong></span>
+						<span>반대 <strong>0</strong></span></span>
+						<span class="edit">
+							<a class="btn gray" href="#"><span class="small">수정</span></a>
+							<a class="btn black" href="#"><span class="small">삭제</span></a>
+						</span>
+					</div>
+				</div>
+				<div class="desc">사이트 맘에 듭니다.</div>
+			</div>
+			<!-- //comment 상세 -->
+			<!-- comment 상세 -->
+			<div class="group-comment bg">
+				<div class="info">
+					<div class="float-l">
+						<span class="name">김철수</span>
+						<span class="date">2013-10-28 14:39:41</span>
+					</div>
+					<div class="float-r">
+						<span class="like-area"><span class="like">추천 <strong>0</strong></span>
+						<span>반대 <strong>0</strong></span></span>
+					</div>
+				</div>
+				<div class="desc">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget</div>
+			</div>
+			<!-- //comment 상세 -->
+			<!-- //본문 내용 -->
+		</div>
+	</div>
+	<!-- //container -->
+	<!-- footer -->
+	<div id="footer">
+		<address>서울시 서초구 반포4동 59-4 송원빌딩 5층 / TEL:02-544-2822 / FAX:02-544-1009 </address>
+		<p class="copyright">Copyright ⓒ 1999-2013 4CSoftINC. All Rights Reserved</p>
+	</div>
+	<!-- //footer -->
+</div>
+</body>
+</html>

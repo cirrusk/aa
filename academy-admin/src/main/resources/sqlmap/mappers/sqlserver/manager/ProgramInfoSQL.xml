@@ -1,0 +1,1427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.reservation.programInfo.service.impl.ProgramInfoMapper">
+
+    <select id="programInfoList" parameterType="reqBox" resultType="dataBox">
+           SELECT AI.ROW_NUM
+                , AI.EXPSEQ
+                , AI.PPNAME
+                , AI.CATEGORYTYPE1
+                , AI.PRODUCTNAME
+                , AI.SEATCOUNT1
+                , AI.SEATCOUNT2
+                , AI.STARTDATE
+                , AI.ENDDATE
+                , AI.UPDATEDATE
+                , AI.UPDATEUSER
+                , AI.STATUSCODE
+           FROM (
+           SELECT DISTINCT ROW_NUMBER() OVER( ORDER BY AA.EXPSEQ DESC ) AS ROW_NUM
+                , AA.EXPSEQ
+                , AB.PPNAME
+                , CASE
+                    WHEN AA.CATEGORYTYPE1 = 'E01' THEN '체성분측정'
+                    WHEN AA.CATEGORYTYPE1 = 'E02' THEN '피부측정'
+                    WHEN AA.CATEGORYTYPE1 = 'E03' THEN '브랜드체험'
+                    WHEN AA.CATEGORYTYPE1 = 'E04' THEN '문화체험'
+                  END AS CATEGORYTYPE1
+                , AA.PRODUCTNAME
+                , AA.SEATCOUNT1
+                , AA.SEATCOUNT2
+                , CONVERT(VARCHAR, CONVERT(DATETIME,AA.STARTDATE),23) AS STARTDATE
+                , CONVERT(VARCHAR, CONVERT(DATETIME,AA.ENDDATE),23) AS ENDDATE
+                , CONVERT(VARCHAR, AA.UPDATEDATE, 120) AS UPDATEDATE
+                , AA.UPDATEUSER
+                , CASE
+                    WHEN AA.STATUSCODE = 'B01' THEN '사용'
+                    WHEN AA.STATUSCODE = 'B02' THEN '사용안함'
+                  END AS STATUSCODE
+           FROM   RSVEXPINFO AA
+                  INNER JOIN RSVPPINFO AB
+                  ON AA.PPSEQ = AB.PPSEQ
+           WHERE 1=1
+                  <if test="ppseq != null and !ppseq.equals('')">
+                      AND AA.PPSEQ = #{ppseq}
+                  </if>
+                  <if test="categorytype1 != null and !categorytype1.equals('')">
+                      AND AA.CATEGORYTYPE1 = #{categorytype1}
+                  </if>
+                  <if test="statuscode != null and !statuscode.equals('')">
+                      AND AA.STATUSCODE = #{statuscode}
+                  </if>
+                  <if test="productname != null and !productname.equals('')">
+                      AND PRODUCTNAME LIKE ('%${productname}%')
+                  </if>
+        ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="programInfoListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(AA.EXPSEQ) AS TOTAL_CNT
+        FROM   RSVEXPINFO  AA
+               INNER JOIN RSVPPINFO AB
+               ON AA.PPSEQ = AB.PPSEQ
+        WHERE 1=1
+               <if test="ppseq != null and !ppseq.equals('')">
+                   AND AA.PPSEQ = #{ppseq}
+               </if>
+               <if test="categorytype1 != null and !categorytype1.equals('')">
+                   AND AA.CATEGORYTYPE1 = #{categorytype1}
+               </if>
+               <if test="statuscode != null and !statuscode.equals('')">
+                   AND AA.STATUSCODE = #{statuscode}
+               </if>
+               <if test="productname != null and !productname.equals('')">
+                   AND PRODUCTNAME LIKE ('%${productname}%')
+               </if>
+    </select>
+
+    <select id="programInfoExcelDownload" parameterType="reqBox" resultType="hashmap">
+        SELECT
+        ROW_NUMBER() OVER (
+                <choose>
+                    <when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+                        ORDER BY ${sortOrderColumn} ${sortOrderType}
+                    </when>
+                    <otherwise>
+                        ORDER BY AA.EXPSEQ DESC
+                    </otherwise>
+                </choose> ) AS NO
+                , AA.EXPSEQ
+                , AB.PPNAME
+                , CASE
+                     WHEN AA.CATEGORYTYPE1 = 'E01' THEN '체성분측정'
+                     WHEN AA.CATEGORYTYPE1 = 'E02' THEN '피부측정'
+                     WHEN AA.CATEGORYTYPE1 = 'E03' THEN '브랜드체험'
+                     WHEN AA.CATEGORYTYPE1 = 'E04' THEN '문화체험'
+                  END  AS CATEGORYTYPE1
+                , AA.PRODUCTNAME
+                , AA.SEATCOUNT1
+                , CONVERT(VARCHAR, CONVERT(DATETIME,AA.STARTDATE),23) AS STARTDATE
+                , CONVERT(VARCHAR, CONVERT(DATETIME,AA.ENDDATE),23) AS ENDDATE
+                , AA.UPDATEDATE
+                , AA.UPDATEUSER
+                , CASE
+                     WHEN AA.STATUSCODE = 'B01' THEN '사용'
+                     WHEN AA.STATUSCODE = 'B02' THEN '미사용'
+                  END AS STATUSCODE
+        FROM   RSVEXPINFO AA
+        INNER JOIN RSVPPINFO AB
+        ON AA.PPSEQ = AB.PPSEQ
+        WHERE 1=1
+        <if test="ppseq != null and !ppseq.equals('')">
+            AND AA.PPSEQ = #{ppseq}
+        </if>
+        <if test="categorytype1 != null and !categorytype1.equals('')">
+            AND AA.CATEGORYTYPE1 = #{categorytype1}
+        </if>
+        <if test="statuscode != null and !statuscode.equals('')">
+            AND AA.STATUSCODE = #{statuscode}
+        </if>
+        <if test="productname != null and !productname.equals('')">
+            AND PRODUCTNAME LIKE ('%${productname}%')
+        </if>
+    </select>
+
+    <select id="programInfoCheck" parameterType="reqBox" resultType="dataBox">
+        SELECT DISTINCT CATEGORYTYPE1 AS TYPE
+			 	       ,CATEGORYNAME1 AS NAME
+        FROM RSVBRANDCATEGORY
+        WHERE CATEGORYTYPE1 = 'E01'
+          OR  CATEGORYTYPE1 = 'E02'
+          AND CATEGORYTYPE1  IS NOT NULL
+          AND STATUSCODE = 'B01'
+    </select>
+
+	<select id="selectcategorytypelist" parameterType="reqBox" resultType="dataBox">
+ 		SELECT DISTINCT 'CATE1' AS DIV
+               ,CATEGORYTYPE1 AS TYPE
+			 	       ,CATEGORYNAME1 AS NAME
+               ,'' AS UPTYPE
+		FROM RSVBRANDCATEGORY
+		WHERE CATEGORYTYPE1 = 'E03'
+		  OR  CATEGORYTYPE1 = 'E04'
+		  AND CATEGORYTYPE1  <![CDATA[<>]]>  ISNULL('','')
+		  AND STATUSCODE = 'B01'
+		UNION
+		SELECT DISTINCT 'CATE2' AS DIV
+		                          ,CATEGORYTYPE2 AS TYPE
+						          ,CATEGORYNAME2 AS NAME
+		                  ,CATEGORYTYPE1 AS UPTYPE
+				   FROM RSVBRANDCATEGORY
+				   WHERE CATEGORYTYPE1 = 'E03'
+		             AND CATEGORYTYPE2 <![CDATA[<>]]>  ISNULL('','')
+		             AND STATUSCODE = 'B01'
+		UNION
+		SELECT DISTINCT 'CATE3' AS DIV
+		                       ,CATEGORYTYPE3 AS TYPE
+						       ,CATEGORYNAME3 AS NAME
+		               ,CATEGORYTYPE2 AS UPTYPE
+				FROM RSVBRANDCATEGORY
+				WHERE CATEGORYTYPE1 = 'E03'
+				      AND   CATEGORYTYPE2 = 'E0301'
+					  AND   CATEGORYTYPE3 <![CDATA[<>]]>  ISNULL('','')
+					  AND STATUSCODE = 'B01'
+	</select>
+	
+    <select id="programInfoType" parameterType="reqBox" resultType="dataBox">
+        SELECT DISTINCT CATEGORYTYPE1 AS TYPE
+			 	       ,CATEGORYNAME1 AS NAME
+		FROM RSVBRANDCATEGORY
+		WHERE CATEGORYTYPE1 = 'E03'
+		  OR  CATEGORYTYPE1 = 'E04'
+		  AND CATEGORYTYPE1  <![CDATA[<>]]>  ISNULL('','')
+		  AND STATUSCODE = 'B01'
+    </select>
+
+    <select id="programInfoBrand" parameterType="reqBox" resultType="dataBox">
+           SELECT DISTINCT CATEGORYTYPE1 AS UPTYPE
+                          ,CATEGORYTYPE2 AS TYPE
+				          ,CATEGORYNAME2 AS NAME
+		   FROM RSVBRANDCATEGORY
+		   WHERE CATEGORYTYPE1 = 'E03'
+             AND CATEGORYTYPE2 <![CDATA[<>]]>  ISNULL('','')
+             AND STATUSCODE = 'B01'
+    </select>
+
+    <select id="programInfoBrandDepth" parameterType="reqBox" resultType="dataBox">
+        SELECT DISTINCT CATEGORYTYPE2 AS UPTYPE
+                       ,CATEGORYTYPE3 AS TYPE
+				       ,CATEGORYNAME3 AS NAME
+		FROM RSVBRANDCATEGORY
+		WHERE CATEGORYTYPE1 = 'E03'
+		      AND   CATEGORYTYPE2 = 'E0301'
+			  AND   CATEGORYTYPE3 <![CDATA[<>]]>  ISNULL('','')
+			  AND STATUSCODE = 'B01'
+    </select>
+
+    <select id="programInsCheck" parameterType="reqBox" resultType="int">
+        SELECT COUNT(EXPSEQ)
+        FROM RSVEXPINFO
+        WHERE PPSEQ = #{ppseq}
+        AND CATEGORYTYPE1 = #{categorytype1}
+        AND STATUSCODE = 'B01'
+    </select>
+
+    <insert id="programInfoOneInsert" parameterType="reqBox">
+        INSERT INTO RSVEXPINFO (
+               CATEGORYTYPE1
+             , CATEGORYTYPE2
+             , CATEGORYTYPE3
+             , PRODUCTNAME
+             , THEMENAME
+             , PPSEQ
+             , INTRO
+             , CONTENT
+             , TIME1
+             , NOTE1
+             , TIME2
+             , NOTE2
+             , TIME3
+             , NOTE3
+             , STARTDATE
+             , ENDDATE
+             , STATUSCODE
+        <if test="seatcount1 != null and !seatcount1.equals('')">
+            , SEATCOUNT1
+        </if>
+        <if test="seatcount2 != null and !seatcount2.equals('')">
+            , SEATCOUNT2
+        </if>
+        <if test="seatcount != null and !seatcount.equals('')">
+            , SEATCOUNT
+        </if>
+             , USETIME
+             , USETIMENOTE
+             , ROLE
+             , ROLENOTE
+             , PREPARATION
+             , KEYWORD
+        <if test="filekey != null and !filekey.equals('')">
+             , FILEKEY
+        </if>
+        <if test="filekey1 != null and !filekey1.equals('')">
+            , FILEKEY1
+        </if>
+        <if test="filekey2 != null and !filekey2.equals('')">
+            , FILEKEY2
+        </if>
+        <if test="filekey3 != null and !filekey3.equals('')">
+            , FILEKEY3
+        </if>
+        <if test="filekey4 != null and !filekey4.equals('')">
+            , FILEKEY4
+        </if>
+        <if test="filekey5 != null and !filekey5.equals('')">
+            , FILEKEY5
+        </if>
+        <if test="filekey6 != null and !filekey6.equals('')">
+            , FILEKEY6
+        </if>
+        <if test="filekey7 != null and !filekey7.equals('')">
+            , FILEKEY7
+        </if>
+        <if test="filekey8 != null and !filekey8.equals('')">
+            , FILEKEY8
+        </if>
+        <if test="filekey9 != null and !filekey9.equals('')">
+            , FILEKEY9
+        </if>
+        <if test="filekey10 != null and !filekey10.equals('')">
+            , FILEKEY10
+        </if>
+             , INSERTUSER
+             , INSERTDATE
+             , UPDATEUSER
+             , UPDATEDATE
+                ) VALUES (
+              #{categorytype1}
+            , #{categorytype2}
+            , #{categorytype3}
+            , #{productname}
+            , #{themename}
+            , #{ppseq}
+            , #{intro}
+            , #{content}
+            , #{time1}
+            , #{note1}
+            , #{time2}
+            , #{note2}
+            , #{time3}
+            , #{note3}
+            , replace(#{startdate},'-','')
+            , replace(#{enddate},'-','')
+            , #{statuscode}
+        <if test="seatcount1 != null and !seatcount1.equals('')">
+            , ISNULL(#{seatcount1},0)
+        </if>
+        <if test="seatcount2 != null and !seatcount2.equals('')">
+            , ISNULL(#{seatcount2},0)
+        </if>
+        <if test="seatcount != null and !seatcount.equals('')">
+            , ISNULL(#{seatcount},0)
+        </if>
+            , #{usetime}
+            , #{usetimenote}
+            , #{role}
+            , #{rolenote}
+            , #{preparation}
+            , #{keyword}
+        <if test="filekey != null and !filekey.equals('')">
+            , ISNULL(#{filekey},0)
+        </if>
+        <if test="filekey1 != null and !filekey1.equals('')">
+            , ISNULL(#{filekey1},0)
+        </if>
+        <if test="filekey2 != null and !filekey2.equals('')">
+            , ISNULL(#{filekey2},0)
+        </if>
+        <if test="filekey3 != null and !filekey3.equals('')">
+            , ISNULL(#{filekey3},0)
+        </if>
+        <if test="filekey4 != null and !filekey4.equals('')">
+            , ISNULL(#{filekey4},0)
+        </if>
+        <if test="filekey5 != null and !filekey5.equals('')">
+            , ISNULL(#{filekey5},0)
+        </if>
+        <if test="filekey6 != null and !filekey6.equals('')">
+            , ISNULL(#{filekey6},0)
+        </if>
+        <if test="filekey7 != null and !filekey7.equals('')">
+            , ISNULL(#{filekey7},0)
+        </if>
+        <if test="filekey8 != null and !filekey8.equals('')">
+            , ISNULL(#{filekey8},0)
+        </if>
+        <if test="filekey9 != null and !filekey9.equals('')">
+            , ISNULL(#{filekey9},0)
+        </if>
+        <if test="filekey10 != null and !filekey10.equals('')">
+            , ISNULL(#{filekey10},0)
+        </if>
+            , #{sysId}
+            , Getdate()
+            , #{sysId}
+            , Getdate()
+                )
+    </insert>
+
+    <update id="fileUpdate" parameterType="java.util.Map">
+        UPDATE FILEMANAGEMENT SET
+        ALTDESC = #{altText}
+        WHERE WORK = 'RESERVATION'
+        AND   FILEKEY = #{fileKey}
+        AND   UPLOADSEQ = 0
+    </update>
+
+    <insert id="programInfoSearchRsvInsert" parameterType="reqBox">
+         INSERT INTO SEARCHRSV (
+                RSVSEQ
+                ,GUBUN
+                ,PPNAME
+                ,NAME
+                ,TYPE
+                ,CONTENT
+                ,CREATEDATE
+                ,MODIFYDATE
+                ,ACADEMYURL
+                ,HYBRISURL
+                ,KEYWORD
+                ,DELETEYN
+                )
+         SELECT (SELECT ISNULL(MAX(RSVSEQ),0)+1 FROM SEARCHRSV)
+                , 'EXP'
+                , BI.PPNAME
+                ,CASE
+                   WHEN AI.CATEGORYTYPE1 = 'E01' THEN '체성분측정'
+                   WHEN AI.CATEGORYTYPE1 = 'E02' THEN '피부측정'
+                   WHEN AI.CATEGORYTYPE1 = 'E03' THEN '브랜드체험'
+                   WHEN AI.CATEGORYTYPE1 = 'E04' THEN '문화체험'
+                 END AS CATEGORYTYPE1NAME
+                ,CASE
+                   WHEN AI.CATEGORYTYPE1 = 'E01' THEN '체성분측정'
+                   WHEN AI.CATEGORYTYPE1 = 'E02' THEN '피부측정'
+                   WHEN AI.CATEGORYTYPE1 = 'E03' THEN '브랜드체험'
+                   WHEN AI.CATEGORYTYPE1 = 'E04' THEN '문화체험'
+                 END AS CATEGORYTYPE1NAME
+                , AI.INTRO
+                , GETDATE()
+                , GETDATE()
+                , '/reservation/roomEduForm.do'
+                , '/reservation/roomEduForm.do'
+                , AI.KEYWORD
+                , 'N'
+         FROM RSVEXPINFO AI
+          INNER JOIN RSVPPINFO BI
+            ON AI.PPSEQ = BI.PPSEQ
+          LEFT OUTER JOIN RSVEXPTYPEMAP CI
+            ON AI.EXPSEQ = CI.EXPSEQ
+          LEFT OUTER JOIN RSVTYPEINFO DI
+            ON CI.TYPESEQ = DI.TYPESEQ
+         WHERE AI.EXPSEQ = #{expseq}
+    </insert>
+
+    <select id="programInfoSeq" parameterType="reqBox" resultType="int">
+        SELECT IDENT_CURRENT('RSVEXPINFO') AS EXPSEQ
+    </select>
+
+    <delete id="programInfoDelete" parameterType="reqBox">
+        DELETE FROM RSVEXPSESSIONINFO
+        WHERE EXPSEQ = #{expseq}
+        AND   SETWEEK = #{setweek}
+        <if test="hiddenseq != null and !hiddenseq.equals('')">
+            AND EXPSESSIONSEQ NOT IN (${hiddenseq})
+        </if>
+        AND   SETTYPECODE = 'S01'
+    </delete>
+
+    <delete id="programInfoDeleteAll" parameterType="reqBox">
+        DELETE FROM RSVEXPSESSIONINFO
+        WHERE EXPSEQ = #{expseq}
+        AND   SETTYPECODE = 'S01'
+    </delete>
+
+    <insert id="programInfoInsert" parameterType="reqBox">
+        SET IDENTITY_INSERT RSVEXPSESSIONINFO ON
+        <selectKey resultType="integer" keyProperty="expsessionseq" order="BEFORE">
+            SELECT ISNULL(MAX(expsessionseq),0)+1 FROM RSVEXPSESSIONINFO
+        </selectKey>
+       INSERT INTO RSVEXPSESSIONINFO (
+              EXPSESSIONSEQ
+            , SETTYPECODE
+            , SETWEEK
+            , SESSIONNAME
+            , EXPSEQ
+            , STARTDATETIME
+            , ENDDATETIME
+            , STATUSCODE
+            , INSERTUSER
+            , INSERTDATE
+            ) VALUES (
+              #{expsessionseq}
+            , 'S01'
+            , #{setweek}
+            , #{sessionname}
+            , #{expseq}
+            , #{startdatetime}
+            , #{enddatetime}
+            , 'B01'
+            , #{sysId}
+            , Getdate()
+            )
+        SET IDENTITY_INSERT RSVEXPSESSIONINFO OFF
+    </insert>
+
+	<update id="rsvexpinfoUpdate" parameterType="reqBox">
+		/* ProgramInfoSQL.xml rsvexpinfoUpdate */
+        UPDATE   RSVEXPINFO
+           SET   UPDATEUSER = #{sysId} 
+               , UPDATEDATE = Getdate()
+         WHERE   EXPSEQ     = #{expseq}
+    </update>
+    
+    <update id="programInfoTwoUpdate" parameterType="reqBox">
+    	/* ProgramInfoSQL.xml programInfoTwoUpdate */
+        UPDATE   RSVEXPSESSIONINFO
+           SET   SETTYPECODE   = 'S01'
+               , SETWEEK       = #{setweek}
+               , SESSIONNAME   = #{sessionname}
+               , EXPSEQ        = #{expseq}
+               , STARTDATETIME = #{startdatetime}
+               , ENDDATETIME   = #{enddatetime}
+               , STATUSCODE    = 'B01'
+               , UPDATEUSER    = #{sysId}
+               , UPDATEDATE    = Getdate()
+         WHERE   EXPSESSIONSEQ = #{expsessionseq}
+    </update>
+
+    <select id="allSessionTypeSearch" parameterType="reqBox" resultType="int">
+        SELECT COUNT(AA.APPLYSESSIONTYPECODE) AS APPLYSESSIONTYPECODE
+        FROM RSVEXPROLE AA
+        INNER JOIN RSVEXPSESSIONINFO AB
+        ON AA.EXPSESSIONSEQ = AB.EXPSESSIONSEQ
+        WHERE AB.EXPSEQ = #{expseq}
+    </select>
+
+    <insert id="programinfoInsertRoomrole" parameterType="reqBox">
+    SET IDENTITY_INSERT RSVEXPROLE ON
+    INSERT INTO RSVEXPROLE (
+                EXPROLESEQ
+              , GROUPSEQ
+              , TARGETTYPECODE
+              , PINTREATRANGE
+              , CITYTREATCODE
+              , AGETREATCODE
+              , STARTDAY
+              , ENDDAY
+              , STARTMONTH
+              , ENDMONTH
+              , EXPSESSIONSEQ
+              , PERIODTYPECODE
+              , STATUSCODE
+              , APPLYSESSIONTYPECODE
+              , UPDATEUSER
+              , UPDATEDATE
+              , INSERTUSER
+              , INSERTDATE
+              )
+       SELECT AI.EXPROLESEQ + ROW_NUMBER() OVER(ORDER BY AI.EXPROLESEQ) AS EXPROLESEQ
+            , AI.GROUPSEQ
+            , AI.TARGETTYPECODE
+            , AI.PINTREATRANGE
+            , AI.CITYTREATCODE
+            , AI.AGETREATCODE
+            , AI.STARTDAY
+            , AI.ENDDAY
+            , AI.STARTMONTH
+            , AI.ENDMONTH
+            , AI.EXPSESSIONSEQ
+            , AI.PERIODTYPECODE
+            , AI.STATUSCODE
+            , AI.APPLYSESSIONTYPECODE
+            , AI.MODIFYID
+            , AI.MODIFYDATE
+            , AI.REGISTID
+            , AI.REGISTDATE
+       FROM (
+          SELECT DISTINCT (SELECT ISNULL(MAX(exproleseq),0) FROM RSVEXPROLE) AS EXPROLESEQ
+            , AA.GROUPSEQ
+            , AA.TARGETTYPECODE
+            , AA.PINTREATRANGE
+            , AA.CITYTREATCODE
+            , AA.AGETREATCODE
+            , AA.STARTDAY
+            , AA.ENDDAY
+            , AA.STARTMONTH
+            , AA.ENDMONTH
+            , #{expsessionseq} AS EXPSESSIONSEQ
+            , AA.PERIODTYPECODE
+            , 'B01' AS STATUSCODE
+            , AA.APPLYSESSIONTYPECODE
+            , #{sysId} AS MODIFYID
+            , getdate() AS MODIFYDATE
+            , #{sysId} AS REGISTID
+            , getdate() AS REGISTDATE
+       FROM RSVEXPROLE AA
+          INNER JOIN RSVEXPSESSIONINFO AB
+            ON AA.EXPSESSIONSEQ = AB.EXPSESSIONSEQ
+       WHERE AB.EXPSEQ = #{expseq}
+          AND  AA.APPLYSESSIONTYPECODE = 'P01'
+       ) AI
+       SET IDENTITY_INSERT RSVEXPROLE OFF
+    </insert>
+
+    <select id="programInfoTwoSeq" parameterType="reqBox" resultType="dataBox">
+        SELECT IDENT_CURRENT('RSVEXPSESSIONINFO') AS EXPSESSIONSEQ
+    </select>
+
+    <select id="programInfoSelectWeek" parameterType="reqBox" resultType="dataBox">
+           SELECT EXPSEQ
+                , EXPSESSIONSEQ
+                , SETTYPECODE
+                , SUBSTRING (STARTDATETIME, 1,2) AS STARTHOUR
+                , SUBSTRING (STARTDATETIME, 3,2) AS STARTMIN
+                , SUBSTRING (ENDDATETIME, 1,2) AS ENDHOUR
+                , SUBSTRING (ENDDATETIME, 3,2) AS ENDMIN
+            FROM  RSVEXPSESSIONINFO
+            WHERE EXPSEQ = #{expseq}
+            AND   SETWEEK = #{setweek}
+    </select>
+
+    <select id="checkList" parameterType="reqBox" resultType="dataBox">
+        SELECT SETDATE
+        FROM   RSVEXPSESSIONINFO
+        WHERE  EXPSEQ = #{expseq}
+        AND    SETTYPECODE = 'S02'
+    </select>
+
+    <select id="rsvCheckList" parameterType="reqBox" resultType="dataBox">
+        SELECT RESERVATIONDATE
+		FROM   RSVRESERVATIONINFO
+		WHERE  EXPSEQ = #{expseq}
+		AND    CANCELCODE = 'B02'
+		GROUP BY RESERVATIONDATE
+    </select>
+
+    <insert id="programInfoInsertEarly" parameterType="reqBox">
+        SET IDENTITY_INSERT RSVEXPSESSIONINFO ON
+        <selectKey resultType="integer" keyProperty="expsessionseq" order="BEFORE">
+            SELECT ISNULL(MAX(expsessionseq),0)+1 FROM RSVEXPSESSIONINFO
+        </selectKey>
+         INSERT INTO RSVEXPSESSIONINFO (
+                EXPSESSIONSEQ
+              , WORKTYPECODE
+              , SETTYPECODE
+              , SESSIONNAME
+              , EXPSEQ
+              , SETDATE
+              <if test="worktypecode.equals('S01')">
+                  , STARTDATETIME
+                  , ENDDATETIME
+              </if>
+              , STATUSCODE
+              , INSERTUSER
+              , INSERTDATE
+              , UPDATEUSER
+              , UPDATEDATE
+         ) VALUES (
+                #{expsessionseq}
+              , #{worktypecode}
+              , 'S02'
+              , #{sessionname}
+              , #{expseq}
+              , replace(#{setdate},'-','')
+              <if test="worktypecode.equals('S01')">
+                  , #{startdatetime}
+                  , #{enddatetime}
+              </if>
+              ,'B01'
+              , #{sysId}
+              , Getdate()
+              , #{sysId}
+              , Getdate()
+              )
+        SET IDENTITY_INSERT RSVEXPSESSIONINFO OFF
+    </insert>
+
+
+	<insert id="programInfoInsertHoliday" parameterType="reqBox">
+        INSERT INTO RSVEXPSESSIONINFO (EXPSEQ, SETTYPECODE, WORKTYPECODE, SETDATE, VISIBILITY, STATUSCODE, INSERTUSER, INSERTDATE)
+        SELECT
+            EXPSEQ, SETTYPECODE, WORKTYPECODE, SETDATE, VISIBILITY, STATUSCODE, INSERTUSER, INSERTDATE
+        FROM (
+            /* 양력일 */
+            SELECT 
+                #{expseq} AS EXPSEQ 
+                , 'S02' AS SETTYPECODE /* 설정단위(주/일) */
+                , 'S02' AS WORKTYPECODE /* 운영형태(영업일/휴일) */
+                , B.HYEAR + A.HDATE AS SETDATE    
+                , 'B01' AS VISIBILITY
+                , 'B01' AS STATUSCODE
+                , 'SYSTEM' AS INSERTUSER
+                , GETDATE() AS INSERTDATE
+            FROM RSVHOLIDAYINFO A
+            INNER JOIN (
+                SELECT
+                    DISTINCT HYEAR
+                FROM RSVHOLIDAYINFO
+                WHERE REPEATCODE = 'B02'
+            ) B
+            ON (1=1)
+            WHERE A.REPEATCODE = 'B01'
+            UNION ALL
+            /* 음력일 */
+            SELECT 
+                #{expseq} AS ROOMSEQ 
+                , 'S02' AS SETTYPECODE /* 설정단위(주/일) */
+                , 'S02' AS WORKTYPECODE /* 운영형태(영업일/휴일) */
+                , HYEAR + HDATE AS SETDATE    
+                , 'B01' AS VISIBILITY
+                , 'B01' AS STATUSCODE
+                , 'SYSTEM' AS INSERTUSER
+                , GETDATE() AS INSERTDATE
+            FROM RSVHOLIDAYINFO
+            WHERE REPEATCODE = 'B02'
+        ) T	
+	</insert>
+
+    <delete id="programInfoEarlyDel" parameterType="reqBox">
+          DELETE FROM RSVEXPSESSIONINFO
+           WHERE EXPSEQ = #{expseq}
+             AND SETDATE = replace(#{setdate},'-','')
+    </delete>
+
+    <select id="programInfoDetailSessionPop" parameterType="reqBox" resultType="dataBox">
+        SELECT DISTINCT
+                CASE
+                    WHEN (DATEPART(DW,SETDATE)) = '1' THEN '일'
+                    WHEN (DATEPART(DW,SETDATE)) = '2' THEN '월'
+                    WHEN (DATEPART(DW,SETDATE)) = '3' THEN '화'
+                    WHEN (DATEPART(DW,SETDATE)) = '4' THEN '수'
+                    WHEN (DATEPART(DW,SETDATE)) = '5' THEN '목'
+                    WHEN (DATEPART(DW,SETDATE)) = '6' THEN '금'
+                    WHEN (DATEPART(DW,SETDATE)) = '7' THEN '토'
+                 END  AS DATENAME
+               ,EXPSEQ
+        FROM  RSVEXPSESSIONINFO
+        WHERE EXPSEQ = #{expseq}
+        AND SETDATE = replace(#{setdate},'-','')
+    </select>
+
+    <select id="programInfoDetailTwoPreview" parameterType="reqBox" resultType="dataBox">
+        SELECT   SESSIONNAME
+                , CONCAT(SUBSTRING(STARTDATETIME,1,2),':',SUBSTRING(STARTDATETIME,3,2),'~',SUBSTRING(ENDDATETIME,1,2),':',SUBSTRING(ENDDATETIME,3,2)) AS WEEKTIME
+                , CONVERT(VARCHAR, CONVERT(DATETIME, SETDATE), 23) AS SETDATE
+        FROM RSVEXPSESSIONINFO
+        WHERE EXPSEQ = #{expseq}
+        AND WORKTYPECODE = 'S01'
+        AND SETDATE = replace(#{setdate},'-','')
+    </select>
+
+    <select id="programInfoDetailTwoList" parameterType="reqBox" resultType="dataBox">
+           SELECT ROW_NUMBER() OVER( ORDER BY SETDATE DESC ) AS ROW_NUM
+                , EXPSEQ
+                , WORKTYPECODE
+                , CONVERT(VARCHAR, CONVERT(DATETIME,SETDATE),23) AS SETDATE
+                , CONCAT(SESSIONCOUNT,' 포함 총',CNT,'건') AS SESSIONCOUNT
+           FROM (
+                SELECT EXPSEQ
+                     , WORKTYPECODE
+                     , SETDATE
+                     , '-' AS SESSIONCOUNT
+                     , '' AS CNT
+                FROM   RSVEXPSESSIONINFO
+                WHERE  EXPSEQ = #{expseq}
+                AND    SETTYPECODE = 'S02'
+                AND    WORKTYPECODE = 'S02'
+                AND    VISIBILITY IS NULL
+                UNION ALL
+                SELECT AI.EXPSEQ
+                     , AI.WORKTYPECODE
+                     , AI.SETDATE
+                     , (SELECT TOP 1 CONCAT('[',SESSIONNAME,'] ',SUBSTRING(STARTDATETIME,1,2),'시 ',SUBSTRING(STARTDATETIME,3,2),'분~'
+                              ,SUBSTRING(ENDDATETIME,1,2),'시 ',SUBSTRING(ENDDATETIME,3,2),'분 ') AS SESSIONCOUNT
+                        FROM   RSVEXPSESSIONINFO
+                        WHERE  EXPSEQ = #{expseq}
+                        AND    SETTYPECODE = 'S02'
+                        AND    WORKTYPECODE = 'S01'
+                        AND    VISIBILITY IS NULL
+                        AND    SETDATE = AI.SETDATE) AS SESSIONCOUNT
+                    , COUNT(EXPSESSIONSEQ) AS CNT
+                FROM   RSVEXPSESSIONINFO AI
+                WHERE  AI.EXPSEQ = #{expseq}
+                AND    AI.SETTYPECODE = 'S02'
+                AND    AI.WORKTYPECODE = 'S01'
+                AND    AI.VISIBILITY IS NULL
+                GROUP BY EXPSEQ, WORKTYPECODE, SETDATE
+                ) AAI
+    </select>
+
+    <select id="programInfoDetailPinInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETCODESEQ AS CODE
+			 , TARGETCODENAME + '(이상)' AS NAME
+		FROM   V_TARGETCODE_NONMEM
+		WHERE  TARGETMASTERSEQ = 'PINCODE'
+		  AND  USEYN = 'Y'
+		  ORDER BY TARGETCODEORDER
+    </select>
+
+    <select id="programInfoDetailAgeInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETCODESEQ AS SEQ
+              ,TARGETCODENAME AS NAME
+         FROM  TARGETCODE
+        WHERE TARGETMASTERSEQ = 'AGECODE'
+    </select>
+
+    <select id="programInfoDetailSpecialInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT GROUPSEQ AS SEQ
+              ,TARGETGROUPNAME AS NAME
+        FROM   RSVROLEGROUP
+        WHERE COOKMASTERCODE = 'C02'
+    </select>
+
+    <select id="programInfoDetailAreaInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT CITYGROUPCODE AS CODE
+              ,CITYGROUPNAME AS NAME
+        FROM   RSVCITYGROUPMASTER
+    </select>
+
+    <select id="codeCombo" parameterType="reqBox" resultType="dataBox">
+        SELECT COMMONCODESEQ
+             , CODENAME
+        FROM   COMMONCODE
+        WHERE 1 = 1
+        <if test="codemasterseq != null and !codemasterseq.equals('')">
+            AND CODEMASTERSEQ = #{codemasterseq}
+        </if>
+    </select>
+
+    <select id="programInfoDetailSession" parameterType="reqBox" resultType="dataBox">
+        SELECT EXPSESSIONSEQ
+             , SESSIONNAME
+        FROM   RSVEXPSESSIONINFO
+        WHERE  EXPSEQ = #{expseq}
+        AND    SETWEEK = #{setweek}
+    </select>
+
+    <insert id="programInfoDetailTermInsert" parameterType="reqBox">
+        SET IDENTITY_INSERT RSVEXPROLE ON
+        <selectKey resultType="integer" keyProperty="exproleseq" order="BEFORE">
+            SELECT ISNULL(MAX(exproleseq),0)+1 FROM RSVEXPROLE
+        </selectKey>
+       INSERT INTO RSVEXPROLE (
+              EXPROLESEQ
+            , GROUPSEQ
+            , TARGETTYPECODE
+            , PINTREATRANGE
+            , CITYTREATCODE
+            , PERIODTYPECODE
+            , AGETREATCODE
+            , STARTDAY
+            , STARTMONTH
+            , ENDDAY
+            , ENDMONTH
+            , EXPSESSIONSEQ
+            , STATUSCODE
+            , APPLYSESSIONTYPECODE
+            , INSERTUSER
+            , INSERTDATE
+            , UPDATEUSER
+            , UPDATEDATE
+           )  VALUES (
+              #{exproleseq}
+            , #{groupseq}
+            , #{targettypecode}
+            , #{pintreatrange}
+            , #{citytreatcode}
+            , #{periodtypecode}
+            , #{agetreatcode}
+            , #{startday}
+            , #{startmonth}
+            , #{endday}
+            , #{endmonth}
+            , #{expsessionseq}
+            , 'B01'
+            , #{applysessiontypecode}
+            , #{sysId}
+            , Getdate()
+            , #{sysId}
+            , Getdate()
+        )
+        SET IDENTITY_INSERT RSVEXPROLE OFF
+    </insert>
+
+    <insert id="programInfoAllSessionInsert" parameterType="reqBox">
+        SET IDENTITY_INSERT RSVEXPROLE ON
+        <selectKey resultType="integer" keyProperty="exproleseq" order="BEFORE">
+            SELECT ISNULL(MAX(exproleseq),0)+1 FROM RSVEXPROLE
+        </selectKey>
+       INSERT INTO RSVEXPROLE (
+              EXPROLESEQ
+            , GROUPSEQ
+            , TARGETTYPECODE
+            , PINTREATRANGE
+            , CITYTREATCODE
+            , PERIODTYPECODE
+            , AGETREATCODE
+            , STARTDAY
+            , STARTMONTH
+            , ENDDAY
+            , ENDMONTH
+            , EXPSESSIONSEQ
+            , STATUSCODE
+            , APPLYSESSIONTYPECODE
+            , INSERTUSER
+            , INSERTDATE
+            , UPDATEUSER
+            , UPDATEDATE
+            )
+            SELECT  (SELECT ISNULL(MAX(EXPROLESEQ),0)+1 FROM RSVEXPROLE) +
+            ROW_NUMBER() OVER (ORDER BY EXPSESSIONSEQ)
+            , #{groupseq}
+            , #{targettypecode}
+            , #{pintreatrange}
+            , #{citytreatcode}
+            , #{periodtypecode}
+            , #{agetreatcode}
+            , #{startday}
+            , #{startmonth}
+            , #{endday}
+            , #{endmonth}
+            , EXPSESSIONSEQ
+            , 'B01'
+            , #{applysessiontypecode}
+            , #{sysId}
+            , Getdate()
+            , #{sysId}
+            , Getdate()
+        FROM  DBO.RSVEXPSESSIONINFO
+        WHERE  EXPSEQ = #{expseq}
+        SET IDENTITY_INSERT RSVEXPROLE OFF
+    </insert>
+
+    <select id="programInfoDetailTermList" parameterType="reqBox" resultType="dataBox">
+            SELECT ROW_NUMBER() OVER( ORDER BY AAI.EXPROLESEQ DESC  ) AS ROW_NUM
+             ,CONCAT(AAI.PINTREATRANGENAME
+                     ,','
+				     ,(SELECT CITYGROUPNAME
+					   FROM RSVCITYGROUPMASTER
+					   WHERE CITYGROUPCODE = AAI.CITYTREATCODE)
+					 ,','
+					 ,(SELECT TARGETCODENAME
+					   FROM TARGETCODE
+					   WHERE TARGETCODESEQ = AAI.AGETREATCODE)
+					 ,' '
+					 ,AAI.TARGETGROUPNAME) AS EXPROLE
+             , AAI.PINTREATRANGE
+             , AAI.CITYTREATCODE
+             , AAI.AGETREATCODE
+             , CASE WHEN AAI.PERIODTYPECODE ='P01' THEN CONCAT('당일부터 ',AAI.STARTDAY,' 일 후')
+                    WHEN AAI.PERIODTYPECODE ='P03' THEN CONCAT('매월 ',AAI.STARTDAY,' 일')
+               END AS STARTDATE
+             , CASE WHEN AAI.PERIODTYPECODE ='P01' THEN CONCAT('당일부터 ',AAI.ENDDAY,' 일 후')
+                    WHEN AAI.PERIODTYPECODE ='P03' THEN CONCAT(AAI.ENDMONTH,' 개월 후 해당월 ',AAI.ENDDAY,' 일')
+               END AS ENDDATE
+             , CASE WHEN AAI.APPLYSESSIONTYPECODE = 'P01' THEN '모든세션'
+        			ELSE CONCAT(DBO.F_CMM_CODENAME('WK1', AAI.SETWEEK),'(',AAI.SESSIONNAME,') '
+                        ,SUBSTRING(AAI.STARTDATETIME,1,2),':',SUBSTRING(AAI.STARTDATETIME,3,3),'~',SUBSTRING(AAI.ENDDATETIME,1,2),':',SUBSTRING(AAI.ENDDATETIME,3,3))
+					END AS SETWEEK
+             , AAI.EXPSEQ
+             , AAI.APPLYSESSIONTYPECODE
+             , AAI.EXPROLESEQ
+             , AAI.TARGETGROUPNAME
+             , AAI.GROUPSEQ
+        FROM (
+             SELECT AI.EXPROLESEQ
+		          ,( SELECT TARGETCODENAME
+          	        FROM dbo.V_TARGETCODE_NONMEM
+				    WHERE TARGETMASTERSEQ = 'PINCODE'
+			          AND TARGETCODESEQ = PINTREATRANGE
+				      AND USEYN = 'Y') AS PINTREATRANGENAME
+		          , AI.PINTREATRANGE
+		          , AI.CITYTREATCODE
+		          , AI.AGETREATCODE
+                  , AI.PERIODTYPECODE
+                  , AI.STARTDAY
+                  , AI.STARTMONTH
+                  , AI.ENDDAY
+                  , AI.ENDMONTH
+                  , BI.SETWEEK
+                  , BI.SESSIONNAME
+                  , BI.STARTDATETIME
+                  , BI.ENDDATETIME
+                  , CI.EXPSEQ
+                  , AI.APPLYSESSIONTYPECODE
+                  , AD.TARGETGROUPNAME
+                  , AI.GROUPSEQ
+             FROM   RSVEXPROLE AI
+                    INNER JOIN RSVEXPSESSIONINFO BI
+                    ON AI.EXPSESSIONSEQ = BI.EXPSESSIONSEQ
+                    INNER JOIN RSVEXPINFO CI
+                    ON BI.EXPSEQ = CI.EXPSEQ
+                    LEFT OUTER JOIN RSVROLEGROUP AD
+                    ON AI.GROUPSEQ = AD.GROUPSEQ
+                    AND AD.COOKMASTERCODE = 'C02'
+             WHERE  CI.EXPSEQ = #{expseq}
+             AND    AI.APPLYSESSIONTYPECODE = 'P02'
+             UNION ALL
+             SELECT  max(AI.EXPROLESEQ) as rsvroleseq
+		          , ( SELECT TARGETCODENAME
+          	        FROM dbo.V_TARGETCODE_NONMEM
+				    WHERE TARGETMASTERSEQ = 'PINCODE'
+			          AND TARGETCODESEQ = PINTREATRANGE
+				      AND USEYN = 'Y') AS PINTREATRANGENAME
+		          , AI.PINTREATRANGE
+		          , AI.CITYTREATCODE
+		          , AI.AGETREATCODE
+                  , AI.PERIODTYPECODE
+                  , AI.STARTDAY
+                  , AI.STARTMONTH
+                  , AI.ENDDAY
+                  , AI.ENDMONTH
+                  , '' as SETWEEK
+                  , '' as SESSIONNAME
+                  , '' as STARTDATETIME
+                  , '' as ENDDATETIME
+                  , '' as EXPSEQ
+                  , AI.APPLYSESSIONTYPECODE
+                  , AD.TARGETGROUPNAME
+                  , AI.GROUPSEQ
+             FROM   RSVEXPROLE AI
+                    INNER JOIN RSVEXPSESSIONINFO BI
+                    ON AI.EXPSESSIONSEQ = BI.EXPSESSIONSEQ
+                    INNER JOIN RSVEXPINFO CI
+                    ON BI.EXPSEQ = CI.EXPSEQ
+                    LEFT OUTER JOIN RSVROLEGROUP AD
+                    ON AI.GROUPSEQ = AD.GROUPSEQ
+                    AND AD.COOKMASTERCODE = 'C02'
+             WHERE  CI.EXPSEQ = #{expseq}
+             AND    AI.APPLYSESSIONTYPECODE = 'P01'
+           GROUP BY AI.PINTREATRANGE, AI.CITYTREATCODE, AI.AGETREATCODE
+                      , AI.PERIODTYPECODE, AI.STARTDAY, AI.STARTMONTH, AI.ENDDAY, AI.ENDMONTH
+                      , AI.APPLYSESSIONTYPECODE, AD.TARGETGROUPNAME,AI.GROUPSEQ
+             ) AS AAI
+    </select>
+
+    <delete id="termListDelete" parameterType="reqBox">
+        WITH ROLECHECK AS
+            (
+            SELECT AI.EXPROLESEQ
+            FROM RSVEXPROLE AI
+            INNER JOIN (SELECT PINTREATRANGE, CITYTREATCODE, AGETREATCODE
+                             , PERIODTYPECODE, STARTDAY, STARTMONTH, ENDDAY, ENDMONTH
+                             , APPLYSESSIONTYPECODE, GROUPSEQ
+                        FROM RSVEXPROLE
+                          WHERE EXPROLESEQ = #{exproleseq}) BI
+               ON (AI.PINTREATRANGE = BI.PINTREATRANGE
+               AND AI.CITYTREATCODE = BI.CITYTREATCODE
+               AND AI.AGETREATCODE = BI.AGETREATCODE
+               AND AI.PERIODTYPECODE = BI.PERIODTYPECODE
+               AND AI.STARTDAY = BI.STARTDAY
+               AND AI.STARTMONTH = BI.STARTMONTH
+               AND AI.ENDDAY = BI.ENDDAY
+               AND AI.ENDMONTH = BI.ENDMONTH
+               AND AI.APPLYSESSIONTYPECODE = BI.APPLYSESSIONTYPECODE
+               AND AI.GROUPSEQ = BI.GROUPSEQ
+               <if test="applysessiontypecode.equals('P02')">
+                   AND AI.EXPROLESEQ = #{exproleseq}
+               </if>)
+            )
+
+        DELETE FROM RSVEXPROLE
+        WHERE EXPROLESEQ IN (SELECT EXPROLESEQ FROM ROLECHECK)
+    </delete>
+
+    <select id="programInfoDetailDisPopList" parameterType="reqBox" resultType="dataBox">
+           SELECT ROW_NUMBER() OVER (ORDER BY AA.SETTINGSEQ  desc) AS ROW_NUM
+                , CASE AA.CONSTRAINTTYPE WHEN 'C01' THEN CONCAT(AA.PINTREATRANGENAME,', ',AA.CITYGROUPNAME,', ',AA.AGETREATNAME)
+                WHEN 'C02' THEN AA.TARGETGROUPNAME
+                ELSE AA.PPNAME +' ['+ AA.TYPENAME + ']'
+                END AS ROLE
+                , AA.GLOBALDAILYCOUNT
+                , AA.GLOBALWEEKLYCOUNT
+                , AA.GLOBALMONTHLYCOUNT
+                , AA.PPDAILYCOUNT
+                , AA.PPWEEKLYCOUNT
+                , AA.PPMONTHLYCOUNT
+                , AA.SETTINGSEQ
+           FROM (
+           SELECT A.SETTINGSEQ
+                , B.PPNAME
+                , C.TARGETGROUPNAME
+                , D.TARGETCODENAME AS AGETREATNAME
+                , E.TARGETCODENAME + ' (이상)'AS PINTREATRANGENAME
+                , F.CITYGROUPNAME
+                , A.GLOBALDAILYCOUNT
+                , A.GLOBALWEEKLYCOUNT
+                , A.GLOBALMONTHLYCOUNT
+                , A.PPDAILYCOUNT
+                , A.PPWEEKLYCOUNT
+                , A.PPMONTHLYCOUNT
+                , A.CONSTRAINTTYPE
+                , STUFF(( SELECT '/' + C.TYPENAME
+           FROM RSVSPECIALPPMAP B
+           LEFT OUTER JOIN RSVTYPEINFO C
+           ON(B.TYPESEQ = C.TYPESEQ)
+           WHERE (A.SETTINGSEQ = B.SETTINGSEQ)
+           GROUP BY B.SETTINGSEQ, C.TYPENAME
+           FOR XML PATH ('')),1,1,''
+           ) AS TYPENAME
+           FROM   RSVCONSTRAINT A
+           LEFT OUTER JOIN RSVPPINFO B
+           ON(A.PPSEQ = B.PPSEQ)
+           LEFT OUTER JOIN RSVROLEGROUP C
+           ON(A.GROUPSEQ = C.GROUPSEQ)
+           LEFT OUTER JOIN TARGETCODE D
+           ON(A.AGETREATCODE = D.TARGETCODESEQ AND D.TARGETMASTERSEQ= 'AGECODE')
+           LEFT OUTER JOIN V_TARGETCODE_NONMEM E
+           ON(A.PINTREATRANGE = E.TARGETCODESEQ AND E.TARGETMASTERSEQ = 'PINCODE')
+           LEFT OUTER JOIN RSVCITYGROUPMASTER F
+           ON(A.CITYTREATCODE = F.CITYGROUPCODE)
+           INNER JOIN COMMONCODE G
+           ON(A.STATUSCODE = G.COMMONCODESEQ AND G.CODEMASTERSEQ = 'YN3')
+           <if test="type != null and ! type.equals('')">
+               INNER JOIN EXPROLEGROUP DI
+               ON(A.GROUPSEQ = DI.GROUPSEQ AND DI.COOKMASTERCODE = 'C01')
+           </if>
+           WHERE A.STATUSCODE = 'B01'
+        ) AS AA
+    </select>
+
+    <insert id="programInfoDetailDisInsert" parameterType="reqBox">
+        <selectKey resultType="integer" keyProperty="typeseq" order="BEFORE">
+            SELECT DISTINCT A.TYPESEQ
+                  ,A.CATEGORYTYPE1
+            FROM RSVBRANDCATEGORY A
+            INNER JOIN RSVTYPEINFO B
+            ON A.TYPESEQ = B.TYPESEQ
+            WHERE CATEGORYTYPE1 = #{type}
+        </selectKey>
+        INSERT INTO RSVEXPTYPEMAP (
+               SETTINGSEQ
+             , EXPSEQ
+             , TYPESEQ
+            ) VALUES (
+              #{settingseq}
+            , #{expseq}
+            , #{typeseq}
+            )
+    </insert>
+
+    <select id="programInfoDetailDisList" parameterType="reqBox" resultType="dataBox">
+        SELECT ROW_NUMBER() OVER (ORDER BY AA.SETTINGSEQ  desc) AS ROW_NUM
+             , CASE AA.CONSTRAINTTYPE WHEN 'C01' THEN CONCAT(AA.PINTREATRANGENAME,', ',AA.CITYGROUPNAME,', ',AA.AGETREATNAME)
+                                      WHEN 'C02' THEN AA.TARGETGROUPNAME
+                                      ELSE AA.PPNAME +' ['+ AA.TYPENAME + ']'
+               END AS ROLE
+            , AA.GLOBALDAILYCOUNT
+            , AA.GLOBALWEEKLYCOUNT
+            , AA.GLOBALMONTHLYCOUNT
+            , AA.PPDAILYCOUNT
+            , AA.PPWEEKLYCOUNT
+            , AA.PPMONTHLYCOUNT
+            , AA.SETTINGSEQ
+        FROM (
+               SELECT A.SETTINGSEQ
+                    , B.PPNAME
+                    , C.TARGETGROUPNAME
+                    , D.TARGETCODENAME AS AGETREATNAME
+                    , E.TARGETCODENAME + ' (이상)'AS PINTREATRANGENAME
+                    , F.CITYGROUPNAME
+                    , A.GLOBALDAILYCOUNT
+                    , A.GLOBALWEEKLYCOUNT
+                    , A.GLOBALMONTHLYCOUNT
+                    , A.PPDAILYCOUNT
+                    , A.PPWEEKLYCOUNT
+                    , A.PPMONTHLYCOUNT
+                    , A.CONSTRAINTTYPE
+                    , STUFF(( SELECT '/' + C.TYPENAME
+        FROM RSVSPECIALPPMAP B
+             LEFT OUTER JOIN RSVTYPEINFO C
+                ON(B.TYPESEQ = C.TYPESEQ)
+        WHERE (A.SETTINGSEQ = B.SETTINGSEQ)
+                 GROUP BY B.SETTINGSEQ, C.TYPENAME
+                 FOR XML PATH ('')),1,1,''
+             ) AS TYPENAME
+        FROM   RSVCONSTRAINT A
+             LEFT OUTER JOIN RSVPPINFO B
+                ON(A.PPSEQ = B.PPSEQ)
+             LEFT OUTER JOIN RSVROLEGROUP C
+                ON(A.GROUPSEQ = C.GROUPSEQ)
+             LEFT OUTER JOIN TARGETCODE D
+                ON(A.AGETREATCODE = D.TARGETCODESEQ AND D.TARGETMASTERSEQ= 'AGECODE')
+             LEFT OUTER JOIN V_TARGETCODE_NONMEM E
+                ON(A.PINTREATRANGE = E.TARGETCODESEQ AND E.TARGETMASTERSEQ = 'PINCODE')
+             LEFT OUTER JOIN RSVCITYGROUPMASTER F
+                ON(A.CITYTREATCODE = F.CITYGROUPCODE)
+             INNER JOIN COMMONCODE G
+                ON(A.STATUSCODE = G.COMMONCODESEQ AND G.CODEMASTERSEQ = 'YN3')
+             INNER JOIN RSVEXPTYPEMAP BI
+                ON (A.SETTINGSEQ = BI.SETTINGSEQ)
+             INNER JOIN RSVEXPINFO CI
+                ON (BI.EXPSEQ = CI.EXPSEQ)
+        AND CI.EXPSEQ = #{expseq}
+        ) AS AA
+    </select>
+
+    <delete id="disListDelete" parameterType="reqBox">
+        DELETE FROM RSVEXPTYPEMAP
+        WHERE EXPSEQ = #{expseq}
+          AND SETTINGSEQ = #{settingseq}
+    </delete>
+
+    <select id="programInfoDetailThreeCancelPopList" parameterType="reqBox" resultType="dataBox">
+            SELECT ROW_NUMBER() OVER (ORDER BY A.PENALTYSEQ ASC) AS ROW_NUM
+                 , A.PENALTYSEQ
+                 , B.CODENAME AS TYPECODE
+                 , REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+                 , CONCAT(
+                 CASE
+                 WHEN A.PERIODVALUE = 0 THEN '당월 '
+                 WHEN A.PERIODVALUE = 1 THEN '명월 '
+                 ELSE ''
+                 END
+                 , E.CODENAME, ' '
+                 , A.APPLYTYPEVALUE
+                 , CASE
+                 WHEN A.APPLYTYPECODE = 'P01' THEN '%'
+                 WHEN A.APPLYTYPECODE = 'P02' THEN '일'
+                 ELSE '회'
+                 END
+                 ) AS APPLYTYPECODE
+            FROM RSVPENALTYSETTING A
+                LEFT OUTER JOIN COMMONCODE B
+                    ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+                LEFT OUTER JOIN COMMONCODE C
+                    ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+                LEFT OUTER JOIN COMMONCODE D
+                    ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+                LEFT OUTER JOIN COMMONCODE E
+                    ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+            WHERE 1=1
+                AND A.TYPECODE != 'P05'
+                AND A.STATUSCODE = 'B01'
+                AND A.TYPECODE NOT IN ('P03','P04')
+    </select>
+
+    <insert id="programInfoDetailCancelInsert" parameterType="reqBox">
+        INSERT INTO RSVEXPPENALTYMAP (
+               PENALTYSEQ
+             , EXPSEQ
+        ) VALUES (
+             #{penaltyseq}
+           , #{expseq}
+        )
+    </insert>
+
+    <select id="programInfoDetailCancelList" parameterType="reqBox" resultType="dataBox">
+        SELECT ROW_NUMBER() OVER (ORDER BY A.PENALTYSEQ ASC) AS ROW_NUM
+             , A.PENALTYSEQ
+             , B.CODENAME AS TYPECODE
+             , REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+             , CONCAT(
+                    CASE
+                    WHEN A.PERIODVALUE = 0 THEN '당월 '
+                    WHEN A.PERIODVALUE = 1 THEN '명월 '
+                    ELSE ''
+                    END
+                  , E.CODENAME, ' '
+                  , A.APPLYTYPEVALUE
+                  , CASE
+                      WHEN A.APPLYTYPECODE = 'P01' THEN '%'
+                      WHEN A.APPLYTYPECODE = 'P02' THEN '일'
+                      ELSE '회'
+                    END
+                    ) AS APPLYTYPECODE
+        FROM RSVPENALTYSETTING A
+            LEFT OUTER JOIN COMMONCODE B
+              ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+            LEFT OUTER JOIN COMMONCODE C
+              ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+            LEFT OUTER JOIN COMMONCODE D
+              ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+            LEFT OUTER JOIN COMMONCODE E
+              ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+            INNER JOIN RSVEXPPENALTYMAP BI
+              ON (A.PENALTYSEQ = BI.PENALTYSEQ)
+            INNER JOIN RSVEXPINFO CI
+              ON (BI.EXPSEQ = CI.EXPSEQ)
+        WHERE 1=1
+            AND A.TYPECODE != 'P05'
+            AND A.STATUSCODE = 'B01'
+            AND CI.EXPSEQ = #{expseq}
+            AND A.TYPECODE NOT IN ('P03','P04')
+    </select>
+
+    <delete id="cancelListDelete" parameterType="reqBox">
+        DELETE FROM RSVEXPPENALTYMAP
+        WHERE EXPSEQ = #{expseq}
+          AND PENALTYSEQ = #{penaltyseq}
+    </delete>
+
+    <select id="programInfoDetailDate" parameterType="reqBox" resultType="dataBox">
+       SELECT ROW_NUMBER() OVER (ORDER BY AI.SETWEEK ASC) AS ROW_NUM
+            , CASE
+                WHEN  AI.SETWEEK = 'W01' THEN '일요일'
+                WHEN  AI.SETWEEK = 'W02' THEN '월요일'
+                WHEN  AI.SETWEEK = 'W03' THEN '화요일'
+                WHEN  AI.SETWEEK = 'W04' THEN '수요일'
+                WHEN  AI.SETWEEK = 'W05' THEN '목요일'
+                WHEN  AI.SETWEEK = 'W06' THEN '금요일'
+                WHEN  AI.SETWEEK = 'W07' THEN '토요일'
+                WHEN  AI.SETWEEK = 'W08' THEN '마지막일요일'
+              END AS WEEKDATE
+            , SESSIONNAME
+            , CONCAT(SUBSTRING(STARTDATETIME,1,2),':',SUBSTRING(STARTDATETIME,3,2),'~',SUBSTRING(ENDDATETIME,1,2),':',SUBSTRING(ENDDATETIME,3,2)) AS WEEKTIME
+       FROM   RSVEXPSESSIONINFO AI
+       WHERE  AI.EXPSEQ = #{expseq}
+         AND  AI.SETTYPECODE = 'S01'
+    </select>
+
+    <select id="exptypecheck" parameterType="reqBox" resultType="dataBox">
+          SELECT DISTINCT CATEGORYTYPE1
+				         ,CATEGORYTYPE2
+				         ,CATEGORYTYPE3
+		  FROM RSVEXPINFO
+		  WHERE EXPSEQ = #{expseq}
+    </select>
+
+    <select id="programInfoDetailOne" parameterType="reqBox" resultType="dataBox">
+            SELECT AA.EXPSEQ
+                 ,CASE
+                   WHEN AA.CATEGORYTYPE1 = 'E01' THEN '체성분측정'
+                   WHEN AA.CATEGORYTYPE1 = 'E02' THEN '피부측정'
+                   WHEN AA.CATEGORYTYPE1 = 'E03' THEN '브랜드체험'
+                   WHEN AA.CATEGORYTYPE1 = 'E04' THEN '문화체험'
+                  END  AS CATEGORYTYPE1NAME
+                 ,CASE
+                   WHEN AA.CATEGORYTYPE2 = 'E0301' THEN '브랜드셀렉트'
+                   WHEN AA.CATEGORYTYPE2 = 'E0302' THEN '브랜드믹스'
+                   WHEN AA.CATEGORYTYPE2 = 'E0303' THEN '브랜드투어'
+                   WHEN AA.CATEGORYTYPE2 = 'E0304' THEN '맞춤식체험'
+                  END  AS CATEGORYTYPE2NAME
+                ,CASE
+                   WHEN AA.CATEGORYTYPE3 = 'E030101' THEN '뉴트리라이트(영양편)'
+                   WHEN AA.CATEGORYTYPE3 = 'E030102' THEN '뉴트리라이트(운동편)'
+                   WHEN AA.CATEGORYTYPE3 = 'E030103' THEN '아티스트리(스킨케어)'
+                   WHEN AA.CATEGORYTYPE3 = 'E030104' THEN '아티스트리(메이크업)'
+                   WHEN AA.CATEGORYTYPE3 = 'E030105' THEN '홈리빙'
+                   WHEN AA.CATEGORYTYPE3 = 'E030106' THEN '퀸쿡'
+                  END  AS CATEGORYTYPE3NAME
+                 ,AA.CATEGORYTYPE1 AS TYPE1
+                 ,AA.CATEGORYTYPE2 AS TYPE2
+                 ,AA.CATEGORYTYPE3 AS TYPE3
+                 ,AA.TIME1
+                 ,AA.NOTE1
+                 ,AA.TIME2
+                 ,AA.NOTE2
+                 ,AA.TIME3
+                 ,AA.NOTE3
+                 ,AA.PRODUCTNAME
+                 ,BB.PPNAME
+                 , CONVERT(VARCHAR, CONVERT(DATETIME,AA.STARTDATE),23) AS STARTDATE
+                 , CONVERT(VARCHAR, CONVERT(DATETIME,AA.ENDDATE),23) AS ENDDATE
+                 ,CASE
+                    WHEN AA.STATUSCODE = 'B01' THEN '사용'
+                    WHEN AA.STATUSCODE = 'B02' THEN '사용안함'
+                  END AS STATUSCODENM
+                 ,AA.STATUSCODE
+                 ,AA.CONTENT
+                 ,AA.INTRO
+                 ,AA.SEATCOUNT1
+                 ,AA.SEATCOUNT2
+                 ,AA.SEATCOUNT
+                 ,AA.USETIME
+                 ,AA.USETIMENOTE
+                 ,AA.ROLE
+                 ,AA.ROLENOTE
+                 ,AA.PREPARATION
+                 ,AA.KEYWORD
+                 ,AA.PPSEQ
+                 ,AA.THEMENAME
+         FROM RSVEXPINFO AA
+          INNER JOIN RSVPPINFO BB
+            ON AA.PPSEQ = BB.PPSEQ
+         WHERE EXPSEQ = #{expseq}
+    </select>
+
+    <select id="programInfoDetailOneFile" parameterType="reqBox" resultType="dataBox">
+         SELECT AI.FILEKEY
+  			  , AI.REALFILENAME
+              , AI.STOREFILENAME
+              , AI.FILEFULLURL
+              , AI.ALTDESC
+              , AI.UPLOADSEQ
+              , AI.WORK
+              , BI.FILEKEY1
+              , BI.FILEKEY2
+              , BI.FILEKEY3
+              , BI.FILEKEY4
+              , BI.FILEKEY5
+              , BI.FILEKEY6
+              , BI.FILEKEY7
+              , BI.FILEKEY8
+              , BI.FILEKEY9
+              , BI.FILEKEY10
+		 FROM FILEMANAGEMENT AI
+               INNER JOIN RSVEXPINFO BI
+                ON (AI.FILEKEY = BI.FILEKEY1
+                   OR AI.FILEKEY = BI.FILEKEY2
+                   OR AI.FILEKEY = BI.FILEKEY3
+                   OR AI.FILEKEY = BI.FILEKEY4
+                   OR AI.FILEKEY = BI.FILEKEY5
+                   OR AI.FILEKEY = BI.FILEKEY6
+                   OR AI.FILEKEY = BI.FILEKEY7
+                   OR AI.FILEKEY = BI.FILEKEY8
+                   OR AI.FILEKEY = BI.FILEKEY9
+                   OR AI.FILEKEY = BI.FILEKEY10
+                   )
+                AND AI.WORK = 'RESERVATION'
+  		 WHERE BI.EXPSEQ = #{expseq}
+    </select>
+
+    <select id="programInfoDetailOtherFile" parameterType="reqBox" resultType="dataBox">
+        SELECT  AI.FILEKEY
+  			  , AI.REALFILENAME
+              , AI.STOREFILENAME
+              , AI.FILEFULLURL
+              , AI.ALTDESC
+              , AI.UPLOADSEQ
+              , AI.WORK
+              , BI.FILEKEY6
+              , BI.FILEKEY7
+              , BI.FILEKEY8
+		 FROM FILEMANAGEMENT AI
+               INNER JOIN RSVEXPINFO BI
+                ON (AI.FILEKEY = BI.FILEKEY6
+                   OR AI.FILEKEY = BI.FILEKEY7
+                   OR AI.FILEKEY = BI.FILEKEY8
+                   )
+                AND AI.WORK = 'RESERVATION'
+  		 WHERE BI.EXPSEQ = #{expseq}
+    </select>
+
+    <update id="programInfoUpdate"  parameterType="reqBox">
+    	/* ProgramInfoSQL.xml programInfoUpdate */
+        UPDATE RSVEXPINFO SET
+                  PRODUCTNAME = #{productname}
+                , PPSEQ = #{ppseq}
+                , STARTDATE = replace(#{startdate},'-','')
+                , ENDDATE = replace(#{enddate},'-','')
+                , STATUSCODE = #{statuscode}
+                , INTRO = #{intro}
+                , CONTENT = #{content}
+                , THEMENAME = #{themename}
+        <if test="seatcount1 != null and !seatcount1.equals('')">
+                , SEATCOUNT1 = #{seatcount1}
+        </if>
+        <if test="seatcount2 != null and !seatcount2.equals('')">
+                , SEATCOUNT2 = #{seatcount2}
+        </if>
+        <if test="seatcount != null and !seatcount.equals('')">
+                , SEATCOUNT = #{seatcount}
+        </if>
+                , USETIME = #{usetime}
+                , USETIMENOTE = #{usetimenote}
+                , ROLE = #{role}
+                , ROLENOTE = #{rolenote}
+                , PREPARATION = #{preparation}
+                , KEYWORD = #{keyword}
+                , UPDATEUSER = #{sysId}
+                , UPDATEDATE = Getdate()
+                , FILEKEY1 = ISNULL(#{filekey1},0)
+                , FILEKEY2 = ISNULL(#{filekey2},0)
+                , FILEKEY3 = ISNULL(#{filekey3},0)
+                , FILEKEY4 = ISNULL(#{filekey4},0)
+                , FILEKEY5 = ISNULL(#{filekey5},0)
+                , FILEKEY6 = ISNULL(#{filekey6},0)
+                , FILEKEY7 = ISNULL(#{filekey7},0)
+                , FILEKEY8 = ISNULL(#{filekey8},0)
+                , FILEKEY9 = ISNULL(#{filekey9},0)
+                , FILEKEY10 = ISNULL(#{filekey10},0)
+        WHERE  EXPSEQ = #{expseq}
+    </update>
+
+
+</mapper>

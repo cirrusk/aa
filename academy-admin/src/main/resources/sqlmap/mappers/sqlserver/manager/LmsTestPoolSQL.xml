@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.lms.test.service.impl.LmsTestPoolMapper">
+	
+	<sql id="lmsSelectCategoryTestWhere">
+		AND USEFLAG = 'Y'
+		<if test='searchtext != null and !searchtext.equals("")'>
+			AND CATEGORYNAME LIKE '%'+#{searchtext }+'%'
+		</if>
+	</sql>
+	
+	<sql id="lmsSelectTestWhere">
+		WHERE CATEGORYID = #{categoryid}
+		AND USEFLAG IN ('Y','S')
+		<if test='searchanswertype != null and !searchanswertype.equals("")'>
+			AND ANSWERTYPE = #{searchanswertype}
+		</if>
+		<if test='searchuseflagtype != null and !searchuseflagtype.equals("")'>
+			AND USEFLAG = #{searchuseflagtype}
+		</if>
+		<if test='searchuseflagtype != null and !searchuseflagtype.equals("")'>
+			AND USEFLAG = #{searchuseflagtype}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test="searchtype.equals('')">
+				AND ( TESTPOOLNAME LIKE '%'+#{searchtext }+'%' OR TESTPOOLNOTE LIKE '%'+#{searchtext }+'%' )  
+			</if>
+		 	<if test='searchtype.equals("1")'>
+		 		AND TESTPOOLNAME LIKE '%'+#{searchtext }+'%'  
+		 	</if>
+		 	<if test='searchtype.equals("2")'>
+		 		AND TESTPOOLNOTE LIKE '%'+#{searchtext }+'%'  
+		 	</if>
+		</if>
+	</sql>
+	
+	<select id="lmsSelectCategoryTestCount" resultType="int">
+		SELECT COUNT(*) AS CNT
+		FROM LMSCATEGORY
+		WHERE CATEGORYTYPE = 'T'
+		<include refid="lmsSelectCategoryTestWhere" />
+	</select>
+	
+	<select id="lmsSelectMaxCategoryTestId" resultType="int">
+		SELECT ISNULL(MAX(CATEGORYID),0)+1 AS MAXID
+		FROM LMSCATEGORY
+	</select>
+	
+	
+	<select id="lmsSelectCategoryTestList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			#{totalCount} - ROW_NUM + 1 AS NO 
+			, AA.*
+			, (SELECT COUNT(*) FROM LMSTESTPOOL WHERE CATEGORYID = AA.CATEGORYID AND USEFLAG IN('Y','S') ) TESTPOOLCOUNT
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY CATEGORYID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				CATEGORYID ,
+				CATEGORYNAME
+			FROM LMSCATEGORY
+			WHERE CATEGORYTYPE = 'T'
+			<include refid="lmsSelectCategoryTestWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="lmsSelectCategoryTestExcelList" parameterType="reqBox" resultType="hashmap">
+		SELECT 
+			ROW_NUM AS NO 
+			, AA.*
+			, (SELECT COUNT(*) FROM LMSTESTPOOL WHERE CATEGORYID = AA.CATEGORYID AND USEFLAG IN ('Y','S') ) TESTPOOLCOUNT
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY CATEGORYID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				CATEGORYID ,
+				CATEGORYNAME
+			FROM LMSCATEGORY
+			WHERE CATEGORYTYPE = 'T'
+			<include refid="lmsSelectCategoryTestWhere" />
+		) AA
+	</select>
+	
+	<select id="lmsSelectCategoryTestDetail" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			CATEGORYID
+			, CATEGORYNAME
+		FROM LMSCATEGORY
+		WHERE CATEGORYID = #{categoryid}
+	</select>
+	
+	<update id="lmsDeleteCategoryTest" parameterType="reqBox">
+		UPDATE LMSCATEGORY
+		SET USEFLAG = 'N'
+		WHERE CATEGORYID IN
+		<foreach collection="categoryids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+	
+	<insert id="lmsInsertCategoryTestAjax" parameterType="reqBox">
+		INSERT INTO LMSCATEGORY (
+			CATEGORYID
+			, CATEGORYTYPE
+			, CATEGORYNAME
+			, CATEGORYCODE
+			, CATEGORYUPID
+			, CATEGORYLEVEL
+			, OPENFLAG
+			, COMPLIANCEFLAG
+			, COPYRIGHTFLAG
+			, REGISTRANTDATE
+			, MODIFYDATE
+			, HYBRISMENU
+			, REGISTRANT
+			, MODIFIER
+			, CATEGORYORDER
+        	, USEFLAG
+		) VALUES (
+			#{categoryid}
+			, 'T'
+			, #{categoryname}
+			, 'T'
+			, '0'
+			, '1'
+			, 'N'
+			, 'N'
+			, 'N'
+			, Getdate()
+			, Getdate()
+			, ''
+			, #{adminid}
+			, #{adminid}
+			, 'A'
+        	, 'Y'
+		)
+	</insert>
+	
+	<update id="lmsUpdateCategoryTestAjax" parameterType="reqBox">
+		UPDATE LMSCATEGORY SET
+			CATEGORYNAME = #{categoryname}
+			, MODIFYDATE = Getdate()
+			, MODIFIER = #{adminid}
+		WHERE CATEGORYID = #{categoryid}
+	</update>
+	
+	
+	<select id="lmsSelectTestPoolCount" resultType="int">
+		SELECT COUNT(*) AS CNT
+		FROM LMSTESTPOOL
+		<include refid="lmsSelectTestWhere" />
+	</select>
+	
+	<select id="lmsSelectTestPoolList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			#{totalCount} - ROW_NUM + 1 AS NO 
+			, AA.*
+			, CASE WHEN AA.ANSWERTYPE='1' THEN '선일형' WHEN AA.ANSWERTYPE='2' THEN '선다형' WHEN AA.ANSWERTYPE='3' THEN '주관식' END AS ANSWERTYPENAME
+			, CASE WHEN AA.USEFLAG='Y' THEN '사용' WHEN AA.USEFLAG='S' THEN '중지' END AS USEFLAGNAME
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY TESTPOOLID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM 
+				, TESTPOOLID
+				, CATEGORYID
+				, TESTPOOLNAME
+				, ANSWERTYPE
+				, USEFLAG
+			FROM LMSTESTPOOL
+			<include refid="lmsSelectTestWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="lmsSelectTestPoolExcelList" parameterType="reqBox" resultType="hashmap">
+		SELECT 
+			ROW_NUM AS NO 
+			, AA.*
+			, CASE WHEN AA.ANSWERTYPE='1' THEN '선일형' WHEN AA.ANSWERTYPE='2' THEN '선다형' WHEN AA.ANSWERTYPE='3' THEN '주관식' END AS ANSWERTYPENAME
+			, CASE WHEN AA.USEFLAG='Y' THEN '사용' WHEN AA.USEFLAG='S' THEN '중지' END AS USEFLAGNAME
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY TESTPOOLID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM 
+				, TESTPOOLID
+				, CATEGORYID
+				, TESTPOOLNAME
+				, ANSWERTYPE
+				, USEFLAG
+			FROM LMSTESTPOOL
+			<include refid="lmsSelectTestWhere" />
+		) AA
+	</select>
+	
+	<select id="lmsSelectTestPoolDetail" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			TESTPOOLID
+			, CATEGORYID
+			, TESTPOOLNAME
+			, TESTPOOLNOTE
+			, ANSWERTYPE
+			, OBJECTANSWER
+			, SUBJECTANSWER
+			, USEFLAG
+			, TESTPOOLIMAGE
+			, TESTPOOLIMAGENOTE
+			, (SELECT COUNT(*) FROM LMSTESTPOOLANSWER WHERE TESTPOOLID = A.TESTPOOLID ) ANSWERCOUNT 
+		FROM LMSTESTPOOL A
+		WHERE TESTPOOLID = #{testpoolid}
+	</select>
+	
+	<select id="lmsSelectTestPoolAnswerList" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			TESTPOOLID
+			, TESTPOOLANSWERSEQ
+			, TESTPOOLANSWERNAME
+		FROM LMSTESTPOOLANSWER
+		WHERE TESTPOOLID = #{testpoolid}
+		ORDER BY TESTPOOLANSWERSEQ ASC
+	</select>
+
+	<insert id="lmsInsertTestPoolAjax" parameterType="reqBox">
+		<selectKey resultType="int" keyProperty="maxtestpoolid" order="BEFORE">
+	        SELECT ISNULL(MAX(TESTPOOLID),0)+1 AS MAXTESTPOOLID FROM LMSTESTPOOL        
+	    </selectKey> 
+		/* insertLmsTestPool */
+			INSERT INTO LMSTESTPOOL(
+				TESTPOOLID ,
+				CATEGORYID ,
+				TESTPOOLNAME ,
+				TESTPOOLNOTE ,
+				ANSWERTYPE ,
+				OBJECTANSWER ,
+				SUBJECTANSWER ,
+				USEFLAG ,
+				TESTPOOLIMAGE ,
+				TESTPOOLIMAGENOTE 
+			)
+			VALUES(
+				#{maxtestpoolid} ,
+				#{categoryid} ,
+				#{testpoolname} ,
+				#{testpoolnote},
+				#{answertype} ,
+				#{objectanswer} ,
+				#{subjectanswer} ,
+				#{useflag} ,
+				#{testpoolimagefile} ,
+				#{testpoolimagenote}
+			)
+	</insert>
+	
+	<update id="lmsUpdateTestPoolAjax" parameterType="reqBox">
+		/* updateLmsTestPool */
+			UPDATE LMSTESTPOOL SET
+				TESTPOOLNAME = #{testpoolname}
+				, TESTPOOLNOTE = #{testpoolnote}
+				, ANSWERTYPE = #{answertype}
+				, OBJECTANSWER = #{objectanswer}
+				, SUBJECTANSWER = #{subjectanswer}
+				, USEFLAG = #{useflag}
+				, TESTPOOLIMAGE = #{testpoolimagefile}
+				, TESTPOOLIMAGENOTE = #{testpoolimagenote}
+			WHERE TESTPOOLID = #{testpoolid}
+	</update>
+	
+	<insert id="lmsInsertTestPoolAnswerAjax" parameterType="reqBox">
+		/* insertLmsTestPoolAnswer */
+			INSERT INTO LMSTESTPOOLANSWER(
+				TESTPOOLID ,
+				TESTPOOLANSWERSEQ ,
+				TESTPOOLANSWERNAME
+				)
+			VALUES(
+				#{testpoolid} ,
+				#{testpoolanswerseq} ,
+				#{testpoolanswername}
+			)
+	</insert>
+	
+	<delete id="lmsDeleteTestPoolAnswerAjax" parameterType="reqBox">
+		/* deleteLmsTestPoolAnswer */
+			DELETE FROM LMSTESTPOOLANSWER
+			WHERE TESTPOOLID = #{testpoolid}
+	</delete>
+	
+	<update id="lmsDeleteTestPool" parameterType="reqBox">
+		/* deleteLmsTestPool */
+		UPDATE LMSTESTPOOL SET
+			USEFLAG = 'N'
+		WHERE TESTPOOLID IN
+		<foreach collection="testpoolids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+		
+</mapper>

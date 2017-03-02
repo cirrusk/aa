@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsProjectCompanyMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectCompanyVO">
+        <selectKey resultType="Long" keyProperty="projectCompanySeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsProjectCompanyMapper.insert */
+INSERT INTO cs_cdms_project_company 
+       ( 
+           cs_project_seq ,
+           cs_project_group_seq ,
+           cs_company_seq ,
+           cs_company_type_cd ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{projectSeq, jdbcType=NUMERIC} ,
+           #{projectGroupSeq, jdbcType=NUMERIC} ,
+           #{companySeq, jdbcType=NUMERIC} ,
+           #{companyTypeCd, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <insert id="insertCopyByProject" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectCompanyVO">
+        <selectKey resultType="Long" keyProperty="projectCompanySeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsProjectCompanyMapper.insertCopy */
+INSERT INTO cs_cdms_project_company 
+       ( 
+           cs_project_seq ,
+           cs_project_group_seq ,
+           cs_company_seq ,
+           cs_company_type_cd ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+SELECT
+       #{newProjectSeq, jdbcType=NUMERIC} ,
+       cs_project_group_seq ,
+       cs_company_seq ,
+       cs_company_type_cd ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR} 
+  FROM cs_cdms_project_company
+ WHERE cs_project_seq = #{projectSeq, jdbcType=NUMERIC}
+       AND cs_delete_yn = 'N'
+    </insert>
+    
+    <update id="deleteByProject" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectCompanyVO">
+/* UICdmsProjectCompanyMapper.deleteByProject */
+UPDATE cs_cdms_project_company 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_project_seq = #{projectSeq} 
+       AND cs_company_seq = #{companySeq} 
+       AND cs_company_type_cd = #{companyTypeCd} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="deleteByProjectGroup" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectCompanyVO">
+/* UICdmsProjectCompanyMapper.deleteByProjectGroup */
+UPDATE cs_cdms_project_company 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_project_group_seq = #{projectGroupSeq} 
+       AND cs_company_seq = #{companySeq} 
+       AND cs_company_type_cd = #{companyTypeCd} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getListByProject_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectCompanyRS">
+        <result column="project.projectCompanySeq"  property="projectCompany.projectCompanySeq"/>
+        <result column="project.projectSeq"         property="projectCompany.projectSeq"/>
+        <result column="project.companySeq"         property="projectCompany.companySeq"/>
+        <result column="project.companyTypeCd"      property="projectCompany.companyTypeCd"/>
+        <result column="company.companySeq"         property="company.companySeq"/>
+        <result column="company.companyName"        property="company.companyName"/>
+    </resultMap>
+    <select id="getListByProject" parameterType="Long" resultMap="getListByProject_result">
+/* UICdmsProjectCompanyMapper.getListByProject */
+SELECT project.cs_project_company_seq  AS "project.projectCompanySeq" ,
+       project.cs_project_seq          AS "project.projectSeq" ,
+       project.cs_company_seq          AS "project.companySeq" ,
+       project.cs_company_type_cd      AS "project.companyTypeCd" ,
+       company.cs_company_seq          AS "company.companySeq" ,
+       company.cs_company_name         AS "company.companyName" 
+  FROM cs_cdms_project_company project
+   INNER JOIN cs_company company 
+       ON company.cs_company_seq = project.cs_company_seq 
+ WHERE project.cs_project_seq = #{projectSeq} 
+       AND project.cs_delete_yn = 'N'
+ORDER BY company.cs_company_name ASC
+    </select>
+
+    <resultMap id="getListByProjectGroup_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectCompanyRS">
+        <result column="project.projectCompanySeq"  property="projectCompany.projectCompanySeq"/>
+        <result column="project.projectGroupSeq"    property="projectCompany.projectGroupSeq"/>
+        <result column="project.companySeq"         property="projectCompany.companySeq"/>
+        <result column="project.companyTypeCd"      property="projectCompany.companyTypeCd"/>
+        <result column="company.companySeq"         property="company.companySeq"/>
+        <result column="company.companyName"        property="company.companyName"/>
+    </resultMap>
+    <select id="getListByProjectGroup" parameterType="Long" resultMap="getListByProjectGroup_result">
+/* UICdmsProjectCompanyMapper.getListByProjectGroup */
+SELECT project.cs_project_company_seq  AS "project.projectCompanySeq" ,
+       project.cs_company_seq          AS "project.companySeq" ,
+       project.cs_company_type_cd      AS "project.companyTypeCd" ,
+       company.cs_company_seq          AS "company.companySeq" ,
+       company.cs_company_name         AS "company.companyName" 
+  FROM cs_cdms_project_company project
+   INNER JOIN cs_company company 
+       ON company.cs_company_seq = project.cs_company_seq 
+ WHERE project.cs_project_group_seq = #{projectGroupSeq} 
+       AND project.cs_delete_yn = 'N'
+ORDER BY company.cs_company_name ASC
+    </select>
+    
+    <select id="getListByProjectVO" parameterType="Long" resultType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectCompanyVO">
+/* UICdmsProjectCompanyMapper.getListByProjectVO */
+SELECT project.cs_project_company_seq  AS "projectCompanySeq" ,
+       project.cs_company_seq          AS "companySeq" ,
+       project.cs_project_group_seq    AS "projectGroupSeq" ,
+       project.cs_project_seq          AS "projectSeq" ,
+       project.cs_company_type_cd      AS "companyTypeCd" ,
+       project.cs_delete_yn			   AS "deleteYn" ,
+	   project.cs_reg_member_seq       AS "regMemberSeq" ,
+	   project.cs_upd_member_seq       AS "updMemberSeq" ,
+	   project.cs_reg_dtime            AS "regDtime" ,
+	   project.cs_upd_dtime            AS "updDtime" ,
+	   project.cs_reg_ip			   AS "regIp" ,
+	   project.cs_upd_ip               AS "updIp"
+  FROM cs_cdms_project_company project
+ WHERE project.cs_project_seq = #{projectSeq} 
+       AND project.cs_delete_yn = 'N'
+    </select>
+
+</mapper>

@@ -1,0 +1,124 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if IE 9]><html lang="ko" class="modern ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>강의실</title>
+<link rel="stylesheet" href="../../css/www/base.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/common.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/content.css" type="text/css"/>
+<link type="text/css" href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" rel="stylesheet">
+<link type="text/css" href="../../css/www/style.css" rel="stylesheet">
+<link type="text/css" rel="stylesheet" href="../../css/www/classroom.css" />
+<script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="../../js/select.js"></script>
+<script type="text/javascript">
+jQuery(function($){
+	$('.viewer .menu a').click(function(){
+		$(this).toggleClass('on');
+		$('.viewer .search').toggle();
+		return false;
+	});
+});
+</script>
+</head>
+<body>
+	<!-- classroom -->
+	<div class="classroom">
+		<!-- header -->
+		<div class="header">
+			<div class="my-info">
+				<div class="average">
+					<strong>평균진도</strong>
+					<div class="progress">
+						<!-- 진척율 % = style(width) -->
+						<p class="bar" style="width:80%;"><img src="../../images/www/bg/bar_blue.png" alt="진척율 그래프" /><span class="left"></span><span class="right"></span></p>
+					</div>
+					<p class="percent"><span>90%</span> (10.2/45)</p>
+				</div>
+				<div class="my">
+					<strong>나의진도</strong>
+					<div class="progress">
+						<!-- 진척율 % = style(width) -->
+						<p class="bar" style="width:100%;"><img src="../../images/www/bg/bar_red.png" alt="진척율 그래프" /><span class="left"></span><span class="right"></span></p>
+					</div>
+					<p class="percent"><span>90%</span> (4/45)</p>
+				</div>
+				<p class="attend">출석 : <span>4회</span> 지각 : <span>1회</span> 결석 : 0회</p>
+			</div>
+			<div class="my-subject">
+				<h1>2014년 1학기 아동 문학 창작론</h1>
+				<p class="info"><span>전공필수</span><span>3학점</span><span>안재현,김명수</span><a href="#" class="plan">강의계획서 보기</a></p>
+				<p class="view">과정더보기 <a href="#"><img src="../../images/www/common/icon_view.png" alt="과정 더보기" /></a></p>
+			</div>
+			<a href="#" class="out">강의실 나가기</a>
+		</div>
+		<!-- //header -->
+		<!-- container -->
+		<div class="container">
+			<div class="nav m02"><!-- 메뉴 활성화 : on 된 목록(li) 에 클래스(m01..)를 div.nav 에 추가 -->
+				<ul>
+					<li class="m01"><a href="#">Home</a></li>
+					<li class="m02 on"><a href="#">온라인학습</a></li>
+					<li class="m03"><a href="#">과정게시판</a></li>
+				</ul>
+				<a href="#" class="array"><img src="../../images/www/btn/btn_array.gif" alt="정렬" /></a>
+			</div>
+			<!-- content -->
+			<div class="content">
+				<!-- 본문 내용 -->
+				<h2 class="heading">타이틀</h2>
+				<!-- 레이어 팝업 -->
+				<div class="section-pop">
+					<div class="pop-study"><!-- pop-study 클래스 수정(pop-container) -->
+						<div class="pop-header">
+							<h3 class="study">01- 기초노동법_0914</h3>
+							<a href="#" class="close"><img src="../../images/www/common/pop_close.gif" alt="팝업 닫기" /></a>
+						</div>
+						<!-- pop-content 클래스 수정(learning) -->
+						<div class="pop-content" style="">
+							<div class="section-contents"><img src="../../images/www/common/temp_pop_study.jpg" alt="" /></div>
+							<div class="tabs-bottom-left">
+                                <a class="tab" site="YouTube" onclick="SUB.doToggleTab(this, 'external-search')">유투브<!-- <spring:message code="글:콘텐츠:유투브"/> --></a>
+                     </div>
+                                         
+                     <div class="tabs-content">
+                                <div id="external-search" class="tab-section tab-section-bottom">
+                                          <div class="close" onclick="SUB.doCloseTab(this)" style="top:10px;"></div>
+                                          <div class="search" style="width:989px;">
+                                                     <form name="SubFormSrch" id="SubFormSrch" method="post" onsubmit="return false;">
+                                                                <input type="hidden" name="site">
+                                                               <input type="text" name="srchWord" class="input" value="<c:out value="${learning.keyword}"/>" title="<spring:message code="글:콘텐츠:검색키워드"/>"
+                                                                          onkeyup="UT.callFunctionByEnter(event, SUB.doExternalSearch);"
+                                                                /><span class="srch-btn-set">
+                                                                <aof:img src="common/blank.gif" styleClass="vline"/><a onclick="SUB.doExternalSearch()" class="btn gray"><span class="mid">검색</span></a>
+                                                                </span>
+                                                     </form>
+                                          </div>
+                                          <div class="data" style="width:989px;overflow:hidden;">
+                                                     <iframe id="searchFrame" name="searchFrame" frameborder="no" scrolling="no" style="width:100%; height:100%; overflow-x:hidden; overflow-y:auto;"></iframe>
+                                          </div>
+                                </div>
+                     </div>
+							<!-- //search-layer -->
+						</div>
+						<!-- //learning(pop-study) -->
+					</div>
+				</div>
+				<!-- //레이어 팝업 -->
+				<!-- //본문 내용 -->
+			</div>
+			<!-- //content -->
+			<div class="slides-nav">
+				<a href="#" class="prev">이전</a>
+				<a href="#" class="next">다음</a>
+			</div>
+		</div>
+		<!-- //container -->
+	</div>
+	<!-- //classroom -->
+</body>
+</html>

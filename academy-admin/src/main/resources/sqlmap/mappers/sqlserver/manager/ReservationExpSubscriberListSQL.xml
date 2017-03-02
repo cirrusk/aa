@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.expSubscriber.service.impl.ExpSubscriberMapper">
+
+	<!-- 측정/체험_예약자 관리  리스트 조회 -->
+	<select id="expSubscriberListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT * FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM, AA.* FROM( 
+				SELECT
+                    CASE 
+                        WHEN MN.ADNO IS NOT NULL AND A.ADMINFIRSTCODE = 'R01' THEN CONCAT(ISNULL(MN.MANAGENAME,'이름 없음'), ' (', A.ACCOUNT, ')')
+                        WHEN MB.UID  IS NOT NULL AND PC.TARGETCODEORDER &gt; 1 THEN CONCAT(MB.NAME, ' (', A.ACCOUNT, ')' )
+			            WHEN MB.UID  IS NOT NULL AND PC.TARGETCODEORDER = 1 THEN CONCAT(MB.NAME, ' (', A.ACCOUNT, ')' )
+			            ELSE CONCAT(A.NONMEMBER, ' (', A.NONMEMBERID, ')')
+                      END AS USERNAME
+                    , CASE
+                        WHEN A.ACCOUNT IS NOT NULL AND PC.TARGETCODEORDER &gt; 1 THEN 'ABO'
+			            WHEN A.ACCOUNT IS NOT NULL AND PC.TARGETCODEORDER = 1 THEN 'MEMBER'
+			            WHEN A.ACCOUNT IS NULL AND A.NONMEMBERID IS NOT NULL THEN '비회원' 
+			            WHEN A.ACCOUNT IS NOT NULL AND A.ADMINFIRSTCODE ='R01' THEN '관리자'
+			            ELSE ''
+                      END AS MEMBERDIVISON
+                    , ISNULL(A.ACCOUNT,'') AS ACCOUNT
+                    , CASE 
+						  WHEN A.RESERVATIONDATE &lt;= CONVERT(VARCHAR, GETDATE(), 112) THEN 'T'
+						  ELSE 'F'
+					  END AS NOSHOWFLAG
+                    , CASE WHEN MB.UID IS NOT NULL
+                        THEN
+                            CONCAT(
+                                ISNULL(PC.TARGETCODENAME, '없음'),
+                                ' / ',
+                                CASE 
+                                    WHEN ISDATE(MB.SSN) = 1
+                                        THEN DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(MB.SSN, 1, 6), 112), GETDATE())
+                                    ELSE 0
+                                    END,
+                                ' / ',
+                                MB.BUSINESSDISTRICT
+                            )
+                        ELSE ''
+                    END AS TEMP   
+					, B.PPNAME
+					, E.PRODUCTNAME
+					, C.TYPENAME
+					, A.ADMINFIRSTCODE
+					, CASE DATEPART(DW ,A.RESERVATIONDATE)
+						WHEN '1' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(일)'
+						WHEN '2' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(월)'
+						WHEN '3' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(화)'
+						WHEN '4' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(수)'
+						WHEN '5' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(목)'
+						WHEN '6' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(금)'
+						ELSE CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(토)'
+					  END AS RESERVATIONDATE
+					, D.SESSIONNAME
+					, SUBSTRING(A.STARTDATETIME, 1, 2)+ ':' +  SUBSTRING(A.STARTDATETIME, 3, 2) + '~' + SUBSTRING(A.ENDDATETIME, 1, 2) + ':' + SUBSTRING(A.ENDDATETIME, 3, 2) AS SESSIONTIME
+					, CASE DATEPART(DW ,A.PURCHASEDATE)
+						WHEN '1' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(일)'
+						WHEN '2' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(월)'
+						WHEN '3' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(화)'
+						WHEN '4' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(수)'
+						WHEN '5' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(목)'
+						WHEN '6' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(금)'
+						ELSE CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(토)'
+					  END  AS PURCHASEDATE
+					, A.PURCHASEDATE AS PURCHASEDATETIME /* kr620207 */
+					, ISNULL(A.ADMINFIRSTREASON, '') AS ADMINFIRSTREASON
+					, A.PAYMENTSTATUSCODE
+					, A.CANCELCODE
+					, A.NOSHOWCODE
+					, F.CODENAME AS PAYMENTSTATUSNAME
+					, A.RSVSEQ
+					, B.PPSEQ
+                    , CASE
+                        WHEN A.ACCOUNT IS NOT NULL AND PC.TARGETCODEORDER &gt; 1  THEN 'M03'
+                        WHEN A.ACCOUNT IS NOT NULL AND PC.TARGETCODEORDER = 1 THEN 'M04'
+                        WHEN A.ACCOUNT IS NULL AND A.NONMEMBERID IS NOT NULL THEN 'M02'
+			            WHEN A.ACCOUNT IS NOT NULL AND A.ADMINFIRSTCODE ='R01' THEN 'M01'
+                        ELSE ''
+                      END AS MEMBERFLAG
+				FROM RSVRESERVATIONINFO A
+                LEFT OUTER JOIN MEMBER MB
+                  ON (A.ACCOUNT = MB.UID)
+                LEFT OUTER JOIN MANAGER MN 
+                  ON (A.ACCOUNT = MN.ADNO)
+                LEFT OUTER JOIN V_TARGETCODE_NONMEM PC
+                  ON (MB.GROUPS = PC.TARGETCODESEQ AND PC.TARGETMASTERSEQ = 'PINCODE')
+                LEFT OUTER JOIN RSVROLETARGET TG
+                  ON (MB.UID = TG.ABONO)
+                LEFT OUTER JOIN RSVROLEGROUP GP
+                  ON (TG.GROUPSEQ = GP.GROUPSEQ AND GP.COOKMASTERCODE = 'C01')                
+				INNER JOIN RSVPPINFO B
+				  ON(A.PPSEQ = B.PPSEQ)
+				LEFT OUTER JOIN RSVEXPSESSIONINFO D
+				  ON(A.EXPSESSIONSEQ = D.EXPSESSIONSEQ)
+				INNER JOIN RSVEXPINFO E
+				  ON(A.EXPSEQ = E.EXPSEQ)
+				LEFT OUTER JOIN RSVTYPEINFO C
+				  ON(A.TYPESEQ = C.TYPESEQ AND C.RSVTYPECODE = 'R02')
+				LEFT OUTER JOIN COMMONCODE F
+				  ON(A.PAYMENTSTATUSCODE = F.COMMONCODESEQ AND F.CODEMASTERSEQ = 'PM1')
+				WHERE 1=1
+				<if test="searchPpCode != null and ! searchPpCode.equals('') ">
+					AND B.PPSEQ  = #{searchPpCode}
+				</if>
+				<if test="searchProgramTypeCode != null and ! searchProgramTypeCode.equals('') ">
+					AND A.TYPESEQ  = #{searchProgramTypeCode}
+				</if>
+				<if test="rsvProgressFormCode != null and ! rsvProgressFormCode.equals('') ">
+					AND A.PAYMENTSTATUSCODE  = #{rsvProgressFormCode}
+				</if>
+				<if test="searchEndRsvDate != null and ! searchEndRsvDate.equals('') ">
+					AND A.RESERVATIONDATE  &lt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{searchEndRsvDate}), 112)
+				</if>
+				<if test="searchStrRsvDate != null and ! searchStrRsvDate.equals('') ">
+					AND A.RESERVATIONDATE  &gt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{searchStrRsvDate}), 112)
+				</if>
+				<if test="purchaseStrDate != null and ! purchaseStrDate.equals('') ">
+					AND CONVERT(VARCHAR, A.PURCHASEDATE, 112)  &gt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{purchaseStrDate}), 112)
+				</if>
+				<if test="purchaseEndDate != null and ! purchaseEndDate.equals('') ">
+					AND CONVERT(VARCHAR, A.PURCHASEDATE, 112)  &lt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{purchaseEndDate}), 112)
+				</if>
+				<if test="searchProductName != null and ! searchProductName.equals('') ">
+					AND E.PRODUCTNAME LIKE '%' + #{searchProductName} + '%'
+				</if>
+				<if test="searchSessionCode != null and ! searchSessionCode.equals('') ">
+					AND D.SESSIONNAME LIKE #{searchSessionCode}
+				</if>
+				<if test="searchDivisionMemverCode == 'M01' and searchDivisionMemverCode.equals('M01') ">
+					AND MN.ADNO IS NOT NULL
+					AND A.ADMINFIRSTCODE = 'R01'
+				</if>
+				<if test="searchDivisionMemverCode == 'M02' and searchDivisionMemverCode.equals('M02') ">
+					AND A.ACCOUNT IS NULL AND A.NONMEMBERID IS NOT NULL
+				</if>
+				<if test="searchDivisionMemverCode == 'M03' and searchDivisionMemverCode.equals('M03') ">
+					AND PC.TARGETCODEORDER &gt; 1
+					AND A.ACCOUNT IS NOT NULL
+				</if>
+				<if test="searchDivisionMemverCode == 'M04' and searchDivisionMemverCode.equals('M04') ">
+					AND A.ACCOUNT IS NOT NULL
+					AND PC.TARGETCODEORDER = 1
+				</if>
+				<if test="searchAccountTypeKey == 'T01' and searchAccountTypeKey.equals('T01') ">
+					AND (
+						MN.MANAGENAME LIKE CONCAT('%', #{searchAccountTypeValue}, '%') 
+						OR MB.NAME LIKE CONCAT('%', #{searchAccountTypeValue}, '%')
+						OR A.NONMEMBER LIKE CONCAT('%', #{searchAccountTypeValue}, '%')
+					)
+				</if>
+				<if test="searchAccountTypeKey == 'T02' and searchAccountTypeKey.equals('T02') ">
+					AND (A.ACCOUNT = #{searchAccountTypeValue} OR A.NONMEMBERID = #{searchAccountTypeValue})
+				</if>
+			) AS AA
+		) AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 측정/체험_예약자 관리  리스트 카운트 -->
+	<select id="expSubscriberListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*)
+		FROM RSVRESERVATIONINFO A
+			LEFT OUTER JOIN MEMBER MB
+			  ON (A.ACCOUNT = MB.UID)
+			LEFT OUTER JOIN MANAGER MN
+			  ON (A.ACCOUNT = MN.ADNO)
+			LEFT OUTER JOIN V_TARGETCODE_NONMEM PC
+			  ON (MB.GROUPS = PC.TARGETCODESEQ AND PC.TARGETMASTERSEQ = 'PINCODE')
+			LEFT OUTER JOIN RSVROLETARGET TG
+			  ON (MB.UID = TG.ABONO)
+			LEFT OUTER JOIN RSVROLEGROUP GP
+			  ON (TG.GROUPSEQ = GP.GROUPSEQ AND GP.COOKMASTERCODE = 'C01')
+			INNER JOIN RSVPPINFO B
+			  ON(A.PPSEQ = B.PPSEQ)
+			LEFT OUTER JOIN RSVEXPSESSIONINFO D
+			  ON(A.EXPSESSIONSEQ = D.EXPSESSIONSEQ)
+			INNER JOIN RSVEXPINFO E
+			  ON(A.EXPSEQ = E.EXPSEQ)
+			LEFT OUTER JOIN RSVTYPEINFO C
+			  ON(A.TYPESEQ = C.TYPESEQ AND C.RSVTYPECODE = 'R02')
+			LEFT OUTER JOIN COMMONCODE F
+			  ON(A.PAYMENTSTATUSCODE = F.COMMONCODESEQ AND F.CODEMASTERSEQ = 'PM1')
+		WHERE 1=1
+		<if test="searchPpCode != null and ! searchPpCode.equals('') ">
+			AND B.PPSEQ  = #{searchPpCode}
+		</if>
+		<if test="searchProgramTypeCode != null and ! searchProgramTypeCode.equals('') ">
+			AND A.TYPESEQ  = #{searchProgramTypeCode}
+		</if>
+		<if test="rsvProgressFormCode != null and ! rsvProgressFormCode.equals('') ">
+			AND A.PAYMENTSTATUSCODE  = #{rsvProgressFormCode}
+		</if>
+		<if test="searchEndRsvDate != null and ! searchEndRsvDate.equals('') ">
+			AND RESERVATIONDATE  &lt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{searchEndRsvDate}), 112)
+		</if>
+		<if test="searchStrRsvDate != null and ! searchStrRsvDate.equals('') ">
+			AND RESERVATIONDATE  &gt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{searchStrRsvDate}), 112)
+		</if>
+		<if test="purchaseStrDate != null and ! purchaseStrDate.equals('') ">
+			AND CONVERT(VARCHAR, PURCHASEDATE, 112)  &gt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{purchaseStrDate}), 112)
+		</if>
+		<if test="purchaseEndDate != null and ! purchaseEndDate.equals('') ">
+			AND CONVERT(VARCHAR, PURCHASEDATE, 112)  &lt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{purchaseEndDate}), 112)
+		</if>
+		<if test="searchProductName != null and ! searchProductName.equals('') ">
+			AND E.PRODUCTNAME LIKE '%' + #{searchProductName} + '%'
+		</if>
+		<if test="searchDivisionMemverCode == 'M01' and searchDivisionMemverCode.equals('M01') ">
+			AND MN.ADNO IS NOT NULL
+			AND A.ADMINFIRSTCODE = 'R01'
+		</if>
+		<if test="searchDivisionMemverCode == 'M02' and searchDivisionMemverCode.equals('M02') ">
+			AND A.ACCOUNT IS NULL AND A.NONMEMBERID IS NOT NULL
+		</if>
+		<if test="searchDivisionMemverCode == 'M03' and searchDivisionMemverCode.equals('M03') ">
+			AND PC.TARGETCODEORDER &gt; 1
+			AND A.ACCOUNT IS NOT NULL
+		</if>
+		<if test="searchDivisionMemverCode == 'M04' and searchDivisionMemverCode.equals('M04') ">
+			AND A.ACCOUNT IS NOT NULL
+			AND PC.TARGETCODEORDER = 1
+		</if>
+		<if test="searchSessionCode != null and ! searchSessionCode.equals('') ">
+			AND D.SESSIONNAME LIKE #{searchSessionCode}
+		</if>
+		<if test="searchAccountTypeKey == 'T01' and searchAccountTypeKey.equals('T01') ">
+			AND (
+					MN.MANAGENAME LIKE CONCAT('%', #{searchAccountTypeValue}, '%')
+					OR MB.NAME LIKE CONCAT('%', #{searchAccountTypeValue}, '%')
+					OR A.NONMEMBER LIKE CONCAT('%', #{searchAccountTypeValue}, '%')
+				)
+		</if>
+		<if test="searchAccountTypeKey == 'T02' and searchAccountTypeKey.equals('T02') ">
+			AND (A.ACCOUNT = #{searchAccountTypeValue} OR A.NONMEMBERID = #{searchAccountTypeValue})
+		</if>
+	</select>
+	
+	<!--측정/체험_예약자 관리 노쇼 지정/헤지  -->
+	<update id="expNoShowConfirmChkeck" parameterType="reqBox">
+		UPDATE RSVRESERVATIONINFO 
+			SET
+				  NOSHOWCODE = #{noshowcode}
+				, PAYMENTSTATUSCODE = #{paymentstatuscode}
+		WHERE RSVSEQ = #{rsvseq}
+	</update>
+	
+	<!-- 측정/체험_예약자 관리  관리자 우선 예약 취소 -->
+	<update id="adminExpCancelAjax" parameterType="reqBox">
+		UPDATE RSVRESERVATIONINFO 
+			SET
+				  CANCELCODE = #{cancelcode}
+				, PAYMENTSTATUSCODE = #{paymentstatuscode}
+				, CANCELDATETIME = GETDATE()
+		WHERE RSVSEQ = #{rsvseq}
+	</update>
+
+	<!-- PENALTYSTATUSCODE의 용도는 admin에 의한 noshow 부여/해제, STATUSCODE 의 용도는 환불적용 -->
+	<insert id="noShowExpPenaltyInsert" parameterType="reqBox">
+		INSERT INTO RSVPENALTYHISTORY
+		    (RSVSEQ, ACCOUNT, PENALTYSEQ, APPLYTYPECODE, APPLYTYPEVALUE, REASON, GRANTDATE, PENALTYSTATUSCODE, STATUSCODE, INSERTUSER, INSERTDATE)
+		SELECT
+		    M.RSVSEQ,
+		    M.ACCOUNT,
+		    A.PENALTYSEQ,
+		    A.APPLYTYPECODE,
+		    A.APPLYTYPEVALUE,
+		    '',
+		    CONVERT(VARCHAR(8), GETDATE(), 112),
+		    #{penaltystatuscode}, /* B01부여:B02해제 */
+		    'B01', /* B01사용:B02미사용 */
+		    #{sessionAccount},
+		    GETDATE()
+		FROM RSVPENALTYSETTING A
+		INNER JOIN RSVEXPPENALTYMAP B
+		  ON (A.PENALTYSEQ = B.PENALTYSEQ)
+		INNER JOIN (SELECT DISTINCT TYPESEQ, EXPSEQ FROM RSVEXPTYPEMAP) C
+		  ON (B.EXPSEQ = C.EXPSEQ)
+		INNER JOIN RSVTYPEINFO D
+		  ON (C.TYPESEQ = D.TYPESEQ)
+        INNER JOIN RSVRESERVATIONINFO M
+          ON (M.EXPSEQ = B.EXPSEQ AND M.TYPESEQ = C.TYPESEQ)
+		WHERE M.RSVSEQ = #{rsvseq}
+	</insert>
+
+	<update id="beforSearchExpPaymentStatuscodeUpdate"  parameterType="reqBox">
+		UPDATE RSVRESERVATIONINFO
+			SET 
+			  PAYMENTSTATUSCODE = 'P06'
+			, UPDATEUSER = 'SYSTEM'
+			, UPDATEDATE = GETDATE()
+		WHERE RSVTYPECODE = 'R02'
+			AND (PAYMENTSTATUSCODE = 'P02'
+				OR PAYMENTSTATUSCODE = 'P04')
+			AND RESERVATIONDATE &lt; CONVERT(VARCHAR, GETDATE(),112)
+			/* AND SUBSTRING(RESERVATIONDATE, 5,2) = SUBSTRING(CONVERT(VARCHAR, GETDATE(),112), 5,2) */
+	</update>
+
+	<select id="searchExpTypeCodeList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			  MAX(TYPESEQ) AS COMMONCODESEQ
+			, TYPENAME AS CODENAME
+		FROM RSVTYPEINFO
+		WHERE STATUSCODE = 'B01'
+		AND RSVTYPECODE = 'R02'
+		GROUP BY TYPENAME
+	</select>
+	
+	<!-- 엑셀다운로드 -->
+	<select id="expSubscriberExcelDownload" parameterType="reqBox" resultType="hashmap">
+		SELECT ROW_NUMBER() OVER (ORDER BY PURCHASEDATETIME DESC) AS ROW_NUM, AA.* FROM( 
+			SELECT DISTINCT
+				CASE 
+					WHEN MN.ADNO IS NOT NULL AND A.ADMINFIRSTCODE = 'R01' THEN CONCAT(ISNULL(dbo.F_SETTRFEEABONAME(MN.MANAGENAME, 'N'),'이름 없음'), ' (', replace(A.ACCOUNT, substring(A.ACCOUNT,1,3), '***'), ')')
+					WHEN MB.UID  IS NOT NULL AND PC.TARGETCODEORDER > 1 THEN CONCAT(dbo.F_SETTRFEEABONAME(MB.NAME, 'N'), ' (', replace(A.ACCOUNT, substring(A.ACCOUNT,1,3), '***'), ')' )
+					WHEN MB.UID  IS NOT NULL AND PC.TARGETCODEORDER = 1 THEN CONCAT(dbo.F_SETTRFEEABONAME(MB.NAME, 'N'), ' (', replace(A.ACCOUNT, substring(A.ACCOUNT,1,3), '***'), ')' )
+					ELSE CONCAT(dbo.F_SETTRFEEABONAME(A.NONMEMBER, 'N'), ' (', replace(dbo.F_SETTRFEEABONAME(A.NONMEMBERID, 'N'), substring(A.NONMEMBERID,1,7), '*******'), ')')
+				END AS USERNAME
+				, CASE
+						WHEN A.ACCOUNT IS NOT NULL AND PC.TARGETCODEORDER > 1 THEN 'ABO'
+						WHEN A.ACCOUNT IS NOT NULL AND PC.TARGETCODEORDER = 1 THEN 'MEMBER'
+						WHEN A.ACCOUNT IS NULL AND A.NONMEMBERID IS NOT NULL THEN '비회원' 
+						WHEN A.ACCOUNT IS NOT NULL AND A.ADMINFIRSTCODE ='R01' THEN '관리자'
+						ELSE ''
+				END AS MEMBERDIVISON
+				, CASE
+						WHEN A.ACCOUNT IS NOT NULL AND PC.TARGETCODEORDER > 1 THEN replace(A.ACCOUNT, substring(A.ACCOUNT,1,3), '***')
+						WHEN A.ACCOUNT IS NOT NULL AND PC.TARGETCODEORDER = 1 THEN replace(A.ACCOUNT, substring(A.ACCOUNT,1,3), '***')
+						WHEN A.ACCOUNT IS NULL AND A.NONMEMBERID IS NOT NULL THEN A.ACCOUNT
+						WHEN A.ACCOUNT IS NOT NULL AND A.ADMINFIRSTCODE ='R01' THEN A.ACCOUNT
+						ELSE '' 
+						END AS ACCOUNT 
+				, CASE 
+					WHEN MB.UID IS NOT NULL THEN
+						CONCAT(
+							ISNULL(PC.TARGETCODENAME, '없음'),
+							' / ',
+							CASE 
+							WHEN ISDATE(MB.SSN) = 1
+							THEN DATEDIFF(YEAR, CONVERT(DATETIME, SUBSTRING(MB.SSN, 1, 6), 112), GETDATE())
+							ELSE 0
+							END,
+							' / ',
+							MB.BUSINESSDISTRICT
+						)
+					ELSE ''
+				END AS TEMP   
+				, B.PPNAME
+				, E.PRODUCTNAME
+				, C.TYPENAME
+				, CASE DATEPART(DW ,A.RESERVATIONDATE)
+					WHEN '1' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(일)'
+					WHEN '2' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(월)'
+					WHEN '3' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(화)'
+					WHEN '4' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(수)'
+					WHEN '5' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(목)'
+					WHEN '6' THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(금)'
+					ELSE CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 126) + '(토)'
+				  END AS RESERVATIONDATE
+				, D.SESSIONNAME
+				, SUBSTRING(A.STARTDATETIME, 1, 2)+ ':' +  SUBSTRING(A.STARTDATETIME, 3, 2) + '~' + SUBSTRING(A.ENDDATETIME, 1, 2) + ':' + SUBSTRING(A.ENDDATETIME, 3, 2) AS SESSIONTIME
+				, CASE DATEPART(DW ,A.PURCHASEDATE)
+					WHEN '1' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(일)'
+					WHEN '2' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(월)'
+					WHEN '3' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(화)'
+					WHEN '4' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(수)'
+					WHEN '5' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(목)'
+					WHEN '6' THEN CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(금)'
+					ELSE CONVERT(VARCHAR(10), A.PURCHASEDATE, 126) + '(토)'
+				  END  AS PURCHASEDATE
+				, A.PURCHASEDATE AS PURCHASEDATETIME /* kr620207 */
+				, ISNULL(A.ADMINFIRSTREASON, '') AS ADMINFIRSTREASON
+				, F.CODENAME AS PAYMENTSTATUSNAME
+			FROM RSVRESERVATIONINFO A
+				LEFT OUTER JOIN MEMBER MB
+					ON (A.ACCOUNT = MB.UID)
+				LEFT OUTER JOIN MANAGER MN 
+					ON (A.ACCOUNT = MN.ADNO)
+				LEFT OUTER JOIN V_TARGETCODE_NONMEM PC
+					ON (MB.GROUPS = PC.TARGETCODESEQ AND PC.TARGETMASTERSEQ = 'PINCODE')
+				LEFT OUTER JOIN RSVROLETARGET TG
+					ON (MB.UID = TG.ABONO)
+				LEFT OUTER JOIN RSVROLEGROUP GP
+					ON (TG.GROUPSEQ = GP.GROUPSEQ AND GP.COOKMASTERCODE = 'C01')
+				INNER JOIN RSVPPINFO B
+					ON(A.PPSEQ = B.PPSEQ)
+				INNER JOIN RSVEXPSESSIONINFO D
+					ON(A.EXPSESSIONSEQ = D.EXPSESSIONSEQ)
+				INNER JOIN RSVEXPINFO E
+					ON(D.EXPSEQ = E.EXPSEQ)
+				INNER JOIN (
+					SELECT    DISTINCT 
+					  EXPSEQ
+					, TYPESEQ
+					FROM RSVEXPTYPEMAP
+				)AS G
+					ON(E.EXPSEQ = G.EXPSEQ)
+			INNER JOIN RSVTYPEINFO C
+				ON(G.TYPESEQ = C.TYPESEQ AND C.RSVTYPECODE = 'R02')
+			LEFT OUTER JOIN COMMONCODE F
+				ON(A.PAYMENTSTATUSCODE = F.COMMONCODESEQ AND F.CODEMASTERSEQ = 'PM1')
+			WHERE 1=1
+				<if test="searchPpCode != null and ! searchPpCode.equals('') ">
+					AND B.PPSEQ  = #{searchPpCode}
+				</if>
+				<if test="searchProgramTypeCode != null and ! searchProgramTypeCode.equals('') ">
+					AND A.TYPESEQ  = #{searchProgramTypeCode}
+				</if>
+				<if test="rsvProgressFormCode != null and ! rsvProgressFormCode.equals('') ">
+					AND A.PAYMENTSTATUSCODE  = #{rsvProgressFormCode}
+				</if>
+				<if test="searchEndRsvDate != null and ! searchEndRsvDate.equals('') ">
+					AND RESERVATIONDATE  &lt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{searchEndRsvDate}), 112)
+				</if>
+				<if test="searchStrRsvDate != null and ! searchStrRsvDate.equals('') ">
+					AND RESERVATIONDATE  &gt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{searchStrRsvDate}), 112)
+				</if>
+				<if test="purchaseStrDate != null and ! purchaseStrDate.equals('') ">
+					AND CONVERT(VARCHAR, PURCHASEDATE, 112)  &gt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{purchaseStrDate}), 112)
+				</if>
+				<if test="purchaseEndDate != null and ! purchaseEndDate.equals('') ">
+					AND CONVERT(VARCHAR, PURCHASEDATE, 112)  &lt;= CONVERT(VARCHAR, CONVERT(DATETIME, #{purchaseEndDate}), 112)
+				</if>
+				<if test="searchProductName != null and ! searchProductName.equals('') ">
+					AND E.PRODUCTNAME LIKE '%' + #{searchProductName} + '%'
+				</if>
+				<if test="searchSessionCode != null and ! searchSessionCode.equals('') ">
+					AND D.SESSIONNAME LIKE #{searchSessionCode}
+				</if>
+				<if test="searchDivisionMemverCode == 'M01' and searchDivisionMemverCode.equals('M01') ">
+					AND MN.ADNO IS NOT NULL
+					AND A.ADMINFIRSTCODE = 'R01'
+				</if>
+				<if test="searchDivisionMemverCode == 'M02' and searchDivisionMemverCode.equals('M02') ">
+					AND A.ACCOUNT IS NULL AND A.NONMEMBERID IS NOT NULL
+				</if>
+				<if test="searchDivisionMemverCode == 'M03' and searchDivisionMemverCode.equals('M03') ">
+					AND PC.TARGETCODEORDER &gt; 1
+					AND A.ACCOUNT IS NOT NULL
+				</if>
+				<if test="searchDivisionMemverCode == 'M04' and searchDivisionMemverCode.equals('M04') ">
+					AND A.ACCOUNT IS NOT NULL
+					AND PC.TARGETCODEORDER = 1
+				</if>
+				<if test="searchAccountTypeKey == 'T01' and searchAccountTypeKey.equals('T01') ">
+					AND (
+						MN.MANAGENAME LIKE CONCAT('%', #{searchAccountTypeValue}, '%') 
+						OR MB.NAME LIKE CONCAT('%', #{searchAccountTypeValue}, '%')
+						OR A.NONMEMBER LIKE CONCAT('%', #{searchAccountTypeValue}, '%')
+					)
+				</if>
+				<if test="searchAccountTypeKey == 'T02' and searchAccountTypeKey.equals('T02') ">
+					AND (A.ACCOUNT = #{searchAccountTypeValue} OR A.NONMEMBERID = #{searchAccountTypeValue})
+				</if>
+			) AS AA
+		
+	</select>
+	
+</mapper>

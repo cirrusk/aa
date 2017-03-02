@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.trainingFee.proof.service.impl.TrainingFeeRentMapper">
+	
+
+	<select id="selectTotalCount" parameterType="reqBox" resultType="dataBox">
+		SELECT   COUNT(*) AS TOTAL_CNT
+		  FROM   dbo.TRFEERENT A
+		 WHERE   A.FISCALYEAR  = #{searchGiveYear}
+		   AND   ISNULL(A.RENTSTATUS, 'N') = 'N'
+	</select>
+	
+	<select id="selectRentListCount" parameterType="reqBox" resultType="int">
+		SELECT   COUNT(*) AS TOTAL_CNT
+		  FROM   dbo.TRFEERENT A
+    INNER JOIN   dbo.MEMBER B ON A.DEPABO_NO = B.UID
+    INNER JOIN   dbo.TRFEETARGETFULL C ON A.DEPABO_NO = C.ABO_NO
+		 WHERE   1=1
+		 <if test="searchGiveYear != null and !searchGiveYear.equals('') ">
+		   AND   A.FISCALYEAR  = #{searchGiveYear}
+		 </if>
+		 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+		 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+		 		AND A.DEPABO_NO = #{searchDepositNm } 
+		 	</if>
+		 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+		 		AND B.NAME = #{searchDepositNm } 
+		 	</if>
+		 </if>
+		 <if test="searchBR != null and !searchBR.equals('') ">
+		 	AND C.BR = #{searchBR } 
+		 </if>
+		 <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+		 	AND C.GROUPCODE = #{searchGrpCd }
+		 </if>
+		 <if test="searchCode != null and !searchCode.equals('') ">
+		 	AND C.CODE = #{searchCode }
+		 </if>
+		 <if test="searchLoa != null and !searchLoa.equals('') ">
+		 	AND B.LOANAMEKOR = #{searchLoa}
+		 </if>
+		 <if test="searchCPin != null and !searchCPin.equals('') ">
+		 	AND B.GROUPS = #{searchCPin}
+		 </if>
+		 <if test="searchDept != null and !searchDept.equals('') ">
+		 	AND C.DEPARTMENT = #{searchDept }
+		 </if>
+	</select>
+	
+	<select id="selectRentList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeRent.xml selectRentList  */
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM (
+							SELECT   A.FISCALYEAR
+							       , B.ABO_NO
+							       , C.NAME
+							       , B.GROUPCODE
+							       , A.RENTTYPE
+							       , dbo.F_CMM_CODENAME('TR3', A.RENTTYPE) AS RENTTYPENAME
+							       , A.RENTID
+							       , A.RENTAMOUNT
+							       , A.RENTDEPOSIT
+							       , A.RENTTITLE+'-'+CONVERT(VARCHAR,A.RENTID) AS RENTTITLE
+							       , CONVERT(VARCHAR(7), CONVERT(DATE, A.RENTFROMMONTH + '01')) AS RENTFROMMONTH
+							       , CONVERT(VARCHAR(7), CONVERT(DATE, A.RENTTOMONTH + '01')) AS RENTTOMONTH
+							       , dbo.F_CMM_CODENAME('TR8', A.RENTSTATUS) AS RENTSTATUS
+							       , A.ATTACHFILE
+							       , A.RENTREJECTTEXT
+							       , A.RENTSMSTEXT
+							       , A.MODIFIER
+							       , A.MODIFYDATE
+							       , A.REGISTRANT
+							       , A.REGISTRANTDATE
+							  FROM   dbo.TRFEERENT A
+						      JOIN   dbo.TRFEETARGETFULL B ON A.DEPABO_NO = B.ABO_NO
+						      JOIN   dbo.MEMBER C ON A.DEPABO_NO = C.UID
+							 WHERE   1=1
+							 <if test="searchGiveYear != null and !searchGiveYear.equals('') ">
+							   AND   A.FISCALYEAR  = #{searchGiveYear}
+							 </if>
+							 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+							 		AND A.DEPABO_NO = #{searchDepositNm } 
+							 	</if>
+							 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+							 		AND C.NAME = #{searchDepositNm } 
+							 	</if>
+							 </if>
+							 <if test="searchBR != null and !searchBR.equals('') ">
+							 	AND B.BR = #{searchBR } 
+							 </if>
+							 <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+							 	AND B.GROUPCODE = #{searchGrpCd }
+							 </if>
+							 <if test="searchCode != null and !searchCode.equals('') ">
+							 	AND B.CODE = #{searchCode }
+							 </if>
+							 <if test="searchLoa != null and !searchLoa.equals('') ">
+							 	AND C.LOANAMEKOR = #{searchLoa}
+							 </if>
+							 <if test="searchCPin != null and !searchCPin.equals('') ">
+							 	AND C.GROUPS = #{searchCPin}
+							 </if>
+							 <if test="searchDept != null and !searchDept.equals('') ">
+							 	AND B.DEPARTMENT = #{searchDept }
+							 </if>
+						) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectRentDetailInfo" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeRent.xml selectRentDetailInfo  */
+		SELECT   A.FISCALYEAR
+		       , A.DEPABO_NO
+		       , DBO.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+		       , CONVERT(VARCHAR(7), CONVERT(DATE, A.RENTFROMMONTH+'01')) AS RENTFROMMONTH
+               , CONVERT(VARCHAR(7), CONVERT(DATE, A.RENTTOMONTH+'01')) AS RENTTOMONTH 
+               , B.DEPARTMENT
+               , B.GROUPCODE
+               , REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, A.RENTAMOUNT), 1), '.00','') AS RENTAMOUNT
+               , REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, A.RENTDEPOSIT), 1), '.00','') AS RENTDEPOSIT
+               , REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CEILING(( RENTDEPOSIT * 0.05 ))), 1), '.00','') AS RENTDEPOSIT5
+               , REPLACE(CONVERT(VARCHAR, CONVERT(MONEY, CEILING(( RENTDEPOSIT * 0.05 )+A.RENTAMOUNT)), 1), '.00','') AS RENTDEPOSIT12
+               , A.CHECKFLAG
+               , ISNULL(A.RENTSTATUS, 'N') AS RENTSTATUS
+               , CASE A.RENTSTATUS WHEN 'Y' THEN '승인'
+                                   WHEN 'R' THEN '반려'
+                                   ELSE '미처리' END RENTSTATUSTXT
+               , A.GIVEYEAR
+               , A.GIVEMONTH
+		  FROM   dbo.TRFEERENT A
+    INNER JOIN   dbo.TRFEETARGETFULL B ON A.DEPABO_NO = B.ABO_NO
+		 WHERE   A.FISCALYEAR  = #{fiscalyear}
+		   AND   A.DEPABO_NO   = #{depabo_no}
+		   AND   A.RENTID      = #{rentid}
+	</select>
+	
+	<select id="selectRentDetailCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeRent.xml selectRentDetailCount  */
+		WITH MONTHLIST AS ( SELECT   1 NUM
+		                    UNION ALL
+		                    SELECT   NUM + 1 AS NUM
+		                      FROM   MONTHLIST
+		                     WHERE   NUM <![CDATA[ < ]]> 12 )
+		     , MONTHTOTALLIST AS (
+							SELECT CONVERT(VARCHAR, #{fiscalyear}-1) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST
+							UNION
+							SELECT CONVERT(VARCHAR, #{fiscalyear}) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST )
+				  SELECT COUNT(*) AS TOTAL_CNT
+						  FROM MONTHTOTALLIST A
+						LEFT JOIN dbo.TRFEERENT B ON A.GIVEMONTH BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH
+						WHERE B.FISCALYEAR = #{fiscalyear}
+						  AND B.DEPABO_NO = #{depabo_no}
+						  AND RENTID = #{rentid}
+	</select>
+	
+	<!-- 상세 개인 -->
+	<select id="selectRentDetailList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeRent.xml selectRentDetailList  */
+		WITH MONTHLIST AS ( SELECT   1 NUM
+		                    UNION ALL
+		                    SELECT   NUM + 1 AS NUM
+		                      FROM   MONTHLIST
+		                     WHERE   NUM <![CDATA[ < ]]> 12 )
+		     , MONTHTOTALLIST AS (
+							SELECT CONVERT(VARCHAR, #{fiscalyear}-1) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST
+							UNION
+							SELECT CONVERT(VARCHAR, #{fiscalyear}) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST )
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM (SELECT   REPLACE(CONVERT(VARCHAR(7), DATEADD(MM,2,CONVERT(DATETIME,A.GIVEMONTH+'01')), 23),'-','/') AS GIVEMONTH
+						       , RENTDEPOSIT
+						       , CEILING(( RENTDEPOSIT * 0.05 ) / 12) AS MONTHDEPOSITPAY
+							   , RENTAMOUNT
+							   , CEILING(( RENTDEPOSIT * 0.05 ) / 12) + RENTAMOUNT AS TOTALPAY
+							   , B.RENTFROMMONTH
+							   , B.RENTTOMONTH
+						  FROM MONTHTOTALLIST A
+						LEFT JOIN dbo.TRFEERENT B ON A.GIVEMONTH BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH
+						WHERE B.FISCALYEAR = #{fiscalyear}
+						  AND B.DEPABO_NO = #{depabo_no}
+						  AND RENTID = #{rentid}
+						  ) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<update id="saveRentApprove" parameterType="reqBox" >
+		UPDATE   dbo.TRFEERENT
+		   SET   RENTSTATUS = 'Y'
+		       , MODIFIER   = #{adminId} 
+               , MODIFYDATE = GETDATE()
+		 WHERE   FISCALYEAR = #{fiscalyear}
+		   AND   DEPABO_NO  = #{depabo_no}
+           AND   RENTID     = #{rentid}
+	</update>
+	
+	<insert id="insertRentApprove" parameterType="reqBox" >
+		WITH MONTHLIST AS ( SELECT   1 NUM
+		                    UNION ALL
+		                    SELECT   NUM + 1 AS NUM
+		                      FROM   MONTHLIST
+		                     WHERE   NUM <![CDATA[ < ]]> 12 )
+		     , MONTHTOTALLIST AS (
+							SELECT CONVERT(VARCHAR, #{fiscalyear}-1) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST
+							UNION
+							SELECT CONVERT(VARCHAR, #{fiscalyear}) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST )
+		INSERT INTO dbo.TRFEERENTPERSON
+		           (FISCALYEAR
+		           ,DEPABO_NO
+		           ,RENTID
+		           ,GIVEYEARMONTH
+		           ,RENTAMOUNT
+		           ,RENTDEPOSIT
+		           ,MODIFIER
+		           ,MODIFYDATE
+		           ,REGISTRANT
+		           ,REGISTRANTDATE)
+		                  SELECT #{fiscalyear}
+		                       , #{depabo_no}
+		                       , #{rentid}
+		                       , REPLACE(CONVERT(VARCHAR(7), DATEADD(MM,2,CONVERT(DATETIME,A.GIVEMONTH+'01')), 23),'-','') AS GIVEMONTH
+		                       , RENTAMOUNT
+						       , CEILING(( RENTDEPOSIT * 0.05 ) / 12) AS MONTHDEPOSITPAY
+                               , #{adminId} 
+                               , getdate()
+                               , #{adminId} 
+                               , getdate()
+						  FROM MONTHTOTALLIST A
+						LEFT JOIN TRFEERENT B ON A.GIVEMONTH BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH
+						WHERE B.FISCALYEAR = #{fiscalyear}
+						  AND B.DEPABO_NO = #{depabo_no}
+						  AND B.RENTID = #{rentid}
+	</insert>
+	
+	<update id="updateRentReject" parameterType="reqBox">
+		UPDATE   DBO.TRFEERENT
+		   SET   RENTSTATUS       = 'R'
+		       , RENTREJECTTEXT   = #{rejecttext}
+               , RENTSMSTEXT      = #{smstext}
+		       , MODIFIER         = #{adminId} 
+               , MODIFYDATE       = GETDATE()
+         WHERE   FISCALYEAR = #{fiscalyear}
+           AND   DEPABO_NO = #{depabo_no}
+           AND   RENTID = #{rentid}
+	</update>
+	
+	<update id="saveRentImgCheck" parameterType="reqBox">
+		UPDATE   DBO.TRFEERENT
+		   SET   CHECKFLAG        = 'Y'
+		       , MODIFIER         = #{adminId} 
+               , MODIFYDATE       = GETDATE()
+         WHERE   FISCALYEAR = #{fiscalyear}
+           AND   DEPABO_NO  = #{depabo_no}
+           AND   RENTID     = #{rentid}
+	</update>
+	
+	<select id="selectRentDetailImg" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeRent.xml selectRentDetailImg  */
+		SELECT   C.FILEKEY
+               , C.UPLOADSEQ
+               , C.REALFILENAME
+               , C.STOREFILENAME
+               , C.FILEFULLURL
+               , C.FILEEXT
+		  FROM   dbo.TRFEERENT A
+          JOIN   dbo.TRFEERENTATTACHFILE B ON A.FISCALYEAR = B.FISCALYEAR
+                                      AND A.DEPABO_NO = B.DEPABO_NO
+                                      AND A.RENTID = B.RENTID
+		  JOIN   dbo.FILEMANAGEMENT C ON C.FILEKEY = B.ATTACHFILE
+		 WHERE   A.FISCALYEAR = #{fiscalyear}
+		   AND   A.DEPABO_NO  = #{depabo_no}
+		   AND   A.RENTID     = #{rentid}
+	</select>
+	
+	<select id="selectRentGrpDetailListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeRent.xml selectRentGrpDetailListCount  */
+		SELECT   100 AS TOTAL_CNT
+	</select>
+	
+	
+	<select id="selectRentGrpDetailList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeRent.xml selectRentGrpDetailList  */
+		WITH RENTLIST AS ( SELECT   FISCALYEAR
+                         , GIVEYEAR
+                         , GIVEMONTH
+                         , DEPABO_NO
+                         , GROUPCODE
+                         , RENTID
+                         , RENTAMOUNT
+                         , RENTDEPOSIT
+                         , RENTFROMMONTH
+                         , RENTTOMONTH
+                    FROM   dbo.TRFEERENT
+                   WHERE   FISCALYEAR  = #{fiscalyear}
+                     AND   RENTID      = #{rentid}
+                     AND   DEPABO_NO   = #{depabo_no} )
+		    , RENTTARGET AS ( SELECT   A.GIVEYEAR
+		                             , A.GIVEMONTH
+		                             , B.DEPABO_NO
+		                             , B.TRFEE
+		                             , SUM(B.TRFEE) OVER (PARTITION BY A.GIVEYEAR , A.GIVEMONTH ) AS TOTTRFEE
+		                             , A.RENTFROMMONTH
+		                             , A.RENTTOMONTH
+		                             , A.RENTDEPOSIT
+		                             , A.RENTAMOUNT
+		                        FROM RENTLIST A
+		                        JOIN V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+		                                            AND A.GIVEMONTH = B.GIVEMONTH
+		                                            AND A.GROUPCODE = B.GROUPCODE )
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM ( SELECT   DEPABO_NO
+				                , DBO.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME 
+				                , TRFEE
+				                , TRFEERATE
+				                , RENTDEPOSIT12
+				                , RENTDEPOSITRATEPAY
+				                , RENTAMOUNTRATEPAY
+				                , RENTDEPOSITRATEPAY + RENTAMOUNTRATEPAY AS TOTALAMOUNT
+				           FROM ( SELECT   DEPABO_NO
+								         , TRFEE
+								         , TOTTRFEE
+								         , ROUND((CAST(TRFEE AS FLOAT)/CAST(TOTTRFEE AS FLOAT)) * 100, 2) AS TRFEERATE
+								         , A.RENTDEPOSIT
+								         , CEILING(( ( RENTDEPOSIT * 0.05 ) / 12)) AS RENTDEPOSIT12
+								         , CEILING(( ( RENTDEPOSIT * 0.05 ) / 12) * ((CAST(TRFEE AS FLOAT)/CAST(TOTTRFEE AS FLOAT)) * 100) * 0.01) AS RENTDEPOSITRATEPAY
+								         , A.RENTAMOUNT
+								         , CEILING(( RENTAMOUNT ) * ((CAST(TRFEE AS FLOAT)/CAST(TOTTRFEE AS FLOAT)) * 100) * 0.01) AS RENTAMOUNTRATEPAY
+								    FROM   RENTTARGET A ) A
+					  ) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<insert id="insertRentGrpApprove" parameterType="reqBox" >
+		INSERT 
+		  INTO   dbo.TRFEERENTGROUP
+		       ( FISCALYEAR
+               , DEPABO_NO
+               , RENTID
+               , RENTAMOUNT
+               , RENTDEPOSIT
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE )
+        SELECT   FISCALYEAR
+               , DEPABO_NO
+               , RENTID
+               , RENTAMOUNTRATEPAY
+               , RENTDEPOSITRATEPAY
+               , #{adminId} 
+               , GETDATE()
+               , #{adminId} 
+               , GETDATE()
+          FROM ( SELECT   FISCALYEAR
+                        , DEPABO_NO
+                        , RENTID
+			            , TRFEE
+				        , TOTTRFEE
+				        , ROUND((CAST(TRFEE AS FLOAT)/CAST(TOTTRFEE AS FLOAT)) * 100, 2) AS TRFEERATE
+				        , A.RENTDEPOSIT
+				        , CEILING(( ( RENTDEPOSIT * 0.05 ) / 12)) AS RENTDEPOSIT12
+				        , CEILING(( ( RENTDEPOSIT * 0.05 ) / 12) * ((CAST(TRFEE AS FLOAT)/CAST(TOTTRFEE AS FLOAT)) * 100) * 0.01) AS RENTDEPOSITRATEPAY
+				        , A.RENTAMOUNT
+				        , CEILING(( RENTAMOUNT ) * ((CAST(TRFEE AS FLOAT)/CAST(TOTTRFEE AS FLOAT)) * 100) * 0.01) AS RENTAMOUNTRATEPAY
+				   FROM   ( SELECT     A.GIVEYEAR
+		                             , A.GIVEMONTH
+		                             , A.FISCALYEAR
+		                             , A.RENTID
+		                             , B.DEPABO_NO
+		                             , B.TRFEE
+		                             , SUM(B.TRFEE) OVER (PARTITION BY A.GIVEYEAR , A.GIVEMONTH ) AS TOTTRFEE
+		                             , A.RENTFROMMONTH
+		                             , A.RENTTOMONTH
+		                             , A.RENTDEPOSIT
+		                             , A.RENTAMOUNT
+		                        FROM (SELECT   FISCALYEAR
+					                         , GIVEYEAR
+					                         , GIVEMONTH
+					                         , DEPABO_NO
+					                         , GROUPCODE
+					                         , RENTID
+					                         , RENTAMOUNT
+					                         , RENTDEPOSIT
+					                         , RENTFROMMONTH
+					                         , RENTTOMONTH
+					                    FROM   dbo.TRFEERENT
+					                   WHERE   FISCALYEAR  = #{fiscalyear}
+					                     AND   RENTID      = #{rentid}
+					                     AND   DEPABO_NO   = #{depabo_no} )	 A
+		                        JOIN V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+		                                            AND A.GIVEMONTH = B.GIVEMONTH
+		                                            AND A.GROUPCODE = B.GROUPCODE ) A ) A
+	</insert>
+	
+</mapper>

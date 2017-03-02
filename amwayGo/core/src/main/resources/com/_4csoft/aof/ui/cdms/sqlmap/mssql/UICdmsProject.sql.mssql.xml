@@ -1,0 +1,651 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsProjectMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectVO">
+        <selectKey resultType="Long" keyProperty="projectSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsProjectMapper.insert */
+INSERT INTO cs_cdms_project 
+       ( 
+           cs_project_name ,
+           cs_project_type_cd ,
+           cs_project_group_seq ,
+           cs_year ,
+           cs_start_date ,
+           cs_end_date ,
+           cs_module_count ,
+           cs_current_section_index ,
+           cs_current_output_index ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{projectName, jdbcType=VARCHAR} ,
+           #{projectTypeCd, jdbcType=VARCHAR} ,
+           #{projectGroupSeq, jdbcType=NUMERIC} ,
+           #{year, jdbcType=VARCHAR} ,
+           #{startDate, jdbcType=VARCHAR} ,
+           #{endDate, jdbcType=VARCHAR} ,
+           #{moduleCount, jdbcType=NUMERIC} ,
+           '1' ,
+           '1' ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectVO">
+        <selectKey resultType="Long" keyProperty="projectSeq" order="AFTER" >
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsProjectMapper.insertCopy */
+INSERT INTO cs_cdms_project 
+       ( 
+           cs_project_name ,
+           cs_project_type_cd ,
+           cs_project_group_seq ,
+           cs_year ,
+           cs_start_date ,
+           cs_end_date ,
+           cs_module_count ,
+           cs_current_section_index ,
+           cs_current_output_index ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+SELECT
+       #{projectName},
+       #{projectTypeCd},
+       cs_project_group_seq ,
+       #{year} ,
+       #{startDate} ,
+       #{endDate} ,
+       cs_module_count ,
+       '1' ,
+       '1' ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR} 
+  FROM cs_cdms_project
+ WHERE cs_project_seq = #{projectSeq, jdbcType=NUMERIC}
+       AND cs_delete_yn = 'N'
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectVO">
+/* UICdmsProjectMapper.update */
+UPDATE cs_cdms_project 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+       <if test='projectName != null'>
+       ,cs_project_name = #{projectName, jdbcType=VARCHAR}
+       </if>
+       <if test='projectTypeCd != null'>
+       ,cs_project_type_cd = #{projectTypeCd, jdbcType=VARCHAR}
+       </if>
+       <if test='projectGroupSeq != null'>
+       ,cs_project_group_seq = #{projectGroupSeq, jdbcType=NUMERIC}
+       </if>
+       <if test='year != null'>
+       ,cs_year = #{year, jdbcType=VARCHAR}
+       </if>
+       <if test='startDate != null'>
+       ,cs_start_date = #{startDate, jdbcType=VARCHAR}
+       </if>
+       <if test='endDate != null'>
+       ,cs_end_date = #{endDate, jdbcType=VARCHAR}
+       </if>
+       <if test='moduleCount != null'>
+       ,cs_module_count = #{moduleCount, jdbcType=NUMERIC}
+       </if>
+       <if test='completeYn != null'>
+       ,cs_complete_yn = #{completeYn, jdbcType=VARCHAR}
+       </if>
+ WHERE cs_project_seq = #{projectSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateCurrentStep" parameterType="map">
+/* UICdmsProjectMapper.updateCurrentStep */
+UPDATE cs_cdms_project 
+   SET cs_current_section_index = #{sectionIndex, jdbcType=NUMERIC} ,
+       cs_current_output_index = #{outputIndex, jdbcType=NUMERIC}
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateStep" parameterType="map">
+/* UICdmsProjectMapper.updateStep */
+UPDATE cs_cdms_project 
+   SET cs_current_section_index = #{currentSectionIndex, jdbcType=NUMERIC} ,
+       cs_current_output_index = #{currentOutputIndex, jdbcType=NUMERIC} ,
+       cs_next_section_index = #{nextSectionIndex, jdbcType=NUMERIC} ,
+       cs_next_output_index = #{nextOutputIndex, jdbcType=NUMERIC}
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectVO">
+/* UICdmsProjectMapper.delete */
+UPDATE cs_cdms_project 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_project_seq = #{projectSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectRS">
+        <result column="project.projectSeq"           property="project.projectSeq"/>
+        <result column="project.projectName"          property="project.projectName"/>
+        <result column="project.projectTypeCd"        property="project.projectTypeCd"/>
+        <result column="project.projectGroupSeq"      property="project.projectGroupSeq"/>
+        <result column="project.year"                 property="project.year"/>
+        <result column="project.startDate"            property="project.startDate"/>
+        <result column="project.endDate"              property="project.endDate"/>
+        <result column="project.moduleCount"          property="project.moduleCount"/>
+        <result column="project.currentSectionIndex"  property="project.currentSectionIndex"/>
+        <result column="project.currentOutputIndex"   property="project.currentOutputIndex"/>
+        <result column="project.nextSectionIndex"     property="project.nextSectionIndex"/>
+        <result column="project.nextOutputIndex"      property="project.nextOutputIndex"/>
+        <result column="project.completeYn"           property="project.completeYn"/>
+        <result column="project.deleteYn"             property="project.deleteYn"/>
+        <result column="project.regMemberSeq"         property="project.regMemberSeq"/>
+        <result column="project.regDtime"             property="project.regDtime"/>
+        <result column="project.regIp"                property="project.regIp"/>
+        <result column="project.updMemberSeq"         property="project.updMemberSeq"/>
+        <result column="project.updDtime"             property="project.updDtime"/>
+        <result column="project.updIp"                property="project.updIp"/>
+        <result column="csection.projectSeq"          property="currentSection.projectSeq"/>
+        <result column="csection.sectionIndex"        property="currentSection.sectionIndex"/>
+        <result column="csection.sectionName"         property="currentSection.sectionName"/>
+        <result column="coutput.projectSeq"           property="currentOutput.projectSeq"/>
+        <result column="coutput.outputIndex"          property="currentOutput.outputIndex"/>
+        <result column="coutput.outputCd"             property="currentOutput.outputCd"/>
+        <result column="coutput.outputName"           property="currentOutput.outputName"/>
+        <result column="coutput.completeYn"           property="currentOutput.completeYn"/>
+        <result column="coutput.endDate"              property="currentOutput.endDate"/>
+        <result column="nsection.projectSeq"          property="nextSection.projectSeq"/>
+        <result column="nsection.sectionIndex"        property="nextSection.sectionIndex"/>
+        <result column="nsection.sectionName"         property="nextSection.sectionName"/>
+        <result column="noutput.projectSeq"           property="nextOutput.projectSeq"/>
+        <result column="noutput.outputIndex"          property="nextOutput.outputIndex"/>
+        <result column="noutput.outputCd"             property="nextOutput.outputCd"/>
+        <result column="noutput.outputName"           property="nextOutput.outputName"/>
+        <result column="projGroup.projectGroupSeq"    property="projectGroup.projectGroupSeq"/>
+        <result column="projGroup.groupName"          property="projectGroup.groupName"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="Long" resultMap="getDetail_result">
+/* UICdmsProjectMapper.getDetail */
+SELECT project.cs_project_seq           AS "project.projectSeq" ,
+       project.cs_project_name          AS "project.projectName" ,
+       project.cs_project_type_cd       AS "project.projectTypeCd" ,
+       project.cs_project_group_seq     AS "project.projectGroupSeq" ,
+       project.cs_year                  AS "project.year" ,
+       project.cs_start_date            AS "project.startDate" ,
+       project.cs_end_date              AS "project.endDate" ,
+       project.cs_module_count          AS "project.moduleCount" ,
+       project.cs_current_section_index AS "project.currentSectionIndex" ,
+       project.cs_current_output_index  AS "project.currentOutputIndex" ,
+       project.cs_next_section_index    AS "project.nextSectionIndex" ,
+       project.cs_next_output_index     AS "project.nextOutputIndex" ,
+       project.cs_complete_yn           AS "project.completeYn" ,
+       project.cs_delete_yn             AS "project.deleteYn" ,
+       project.cs_reg_member_seq        AS "project.regMemberSeq" ,
+       project.cs_reg_dtime             AS "project.regDtime" ,
+       project.cs_reg_ip                AS "project.regIp" ,
+       project.cs_upd_member_seq        AS "project.updMemberSeq" ,
+       project.cs_upd_dtime             AS "project.updDtime" ,
+       project.cs_upd_ip                AS "project.updIp" ,
+       csection.cs_project_seq          AS "csection.projectSeq" ,
+       csection.cs_section_index        AS "csection.sectionIndex" ,
+       csection.cs_section_name         AS "csection.sectionName" ,
+       coutput.cs_project_seq           AS "coutput.projectSeq" ,
+       coutput.cs_output_index          AS "coutput.outputIndex" ,
+       coutput.cs_output_cd             AS "coutput.outputCd" ,
+       coutput.cs_output_name           AS "coutput.outputName" ,
+       coutput.cs_complete_yn           AS "coutput.completeYn" ,
+       coutput.cs_end_date              AS "coutput.endDate" ,
+       nsection.cs_project_seq          AS "nsection.projectSeq" ,
+       nsection.cs_section_index        AS "nsection.sectionIndex" ,
+       nsection.cs_section_name         AS "nsection.sectionName" ,
+       noutput.cs_project_seq           AS "noutput.projectSeq" ,
+       noutput.cs_output_index          AS "noutput.outputIndex" ,
+       noutput.cs_output_cd             AS "noutput.outputCd" ,
+       noutput.cs_output_name           AS "noutput.outputName" ,
+       projGroup.cs_project_group_seq   AS "projGroup.projectGroupSeq" ,
+       projGroup.cs_group_name          AS "projGroup.groupName"
+  FROM cs_cdms_project project
+   LEFT OUTER JOIN cs_cdms_section csection
+       ON project.cs_project_seq = csection.cs_project_seq 
+       AND project.cs_current_section_index = csection.cs_section_index 
+       AND csection.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_cdms_output coutput
+       ON project.cs_project_seq = coutput.cs_project_seq 
+       AND project.cs_current_section_index = coutput.cs_section_index 
+       AND project.cs_current_output_index = coutput.cs_output_index
+       AND coutput.cs_delete_yn = 'N'  
+   LEFT OUTER JOIN cs_cdms_section nsection
+       ON project.cs_project_seq = nsection.cs_project_seq 
+       AND project.cs_next_section_index = nsection.cs_section_index 
+       AND csection.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_cdms_output noutput
+       ON project.cs_project_seq = noutput.cs_project_seq 
+       AND project.cs_next_section_index = noutput.cs_section_index 
+       AND project.cs_next_output_index = noutput.cs_output_index
+       AND noutput.cs_delete_yn = 'N'  
+   LEFT OUTER JOIN cs_cdms_project_group projGroup
+       ON project.cs_project_group_seq = projGroup.cs_project_group_seq 
+       AND projGroup.cs_delete_yn = 'N'  
+ WHERE project.cs_project_seq = #{projectSeq} 
+       AND project.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectRS">
+        <result column="project.projectSeq"           property="project.projectSeq"/>
+        <result column="project.projectName"          property="project.projectName"/>
+        <result column="project.projectTypeCd"        property="project.projectTypeCd"/>
+        <result column="project.projectGroupSeq"      property="project.projectGroupSeq"/>
+        <result column="project.year"                 property="project.year"/>
+        <result column="project.startDate"            property="project.startDate"/>
+        <result column="project.endDate"              property="project.endDate"/>
+        <result column="project.moduleCount"          property="project.moduleCount"/>
+        <result column="project.currentSectionIndex"  property="project.currentSectionIndex"/>
+        <result column="project.currentOutputIndex"   property="project.currentOutputIndex"/>
+        <result column="project.nextSectionIndex"     property="project.nextSectionIndex"/>
+        <result column="project.nextOutputIndex"      property="project.nextOutputIndex"/>
+        <result column="project.completeYn"           property="project.completeYn"/>
+        <result column="project.deleteYn"             property="project.deleteYn"/>
+        <result column="project.regMemberSeq"         property="project.regMemberSeq"/>
+        <result column="project.regDtime"             property="project.regDtime"/>
+        <result column="project.regIp"                property="project.regIp"/>
+        <result column="project.updMemberSeq"         property="project.updMemberSeq"/>
+        <result column="project.updDtime"             property="project.updDtime"/>
+        <result column="project.updIp"                property="project.updIp"/>
+        <result column="csection.projectSeq"          property="currentSection.projectSeq"/>
+        <result column="csection.sectionIndex"        property="currentSection.sectionIndex"/>
+        <result column="csection.sectionName"         property="currentSection.sectionName"/>
+        <result column="coutput.projectSeq"           property="currentOutput.projectSeq"/>
+        <result column="coutput.outputIndex"          property="currentOutput.outputIndex"/>
+        <result column="coutput.outputCd"             property="currentOutput.outputCd"/>
+        <result column="coutput.outputName"           property="currentOutput.outputName"/>
+        <result column="coutput.completeYn"           property="currentOutput.completeYn"/>
+        <result column="coutput.endDate"              property="currentOutput.endDate"/>
+        <result column="nsection.projectSeq"          property="nextSection.projectSeq"/>
+        <result column="nsection.sectionIndex"        property="nextSection.sectionIndex"/>
+        <result column="nsection.sectionName"         property="nextSection.sectionName"/>
+        <result column="noutput.projectSeq"           property="nextOutput.projectSeq"/>
+        <result column="noutput.outputIndex"          property="nextOutput.outputIndex"/>
+        <result column="noutput.outputCd"             property="nextOutput.outputCd"/>
+        <result column="noutput.outputName"           property="nextOutput.outputName"/>
+        <result column="projGroup.projectGroupSeq"    property="projectGroup.projectGroupSeq"/>
+        <result column="projGroup.groupName"          property="projectGroup.groupName"/>
+        <collection column="project.projectSeq"       property="listProjectMember" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectMemberRS" select="com._4csoft.aof.cdms.mapper.CdmsProjectMemberMapper.getListByProject"/>
+        <collection column="project.projectGroupSeq"  property="listProjectGroupMember" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectMemberRS" select="com._4csoft.aof.cdms.mapper.CdmsProjectMemberMapper.getListByProjectGroup"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsProjectCondition" resultMap="getList_result">
+/* UICdmsProjectMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "project.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "project.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "project.projectName" ASC</when>
+            <when test='orderby == -2'>ORDER BY "project.projectName" DESC</when>
+            <when test='orderby == 3'>ORDER BY "project.projectTypeCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "project.projectTypeCd" DESC</when>
+            <when test='orderby == 4'>ORDER BY "project.startDate" ASC</when>
+            <when test='orderby == -4'>ORDER BY "project.startDate" DESC</when>
+            <otherwise>ORDER BY "project.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT project.cs_project_seq           AS "project.projectSeq" ,
+       project.cs_project_name          AS "project.projectName" ,
+       project.cs_project_type_cd       AS "project.projectTypeCd" ,
+       project.cs_project_group_seq     AS "project.projectGroupSeq" ,
+       project.cs_year                  AS "project.year" ,
+       project.cs_start_date            AS "project.startDate" ,
+       project.cs_end_date              AS "project.endDate" ,
+       project.cs_module_count          AS "project.moduleCount" ,
+       project.cs_current_section_index AS "project.currentSectionIndex" ,
+       project.cs_current_output_index  AS "project.currentOutputIndex" ,
+       project.cs_next_section_index    AS "project.nextSectionIndex" ,
+       project.cs_next_output_index     AS "project.nextOutputIndex" ,
+       project.cs_complete_yn           AS "project.completeYn" ,
+       project.cs_delete_yn             AS "project.deleteYn" ,
+       project.cs_reg_member_seq        AS "project.regMemberSeq" ,
+       project.cs_reg_dtime             AS "project.regDtime" ,
+       project.cs_reg_ip                AS "project.regIp" ,
+       project.cs_upd_member_seq        AS "project.updMemberSeq" ,
+       project.cs_upd_dtime             AS "project.updDtime" ,
+       project.cs_upd_ip                AS "project.updIp" ,
+       csection.cs_project_seq          AS "csection.projectSeq" ,
+       csection.cs_section_index        AS "csection.sectionIndex" ,
+       csection.cs_section_name         AS "csection.sectionName" ,
+       coutput.cs_project_seq           AS "coutput.projectSeq" ,
+       coutput.cs_output_index          AS "coutput.outputIndex" ,
+       coutput.cs_output_cd             AS "coutput.outputCd" ,
+       coutput.cs_output_name           AS "coutput.outputName" ,
+       coutput.cs_complete_yn           AS "coutput.completeYn" ,
+       coutput.cs_end_date              AS "coutput.endDate" ,
+       nsection.cs_project_seq          AS "nsection.projectSeq" ,
+       nsection.cs_section_index        AS "nsection.sectionIndex" ,
+       nsection.cs_section_name         AS "nsection.sectionName" ,
+       noutput.cs_project_seq           AS "noutput.projectSeq" ,
+       noutput.cs_output_index          AS "noutput.outputIndex" ,
+       noutput.cs_output_cd             AS "noutput.outputCd" ,
+       noutput.cs_output_name           AS "noutput.outputName" ,
+       projGroup.cs_project_group_seq   AS "projGroup.projectGroupSeq" ,
+       projGroup.cs_group_name          AS "projGroup.groupName"
+  FROM cs_cdms_project project 
+   LEFT OUTER JOIN cs_cdms_section csection
+       ON project.cs_project_seq = csection.cs_project_seq 
+       AND project.cs_current_section_index = csection.cs_section_index 
+       AND csection.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_cdms_output coutput
+       ON project.cs_project_seq = coutput.cs_project_seq 
+       AND project.cs_current_section_index = coutput.cs_section_index 
+       AND project.cs_current_output_index = coutput.cs_output_index
+       AND coutput.cs_delete_yn = 'N'  
+   LEFT OUTER JOIN cs_cdms_section nsection
+       ON project.cs_project_seq = nsection.cs_project_seq 
+       AND project.cs_next_section_index = nsection.cs_section_index 
+       AND csection.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_cdms_output noutput
+       ON project.cs_project_seq = noutput.cs_project_seq 
+       AND project.cs_next_section_index = noutput.cs_section_index 
+       AND project.cs_next_output_index = noutput.cs_output_index
+       AND noutput.cs_delete_yn = 'N'  
+   INNER JOIN cs_cdms_project_group projGroup
+       ON project.cs_project_group_seq = projGroup.cs_project_group_seq 
+       AND projGroup.cs_delete_yn = 'N'  
+ WHERE project.cs_delete_yn = 'N' 
+        <if test='srchProjectGroupSeq != null and !srchProjectGroupSeq.equals(0L)'>
+       AND project.cs_project_group_seq = #{srchProjectGroupSeq}
+        </if>
+        <if test='srchCompleteYn != null and !srchCompleteYn.equals("")'>
+       AND project.cs_complete_yn = #{srchCompleteYn}
+        </if>
+        <if test='srchProjectTypeCd != null and !srchProjectTypeCd.equals("")'>
+       AND project.cs_project_type_cd = #{srchProjectTypeCd}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("projectName")'>
+       AND project.cs_project_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsProjectCondition" resultType="int">
+/* UICdmsProjectMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_cdms_project project 
+	  INNER JOIN cs_cdms_project_group projGroup
+	       ON project.cs_project_group_seq = projGroup.cs_project_group_seq 
+	       AND projGroup.cs_delete_yn = 'N'
+ WHERE project.cs_delete_yn = 'N' 
+        <if test='srchProjectGroupSeq != null and !srchProjectGroupSeq.equals(0L)'>
+       AND project.cs_project_group_seq = #{srchProjectGroupSeq}
+        </if>
+        <if test='srchCompleteYn != null and !srchCompleteYn.equals("")'>
+       AND project.cs_complete_yn = #{srchCompleteYn}
+        </if>
+        <if test='srchProjectTypeCd != null and !srchProjectTypeCd.equals("")'>
+       AND project.cs_project_type_cd = #{srchProjectTypeCd}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("projectName")'>
+       AND project.cs_project_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+
+    <resultMap id="getMyProjectList_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectRS">
+        <result column="project.projectSeq"           property="project.projectSeq"/>
+        <result column="project.projectName"          property="project.projectName"/>
+        <result column="project.projectTypeCd"        property="project.projectTypeCd"/>
+        <result column="project.projectGroupSeq"      property="project.projectGroupSeq"/>
+        <result column="project.year"                 property="project.year"/>
+        <result column="project.startDate"            property="project.startDate"/>
+        <result column="project.endDate"              property="project.endDate"/>
+        <result column="project.moduleCount"          property="project.moduleCount"/>
+        <result column="project.currentSectionIndex"  property="project.currentSectionIndex"/>
+        <result column="project.currentOutputIndex"   property="project.currentOutputIndex"/>
+        <result column="project.nextSectionIndex"     property="project.nextSectionIndex"/>
+        <result column="project.nextOutputIndex"      property="project.nextOutputIndex"/>
+        <result column="project.completeYn"           property="project.completeYn"/>
+        <result column="project.deleteYn"             property="project.deleteYn"/>
+        <result column="project.regMemberSeq"         property="project.regMemberSeq"/>
+        <result column="project.regDtime"             property="project.regDtime"/>
+        <result column="project.regIp"                property="project.regIp"/>
+        <result column="project.updMemberSeq"         property="project.updMemberSeq"/>
+        <result column="project.updDtime"             property="project.updDtime"/>
+        <result column="project.updIp"                property="project.updIp"/>
+        <result column="project.countCompletedOutput" property="project.countCompletedOutput"/>
+        <result column="project.countTotalOutput"     property="project.countTotalOutput"/>
+        <result column="csection.projectSeq"          property="currentSection.projectSeq"/>
+        <result column="csection.sectionIndex"        property="currentSection.sectionIndex"/>
+        <result column="csection.sectionName"         property="currentSection.sectionName"/>
+        <result column="coutput.projectSeq"           property="currentOutput.projectSeq"/>
+        <result column="coutput.outputIndex"          property="currentOutput.outputIndex"/>
+        <result column="coutput.outputCd"             property="currentOutput.outputCd"/>
+        <result column="coutput.outputName"           property="currentOutput.outputName"/>
+        <result column="coutput.completeYn"           property="currentOutput.completeYn"/>
+        <result column="coutput.endDate"              property="currentOutput.endDate"/>
+        <result column="nsection.projectSeq"          property="nextSection.projectSeq"/>
+        <result column="nsection.sectionIndex"        property="nextSection.sectionIndex"/>
+        <result column="nsection.sectionName"         property="nextSection.sectionName"/>
+        <result column="noutput.projectSeq"           property="nextOutput.projectSeq"/>
+        <result column="noutput.outputIndex"          property="nextOutput.outputIndex"/>
+        <result column="noutput.outputCd"             property="nextOutput.outputCd"/>
+        <result column="noutput.outputName"           property="nextOutput.outputName"/>
+        <result column="projGroup.projectGroupSeq"    property="projectGroup.projectGroupSeq"/>
+        <result column="projGroup.groupName"          property="projectGroup.groupName"/>
+        <collection column="project.projectSeq"       property="listSection" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsSectionRS" select="com._4csoft.aof.cdms.mapper.CdmsSectionMapper.getListByProject"/>
+        <collection column="project.projectSeq"       property="listCompany" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectCompanyRS" select="com._4csoft.aof.cdms.mapper.CdmsProjectCompanyMapper.getListByProject"/>
+        <collection column="project.projectSeq"       property="listComment" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsCommentRS" select="com._4csoft.aof.cdms.mapper.CdmsCommentMapper.getListTop3ByProject"/>
+    </resultMap>
+    <select id="getMyProjectList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsProjectCondition" resultMap="getMyProjectList_result">
+/* UICdmsProjectMapper.getMyProjectList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "project.startDate" ASC</when>
+            <when test='orderby == -1'>ORDER BY "project.startDate" DESC</when>
+            <when test='orderby == 2'>ORDER BY "project.projectName" ASC</when>
+            <when test='orderby == -2'>ORDER BY "project.projectName" DESC</when>
+            <when test='orderby == 3'>ORDER BY "project.projectTypeCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "project.projectTypeCd" DESC</when>
+            <otherwise>ORDER BY "project.startDate" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT project.cs_project_seq           AS "project.projectSeq" ,
+       project.cs_project_name          AS "project.projectName" ,
+       project.cs_project_type_cd       AS "project.projectTypeCd" ,
+       project.cs_project_group_seq     AS "project.projectGroupSeq" ,
+       project.cs_year                  AS "project.year" ,
+       project.cs_start_date            AS "project.startDate" ,
+       project.cs_end_date              AS "project.endDate" ,
+       project.cs_module_count          AS "project.moduleCount" ,
+       project.cs_current_section_index AS "project.currentSectionIndex" ,
+       project.cs_current_output_index  AS "project.currentOutputIndex" ,
+       project.cs_next_section_index    AS "project.nextSectionIndex" ,
+       project.cs_next_output_index     AS "project.nextOutputIndex" ,
+       project.cs_complete_yn           AS "project.completeYn" ,
+       project.cs_delete_yn             AS "project.deleteYn" ,
+       project.cs_reg_member_seq        AS "project.regMemberSeq" ,
+       project.cs_reg_dtime             AS "project.regDtime" ,
+       project.cs_reg_ip                AS "project.regIp" ,
+       project.cs_upd_member_seq        AS "project.updMemberSeq" ,
+       project.cs_upd_dtime             AS "project.updDtime" ,
+       project.cs_upd_ip                AS "project.updIp" ,
+       (SELECT COUNT(*) 
+          FROM cs_cdms_output 
+         WHERE cs_project_seq = project.cs_project_seq
+           AND cs_complete_yn = 'Y'
+           AND cs_delete_yn = 'N'
+       ) AS "project.countCompletedOutput" ,
+       (SELECT COUNT(*) 
+          FROM cs_cdms_output 
+         WHERE cs_project_seq = project.cs_project_seq
+           AND cs_delete_yn = 'N'
+       ) AS "project.countTotalOutput" ,
+       csection.cs_project_seq          AS "csection.projectSeq" ,
+       csection.cs_section_index        AS "csection.sectionIndex" ,
+       csection.cs_section_name         AS "csection.sectionName" ,
+       coutput.cs_project_seq           AS "coutput.projectSeq" ,
+       coutput.cs_output_index          AS "coutput.outputIndex" ,
+       coutput.cs_output_cd             AS "coutput.outputCd" ,
+       coutput.cs_output_name           AS "coutput.outputName" ,
+       coutput.cs_complete_yn           AS "coutput.completeYn" ,
+       coutput.cs_end_date              AS "coutput.endDate" ,
+       nsection.cs_project_seq          AS "nsection.projectSeq" ,
+       nsection.cs_section_index        AS "nsection.sectionIndex" ,
+       nsection.cs_section_name         AS "nsection.sectionName" ,
+       noutput.cs_project_seq           AS "noutput.projectSeq" ,
+       noutput.cs_output_index          AS "noutput.outputIndex" ,
+       noutput.cs_output_cd             AS "noutput.outputCd" ,
+       noutput.cs_output_name           AS "noutput.outputName" ,
+       projGroup.cs_project_group_seq   AS "projGroup.projectGroupSeq" ,
+       projGroup.cs_group_name          AS "projGroup.groupName"
+  FROM cs_cdms_project project 
+   LEFT OUTER JOIN cs_cdms_section csection
+       ON project.cs_project_seq = csection.cs_project_seq 
+       AND project.cs_current_section_index = csection.cs_section_index 
+       AND csection.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_cdms_output coutput
+       ON project.cs_project_seq = coutput.cs_project_seq 
+       AND project.cs_current_section_index = coutput.cs_section_index 
+       AND project.cs_current_output_index = coutput.cs_output_index
+       AND coutput.cs_delete_yn = 'N'  
+   LEFT OUTER JOIN cs_cdms_section nsection
+       ON project.cs_project_seq = nsection.cs_project_seq 
+       AND project.cs_next_section_index = nsection.cs_section_index 
+       AND csection.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_cdms_output noutput
+       ON project.cs_project_seq = noutput.cs_project_seq 
+       AND project.cs_next_section_index = noutput.cs_section_index 
+       AND project.cs_next_output_index = noutput.cs_output_index
+       AND noutput.cs_delete_yn = 'N'  
+   INNER JOIN cs_cdms_project_group projGroup
+       ON project.cs_project_group_seq = projGroup.cs_project_group_seq 
+       AND projGroup.cs_delete_yn = 'N'  
+ WHERE project.cs_delete_yn = 'N' 
+       AND project.cs_complete_yn = 'N'
+       AND project.cs_project_seq IN (
+           SELECT
+                 cs_project_seq
+           FROM
+                 cs_cdms_project_member
+           WHERE
+                 cs_member_seq = #{srchSessionMemberSeq}
+                 AND cs_delete_yn = 'N'
+       )
+        <if test='srchProjectTypeCd != null and !srchProjectTypeCd.equals("")'>
+       AND project.cs_project_type_cd = #{srchProjectTypeCd}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("projectName")'>
+       AND project.cs_project_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='srchProjectGroupSeq != null and !srchProjectGroupSeq.equals(0L)'>
+       AND project.cs_project_group_seq = #{srchProjectGroupSeq}
+        </if>
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countMyProjectList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsProjectCondition" resultType="int">
+/* UICdmsProjectMapper.countMyProjectList */
+SELECT COUNT(*) 
+  FROM cs_cdms_project project 
+	INNER JOIN cs_cdms_project_group projGroup
+       ON project.cs_project_group_seq = projGroup.cs_project_group_seq 
+       AND projGroup.cs_delete_yn = 'N'  
+ WHERE project.cs_delete_yn = 'N' 
+       AND project.cs_complete_yn = 'N'
+       AND project.cs_project_seq IN (
+           SELECT
+                 cs_project_seq
+           FROM
+                 cs_cdms_project_member
+           WHERE
+                 cs_member_seq = #{srchSessionMemberSeq}
+                 AND cs_delete_yn = 'N'
+       )
+        <if test='srchProjectTypeCd != null and !srchProjectTypeCd.equals("")'>
+       AND project.cs_project_type_cd = #{srchProjectTypeCd}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("projectName")'>
+       AND project.cs_project_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='srchProjectGroupSeq != null and !srchProjectGroupSeq.equals(0L)'>
+       AND project.cs_project_group_seq = #{srchProjectGroupSeq}
+        </if>
+    </select>
+    
+    <select id="getDetailVO" parameterType="Long" resultType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectVO">
+/* UICdmsProjectMapper.getDetailVO */
+SELECT project.cs_project_seq           AS "projectSeq" ,
+       project.cs_project_name          AS "projectName" ,
+       project.cs_project_type_cd       AS "projectTypeCd" ,
+       project.cs_project_group_seq     AS "projectGroupSeq" ,
+       project.cs_year                  AS "year" ,
+       project.cs_start_date            AS "startDate" ,
+       project.cs_end_date              AS "endDate" ,
+       project.cs_module_count          AS "moduleCount" ,
+       project.cs_current_section_index AS "currentSectionIndex" ,
+       project.cs_current_output_index  AS "currentOutputIndex" ,
+       project.cs_next_section_index    AS "nextSectionIndex" ,
+       project.cs_next_output_index     AS "nextOutputIndex" ,
+       project.cs_complete_yn           AS "completeYn" ,
+       project.cs_delete_yn             AS "deleteYn" ,
+       project.cs_reg_member_seq        AS "regMemberSeq" ,
+       project.cs_reg_dtime             AS "regDtime" ,
+       project.cs_reg_ip                AS "regIp" ,
+       project.cs_upd_member_seq        AS "updMemberSeq" ,
+       project.cs_upd_dtime             AS "updDtime" ,
+       project.cs_upd_ip                AS "updIp"
+  FROM cs_cdms_project project
+ WHERE project.cs_project_seq = #{projectSeq} 
+       AND project.cs_delete_yn = 'N'
+    </select>
+
+</mapper>

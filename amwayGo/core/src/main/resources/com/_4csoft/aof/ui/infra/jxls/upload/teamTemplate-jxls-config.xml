@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workbook>
+	<worksheet idx="0">
+	   <section startRow="0" endRow="1" />
+		<loop startRow="1" endRow="1" items="members" var="member" varType="com._4csoft.aof.univ.vo.UnivCourseTeamProjectMemberVO">
+			<section startRow="3" endRow="3">
+			    <mapping row="3" col="0" nullAllowed="false">member.courseApplySeq</mapping>
+				<mapping row="3" col="1" nullAllowed="false">member.teamMemberName</mapping>
+				<mapping row="3" col="2" nullAllowed="false">member.chiefYn</mapping>
+			</section>
+			<loopbreakcondition>
+				<rowcheck offset="0">
+					<cellcheck offset="0"></cellcheck>
+				</rowcheck>
+			</loopbreakcondition>
+		</loop>
+	</worksheet>
+</workbook>

@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseDiscussTemplateMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussTemplateVO">
+        <selectKey resultType="Long" keyProperty="templateSeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>
+			/* UIUnivCourseDiscussTemplate.insert */
+			INSERT INTO cs_course_discuss_template 
+			       ( 
+			           cs_course_master_seq ,
+					   cs_template_title ,	
+					   cs_template_description ,
+					   cs_prof_member_seq ,
+					   cs_open_yn ,		
+					   cs_use_yn ,			 
+			           cs_delete_yn, 
+			           cs_reg_member_seq, 
+			           cs_upd_member_seq, 
+			           cs_reg_dtime, 
+			           cs_upd_dtime, 
+			           cs_reg_ip, 
+			           cs_upd_ip 
+			       ) 
+			   VALUES
+			   	   (
+			   	   	   #{courseMasterSeq,   jdbcType=NUMERIC} ,
+					   #{templateTitle,   jdbcType=VARCHAR} ,	
+					   #{templateDescription,   jdbcType=VARCHAR} ,
+					   #{profMemberSeq,   jdbcType=NUMERIC} ,
+					   <choose>
+						   	<when test='openYn == null or openYn.equals("")'>
+					   'N' ,  	
+						   	</when>
+						   	<otherwise>
+					   #{openYn,   jdbcType=VARCHAR} , 
+						   	</otherwise>
+					   </choose>	
+					   #{useYn,   jdbcType=VARCHAR} ,
+			   		   'N',
+			           #{regMemberSeq,   jdbcType=NUMERIC},
+			           #{updMemberSeq,   jdbcType=NUMERIC},
+			           dbo.FN_NOW_TO_CHAR(),
+			           dbo.FN_NOW_TO_CHAR(),
+			           #{regIp,          jdbcType=VARCHAR},
+			           #{updIp,          jdbcType=VARCHAR}
+			   	   )
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussTemplateVO">
+		/* UIUnivCourseDiscussTemplate.update */
+		UPDATE cs_course_discuss_template 
+		   SET cs_course_master_seq 	= #{courseMasterSeq, jdbcType=NUMERIC} ,
+		   	   cs_template_title 		= #{templateTitle, jdbcType=VARCHAR} ,
+		   	   cs_template_description  = #{templateDescription, jdbcType=VARCHAR} ,
+		   	   cs_prof_member_seq		= #{profMemberSeq, jdbcType=NUMERIC} ,
+		   <if test='openYn != null'>
+		   	   cs_open_yn				= #{openYn, jdbcType=VARCHAR} ,
+		   </if>
+		   <if test='openYn == null'>
+		   	   cs_open_yn				= 'N' ,
+		   </if>
+		   <if test='useYn != null'>
+		   	   cs_use_yn				= #{useYn, jdbcType=VARCHAR} ,
+		   </if>
+		   <if test='useYn == null'>
+		   	   cs_use_yn				= 'N' ,
+		   </if>
+		   	   cs_upd_dtime  			= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         		= #{updIp, jdbcType=VARCHAR} 
+		 WHERE cs_template_seq 			= #{templateSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussTemplateVO">
+		/* UIUnivCourseDiscussTemplate.delete */
+		UPDATE cs_course_discuss_template 
+		   SET cs_upd_dtime  = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn      = 'Y' 
+		 WHERE cs_template_seq = #{templateSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseDiscussTemplateRS">
+        <result column="dist.templateSeq"           property="discussTemplate.templateSeq"/>
+        <result column="dist.templateTitle"         property="discussTemplate.templateTitle"/>
+        <result column="dist.templateDescription"   property="discussTemplate.templateDescription"/>
+        <result column="dist.openYn"            	property="discussTemplate.openYn"/>
+        <result column="dist.useYn"            		property="discussTemplate.useYn"/>
+        <result column="dist.courseMasterSeq"       property="discussTemplate.courseMasterSeq"/>
+        <result column="dist.profMemberSeq"         property="discussTemplate.profMemberSeq"/>
+        <result column="dist.deleteYn"            	property="discussTemplate.deleteYn"/>
+        <result column="dist.regMemberSeq"          property="discussTemplate.regMemberSeq"/>
+        <result column="dist.updMemberSeq"          property="discussTemplate.updMemberSeq"/>
+        <result column="dist.regDtime"            	property="discussTemplate.regDtime"/>
+        <result column="dist.updDtime"            	property="discussTemplate.updDtime"/>
+        <result column="dist.regIp"            		property="discussTemplate.regIp"/>
+        <result column="dist.updIp"            		property="discussTemplate.updIp"/>
+        <result column="cmas.courseTitle"           property="courseMaster.courseTitle"/>
+        <result column="dist.updMemberName"         property="discussTemplate.updMemberName"/>
+        <result column="memb.memberName"            property="member.memberName"/>
+        <collection column="{referenceSeq=dist.templateSeq,referenceTablename=referenceTablename}" property="discussTemplate.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* UIUnivCourseDiscussTemplate.getDetail */
+		SELECT dist.cs_template_seq AS "dist.templateSeq" , 
+		       dist.cs_template_title AS "dist.templateTitle" , 
+		       dist.cs_template_description AS "dist.templateDescription" , 
+		       dist.cs_open_yn AS "dist.openYn" , 
+		       dist.cs_use_yn AS "dist.useYn" , 
+		       dist.cs_course_master_seq AS "dist.courseMasterSeq" , 
+		       dist.cs_prof_member_seq AS "dist.profMemberSeq" , 
+		       dist.cs_delete_yn AS "dist.deleteYn" , 
+		       dist.cs_reg_member_seq AS "dist.regMemberSeq" , 
+		       dist.cs_upd_member_seq AS "dist.updMemberSeq" , 
+		       dist.cs_reg_dtime AS "dist.regDtime" , 
+		       dist.cs_upd_dtime AS "dist.updDtime" , 
+		       dist.cs_reg_ip AS "dist.regIp" , 
+		       dist.cs_upd_ip AS "dist.updIp" , 
+		       cmas.cs_course_title AS "cmas.courseTitle" , 
+		       memb.cs_member_name AS "memb.memberName" , 
+		       (SELECT cs_member_name 
+		         FROM cs_member 
+		        WHERE cs_member_seq = dist.cs_upd_member_seq 
+		       ) AS "dist.updMemberName" , 
+		       'cs_course_discuss_template' AS "referenceTablename" 
+		  FROM cs_course_discuss_template dist 
+		   INNER JOIN cs_course_master cmas 
+		       ON dist.cs_course_master_seq = cmas.cs_course_master_seq 
+		   INNER JOIN cs_member memb 
+		       ON dist.cs_prof_member_seq = memb.cs_member_seq 
+		 WHERE dist.cs_delete_yn = 'N'
+			AND dist.cs_template_seq = #{templateSeq} 
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseDiscussTemplateRS">
+   	 	<result column="dist.templateSeq"           property="discussTemplate.templateSeq"/>
+        <result column="dist.templateTitle"         property="discussTemplate.templateTitle"/>
+        <result column="dist.templateDescription"   property="discussTemplate.templateDescription"/>
+        <result column="dist.openYn"            	property="discussTemplate.openYn"/>
+        <result column="dist.useYn"            		property="discussTemplate.useYn"/>
+        <result column="dist.courseMasterSeq"       property="discussTemplate.courseMasterSeq"/>
+        <result column="dist.profMemberSeq"         property="discussTemplate.profMemberSeq"/>
+        <result column="dist.deleteYn"            	property="discussTemplate.deleteYn"/>
+        <result column="dist.regMemberSeq"          property="discussTemplate.regMemberSeq"/>
+        <result column="dist.updMemberSeq"          property="discussTemplate.updMemberSeq"/>
+        <result column="dist.regDtime"            	property="discussTemplate.regDtime"/>
+        <result column="dist.updDtime"            	property="discussTemplate.updDtime"/>
+        <result column="dist.regIp"            		property="discussTemplate.regIp"/>
+        <result column="dist.updIp"            		property="discussTemplate.updIp"/>
+        <result column="cmas.courseTitle"           property="courseMaster.courseTitle"/>
+        <result column="memb.memberName"            property="member.memberName"/>
+	</resultMap>
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseDiscussTemplateCondition" resultMap="listResultMap">
+		/* UIUnivCourseDiscussTemplate.getList */
+    <if test='currentPage != 0'>
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'> ORDER BY "dist.templateTitle" ASC</when>
+            <when test='orderby == -1'>ORDER BY "dist.templateTitle" DESC</when>
+            <when test='orderby == 2'> ORDER BY "cmas.courseTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "cmas.courseTitle" DESC</when>
+            <when test='orderby == 3'> ORDER BY "memb.memberName" ASC</when>
+            <when test='orderby == -3'>ORDER BY "memb.memberName" DESC</when>
+            <when test='orderby == 4'> ORDER BY "dist.regDtime" ASC</when>
+            <when test='orderby == -4'>ORDER BY "dist.regDtime" DESC</when>
+            <otherwise>ORDER BY "dist.regDtime" DESC</otherwise>
+        </choose>
+		) AS rownumber, * FROM (
+ 	</if>
+			SELECT
+				dist.cs_template_seq 			AS "dist.templateSeq" ,
+				dist.cs_template_title 		AS "dist.templateTitle" ,
+				dist.cs_template_description 	AS "dist.templateDescription" ,
+				dist.cs_open_yn 				AS "dist.openYn" ,
+				dist.cs_use_yn 				AS "dist.useYn" ,
+				dist.cs_course_master_seq		AS "dist.courseMasterSeq" ,
+				dist.cs_prof_member_seq		AS "dist.profMemberSeq" ,
+				dist.cs_delete_yn				AS "dist.deleteYn" , 
+			    dist.cs_reg_member_seq			AS "dist.regMemberSeq" , 
+			    dist.cs_upd_member_seq			AS "dist.updMemberSeq" , 
+			    dist.cs_reg_dtime				AS "dist.regDtime" , 
+			    dist.cs_upd_dtime				AS "dist.updDtime" , 
+			    dist.cs_reg_ip					AS "dist.regIp" , 
+			    dist.cs_upd_ip					AS "dist.updIp" ,
+				cmas.cs_course_title			AS "cmas.courseTitle",
+				memb.cs_member_name             AS "memb.memberName"
+			FROM
+				cs_course_discuss_template dist
+				INNER JOIN
+				cs_course_master cmas
+				ON dist.cs_course_master_seq = cmas.cs_course_master_seq
+				INNER JOIN
+				cs_member memb
+				ON dist.cs_prof_member_seq = memb.cs_member_seq
+			WHERE
+				dist.cs_delete_yn = 'N'
+		<if test='srchUseYn != null and !srchUseYn.equals("")'>
+			AND dist.cs_use_yn = #{srchUseYn}
+		</if>
+		<if test='srchProfMemberSeq != null and !srchProfMemberSeq.equals("")'>
+			AND dist.cs_prof_member_seq = #{srchProfMemberSeq}
+		</if>
+		<if test='srchProfSessionMemberSeq != null and !srchProfSessionMemberSeq.equals("")'>
+			AND (dist.cs_prof_member_seq = #{srchProfSessionMemberSeq} OR dist.cs_open_yn = 'Y')
+		</if>
+		<if test='srchCourseMasterSeq != null and !srchCourseMasterSeq.equals("")'>
+			AND cmas.cs_course_master_seq = #{srchCourseMasterSeq} 
+		</if>
+		<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+			AND (
+				dist.cs_prof_member_seq IN (
+											SELECT 
+												sub.cs_prof_member_seq 
+											FROM 
+												cs_course_active_lecturer sub
+											WHERE sub.cs_delete_yn = 'N' 
+											  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+											GROUP BY sub.cs_prof_member_seq
+											)
+				 OR dist.cs_reg_member_seq = #{srchAssistMemberSeq}
+				 OR dist.cs_open_yn = 'Y')
+		</if>
+		
+		<if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("templateTitle")'>
+       		AND dist.cs_template_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("templateDescription")'>
+       		AND dist.cs_template_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        
+        <if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+    
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseDiscussTemplateCondition" resultType="int">
+		/* UIUnivCourseDiscussTemplate.countList */
+		SELECT COUNT(*)
+			FROM
+				cs_course_discuss_template dist
+				INNER JOIN
+				cs_course_master cmas
+				ON dist.cs_course_master_seq = cmas.cs_course_master_seq
+				INNER JOIN
+				cs_member memb
+				ON dist.cs_prof_member_seq = memb.cs_member_seq
+			WHERE
+				dist.cs_delete_yn = 'N'
+		<if test='srchUseYn != null and !srchUseYn.equals("")'>
+			AND dist.cs_use_yn = #{srchUseYn}
+		</if>
+		<if test='srchProfMemberSeq != null and !srchProfMemberSeq.equals("")'>
+			AND dist.cs_prof_member_seq = #{srchProfMemberSeq}
+		</if>
+		<if test='srchProfSessionMemberSeq != null and !srchProfSessionMemberSeq.equals("")'>
+			AND (dist.cs_prof_member_seq = #{srchProfSessionMemberSeq} OR dist.cs_open_yn = 'Y')
+		</if>
+		<if test='srchCourseMasterSeq != null and !srchCourseMasterSeq.equals("")'>
+			AND cmas.cs_course_master_seq = #{srchCourseMasterSeq} 
+		</if>
+		<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+			AND (
+				dist.cs_prof_member_seq IN (
+											SELECT 
+												sub.cs_prof_member_seq 
+											FROM 
+												cs_course_active_lecturer sub
+											WHERE sub.cs_delete_yn = 'N' 
+											  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+											GROUP BY sub.cs_prof_member_seq
+											)
+				 OR dist.cs_reg_member_seq = #{srchAssistMemberSeq}
+				 OR dist.cs_open_yn = 'Y')
+		</if>
+		
+		<if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("templateTitle")'>
+       		AND dist.cs_template_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("templateDescription")'>
+       		AND dist.cs_template_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+</mapper>

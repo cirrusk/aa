@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.BatchMapper">
+
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIBatchRS">
+		<result column="batch.batchSeq"         		property="batch.batchSeq"/>
+		<result column="batch.batchId"          		property="batch.batchId"/>
+		<result column="batch.batchName"        		property="batch.batchName"/>
+		<result column="batch.batchSchedule"    		property="batch.batchSchedule"/>
+		<result column="batch.batchStatusCd"    		property="batch.batchStatusCd"/>
+		<result column="batch.batchCount"       		property="batch.batchCount"/>
+		<result column="batch.batchRunningTime" 		property="batch.batchRunningTime"/>
+		<result column="batch.memberSeq"        		property="batch.memberSeq"/>
+		<result column="batch.batchYn"          		property="batch.batchYn"/>
+		<result column="batch.completetionDtime"		property="batch.batchCompletetionDtime"/>
+		<result column="batch.editYn"          			property="batch.editYn"/>
+		<result column="batch.regMemberSeq"     		property="batch.regMemberSeq"/>
+		<result column="batch.updMemberSeq"     		property="batch.updMemberSeq"/>
+		<result column="batch.regDtime"         		property="batch.regDtime"/>
+		<result column="batch.updDtime"      			property="batch.updDtime"/>
+	</resultMap>         
+	
+	<select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.UIBatchVO" resultMap="listResultMap">
+		/* UIBatchMapper.getList */
+		SELECT 
+			  batch.cs_batch_seq				AS "batch.batchSeq"
+			, batch.cs_batch_id					AS "batch.batchId"
+			, batch.cs_batch_name				AS "batch.batchName"
+			, batch.cs_batch_schedule			AS "batch.batchSchedule"
+			, batch.cs_batch_status_cd			AS "batch.batchStatusCd"
+			, batch.cs_batch_count				AS "batch.batchCount"
+			, batch.cs_batch_running_time		AS "batch.batchRunningTime"
+			, batch.cs_member_seq				AS "batch.memberSeq"
+			, batch.cs_batch_yn					AS "batch.batchYn"
+			, batch.cs_batch_completetion_dtime	AS "batch.completetionDtime"
+			, batch.cs_edit_yn 					AS "batch.editYn"
+			, batch.cs_reg_member_seq			AS "batch.regMemberSeq"
+			, batch.cs_upd_member_seq			AS "batch.updMemberSeq"
+			, batch.cs_reg_dtime				AS "batch.regDtime"
+			, batch.cs_upd_dtime				AS "batch.updDtime"
+		FROM cs_batch batch
+		WHERE batch.cs_delete_yn = 'N'
+		
+		<if test='scheduleReload != null'>
+		  AND (batch.cs_batch_status_cd = '${CD.BATCH_STATUS.RUN}' OR batch.cs_edit_yn = 'Y')
+		</if>
+		
+		ORDER BY batch.cs_reg_dtime DESC
+	</select>
+	
+	<resultMap id="detailResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIBatchRS">
+		<result column="batch.batchSeq"         		property="batch.batchSeq"/>
+		<result column="batch.batchId"          		property="batch.batchId"/>
+		<result column="batch.batchName"        		property="batch.batchName"/>
+		<result column="batch.batchSchedule"    		property="batch.batchSchedule"/>
+		<result column="batch.batchStatusCd"    		property="batch.batchStatusCd"/>
+		<result column="batch.batchCount"       		property="batch.batchCount"/>
+		<result column="batch.batchRunningTime" 		property="batch.batchRunningTime"/>
+		<result column="batch.memberSeq"        		property="batch.memberSeq"/>
+		<result column="batch.batchYn"          		property="batch.batchYn"/>
+		<result column="batch.completetionDtime"		property="batch.batchCompletetionDtime"/>
+		<result column="batch.regMemberSeq"     		property="batch.regMemberSeq"/>
+		<result column="batch.updMemberSeq"     		property="batch.updMemberSeq"/>
+		<result column="batch.regDtime"         		property="batch.regDtime"/>
+		<result column="batch.updDtime"      			property="batch.updDtime"/>	
+	</resultMap>
+	
+	<select id="getDetail" parameterType="com._4csoft.aof.ui.infra.vo.UIBatchVO" resultMap="detailResultMap">
+		/* UIBatchMapper.getList */
+		SELECT 
+			  batch.cs_batch_seq				AS "batch.batchSeq"
+			, batch.cs_batch_id					AS "batch.batchId"
+			, batch.cs_batch_name				AS "batch.batchName"
+			, batch.cs_batch_schedule			AS "batch.batchSchedule"
+			, batch.cs_batch_status_cd			AS "batch.batchStatusCd"
+			, batch.cs_batch_count				AS "batch.batchCount"
+			, batch.cs_batch_running_time		AS "batch.batchRunningTime"
+			, batch.cs_member_seq				AS "batch.memberSeq"
+			, batch.cs_batch_yn					AS "batch.batchYn"
+			, batch.cs_batch_completetion_dtime	AS "batch.completetionDtime"
+			, batch.cs_reg_member_seq			AS "batch.regMemberSeq"
+			, batch.cs_upd_member_seq			AS "batch.updMemberSeq"
+			, batch.cs_reg_dtime				AS "batch.regDtime"
+			, batch.cs_upd_dtime				AS "batch.updDtime"
+		FROM cs_batch batch
+		WHERE batch.cs_batch_seq = #{batchSeq}
+		AND	batch.cs_delete_yn = 'N'
+	</select>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UIBatchVO">
+		/* UIBatchMapper.update */
+		UPDATE
+			cs_batch
+		SET		
+			cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+			, cs_batch_status_cd = #{batchStatusCd, jdbcType=VARCHAR}
+			, cs_edit_yn = #{editYn, jdbcType=VARCHAR}
+			<if test='batchName != null'>
+			, cs_batch_name = #{batchName, jdbcType=VARCHAR}
+			</if>
+			<if test='batchSchedule != null'>
+			, cs_batch_schedule = #{batchSchedule, jdbcType=VARCHAR}
+			</if>
+		WHERE cs_batch_seq = #{batchSeq}
+		AND cs_delete_yn = 'N'
+	</update>
+
+	<update id="updateRunData" parameterType="com._4csoft.aof.ui.infra.vo.UIBatchVO">
+		/* UIBatchMapper.updateRunData */
+		UPDATE
+			cs_batch
+		SET		
+			cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+			, cs_batch_count = cs_batch_count + 1 
+			, cs_batch_running_time = #{batchRunningTime, jdbcType=NUMERIC}
+			, cs_batch_yn = #{batchYn, jdbcType=VARCHAR}
+			, cs_batch_completetion_dtime = #{batchCompletetionDtime, jdbcType=VARCHAR}
+		WHERE cs_batch_seq = #{batchSeq}
+		AND cs_delete_yn = 'N'
+	</update>
+	
+	<update id="updateEditFlag" parameterType="com._4csoft.aof.ui.infra.vo.UIBatchVO">
+		/* UIBatchMapper.updateEditFlag */
+		UPDATE
+			cs_batch
+		SET		
+			cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+			, cs_edit_yn = #{editYn, jdbcType=VARCHAR}
+		WHERE cs_batch_seq = #{batchSeq}
+		AND cs_delete_yn = 'N'
+	</update>
+	
+	<update id="updateByBatchId" parameterType="com._4csoft.aof.ui.infra.vo.UIBatchVO">
+		/* UIBatchMapper.updateByBatchId */
+		UPDATE
+			cs_batch
+		SET		
+			cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+			, cs_batch_status_cd = #{batchStatusCd, jdbcType=VARCHAR}
+			, cs_edit_yn = #{editYn, jdbcType=VARCHAR}
+			<if test='batchSchedule != null'>
+			, cs_batch_schedule = #{batchSchedule, jdbcType=VARCHAR}
+			</if>
+		WHERE cs_batch_id = #{batchId}
+		AND cs_delete_yn = 'N'
+	</update>	
+
+</mapper>

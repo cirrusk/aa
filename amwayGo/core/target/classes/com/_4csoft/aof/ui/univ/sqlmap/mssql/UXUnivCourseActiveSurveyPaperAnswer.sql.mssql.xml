@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.univ.mapper.UIUnivCourseActiveSurveyPaperAnswerMapper">
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSurveyPaperAnswerVO">
+/* UIUnivCourseActiveSurveyPaperAnswerMapper.delete */
+UPDATE cs_course_active_survey_paper_answer 
+       SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() , 
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} , 
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+       cs_delete_yn = 'Y' 
+ WHERE cs_course_active_survey_seq = #{courseActiveSurveySeq} 
+       AND cs_course_active_seq = #{courseActiveSeq} 
+       AND cs_survey_paper_seq = #{surveyPaperSeq} 
+       AND cs_course_apply_seq = #{courseApplySeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+</mapper>

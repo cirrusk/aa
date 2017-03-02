@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsStudioMemberMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioMemberVO">
+/* UICdmsStudioMemberMapper.insert */
+INSERT INTO cs_cdms_studio_member 
+       ( 
+           cs_studio_seq ,
+           cs_member_seq ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip  
+       ) 
+       VALUES 
+       ( 
+           #{studioSeq, jdbcType=NUMERIC} ,
+           #{memberSeq, jdbcType=NUMERIC} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioMemberVO">
+/* UICdmsStudioMemberMapper.delete */
+UPDATE cs_cdms_studio_member 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_studio_seq = #{studioSeq} 
+       AND cs_member_seq = #{memberSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsStudioMemberRS">
+        <result column="studio.studioSeq"    property="studioMember.studioSeq"/>
+        <result column="studio.memberSeq"    property="studioMember.memberSeq"/>
+        <result column="member.memberSeq"    property="member.memberSeq"/>
+        <result column="member.memberName"   property="member.memberName"/>
+        <result column="member.memberId"     property="member.memberId"/>
+        <result column="member.nickname"     property="member.nickname"/>
+        <result column="member.photo"        property="member.photo"/>
+    </resultMap>
+    <select id="getList" parameterType="Long" resultMap="getList_result">
+/* UICdmsStudioMemberMapper.getList */
+SELECT studio.cs_studio_seq    AS "studio.studioSeq" ,
+       studio.cs_member_seq    AS "studio.memberSeq" ,
+       member.cs_member_seq    AS "member.memberSeq" ,
+       member.cs_member_name   AS "member.memberName" ,
+       member.cs_member_id     AS "member.memberId" ,
+       member.cs_nickname      AS "member.nickname" ,
+       member.cs_photo         AS "member.photo" 
+  FROM cs_cdms_studio_member studio
+   INNER JOIN cs_member member 
+       ON member.cs_member_seq = studio.cs_member_seq
+ WHERE studio.cs_studio_seq = #{studioSeq} 
+       AND studio.cs_delete_yn = 'N'
+ORDER BY member.cs_member_name ASC
+    </select>
+
+</mapper>

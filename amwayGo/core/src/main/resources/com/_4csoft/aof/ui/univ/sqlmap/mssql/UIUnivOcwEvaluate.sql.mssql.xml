@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivOcwEvaluateMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwEvaluateVO">
+        <selectKey resultType="Long" keyProperty="ocwEvalSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UnivOcwEvaluateMapper.insert */
+INSERT INTO cs_ocw_evaluate 
+       ( 
+       	   cs_ocw_course_active_seq ,
+		   cs_member_seq ,
+		   cs_eval_score ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+       VALUES 
+       ( 
+           #{ocwCourseActiveSeq, jdbcType=NUMERIC} ,
+		   #{memberSeq, jdbcType=NUMERIC} ,
+		   #{evalScore, jdbcType=DOUBLE} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwEvaluateVO">
+/* UnivOcwEvaluateMapper.update */
+UPDATE cs_ocw_evaluate 
+   SET cs_ocw_course_active_seq = #{ocwCourseActiveSeq, jdbcType=NUMERIC} ,
+       cs_member_seq = #{memberSeq, jdbcType=NUMERIC} ,
+       cs_eval_score = #{evalScore, jdbcType=DOUBLE} ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} 
+ WHERE cs_ocw_eval_seq = #{ocwEvalSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwEvaluateVO">
+/* UnivOcwEvaluateMapper.delete */
+UPDATE cs_ocw_evaluate 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+ WHERE cs_ocw_eval_seq = #{ocwEvalSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivOcwEvaluateRS">
+        <result column="eval.ocwEvalSeq"     		property="ocwEvaluate.ocwEvalSeq"/>
+        <result column="eval.ocwCourseActiveSeq"    property="ocwEvaluate.ocwCourseActiveSeq"/>
+        <result column="eval.memberSeq"     		property="ocwEvaluate.memberSeq"/>
+        <result column="eval.evalScore"     		property="ocwEvaluate.evalScore"/>
+        <result column="eval.deleteYn"     			property="ocwEvaluate.deleteYn"/>
+        <result column="eval.regMemberSeq"     		property="ocwEvaluate.regMemberSeq"/>
+        <result column="eval.updMemberSeq"     		property="ocwEvaluate.updMemberSeq"/>
+        <result column="eval.regDtime"     			property="ocwEvaluate.regDtime"/>
+        <result column="eval.updDtime"     			property="ocwEvaluate.updDtime"/>
+        <result column="eval.regIp"     			property="ocwEvaluate.regIp"/>
+        <result column="eval.updIp"     			property="ocwEvaluate.updIp"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwEvaluateVO" resultMap="getDetail_result">
+/* UnivOcwEvaluateMapper.getDetail */
+SELECT 
+	   	eval.cs_ocw_eval_seq           AS "eval.ocwEvalSeq" ,
+		eval.cs_ocw_course_active_seq  AS "eval.ocwCourseActiveSeq" ,
+		eval.cs_member_seq             AS "eval.memberSeq" ,
+		eval.cs_eval_score             AS "eval.evalScore" ,
+		eval.cs_delete_yn              AS "eval.deleteYn" ,
+		eval.cs_reg_member_seq         AS "eval.regMemberSeq" ,
+		eval.cs_upd_member_seq         AS "eval.updMemberSeq" ,
+		eval.cs_reg_dtime              AS "eval.regDtime" ,
+		eval.cs_upd_dtime              AS "eval.updDtime" ,
+		eval.cs_reg_ip                 AS "eval.regIp" ,
+		eval.cs_upd_ip                 AS "eval.updIp"
+  FROM cs_ocw_evaluate eval 
+ WHERE  eval.cs_delete_yn = 'N'
+       AND eval.cs_ocw_course_active_seq = #{ocwCourseActiveSeq}
+       AND eval.cs_member_seq = #{memberSeq}
+    </select>
+    
+    <select id="getScoreAvg" parameterType="Long" resultType="Double">
+/* UnivOcwEvaluateMapper.getScoreAvg */
+SELECT 
+	  AVG(cs_eval_score)
+ FROM cs_ocw_evaluate
+WHERE cs_delete_yn = 'N'
+  AND cs_ocw_course_active_seq = #{ocwCourseActiveSeq}
+    </select>
+</mapper>

@@ -1,0 +1,98 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if IE 9]><html lang="ko" class="modern ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>공지사항</title>
+<title>AOF5-UNIV WWW DEMO</title>
+<link rel="stylesheet" href="../../css/www/base.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/common.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/content.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/style.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/classroom.css" type="text/css"/>
+<script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="../../js/select.js"></script>
+</head>
+<body>
+	<div class="classroom" style="width:100%;">
+		<!-- 레이어 팝업 -->
+		<div class="section-pop">
+			<div class="pop-container">
+				<div class="pop-header">
+					<h3>공지사항</h3>
+					<a href="#" class="close"><img src="../../images/www/common/pop_close.gif" alt="팝업 닫기" /></a>
+				</div>
+				<div class="pop-content">
+					<!-- 팝업 내용 -->
+					<div class="field">
+						<fieldset>
+							<select title="검색 항목 선택"><option>공개구분</option></select>
+							<select title="검색 항목 선택"><option>제목</option></select>
+							<input type="text" class="text" title="검색어 입력" />
+							<a href="#" class="btn gray"><span class="mid">검색</span></a>
+						</fieldset>
+					</div>
+					<table class="tbl-list"><!-- tbl-list -->
+						<colgroup>
+							<col style="width:7%;" />
+							<col style="width:auto;" />
+							<col style="width:12%;" />
+							<col style="width:12%;" />
+							<col style="width:12%;" />
+							<col style="width:12%;" />
+						</colgroup>
+						<thead>
+							<tr>
+								<th scope="col">번호</th>
+								<th scope="col">글제목</th>
+								<th scope="col">공개여부</th>
+								<th scope="col">등록자</th>
+								<th scope="col">등록일</th>
+								<th scope="col">조회수</th>
+							</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td>공지</td>
+							<td class="subject"><a href="#">사내교육 일정 확인 하세요.</a> <img alt="첨부 파일" src="../../images/www/icon/icon_attach.gif"></td>
+							<td>전체</td>
+							<td>관리자</td>
+							<td>2013.05.02</td>
+							<td>3434</td>
+						</tr>
+						<tr>
+							<td>5</td>
+							<td class="subject"><a href="#">사내교육 일정 확인 하세요.</a></td>
+							<td>내부</td>
+							<td>관리자</td>
+							<td>2013.05.02</td>
+							<td>3434</td>
+						</tr>
+					</table>
+					<div class="page">
+						<span class="count">총 11건 (<span>1</span> / 10)</span>
+						<div class="paginate">
+							<a class="prev">‹</a>
+							<a href="#">1</a>
+							<a href="#">2</a>
+							<a href="#">3</a>
+							<a href="#">4</a>
+							<strong>5</strong><!-- active -->
+							<a href="#">6</a>
+							<a class="next">›</a>
+						</div>
+						<a href="#" class="btn blue"><span class="mid">신규검색</span></a>
+					</div>
+					<!-- //팝업 내용 -->
+					<div class="vspace"></div>
+				</div>
+			</div>
+		</div>
+		<!-- //레이어 팝업 -->
+	</div>
+</body>
+</html>

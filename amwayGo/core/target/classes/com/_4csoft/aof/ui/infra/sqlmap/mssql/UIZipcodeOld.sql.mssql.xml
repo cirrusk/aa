@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.ZipcodeOldMapper">
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIZipcodeOldRS">
+        <result column="zipcode.zipcode"  property="zipcode.zipcode"  />
+        <result column="zipcode.sido"     property="zipcode.sido"     />
+        <result column="zipcode.gugun"    property="zipcode.gugun"    />
+        <result column="zipcode.dong"     property="zipcode.dong"     />
+        <result column="zipcode.ri"       property="zipcode.ri"       />
+        <result column="zipcode.bunji"    property="zipcode.bunji"    />
+        <result column="zipcode.bldg"     property="zipcode.bldg"     />
+    </resultMap>
+
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIZipcodeCondition" resultMap="listResultMap">
+/* UIZipcodeOldMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "zipcode.zipcode" ASC</when>
+            <when test='orderby == -1'>ORDER BY "zipcode.zipcode" DESC</when>
+            <otherwise>ORDER BY "zipcode.zipcode" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT zipcode.cs_zipcode AS "zipcode.zipcode" ,
+       zipcode.cs_sido    AS "zipcode.sido" ,
+       zipcode.cs_gugun   AS "zipcode.gugun" ,
+       zipcode.cs_dong    AS "zipcode.dong" ,
+       zipcode.cs_ri      AS "zipcode.ri" ,
+       zipcode.cs_bunji   AS "zipcode.bunji" ,
+       zipcode.cs_bldg    AS "zipcode.bldg" 
+  FROM cs_zipcode_old zipcode 
+ WHERE 1 = 1 
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("dong")'>
+       AND zipcode.cs_dong LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("ri")'>
+       AND zipcode.cs_ri LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("both")'>
+       AND (zipcode.cs_dong LIKE '%' + #{srchWordDB} + '%' OR zipcode.cs_ri LIKE '%' + #{srchWordDB} + '%')
+            </if>
+        </if>
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIZipcodeCondition" resultType="int">
+/* UIZipcodeOldMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_zipcode_old zipcode 
+ WHERE 1 = 1 
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("dong")'>
+       AND zipcode.cs_dong LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("ri")'>
+       AND zipcode.cs_ri LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("both")'>
+       AND (zipcode.cs_dong LIKE '%' + #{srchWordDB} + '%' OR zipcode.cs_ri LIKE '%' + #{srchWordDB} + '%')
+            </if>
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.board.mapper.BbsSeqMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.board.vo.UIBbsSeqVO">
+        <selectKey resultType="Long" keyProperty="bbsSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIBbsSeqMapper.insert */
+INSERT INTO cs_bbs_seq 
+       ( 
+           cs_board_seq ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+       VALUES 
+       ( 
+           #{boardSeq, jdbcType=NUMERIC} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+	<select id="getBoardReferenceType" parameterType="Long" resultType="String">
+		SELECT 
+			 board.cs_reference_type AS "referenceType"
+		FROM
+			 cs_board board
+			INNER JOIN cs_bbs_seq seq
+			   ON board.cs_board_seq = seq.cs_board_seq
+		WHERE
+			    board.cs_comment_yn = 'Y'
+			AND seq.cs_bbs_seq = #{bbsSeq}
+	</select>
+</mapper>

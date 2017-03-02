@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveLecturerMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+        <selectKey resultType="Long" keyProperty="courseActiveProfSeq" order="AFTER">
+        SELECT @@IDENTITY
+        </selectKey>
+		/* UIUnivCourseActiveLecturerMapper.insert */
+		INSERT INTO cs_course_active_lecturer
+		(   
+			cs_course_active_seq ,
+			cs_member_seq ,
+			cs_prof_member_seq ,
+			cs_active_lecturer_type_cd ,
+			cs_prof_president_yn ,
+			cs_division,
+			cs_use_yn ,
+			cs_delete_yn ,
+			cs_reg_member_seq ,
+			cs_reg_dtime ,
+			cs_reg_ip ,
+			cs_upd_member_seq  ,
+			cs_upd_dtime ,
+			cs_upd_ip 
+		)
+		SELECT
+			#{courseActiveSeq, jdbcType=NUMERIC} ,
+			#{memberSeq, jdbcType=NUMERIC} ,
+			#{profMemberSeq, jdbcType=NUMERIC} ,
+			#{activeLecturerTypeCd, jdbcType=VARCHAR} ,
+			(
+				SELECT
+					CASE
+							WHEN #{activeLecturerTypeCd} = '${CD.ACTIVE_LECTURER_TYPE.PROF}' THEN
+											(
+												SELECT 
+													CASE
+														WHEN COUNT(*) = 0 THEN 'Y'
+														ELSE 'N'
+													END
+												  FROM cs_course_active_lecturer 
+												 WHERE cs_delete_yn = 'N' 
+													   AND cs_course_active_seq = #{courseActiveSeq} 
+													   AND cs_active_lecturer_type_cd LIKE '${CD.ACTIVE_LECTURER_TYPE.PROF}'
+											)
+						ELSE 'N'
+					END
+			) ,
+			(
+			SELECT ISNULL(MAX(cs_division),0)+1 
+		      FROM cs_course_active_lecturer 
+		     WHERE cs_course_active_seq = #{courseActiveSeq} 
+		       AND cs_delete_yn='N'
+		       AND cs_active_lecturer_type_cd='${CD.ACTIVE_LECTURER_TYPE.TUTOR}'
+			),
+			#{useYn, jdbcType=VARCHAR} ,
+			'N' , 
+		    #{regMemberSeq, jdbcType=NUMERIC} ,
+		    dbo.FN_NOW_TO_CHAR() ,
+		    #{regIp, jdbcType=VARCHAR} ,
+		    #{updMemberSeq, jdbcType=NUMERIC} ,
+		    dbo.FN_NOW_TO_CHAR() ,
+		    #{updIp, jdbcType=VARCHAR}
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+		/* UIUnivCourseActiveLecturerMapper.update */
+		UPDATE cs_course_active_lecturer 
+		  SET 
+		  	  <if test='courseActiveSeq != null and !courseActiveSeq.equals(0l)'>
+		  	  	cs_course_active_seq 			= #{courseActiveSeq, jdbcType=NUMERIC} ,
+		  	  </if>
+		  	  <if test='memberSeq != null and !memberSeq.equals(0l)'>
+			  	cs_member_seq 	 			= #{memberSeq, jdbcType=NUMERIC} ,
+			  </if>
+			  <if test='profMemberSeq != null and !profMemberSeq.equals(0l)'>
+			  	cs_prof_member_seq 			= #{profMemberSeq, jdbcType=NUMERIC} ,
+			  </if>
+			  <if test='activeLecturerTypeCd != null and !activeLecturerTypeCd.equals("")'>
+			  cs_active_lecturer_type_cd	= #{activeLecturerTypeCd, jdbcType=VARCHAR} ,
+			  </if>
+			  <if test='profPresidentYn != null and !profPresidentYn.equals("")'>
+			  cs_prof_president_yn			= #{profPresidentYn, jdbcType=VARCHAR} ,
+			  </if>
+			  cs_use_yn 					= #{updMemberSeq, jdbcType=NUMERIC} ,
+		  	  cs_upd_dtime      			= dbo.FN_NOW_TO_CHAR() ,
+		      cs_upd_member_seq 			= #{updMemberSeq, jdbcType=NUMERIC} ,
+		      cs_upd_ip 	    			= #{updIp, jdbcType=VARCHAR} 
+		WHERE cs_course_active_prof_seq 	= #{courseActiveProfSeq}
+    </update>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+		/* UIUnivCourseActiveLecturerMapper.delete */
+		UPDATE cs_course_active_lecturer 
+		  SET 
+		  	  cs_delete_yn		= 'Y' ,
+		  	  cs_upd_dtime      = dbo.FN_NOW_TO_CHAR() ,
+		      cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		      cs_upd_ip 	    = #{updIp, jdbcType=VARCHAR} 
+		WHERE cs_course_active_prof_seq = #{courseActiveProfSeq}
+    </update>
+    
+    <update id="deleteAllByProfMemberSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+		/* UIUnivCourseActiveLecturerMapper.deleteAllByProfMemberSeq */
+		UPDATE cs_course_active_lecturer 
+		  SET 
+		  	  cs_delete_yn		   = 'Y' ,
+		  	  cs_upd_dtime         = dbo.FN_NOW_TO_CHAR() ,
+		      cs_upd_member_seq    = #{updMemberSeq, jdbcType=NUMERIC} ,
+		      cs_upd_ip 	       = #{updIp, jdbcType=VARCHAR} 
+		WHERE cs_prof_member_seq   = #{profMemberSeq}
+		  AND cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="deleteByCourseActiveSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+        /* UIUnivCourseActiveLecturerMapper.deleteByCourseActiveSeq */
+        UPDATE cs_course_active_lecturer 
+          SET 
+              cs_delete_yn         = 'Y' ,
+              cs_upd_dtime         = dbo.FN_NOW_TO_CHAR() ,
+              cs_upd_member_seq    = #{updMemberSeq, jdbcType=NUMERIC} ,
+              cs_upd_ip            = #{updIp, jdbcType=VARCHAR} 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="updateByCourseActiveSeqMaxProfType" parameterType="Long" >
+		/* UIUnivCourseActiveLecturerMapper.updateByCourseActiveSeqMaxProfType */
+		UPDATE
+			cs_course_active_lecturer
+		SET
+			CS_PROF_PRESIDENT_YN = 'Y'
+		WHERE
+			cs_course_active_prof_seq =
+			(
+				SELECT 
+					MIN(sub.cs_course_active_prof_seq) 
+				FROM 
+					cs_course_active_lecturer sub 
+				WHERE 
+						sub.cs_course_active_seq = #{courseActiveSeq}
+					AND cs_delete_yn = 'N' 
+					AND sub.cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.PROF}'
+			)
+    </update>
+
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveLecturerRS">
+	    <result column="cal.courseActiveProfSeq"    property="univCourseActiveLecturer.courseActiveProfSeq"/>
+	    <result column="cal.courseActiveSeq"      	property="univCourseActiveLecturer.courseActiveSeq"/>
+	    <result column="cal.memberSeq"       		property="univCourseActiveLecturer.memberSeq"/>
+	    <result column="cal.profMemberSeq"      	property="univCourseActiveLecturer.profMemberSeq"/>
+	    <result column="cal.activeLecturerTypeCd"   property="univCourseActiveLecturer.activeLecturerTypeCd"/>
+	    <result column="cal.profPresidentYn"       	property="univCourseActiveLecturer.profPresidentYn"/>
+	    <result column="cal.division"               property="univCourseActiveLecturer.division"/>
+	    <result column="cal.memberCount"            property="univCourseActiveLecturer.memberCount"/>
+	    <result column="cal.useYn"       			property="univCourseActiveLecturer.useYn"/>
+	    <result column="cal.regDtime"       		property="univCourseActiveLecturer.regDtime"/>
+	    <result column="cal.regMemberSeq"       	property="univCourseActiveLecturer.regMemberSeq"/>
+	    <result column="cal.profMemberName"       	property="univCourseActiveLecturer.profMemberName"/>
+	    <result column="mem.memberName"       		property="member.memberName"/>
+	    <result column="mem.memberId"       		property="member.memberId"/>
+	    <result column="mem.organizationString"     property="member.organizationString"/>
+	    <result column="mem.photo"     				property="member.photo"/>
+	    <result column="mem.phoneMobile"     		property="member.phoneMobile"/>
+	    <result column="mem.motto"     				property="member.motto"/>
+	    <result column="mem.position"     			property="member.position"/>
+	</resultMap>
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveLecturerCondition" resultMap="listResultMap">
+		/* UIUnivCourseActiveLecturerMapper.getList */
+		<if test='currentPage != 0'>
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'> ORDER BY "mem.memberName" ASC</when>
+            <when test='orderby == -1'>ORDER BY "mem.memberName" DESC</when>
+            <when test='orderby == 2'> ORDER BY "mem.memberId" ASC</when>
+            <when test='orderby == -2'>ORDER BY "mem.memberId" DESC</when>
+            <when test='orderby == 3'> ORDER BY "mem.organizationString" ASC</when>
+            <when test='orderby == -3'>ORDER BY "mem.organizationString" DESC</when>
+            <when test='orderby == 4'> ORDER BY "cal.profMemberName" ASC</when>
+            <when test='orderby == -4'>ORDER BY "cal.profMemberName" DESC</when>
+            <otherwise>ORDER BY "cal.division" DESC</otherwise>
+        </choose>
+		) AS rownumber, * FROM (
+		</if>
+			SELECT 
+				cal.cs_course_active_prof_seq 	  		AS "cal.courseActiveProfSeq",
+				cal.cs_course_active_seq	  	  		AS "cal.courseActiveSeq",
+				cal.cs_member_seq			  	  		AS "cal.memberSeq",
+				cal.cs_prof_member_seq		  	  		AS "cal.profMemberSeq",
+				cal.cs_active_lecturer_type_cd	  		AS "cal.activeLecturerTypeCd",
+				cal.cs_prof_president_yn	  	  		AS "cal.profPresidentYn",
+				cal.cs_division                         AS "cal.division",
+				cal.cs_member_count                     AS "cal.memberCount",
+				cal.cs_use_yn				  	  		AS "cal.useYn",
+				cal.cs_reg_dtime			  	  		AS "cal.regDtime",
+				cal.cs_reg_member_seq   	  	  		AS "cal.regMemberSeq",
+				membersec.cs_member_name  				AS "cal.profMemberName",
+				mem.cs_member_name			  	  		AS "mem.memberName",
+				mem.cs_member_id			  	  		AS "mem.memberId" ,
+				mem.cs_organization_string	  	  		AS "mem.organizationString",
+				mem.cs_photo							AS "mem.photo",
+				mem.cx_motto							AS "mem.motto",
+				mem.cs_phone_mobile						AS "mem.phoneMobile",
+				mem.cx_position							AS "mem.position"
+			FROM 
+				cs_course_active_lecturer cal
+				INNER JOIN cs_member mem
+					ON cal.cs_member_seq = mem.cs_member_seq
+				INNER JOIN cs_member membersec
+					ON membersec.cs_member_seq = cal.cs_prof_member_seq
+			WHERE
+					cal.cs_delete_yn = 'N'
+				AND cal.cs_course_active_seq = #{srchCourseActiveSeq}
+		<if test='srchActiveLecturerTypeCd != null and !srchActiveLecturerTypeCd.equals("")'>
+				AND cal.cs_active_lecturer_type_cd = #{srchActiveLecturerTypeCd}
+		</if>
+        <if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+   </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveLecturerCondition" resultType="int">
+	/* UIUnivCourseActiveLecturerMapper.countList */
+	SELECT 
+		COUNT(*)
+	FROM 
+		cs_course_active_lecturer cal
+		INNER JOIN
+		cs_member mem
+		ON cal.cs_member_seq = mem.cs_member_seq
+	WHERE
+			cal.cs_delete_yn = 'N'
+		AND cal.cs_course_active_seq = #{srchCourseActiveSeq}
+		<if test='srchActiveLecturerTypeCd != null and !srchActiveLecturerTypeCd.equals("")'>
+		AND cal.cs_active_lecturer_type_cd = #{srchActiveLecturerTypeCd}
+		</if>
+    </select>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveLecturerRS">
+        <result column="cal.courseActiveProfSeq"    property="univCourseActiveLecturer.courseActiveProfSeq"/>
+	    <result column="cal.courseActiveSeq"      	property="univCourseActiveLecturer.courseActiveSeq"/>
+	    <result column="cal.memberSeq"       		property="univCourseActiveLecturer.memberSeq"/>
+	    <result column="cal.profMemberSeq"      	property="univCourseActiveLecturer.profMemberSeq"/>
+	    <result column="cal.activeLecturerTypeCd"   property="univCourseActiveLecturer.activeLecturerTypeCd"/>
+	    <result column="cal.profPresidentYn"       	property="univCourseActiveLecturer.profPresidentYn"/>
+	    <result column="cal.useYn"       			property="univCourseActiveLecturer.useYn"/>
+	    <result column="cal.regDtime"       		property="univCourseActiveLecturer.regDtime"/>
+	    <result column="cal.regMemberSeq"       	property="univCourseActiveLecturer.regMemberSeq"/>
+	    <result column="cal.profMemberName"       	property="univCourseActiveLecturer.profMemberName"/>
+	    <result column="mem.memberName"       		property="member.memberName"/>
+	    <result column="mem.memberId"       		property="member.memberId"/>
+	    <result column="mem.organizationString"     property="member.organizationString"/>
+	    <result column="mem.email"     				property="member.email"/>
+	    <result column="mem.phoneHome"     			property="member.phoneHome"/>
+	    <result column="mem.phoneMobile"    	 		property="member.phoneMobile"/>
+	    <result column="admin.profTypeCd"     		property="admin.profTypeCd"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* UIUnivCourseActiveLecturerMapper.getDetail */
+		SELECT 
+			cal.cs_course_active_prof_seq 	  		AS "cal.courseActiveProfSeq",
+			cal.cs_course_active_seq	  	  		AS "cal.courseActiveSeq",
+			cal.cs_member_seq			  	  		AS "cal.memberSeq",
+			cal.cs_prof_member_seq		  	  		AS "cal.profMemberSeq",
+			cal.cs_active_lecturer_type_cd	  		AS "cal.activeLecturerTypeCd",
+			cal.cs_prof_president_yn	  	  		AS "cal.profPresidentYn",
+			cal.cs_use_yn				  	  		AS "cal.useYn",
+			cal.cs_reg_dtime			  	  		AS "cal.regDtime",
+			cal.cs_reg_member_seq   	  	  		AS "cal.regMemberSeq",
+			(SELECT cs_member_name 
+	         FROM cs_member 
+	         WHERE cs_member_seq = cal.cs_prof_member_seq 
+	        ) AS "cal.profMemberName", 
+			mem.cs_member_name			  	  		AS "mem.memberName",
+			mem.cs_member_id			  	  		AS "mem.memberId" ,
+			mem.cs_organization_string	  	  		AS "mem.organizationString" ,
+			mem.cs_email							AS "mem.email" ,
+			mem.cs_phone_home 						AS "mem.phoneHome" ,
+			mem.cs_phone_mobile 					AS "mem.phoneMobile" ,
+			admin.cs_prof_type_cd 					AS "admin.profTypeCd"
+		FROM 
+			cs_course_active_lecturer cal
+			INNER JOIN cs_member mem
+				ON cal.cs_member_seq = mem.cs_member_seq
+			INNER JOIN cs_member_admin admin
+				ON mem.cs_member_seq = admin.cs_member_seq
+		WHERE
+				cal.cs_delete_yn = 'N'
+			AND cal.cs_course_active_prof_seq = #{courseActiveProfSeq}
+    </select>
+   
+    <select id="getDetailByMember" parameterType="map" resultType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+		/* UIUnivCourseActiveLecturerMapper.getDetailByMember */
+		SELECT 
+			cal.cs_course_active_prof_seq 	  			AS "courseActiveProfSeq",
+			cal.cs_course_active_seq	  	  			AS "courseActiveSeq",
+			cal.cs_member_seq			  	  			AS "memberSeq",
+			cal.cs_prof_member_seq		  	  			AS "profMemberSeq",
+			(SELECT cs_member_name 
+	         FROM cs_member 
+	         WHERE cs_member_seq = cal.cs_prof_member_seq 
+	        ) AS "profMemberName",
+			cal.cs_active_lecturer_type_cd	  			AS "activeLecturerTypeCd",
+			cal.cs_prof_president_yn	  	  			AS "profPresidentYn",
+			cal.cs_use_yn				  	  			AS "useYn",
+			cal.cs_reg_dtime			  	  			AS "regDtime",
+			cal.cs_reg_member_seq   	  	  			AS "regMemberSeq"
+		FROM 
+			cs_course_active_lecturer cal
+		WHERE
+				cal.cs_delete_yn = 'N'
+			AND cal.cs_course_active_seq = #{courseActiveSeq}
+			AND cal.cs_member_seq = #{memberSeq}
+    </select>
+   
+    <select id="getDetailByPresident" parameterType="Long" resultType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+		/* UIUnivCourseActiveLecturerMapper.getDetailByPresident */
+		SELECT 
+			cal.cs_course_active_prof_seq 	  			AS "courseActiveProfSeq",
+			cal.cs_course_active_seq	  	  			AS "courseActiveSeq",
+			cal.cs_member_seq			  	  			AS "memberSeq",
+			cal.cs_prof_member_seq		  	  			AS "profMemberSeq",
+			(SELECT cs_member_name 
+	         FROM cs_member 
+	         WHERE cs_member_seq = cal.cs_prof_member_seq 
+	        ) AS "profMemberName",
+			cal.cs_active_lecturer_type_cd	  			AS "activeLecturerTypeCd",
+			cal.cs_prof_president_yn	  	  			AS "profPresidentYn",
+			cal.cs_use_yn				  	  			AS "useYn",
+			cal.cs_reg_dtime			  	  			AS "regDtime",
+			cal.cs_reg_member_seq   	  	  			AS "regMemberSeq"
+		FROM 
+			cs_course_active_lecturer cal
+		WHERE
+				cal.cs_delete_yn = 'N'
+			AND cal.cs_course_active_seq = #{courseActiveSeq}
+			AND cal.cs_prof_president_yn = 'Y'
+    </select>
+
+	<select id="countByProfMember" parameterType="map" resultType="int">
+		/* UIUnivCourseActiveLecturerMapper.countByProfMember */
+		SELECT 
+			COUNT(*)
+		FROM 
+			cs_course_active_lecturer cal
+		WHERE
+				cal.cs_delete_yn = 'N'
+			AND cal.cs_prof_member_seq = #{profMemberSeq}
+			AND cal.cs_member_seq = #{memberSeq}
+	</select>
+	
+	<resultMap id="listResultCourseActiveMyWorkMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveLecturerRS">
+		<result column="cs_course_active_seq"		property="active.courseActiveSeq"			/>
+		<result column="cs_active_element_seq"		property="element.activeElementSeq"			/>
+		<result column="cs_active_element_title"	property="element.activeElementTitle"		/>
+		<result column="cs_reference_type_cd"		property="element.referenceTypeCd"			/>
+		<result column="cs_start_dtime"				property="element.startDtime"				/>
+		<result column="cs_end_dtime"				property="element.endDtime"					/>
+		<result column="cs_course_week_type_cd"		property="element.courseWeekTypeCd"			/>
+		<result column="cs_yearterm"				property="active.yearTerm"					/>
+		<result column="cs_course_active_title"		property="active.courseActiveTitle"			/>
+		<result column="cs_year"					property="active.year"						/>
+		<result column="cs_division"				property="active.division"					/>
+		<result column="cs_course_type_cd"			property="active.courseTypeCd"				/>
+		<result column="cs_period_number"			property="active.periodNumber"				/>
+		<result column="cs_category_type_cd"		property="category.categoryTypeCd"			/>
+		<result column="cs_category_string"			property="category.categoryString"			/>
+		<result column="cs_take_count"				property="applyElement.takeCount"			/>
+		<result column="cs_basic_supplement_cd"		property="applyElement.basicSupplementCd"	/>
+		<result column="cs_score_count"				property="applyElement.scoreCount"			/>
+		<result column="cs_member_name"				property="member.memberName"				/>
+		<collection column="{courseActiveSeq=cs_course_active_seq,activeElementSeq=cs_active_element_seq}" property="applyElement.takeList" javaType="List" 
+            ofType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO" select="com._4csoft.aof.univ.mapper.UnivCourseApplyElementMapper.getList"/>
+	</resultMap>
+	<select id="getListCourseActiveMyWork" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveLecturerCondition" resultMap="listResultCourseActiveMyWorkMap">
+		/* UIUnivCourseActiveLecturerMapper.getListCourseActiveMyWork */
+		<if test='currentPage != 0'>
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'> ORDER BY "cs_end_dtime" DESC</when>
+            <when test='orderby == 2'> ORDER BY "cs_course_active_title" ASC</when>
+            <otherwise>ORDER BY "cs_end_dtime" DESC</otherwise>
+        </choose>
+		) AS rownumber, * FROM (
+		</if>
+		SELECT a.cs_course_active_seq AS "cs_course_active_seq", 
+		       e.cs_active_element_seq AS "cs_active_element_seq",
+		       e.cs_active_element_title AS "cs_active_element_title", 
+		       e.cs_reference_type_cd AS "cs_reference_type_cd", 
+		       e.cs_start_dtime AS "cs_start_dtime", 
+		       e.cs_end_dtime AS "cs_end_dtime", 
+		       e.cs_course_week_type_cd AS "cs_course_week_type_cd",
+		       e.cs_yearterm AS "cs_yearterm", 
+		       e.cs_course_active_title AS "cs_course_active_title", 
+		       e.cs_year AS "cs_year", 
+		       e.cs_division AS "cs_division", 
+		       e.cs_course_type_cd AS "cs_course_type_cd", 
+		       e.cs_period_number AS "cs_period_number", 
+		       e.cs_category_type_cd AS "cs_category_type_cd", 
+		       e.cs_category_string AS "cs_category_string", 
+		       e.cs_take_count AS "cs_take_count", 
+		       e.cs_basic_supplement_cd AS "cs_basic_supplement_cd", 
+		       e.cs_score_count AS "cs_score_count" , 
+		       member.cs_member_name AS "cs_member_name" 
+		  FROM cs_course_active_lecturer a 
+		   INNER JOIN cs_course_active_lecturer_menu b 
+		       ON a.cs_course_active_prof_seq = b.cs_course_active_prof_seq 
+		       AND b.cs_delete_yn = 'N' 
+		       AND b.cs_crud LIKE '%R%' 
+		   INNER JOIN cs_rolegroup_menu c 
+		       ON c.cs_menu_seq = b.cs_menu_seq 
+		       AND c.cs_rolegroup_seq = #{srchRoleGroupSeq} 
+		       AND c.cs_delete_yn = 'N' 
+		   INNER JOIN cs_menu d 
+		       ON d.cs_menu_seq = c.cs_menu_seq 
+		       AND d.cs_display_yn = 'Y' 
+		       AND d.cs_delete_yn = 'N' 
+		   INNER JOIN 
+		       (SELECT a.cs_course_active_seq, 
+		       		  a.cs_active_element_seq,
+		              a.cs_active_element_title, 
+		              a.cs_reference_type_cd, 
+		              a.cs_start_dtime, 
+		              a.cs_end_dtime, 
+		              a.cs_course_week_type_cd, 
+		              b.cs_yearterm, 
+		              b.cs_course_active_title, 
+		              b.cs_year, 
+		              b.cs_division, 
+		              b.cs_course_type_cd, 
+		              b.cs_period_number, 
+		              c.cs_category_type_cd, 
+		              c.cs_category_string, 
+		              d.cs_take_count, 
+		              d.cs_basic_supplement_cd, 
+		              e.cs_score_count, 
+		              f.cs_member_seq 
+		         FROM cs_course_active_element a 
+		          INNER JOIN cs_course_active b 
+		              ON a.cs_course_active_seq = b.cs_course_active_seq 
+		              AND b.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}' 
+		              AND b.cs_delete_yn = 'N' 
+		          INNER JOIN cs_category c 
+		              ON c.cs_category_seq = b.cs_category_organization_seq 
+		              AND c.cs_delete_yn = 'N' 
+		          INNER JOIN 
+		              (SELECT COUNT(*) AS cs_take_count, 
+		                     cs_course_active_seq, 
+		                     cs_active_element_seq, 
+		                     MAX(cs_basic_supplement_cd) as cs_basic_supplement_cd 
+		                FROM cs_course_apply_element 
+		               WHERE cs_delete_yn = 'N' 
+		               GROUP BY cs_course_active_seq, 
+		                     cs_active_element_seq 
+		              ) d 
+		              ON d.cs_course_active_seq = a.cs_course_active_seq 
+		              AND d.cs_active_element_seq = a.cs_active_element_seq 
+		          INNER JOIN 
+		              (SELECT COUNT(*) AS cs_score_count, 
+		                     cs_course_active_seq, 
+		                     cs_active_element_seq 
+		                FROM cs_course_apply_element 
+		               WHERE cs_delete_yn = 'N' 
+		                     AND cs_score_dtime IS NOT NULL 
+		               GROUP BY cs_course_active_seq, 
+		                     cs_active_element_seq 
+		              ) e 
+		              ON e.cs_course_active_seq = a.cs_course_active_seq 
+		              AND e.cs_active_element_seq = a.cs_active_element_seq 
+		          INNER JOIN cs_course_active_lecturer f 
+		              ON f.cs_course_active_seq = b.cs_course_active_seq 
+		              AND f.cs_prof_president_yn = 'Y' 
+		              AND f.cs_use_yn = 'Y' 
+		              AND f.cs_delete_yn = 'N' 
+		        WHERE a.cs_delete_yn = 'N' 
+		              AND a.cs_reference_type_cd != '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}' 
+		              AND a.cs_reference_type_cd != '${CD.COURSE_ELEMENT_TYPE.SURVEY}' 
+		       )e 
+		       ON e.cs_course_active_seq = a.cs_course_active_seq 
+		       AND e.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE}' + '::' + d.cs_cf_string 
+			INNER JOIN cs_member member
+			   ON member.cs_member_seq = e.cs_member_seq
+		 WHERE a.cs_delete_yn = 'N' 
+		       AND a.cs_use_yn = 'Y' 
+		       AND a.cs_member_seq = #{srchMemberSeq}
+		       AND e.cs_take_count != e.cs_score_count
+		 <if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+        </select>
+        
+        <select id="countListCourseActiveMyWork" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveLecturerCondition" resultType="int">
+		/* UIUnivCourseActiveLecturerMapper.countListCourseActiveMyWork */
+		SELECT  
+		       COUNT(*)
+		  FROM cs_course_active_lecturer a 
+		   INNER JOIN cs_course_active_lecturer_menu b 
+		       ON a.cs_course_active_prof_seq = b.cs_course_active_prof_seq 
+		       AND b.cs_delete_yn = 'N' 
+		       AND b.cs_crud LIKE '%R%' 
+		   INNER JOIN cs_rolegroup_menu c 
+		       ON c.cs_menu_seq = b.cs_menu_seq 
+		       AND c.cs_rolegroup_seq = #{srchRoleGroupSeq}
+		       AND c.cs_delete_yn = 'N' 
+		   INNER JOIN cs_menu d 
+		       ON d.cs_menu_seq = c.cs_menu_seq 
+		       AND d.cs_display_yn = 'Y' 
+		       AND d.cs_delete_yn = 'N' 
+		   INNER JOIN 
+		       (SELECT a.cs_course_active_seq, 
+		              a.cs_reference_type_cd, 
+		              a.cs_start_dtime, 
+		              a.cs_end_dtime, 
+		              a.cs_rate,
+					  a.cs_supplement_rate,
+		              b.cs_course_active_title, 
+		              b.cs_division, 
+		              b.cs_course_type_cd, 
+		              b.cs_period_number, 
+		              c.cs_category_type_cd, 
+		              d.cs_take_count, 
+		              e.cs_score_count,
+		              f.cs_member_seq 
+		         FROM cs_course_active_element a 
+		          INNER JOIN cs_course_active b 
+		              ON a.cs_course_active_seq = b.cs_course_active_seq 
+		              AND b.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}' 
+		              AND b.cs_delete_yn = 'N' 
+		          INNER JOIN cs_category c 
+		              ON c.cs_category_seq = b.cs_category_organization_seq 
+		              AND c.cs_delete_yn = 'N' 
+		          INNER JOIN 
+		              (SELECT COUNT(*) AS cs_take_count, 
+		                     cs_course_active_seq, 
+		                     cs_active_element_seq 
+		                FROM cs_course_apply_element 
+		               WHERE cs_delete_yn = 'N' 
+		               GROUP BY cs_course_active_seq, 
+		                     cs_active_element_seq 
+		              ) d 
+		              ON d.cs_course_active_seq = a.cs_course_active_seq 
+		              AND d.cs_active_element_seq = a.cs_active_element_seq 
+		          INNER JOIN 
+		              (SELECT COUNT(*) AS cs_score_count, 
+		                     cs_course_active_seq, 
+		                     cs_active_element_seq 
+		                FROM cs_course_apply_element 
+		               WHERE cs_delete_yn = 'N' 
+		                     AND cs_score_dtime IS NOT NULL 
+		               GROUP BY cs_course_active_seq, 
+		                     cs_active_element_seq 
+		              ) e 
+		              ON e.cs_course_active_seq = a.cs_course_active_seq 
+		              AND e.cs_active_element_seq = a.cs_active_element_seq
+		           INNER JOIN cs_course_active_lecturer f
+				   	  ON f.cs_course_active_seq = b.cs_course_active_seq
+				      AND f.cs_prof_president_yn = 'Y'
+				      AND f.cs_use_yn = 'Y'
+				      AND f.cs_delete_yn = 'N' 
+		        WHERE a.cs_delete_yn = 'N' 
+		              AND a.cs_reference_type_cd != '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}' 
+		              AND a.cs_reference_type_cd != '${CD.COURSE_ELEMENT_TYPE.SURVEY}' 
+		       )e 
+		       ON e.cs_course_active_seq = a.cs_course_active_seq 
+		       AND e.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE}' + '::' + d.cs_cf_string 
+		    INNER JOIN cs_member member
+			   ON member.cs_member_seq = e.cs_member_seq
+		 WHERE a.cs_delete_yn = 'N' 
+		       AND a.cs_use_yn = 'Y' 
+		       AND a.cs_member_seq = #{srchMemberSeq}
+		       AND e.cs_take_count != e.cs_score_count
+	</select>
+    
+    <resultMap id="listCopyResultMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+        <result column="cs_course_active_prof_seq"   property="courseActiveProfSeq"/>
+        <result column="cs_course_active_seq"        property="courseActiveSeq"/>
+        <result column="cs_member_seq"               property="memberSeq"/>
+        <result column="cs_prof_member_seq"          property="profMemberSeq"/>
+        <result column="cs_active_lecturer_type_cd"  property="activeLecturerTypeCd"/>
+        <result column="cs_prof_president_yn"        property="profPresidentYn"/>
+        <result column="cs_use_yn"                   property="useYn"/>
+    </resultMap>
+    
+    <select id="getListCopy" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO" resultMap="listCopyResultMap">
+    /* UIUnivCourseActiveLecturerMapper.getListCopy */
+    SELECT cs_course_active_prof_seq,
+           cs_active_lecturer_type_cd,
+           cs_member_seq,
+           #{targetCourseActiveSeq}     AS cs_course_active_seq,
+           cs_prof_member_seq, 
+           cs_prof_president_yn, 
+           cs_use_yn 
+      FROM cs_course_active_lecturer 
+     WHERE cs_delete_yn = 'N' 
+       AND cs_course_active_seq = #{sourceCourseActiveSeq}
+    </select>
+    
+    <select id="countListCopy" parameterType="Long" resultType="int">
+	/* UIUnivCourseActiveLecturerMapper.countListCopy */
+	SELECT COUNT(*)
+	  FROM cs_course_active_lecturer 
+	 WHERE cs_delete_yn = 'N' 
+	   AND cs_course_active_seq = #{courseActiveSeq}
+    </select>
+    
+     <update id="updateMemberCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+    /* UIUnivCourseActiveLecturerMapper.updateMemberCount */
+    UPDATE a
+       SET a.cs_member_count = b.cs_member_count 
+	  FROM cs_course_active_lecturer a, 
+	       (SELECT ca.cs_course_active_prof_seq, 
+	               COUNT(*) AS cs_member_count 
+	          FROM cs_course_apply ca 
+        INNER JOIN cs_course_active_lecturer cal 
+                ON ca.cs_course_active_prof_seq = cal.cs_course_active_prof_seq 
+	           AND ca.cs_course_active_seq = cal.cs_course_active_seq 
+	           AND cal.cs_delete_yn = 'N' 
+	           AND cal.cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.TUTOR}' 
+	         WHERE ca.cs_delete_yn = 'N' 
+	           AND ca.cs_course_active_seq = #{courseActiveSeq}
+          GROUP BY ca.cs_course_active_prof_seq 
+	       ) B 
+	 WHERE a.cs_course_active_prof_seq = b.cs_course_active_prof_seq 
+	   AND a.cs_course_active_seq = #{courseActiveSeq}
+	   AND a.cs_delete_yn = 'N'  
+    </update>
+    
+    <select id="getDivisionOfTutorList" parameterType="Long" resultType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+        /* UIUnivCourseActiveLecturerMapper.getDivisionOfTutorList */
+       SELECT cs_course_active_prof_seq AS "courseActiveProfSeq", 
+              sortnum                   AS "division" 
+         FROM (SELECT cs_course_active_prof_seq, 
+		              ROW_NUMBER() OVER (ORDER BY cs_course_active_prof_seq) as sortnum, 
+		              cs_division , 
+		              cs_course_active_seq 
+		         FROM cs_course_active_lecturer 
+		        WHERE cs_delete_yn = 'N' 
+		          AND cs_course_active_seq = #{courseActiveSeq} 
+		          AND cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.TUTOR}' 
+		       ) aa
+        WHERE sortnum != cs_division 
+   </select>
+   
+    <update id="updateTutorDivision" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveLecturerVO">
+        /* UIUnivCourseActiveLecturerMapper.updateTutorDivision */
+        UPDATE cs_course_active_lecturer  
+           SET cs_division              = #{division},
+              cs_upd_dtime              = dbo.FN_NOW_TO_CHAR() ,
+              cs_upd_member_seq         = #{updMemberSeq, jdbcType=NUMERIC} ,
+              cs_upd_ip                 = #{updIp, jdbcType=VARCHAR}
+        WHERE cs_course_active_prof_seq = #{courseActiveProfSeq}
+    </update>
+
+</mapper>

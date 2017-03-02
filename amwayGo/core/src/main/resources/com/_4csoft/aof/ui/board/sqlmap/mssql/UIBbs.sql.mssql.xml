@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.board.mapper.BbsMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.board.vo.UIBbsVO">
+/* UIBbsMapper.insert */
+INSERT INTO cs_bbs 
+       ( 
+           cs_bbs_seq ,
+           cs_board_seq ,
+           cs_bbs_title ,
+           cs_description ,
+           cs_bbs_type_cd ,
+           cs_always_top_yn ,
+           cs_html_yn ,
+           cs_secret_yn ,
+           cs_target_rolegroup ,
+           cs_parent_seq ,
+           cs_group_seq ,
+           cs_group_level ,
+           cs_group_order ,
+           cx_download_yn,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip,
+           cs_member_seq
+           <if test='classificationCode != null and !classificationCode.equals("")'>
+	       ,cx_classification_code
+	       </if>  
+       ) 
+     SELECT
+           #{bbsSeq, jdbcType=NUMERIC} ,
+           #{boardSeq, jdbcType=NUMERIC} ,
+           #{bbsTitle, jdbcType=VARCHAR} ,
+           #{description, jdbcType=VARCHAR} ,
+           #{bbsTypeCd, jdbcType=VARCHAR} ,
+           #{alwaysTopYn, jdbcType=VARCHAR} ,
+           #{htmlYn, jdbcType=VARCHAR} ,
+           #{secretYn, jdbcType=VARCHAR} ,
+           #{targetRolegroup, jdbcType=VARCHAR} ,
+           #{parentSeq, jdbcType=NUMERIC} ,
+           #{groupSeq, jdbcType=NUMERIC} ,
+           #{groupLevel, jdbcType=NUMERIC} ,
+           (CASE WHEN #{groupLevel} = '1' THEN '001'
+            ELSE 
+                (SELECT cs_group_order
+                   FROM cs_bbs 
+                  WHERE cs_delete_yn = 'N' 
+                    AND cs_bbs_seq = #{parentSeq}
+                ) +
+                dbo.FN_LPAD(ISNULL(
+                (SELECT MAX(CONVERT(INT, cs_group_order)) % 1000 + 1
+                   FROM cs_bbs 
+                  WHERE cs_delete_yn = 'N' 
+                    AND cs_bbs_seq = #{parentSeq}
+                ), 1), 3, '0')    
+            END),
+            <choose>
+            	<when test="downloadYn == null">
+           'N',
+            	</when>
+            	<otherwise>
+           #{downloadYn, jdbcType=VARCHAR} , 	
+            	</otherwise>
+            </choose>
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC}
+           <if test='classificationCode != null and !classificationCode.equals("")'>
+       		,#{classificationCode, jdbcType=VARCHAR}
+        	</if>
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.board.vo.UIBbsVO">
+/* UIBbsMapper.update */
+UPDATE cs_bbs 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+   	   cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} 
+        <if test='bbsTitle != null'> 
+       ,cs_bbs_title = #{bbsTitle, jdbcType=VARCHAR}
+        </if> 
+        <if test='description != null'>
+       ,cs_description = #{description, jdbcType=VARCHAR}
+        </if> 
+        <if test='bbsTypeCd != null'>
+       ,cs_bbs_type_cd = #{bbsTypeCd, jdbcType=VARCHAR} 
+        </if> 
+        <if test='alwaysTopYn != null'>
+       ,cs_always_top_yn = #{alwaysTopYn, jdbcType=VARCHAR}
+        </if> 
+        <if test='htmlYn != null'>
+       ,cs_html_yn = #{htmlYn, jdbcType=VARCHAR}
+        </if> 
+        <if test='secretYn != null'>
+       ,cs_secret_yn = #{secretYn, jdbcType=VARCHAR} 
+        </if> 
+        <if test='targetRolegroup != null'>
+       ,cs_target_rolegroup = #{targetRolegroup, jdbcType=VARCHAR}
+        </if> 
+        <if test='downloadYn != null'>
+       ,cx_download_yn = #{downloadYn, jdbcType=VARCHAR}
+        </if>
+        <if test='profViewYn != null'>
+       ,cx_profViewYn = #{profViewYn, jdbcType=VARCHAR}
+        </if>
+ WHERE cs_bbs_seq = #{bbsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateViewCount" parameterType="Long">
+/* UIBbsMapper.updateViewCount */
+UPDATE cs_bbs 
+   SET cs_view_count = cs_view_count + 1 
+ WHERE cs_bbs_seq = #{bbsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.board.vo.UIBbsVO">
+/* UIBbsMapper.delete */
+UPDATE cs_bbs 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() , 
+   	   cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+       cs_delete_yn = 'Y' 
+ WHERE cs_bbs_seq = #{bbsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.board.vo.resultset.UIBbsRS">
+        <result column="bbs.bbsSeq"           property="bbs.bbsSeq"          />
+        <result column="bbs.boardSeq"         property="bbs.boardSeq"        />
+        <result column="bbs.bbsTitle"         property="bbs.bbsTitle"        />
+        <result column="bbs.description"      property="bbs.description"     />
+        <result column="bbs.bbsTypeCd"        property="bbs.bbsTypeCd"       />
+        <result column="bbs.alwaysTopYn"      property="bbs.alwaysTopYn"     />
+        <result column="bbs.htmlYn"           property="bbs.htmlYn"          />
+        <result column="bbs.secretYn"         property="bbs.secretYn"        />
+        <result column="bbs.targetRolegroup"  property="bbs.targetRolegroup" />
+        <result column="bbs.viewCount"        property="bbs.viewCount"       />
+        <result column="bbs.commentCount"     property="bbs.commentCount"    />
+        <result column="bbs.parentSeq"        property="bbs.parentSeq"       />
+        <result column="bbs.groupSeq"         property="bbs.groupSeq"        />
+        <result column="bbs.groupLevel"       property="bbs.groupLevel"      />
+        <result column="bbs.groupOrder"       property="bbs.groupOrder"      />
+        <result column="bbs.deleteYn"         property="bbs.deleteYn"        />
+        <result column="bbs.regMemberSeq"     property="bbs.regMemberSeq"    />
+        <result column="bbs.regDtime"         property="bbs.regDtime"        />
+        <result column="bbs.regIp" 	          property="bbs.regIp"     	     />
+        <result column="bbs.updMemberSeq"     property="bbs.updMemberSeq"    />
+        <result column="bbs.updDtime"         property="bbs.updDtime"        />
+        <result column="bbs.updIp" 	          property="bbs.updIp"     	     />
+        <result column="bbs.regMemberName"    property="bbs.regMemberName"   />
+        <result column="bbs.updMemberName"    property="bbs.updMemberName"   />
+        <result column="bbs.replyCount"       property="bbs.replyCount"      />
+        <result column="bbs.downloadYn"       property="bbs.downloadYn"      />
+        <result column="bbs.likeSum"       	  property="bbs.likeSum"       />
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=bbs.bbsSeq,referenceTablename=referenceTablename}" property="bbs.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIBbsMapper.getDetail */
+SELECT bbs.cs_bbs_seq          AS "bbs.bbsSeq" ,
+       bbs.cs_board_seq        AS "bbs.boardSeq" ,
+       bbs.cs_bbs_title        AS "bbs.bbsTitle" ,
+       bbs.cs_description      AS "bbs.description" ,
+       bbs.cs_bbs_type_cd      AS "bbs.bbsTypeCd" ,
+       bbs.cs_always_top_yn    AS "bbs.alwaysTopYn" ,
+       bbs.cs_html_yn          AS "bbs.htmlYn" ,
+       bbs.cs_secret_yn        AS "bbs.secretYn" ,
+       bbs.cs_target_rolegroup AS "bbs.targetRolegroup" ,
+       bbs.cs_view_count       AS "bbs.viewCount" ,
+       bbs.cs_comment_count    AS "bbs.commentCount" ,
+       bbs.cs_parent_seq       AS "bbs.parentSeq" ,
+       bbs.cs_group_seq        AS "bbs.groupSeq" ,
+       bbs.cs_group_level      AS "bbs.groupLevel" ,
+       bbs.cs_group_order      AS "bbs.groupOrder" ,
+       bbs.cx_download_yn	   AS "bbs.downloadYn",
+	   bbs.cs_like_sum 		   AS "bbs.likeSum",
+       bbs.cs_delete_yn        AS "bbs.deleteYn" ,
+       bbs.cs_reg_member_seq   AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime        AS "bbs.regDtime" ,
+       bbs.cs_reg_ip	       AS "bbs.regIp" ,
+       bbs.cs_upd_member_seq   AS "bbs.updMemberSeq" ,
+       bbs.cs_upd_dtime        AS "bbs.updDtime" ,
+       bbs.cs_upd_ip		   AS "bbs.updIp" ,
+       (SELECT umem.cs_member_name FROM cs_member umem WHERE umem.cs_member_seq = bbs.cs_upd_member_seq) AS "bbs.updMemberName" ,
+       (SELECT rmem.cs_member_name FROM cs_member rmem WHERE rmem.cs_member_seq = bbs.cs_reg_member_seq) AS "bbs.regMemberName" ,
+       'cs_bbs'                AS "referenceTablename" ,
+       (SELECT COUNT(*)
+          FROM cs_bbs
+         WHERE cs_parent_seq = bbs.cs_bbs_seq
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.replyCount"
+  FROM cs_bbs bbs
+ WHERE bbs.cs_bbs_seq = #{bbsSeq}
+       AND bbs.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.board.vo.resultset.UIBbsRS">
+        <result column="bbs.bbsSeq"           property="bbs.bbsSeq"          />
+        <result column="bbs.boardSeq"         property="bbs.boardSeq"        />
+        <result column="bbs.bbsTitle"         property="bbs.bbsTitle"        />
+        <result column="bbs.bbsTypeCd"        property="bbs.bbsTypeCd"       />
+        <result column="bbs.alwaysTopYn"      property="bbs.alwaysTopYn"     />
+        <result column="bbs.htmlYn"           property="bbs.htmlYn"          />
+        <result column="bbs.secretYn"         property="bbs.secretYn"        />
+        <result column="bbs.targetRolegroup"  property="bbs.targetRolegroup" />
+        <result column="bbs.viewCount"        property="bbs.viewCount"       />
+        <result column="bbs.commentCount"     property="bbs.commentCount"    />
+        <result column="bbs.parentSeq"        property="bbs.parentSeq"       />
+        <result column="bbs.groupSeq"         property="bbs.groupSeq"        />
+        <result column="bbs.groupLevel"       property="bbs.groupLevel"      />
+        <result column="bbs.groupOrder"       property="bbs.groupOrder"      />
+        <result column="bbs.deleteYn"         property="bbs.deleteYn"        />
+        <result column="bbs.regMemberSeq"     property="bbs.regMemberSeq"    />
+        <result column="bbs.regDtime"         property="bbs.regDtime"        />
+        <result column="bbs.regIp" 	          property="bbs.regIp"     	     />
+        <result column="bbs.updMemberSeq"     property="bbs.updMemberSeq"    />
+        <result column="bbs.updDtime"         property="bbs.updDtime"        />
+        <result column="bbs.updIp" 	          property="bbs.updIp"     	     />
+        <result column="bbs.regMemberName"    property="bbs.regMemberName"   />
+        <result column="bbs.attachCount"      property="bbs.attachCount"     />
+        <result column="bbs.downloadYn"       property="bbs.downloadYn"      />
+        <result column="bbs.likeSum"       	  property="bbs.likeSum"       />
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=bbs.bbsSeq,referenceTablename=referenceTablename}" property="bbs.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.board.vo.condition.UIBbsCondition" resultMap="listResultMap">
+/* UIBbsMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "bbs.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "bbs.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "bbs.bbsTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "bbs.bbsTitle" DESC</when>
+            <when test='orderby == 3'>ORDER BY "bbs.bbsTypeCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "bbs.bbsTypeCd" DESC</when>
+            <otherwise>ORDER BY "bbs.groupSeq" DESC, "bbs.groupOrder" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT bbs.cs_bbs_seq          AS "bbs.bbsSeq" ,
+       bbs.cs_board_seq        AS "bbs.boardSeq" ,
+       bbs.cs_bbs_title        AS "bbs.bbsTitle" ,
+       bbs.cs_bbs_type_cd      AS "bbs.bbsTypeCd" ,
+       bbs.cs_always_top_yn    AS "bbs.alwaysTopYn" ,
+       bbs.cs_html_yn          AS "bbs.htmlYn" ,
+       bbs.cs_secret_yn        AS "bbs.secretYn" ,
+       bbs.cs_target_rolegroup AS "bbs.targetRolegroup" ,
+       bbs.cs_view_count       AS "bbs.viewCount" ,
+       bbs.cs_comment_count    AS "bbs.commentCount" ,
+       bbs.cs_parent_seq       AS "bbs.parentSeq" ,
+       bbs.cs_group_seq        AS "bbs.groupSeq" ,
+       bbs.cs_group_level      AS "bbs.groupLevel" ,
+       bbs.cs_group_order      AS "bbs.groupOrder" ,
+       bbs.cs_delete_yn        AS "bbs.deleteYn" ,
+       bbs.cs_reg_member_seq   AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime        AS "bbs.regDtime" ,
+       bbs.cs_reg_ip	       AS "bbs.regIp" ,
+       bbs.cs_upd_member_seq   AS "bbs.updMemberSeq" ,
+       bbs.cs_upd_dtime        AS "bbs.updDtime" ,
+       bbs.cs_upd_ip		   AS "bbs.updIp" ,
+       bbs.cx_download_yn	   AS "bbs.downloadYn",
+	   bbs.cs_like_sum 		   AS "bbs.likeSum",
+       member.cs_member_name   AS "bbs.regMemberName" ,
+       (SELECT COUNT(*)
+          FROM cs_attach
+         WHERE cs_reference_seq = bbs.cs_bbs_seq
+           AND cs_reference_tablename = 'cs_bbs'
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.attachCount",
+       'cs_bbs'                AS "referenceTablename"
+  FROM cs_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+ WHERE bbs.cs_board_seq = #{srchBoardSeq}
+       AND bbs.cs_delete_yn = 'N'
+        <if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("")'>
+       AND bbs.cs_bbs_type_cd = #{srchBbsTypeCd}         
+        </if>
+        <if test='srchTargetRolegroup != null and !srchTargetRolegroup.equals("")'>
+        <choose>
+        	<when test='srchStaffYn != null and !srchStaffYn.equals("")'>
+       AND (bbs.cs_target_rolegroup LIKE '%' + #{srchTargetRolegroup} + '%' OR bbs.cs_reg_member_seq = #{srchMemberSeq})       
+        	</when>
+        	<otherwise>
+       AND bbs.cs_target_rolegroup LIKE '%' + #{srchTargetRolegroup} + '%'       
+        	</otherwise>
+        </choose>
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       AND bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND bbs.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("mobile")'>
+       AND (bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%' OR bbs.cs_description LIKE '%' + #{srchWordDB} + '%')    
+            </if>
+        </if>
+        <if test='srchAlwaysTopYn != null and !srchAlwaysTopYn.equals("")'>
+       AND bbs.cs_always_top_yn = #{srchAlwaysTopYn}
+        </if>
+        
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.board.vo.condition.UIBbsCondition" resultType="int">
+/* UIBbsMapper.countList */
+SELECT COUNT(*)
+  FROM cs_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+ WHERE bbs.cs_board_seq = #{srchBoardSeq}
+       AND bbs.cs_delete_yn = 'N'
+        <if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("")'>
+       AND bbs.cs_bbs_type_cd = #{srchBbsTypeCd}         
+        </if>
+        <if test='srchTargetRolegroup != null and !srchTargetRolegroup.equals("")'>
+       <choose>
+        	<when test='srchStaffYn != null and !srchStaffYn.equals("")'>
+       AND (bbs.cs_target_rolegroup LIKE '%' + #{srchTargetRolegroup} + '%' OR bbs.cs_reg_member_seq = #{srchMemberSeq})       
+        	</when>
+        	<otherwise>
+       AND bbs.cs_target_rolegroup LIKE '%' + #{srchTargetRolegroup} + '%'       
+        	</otherwise>
+        </choose>       
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       AND bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND bbs.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("mobile")'>
+       AND (bbs.cs_bbs_title LIKE '%' + #{srchWordDB} + '%' OR bbs.cs_description LIKE '%' + #{srchWordDB} + '%')    
+            </if>
+        </if>
+        <if test='srchAlwaysTopYn != null and !srchAlwaysTopYn.equals("")'>
+       AND bbs.cs_always_top_yn = #{srchAlwaysTopYn}
+        </if>
+    </select>
+
+    <resultMap id="listReplyResultMap" type="com._4csoft.aof.ui.board.vo.resultset.UIBbsRS">
+        <result column="bbs.bbsSeq"           property="bbs.bbsSeq"          />
+        <result column="bbs.boardSeq"         property="bbs.boardSeq"        />
+        <result column="bbs.bbsTitle"         property="bbs.bbsTitle"        />
+        <result column="bbs.description"      property="bbs.description"     />
+        <result column="bbs.bbsTypeCd"        property="bbs.bbsTypeCd"       />
+        <result column="bbs.alwaysTopYn"      property="bbs.alwaysTopYn"     />
+        <result column="bbs.htmlYn"           property="bbs.htmlYn"          />
+        <result column="bbs.secretYn"         property="bbs.secretYn"        />
+        <result column="bbs.targetRolegroup"  property="bbs.targetRolegroup" />
+        <result column="bbs.viewCount"        property="bbs.viewCount"       />
+        <result column="bbs.commentCount"     property="bbs.commentCount"    />
+        <result column="bbs.parentSeq"        property="bbs.parentSeq"       />
+        <result column="bbs.groupSeq"         property="bbs.groupSeq"        />
+        <result column="bbs.groupLevel"       property="bbs.groupLevel"      />
+        <result column="bbs.groupOrder"       property="bbs.groupOrder"      />
+        <result column="bbs.deleteYn"         property="bbs.deleteYn"        />
+        <result column="bbs.regMemberSeq"     property="bbs.regMemberSeq"    />
+        <result column="bbs.regDtime"         property="bbs.regDtime"        />
+        <result column="bbs.regIp" 	          property="bbs.regIp"     	     />
+        <result column="bbs.updMemberSeq"     property="bbs.updMemberSeq"    />
+        <result column="bbs.updDtime"         property="bbs.updDtime"        />
+        <result column="bbs.updIp" 	          property="bbs.updIp"     	     />
+        <result column="bbs.regMemberName"    property="bbs.regMemberName"   />
+        <result column="bbs.attachCount"      property="bbs.attachCount"     />
+        <result column="bbs.downloadYn"       property="bbs.downloadYn"      />
+    </resultMap>
+    <select id="getListReply" parameterType="com._4csoft.aof.ui.board.vo.condition.UIBbsCondition" resultMap="listReplyResultMap">
+/* UIBbsMapper.getListReply */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "bbs.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "bbs.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "bbs.bbsTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "bbs.bbsTitle" DESC</when>
+            <when test='orderby == 3'>ORDER BY "bbs.bbsTypeCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "bbs.bbsTypeCd" DESC</when>
+            <otherwise>ORDER BY "bbs.groupSeq" DESC, "bbs.groupOrder" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT bbs.cs_bbs_seq          AS "bbs.bbsSeq" ,
+       bbs.cs_board_seq        AS "bbs.boardSeq" ,
+       bbs.cs_bbs_title        AS "bbs.bbsTitle" ,
+       bbs.cs_description      AS "bbs.description" ,
+       bbs.cs_bbs_type_cd      AS "bbs.bbsTypeCd" ,
+       bbs.cs_always_top_yn    AS "bbs.alwaysTopYn" ,
+       bbs.cs_html_yn          AS "bbs.htmlYn" ,
+       bbs.cs_secret_yn        AS "bbs.secretYn" ,
+       bbs.cs_target_rolegroup AS "bbs.targetRolegroup" ,
+       bbs.cs_view_count       AS "bbs.viewCount" ,
+       bbs.cs_comment_count    AS "bbs.commentCount" ,
+       bbs.cs_parent_seq       AS "bbs.parentSeq" ,
+       bbs.cs_group_seq        AS "bbs.groupSeq" ,
+       bbs.cs_group_level      AS "bbs.groupLevel" ,
+       bbs.cs_group_order      AS "bbs.groupOrder" ,
+       bbs.cs_delete_yn        AS "bbs.deleteYn" ,
+       bbs.cs_reg_member_seq   AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime        AS "bbs.regDtime" ,
+       bbs.cs_reg_ip	       AS "bbs.regIp" ,
+       bbs.cs_upd_member_seq   AS "bbs.updMemberSeq" ,
+       bbs.cs_upd_dtime        AS "bbs.updDtime" ,
+       bbs.cs_upd_ip		   AS "bbs.updIp" ,
+       bbs.cx_download_yn	   AS "bbs.downloadYn",
+       member.cs_member_name   AS "bbs.regMemberName" ,
+       (SELECT COUNT(*)
+          FROM cs_attach
+         WHERE cs_reference_seq = bbs.cs_bbs_seq
+           AND cs_reference_tablename = 'cs_bbs'
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.attachCount"
+  FROM cs_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+ WHERE bbs.cs_parent_seq = #{srchParentSeq}
+       AND bbs.cs_delete_yn = 'N'
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countListReply" parameterType="com._4csoft.aof.ui.board.vo.condition.UIBbsCondition" resultType="int">
+/* UIBbsMapper.countListReply */
+SELECT COUNT(*)
+  FROM cs_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+ WHERE bbs.cs_parent_seq = #{srchParentSeq}
+       AND bbs.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listAlwaysTopResultMap" type="com._4csoft.aof.ui.board.vo.resultset.UIBbsRS">
+        <result column="bbs.bbsSeq"           property="bbs.bbsSeq"          />
+        <result column="bbs.boardSeq"         property="bbs.boardSeq"        />
+        <result column="bbs.bbsTitle"         property="bbs.bbsTitle"        />
+        <result column="bbs.bbsTypeCd"        property="bbs.bbsTypeCd"       />
+        <result column="bbs.alwaysTopYn"      property="bbs.alwaysTopYn"     />
+        <result column="bbs.htmlYn"           property="bbs.htmlYn"          />
+        <result column="bbs.secretYn"         property="bbs.secretYn"        />
+        <result column="bbs.targetRolegroup"  property="bbs.targetRolegroup" />
+        <result column="bbs.viewCount"        property="bbs.viewCount"       />
+        <result column="bbs.commentCount"     property="bbs.commentCount"    />
+        <result column="bbs.parentSeq"        property="bbs.parentSeq"       />
+        <result column="bbs.groupSeq"         property="bbs.groupSeq"        />
+        <result column="bbs.groupLevel"       property="bbs.groupLevel"      />
+        <result column="bbs.groupOrder"       property="bbs.groupOrder"      />
+        <result column="bbs.deleteYn"         property="bbs.deleteYn"        />
+        <result column="bbs.regMemberSeq"     property="bbs.regMemberSeq"    />
+        <result column="bbs.regDtime"         property="bbs.regDtime"        />
+        <result column="bbs.regIp" 	          property="bbs.regIp"     	     />
+        <result column="bbs.updMemberSeq"     property="bbs.updMemberSeq"    />
+        <result column="bbs.updDtime"         property="bbs.updDtime"        />
+        <result column="bbs.updIp" 	          property="bbs.updIp"     	     />
+        <result column="bbs.regMemberName"    property="bbs.regMemberName"   />
+        <result column="bbs.attachCount"      property="bbs.attachCount"     />
+        <result column="bbs.downloadYn"       property="bbs.downloadYn"      />
+    </resultMap>
+    <select id="getListAlwaysTop" parameterType="Long" resultMap="listAlwaysTopResultMap">
+/* UIBbsMapper.getListAlwaysTop */
+SELECT bbs.cs_bbs_seq          AS "bbs.bbsSeq" ,
+       bbs.cs_board_seq        AS "bbs.boardSeq" ,
+       bbs.cs_bbs_title        AS "bbs.bbsTitle" ,
+       bbs.cs_bbs_type_cd      AS "bbs.bbsTypeCd" ,
+       bbs.cs_always_top_yn    AS "bbs.alwaysTopYn" ,
+       bbs.cs_html_yn          AS "bbs.htmlYn" ,
+       bbs.cs_secret_yn        AS "bbs.secretYn" ,
+       bbs.cs_target_rolegroup AS "bbs.targetRolegroup" ,
+       bbs.cs_view_count       AS "bbs.viewCount" ,
+       bbs.cs_comment_count    AS "bbs.commentCount" ,
+       bbs.cs_parent_seq       AS "bbs.parentSeq" ,
+       bbs.cs_group_seq        AS "bbs.groupSeq" ,
+       bbs.cs_group_level      AS "bbs.groupLevel" ,
+       bbs.cs_group_order      AS "bbs.groupOrder" ,
+       bbs.cs_delete_yn        AS "bbs.deleteYn" ,
+       bbs.cs_reg_member_seq   AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime        AS "bbs.regDtime" ,
+       bbs.cs_reg_ip	       AS "bbs.regIp" ,
+       bbs.cs_upd_member_seq   AS "bbs.updMemberSeq" ,
+       bbs.cs_upd_dtime        AS "bbs.updDtime" ,
+       bbs.cs_upd_ip		   AS "bbs.updIp" ,
+	   bbs.cx_download_yn	   AS "bbs.downloadYn",
+       member.cs_member_name   AS "bbs.regMemberName" ,
+       (SELECT COUNT(*)
+          FROM cs_attach
+         WHERE cs_reference_seq = bbs.cs_bbs_seq
+           AND cs_reference_tablename = 'cs_bbs'
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.attachCount"
+  FROM cs_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+ WHERE bbs.cs_board_seq = #{boardSeq}
+       AND bbs.cs_always_top_yn = 'Y'
+       AND bbs.cs_delete_yn = 'N'
+ORDER BY bbs.cs_reg_dtime DESC
+    </select>
+    
+    <resultMap id="listMyPageResultMap" type="com._4csoft.aof.ui.board.vo.resultset.UIBbsRS">
+        <result column="bbs.bbsSeq"           property="bbs.bbsSeq"          />
+        <result column="bbs.bbsTitle"         property="bbs.bbsTitle"        />
+        <result column="bbs.bbsTypeCd"        property="bbs.bbsTypeCd"       />
+        <result column="bbs.regMemberSeq"     property="bbs.regMemberSeq"    />
+        <result column="bbs.regDtime"         property="bbs.regDtime"        />
+        <result column="bbs.regMemberName"    property="bbs.regMemberName"   />
+        <result column="bbs.replyCount"       property="bbs.replyCount"      />
+    </resultMap>
+    <select id="getMyPageList" parameterType="com._4csoft.aof.ui.board.vo.condition.UIBbsCondition" resultMap="listMyPageResultMap">
+/* UIBbs.getMyPageList */
+SELECT bbs.cs_bbs_seq          AS "bbs.bbsSeq" ,
+       bbs.cs_bbs_title        AS "bbs.bbsTitle" ,
+       bbs.cs_bbs_type_cd      AS "bbs.bbsTypeCd" ,
+       bbs.cs_reg_member_seq   AS "bbs.regMemberSeq" ,
+       bbs.cs_reg_dtime        AS "bbs.regDtime" ,
+       member.cs_member_name   AS "bbs.regMemberName" ,
+       (SELECT COUNT(*)
+          FROM cs_bbs
+         WHERE cs_parent_seq = bbs.cs_bbs_seq
+           AND cs_delete_yn = 'N'
+       ) AS "bbs.replyCount"
+  FROM cs_bbs bbs
+   INNER JOIN cs_member member
+        ON bbs.cs_reg_member_seq = member.cs_member_seq
+ WHERE bbs.cs_board_seq = #{srchBoardSeq}
+       AND bbs.cs_delete_yn = 'N'
+       AND bbs.cs_always_top_yn = 'N'
+       AND bbs.cs_group_level = 1
+        <if test='srchTargetRolegroup != null and !srchTargetRolegroup.equals("")'>
+       AND bbs.cs_target_rolegroup LIKE '%' + #{srchTargetRolegroup} + '%'       
+        </if>
+ORDER BY bbs.cs_reg_dtime
+		<if test='srchBbsTypeCd != null and !srchBbsTypeCd.equals("QNA")'>
+		DESC
+		</if>
+    </select>
+
+</mapper>

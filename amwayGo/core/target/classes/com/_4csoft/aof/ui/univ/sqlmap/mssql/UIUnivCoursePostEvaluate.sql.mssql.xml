@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCoursePostEvaluateMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCoursePostEvaluateVO">
+    <selectKey resultType="Long" keyProperty="postEvaluateSeq" order="AFTER">
+	SELECT @@IDENTITY
+	</selectKey>
+	/* UnivCoursePostEvaluateMapper.insert */
+	INSERT INTO cs_course_post_evaluate 
+	       ( 
+			cs_course_active_seq ,
+			cs_post_type ,
+			cs_from_count ,
+			cs_to_count ,
+			cs_score ,
+			cs_sort_order ,
+			cs_reference_seq ,
+			cs_reg_member_seq ,
+			cs_upd_member_seq ,
+			cs_reg_dtime ,
+			cs_upd_dtime ,
+			cs_reg_ip ,
+			cs_upd_ip
+	       ) 
+	       VALUES 
+	       ( 
+	           #{courseActiveSeq, jdbcType=NUMERIC} ,
+	           #{postType, jdbcType=VARCHAR} ,
+	           #{fromCount, jdbcType=NUMERIC} ,
+	           #{toCount, jdbcType=NUMERIC} ,
+	           #{score, jdbcType=NUMERIC} ,
+	           #{sortOrder, jdbcType=NUMERIC} ,
+	           #{referenceSeq, jdbcType=NUMERIC} ,
+	           #{regMemberSeq, jdbcType=NUMERIC} ,
+			   #{updMemberSeq, jdbcType=NUMERIC} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+			   dbo.FN_NOW_TO_CHAR() ,
+	           #{regIp, jdbcType=VARCHAR} ,
+	           #{updIp, jdbcType=VARCHAR}
+	       )
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCoursePostEvaluateVO">
+	/* UnivCoursePostEvaluateMapper.update */
+	UPDATE cs_course_post_evaluate 
+	   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+	       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+	       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	       <if test='postType != null'>
+	       ,cs_post_type = #{postType}
+	       </if>
+		   <if test='fromCount != null'>
+	       ,cs_from_count = #{fromCount}
+	       </if>
+		   <if test='toCount != null'>
+	       ,cs_to_count = #{toCount}
+	       </if>
+		   <if test='score != null'>
+	       ,cs_score = #{score}
+	       </if>
+	       <if test='sortOrder != null'>
+	       ,cs_sort_order = #{sortOrder}
+	       </if>
+		   <if test='referenceSeq != null'>
+	       ,cs_reference_seq = #{referenceSeq}
+	       </if>
+	 WHERE cs_post_evaluate_seq = #{postEvaluateSeq}
+	       AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCoursePostEvaluateVO">
+/* UnivCoursePostEvaluateMapper.delete */
+UPDATE cs_course_post_evaluate 
+   SET cs_upd_dtime  = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn      = 'Y' 
+ WHERE cs_course_active_seq = #{courseActiveSeq} 
+   AND cs_post_type = #{postType}
+   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="deleteByCourseActiveSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCoursePostEvaluateVO">
+/* UnivCoursePostEvaluateMapper.deleteByCourseActiveSeq */
+UPDATE cs_course_post_evaluate 
+   SET cs_upd_dtime  = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn      = 'Y' 
+ WHERE cs_course_active_seq = #{courseActiveSeq} 
+   AND cs_delete_yn = 'N'
+    </update>
+	
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCoursePostEvaluateRS">
+        <result column="cpev.postEvaluateSeq" property="coursePostEvaluate.postEvaluateSeq" />
+        <result column="cpev.courseActiveSeq" property="coursePostEvaluate.courseActiveSeq" />
+        <result column="cpev.postType"        property="coursePostEvaluate.postType" />
+        <result column="cpev.fromCount"       property="coursePostEvaluate.fromCount" />
+        <result column="cpev.toCount"         property="coursePostEvaluate.toCount" />
+        <result column="cpev.score"           property="coursePostEvaluate.score" />
+        <result column="cpev.sortOrder"       property="coursePostEvaluate.sortOrder" />
+        <result column="cpev.deleteYn"        property="coursePostEvaluate.deleteYn" />
+        <result column="cpev.regMemberSeq"    property="coursePostEvaluate.regMemberSeq" />
+        <result column="cpev.regDtime"        property="coursePostEvaluate.regDtime" />
+        <result column="cpev.updMemberSeq"    property="coursePostEvaluate.updMemberSeq" />
+        <result column="cpev.updDtime"        property="coursePostEvaluate.updDtime" />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCoursePostEvaluateVO" resultMap="listResultMap">
+	/* UnivCoursePostEvaluateMapper.getList */
+	SELECT 
+		   cpev.cs_post_evaluate_seq AS "cpev.postEvaluateSeq" ,
+	       cpev.cs_course_active_seq AS "cpev.courseActiveSeq" ,
+	       cpev.cs_post_type         AS "cpev.postType" ,
+	       cpev.cs_from_count        AS "cpev.fromCount" ,
+	       cpev.cs_to_count          AS "cpev.toCount" ,
+	       cpev.cs_score             AS "cpev.score" ,
+	       cpev.cs_sort_order        AS "cpev.sortOrder" ,
+	       cpev.cs_delete_yn         AS "cpev.deleteYn" ,
+	       cpev.cs_reg_member_seq    AS "cpev.regMemberSeq" ,
+	       cpev.cs_reg_dtime         AS "cpev.regDtime" ,
+	       cpev.cs_upd_member_seq    AS "cpev.updMemberSeq" ,
+	       cpev.cs_upd_dtime         AS "cpev.updDtime" 
+	  FROM cs_course_post_evaluate cpev 
+	 WHERE cpev.cs_delete_yn = 'N' 
+       AND cpev.cs_course_active_seq = #{courseActiveSeq}
+       <if test='referenceSeq != null'>
+       AND cpev.cs_reference_seq = #{referenceSeq}
+       </if> 
+       <if test='postType != null'>
+       AND cpev.cs_post_type = #{postType}
+       </if>
+	ORDER BY cpev.cs_sort_order ASC
+    </select>
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCoursePostEvaluateVO" resultType="int">
+    /* UnivCoursePostEvaluateMapper.countList */
+    SELECT COUNT(*)
+      FROM cs_course_post_evaluate cpev 
+     WHERE cpev.cs_delete_yn = 'N' 
+       AND cpev.cs_course_active_seq = #{courseActiveSeq}
+       <if test='referenceSeq != null'>
+       AND cpev.cs_reference_seq = #{referenceSeq}
+       </if> 
+       <if test='postType != null'>
+       AND cpev.cs_post_type = #{postType}
+       </if>
+    </select>
+    
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCoursePostEvaluateVO">
+/* UnivCoursePostEvaluateMapper.insertCopy */
+INSERT INTO cs_course_post_evaluate
+       (
+       cs_course_active_seq,
+       cs_reference_seq,
+       cs_post_type,
+       cs_from_count,
+       cs_to_count,
+       cs_score,
+       cs_sort_order,
+       cs_delete_yn,
+       cs_reg_member_seq,
+       cs_reg_dtime,
+       cs_reg_ip,
+       cs_upd_member_seq,
+       cs_upd_dtime,
+       cs_upd_ip
+       )
+SELECT #{targetCourseActiveSeq,jdbcType=NUMERIC},
+       #{targetReferenceSeq},
+       cs_post_type,
+       cs_from_count,
+       cs_to_count,
+       cs_score,
+       cs_sort_order,
+       'N',
+       #{regMemberSeq, jdbcType=NUMERIC},
+       dbo.FN_NOW_TO_CHAR(), 
+       #{regIp, jdbcType=VARCHAR},
+       #{updMemberSeq, jdbcType=NUMERIC},
+       dbo.FN_NOW_TO_CHAR(),
+       #{updIp, jdbcType=VARCHAR}
+  FROM cs_course_post_evaluate
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{sourceCourseActiveSeq}
+   AND cs_post_type = #{postType}
+   <if test="sourceReferenceSeq != null">
+   AND cs_reference_seq = #{sourceReferenceSeq}
+   </if>
+    </insert>
+
+</mapper>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.basePlaza.service.impl.BasePlazaMapper">
+
+	<!-- pp정보 목록 조회 -->
+	<select id="basePlazaListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT * FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY ORDERNUMBER ASC) AS ROW_NUM, AA.* FROM(
+				SELECT
+				  A.PPSEQ
+				, A.PPNAME
+				, A.WAREHOUSECODE
+				, B.CODENAME AS STATUSCODE
+				, A.ORDERNUMBER
+				, ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER
+				, ISNULL(Format(A.UPDATEDATE, N'yyyy-MM-dd HH:mm:ss'), Format(A.INSERTDATE, N'yyyy-MM-dd HH:mm:ss')) AS UPDATEDATE
+				FROM RSVPPINFO A
+			  LEFT OUTER JOIN COMMONCODE B
+				    ON(A.STATUSCODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'YN3')
+				WHERE 1=1
+					<if test='searchStatusCode != null and !searchStatusCode.equals("")'>
+					  AND A.STATUSCODE = #{searchStatusCode}
+					</if>
+				) AS AA
+			) AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- pp정보 목록 카운트 -->
+	<select id="basePlazaListCountAjax" parameterType="reqBox" resultType="int">
+		SELECT count(*) AS TOTAL_CNT FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY STATUSCODE ASC) AS ROW_NUM, AA.* FROM(
+				SELECT
+				  A.PPSEQ
+				, A.PPNAME
+				, A.WAREHOUSECODE
+				, B.CODENAME AS STATUSCODE
+				, A.ORDERNUMBER
+				, ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER
+				, ISNULL(A.UPDATEDATE, A.INSERTDATE) AS UPDATEDATE
+				FROM RSVPPINFO A
+			  LEFT OUTER JOIN COMMONCODE B
+				    ON(A.STATUSCODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'YN3')
+				WHERE 1=1
+					<if test='searchStatusCode != null and !searchStatusCode.equals("")'>
+					  AND A.STATUSCODE = #{searchStatusCode}
+					</if>
+				) AS AA
+			) AS BB
+	</select>
+	
+	<!-- pp정보 등록 -->
+	<insert id="basePlazaInsertAjax" parameterType="reqBox">
+		INSERT INTO RSVPPINFO (
+			 PPNAME
+			,STATUSCODE
+			,WAREHOUSECODE
+			,ORDERNUMBER
+			,INSERTUSER
+			,INSERTDATE
+			,UPDATEUSER
+			,UPDATEDATE
+		) VALUES (
+			 #{ppName}
+			,#{statusCode}
+			,#{warehouseCode}
+			,ISNULL((SELECT MAX(ORDERNUMBER) +1 FROM RSVPPINFO), 1)
+			,#{sessionAccount}
+			,GETDATE()
+			,NULL
+			,NULL
+		)
+		<selectKey resultType="int" keyProperty="ppSeq" order="AFTER">
+			SELECT IDENT_CURRENT('RSVPPINFO')
+		</selectKey>
+	</insert>
+	
+	<!-- pp 순번 지정을 위한 목록 조회 -->
+	<select id="basePlazaRowChangeListAjax" parameterType="reqBox" resultType="egovMap">
+		SELECT * FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY ORDERNUMBER ASC) AS ROW_NUM, AA.* FROM(
+				SELECT
+				  A.PPSEQ
+				, A.PPNAME
+				, A.ORDERNUMBER
+				FROM RSVPPINFO A
+				WHERE 1=1
+				) AS AA
+			) AS BB
+	</select>
+	
+	<!-- pp 순번 지정 -->
+	<update id="basePlazaRowChangeUpdateAjax" parameterType="reqBox">
+		UPDATE RSVPPINFO SET
+			ORDERNUMBER = #{orderNumber}
+			,UPDATEUSER = #{sessionAccount}
+			,UPDATEDATE = GETDATE()
+		WHERE PPSEQ = #{ppSeq}
+	</update>
+	
+	<!-- pp정보 상세 조회 -->
+	<select id="basePlazaDetailAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			  A.PPSEQ
+			, A.PPNAME
+			, A.STATUSCODE
+			, A.WAREHOUSECODE
+		FROM RSVPPINFO A
+		WHERE A.PPSEQ = #{ppSeq}
+	</select>
+	
+	<!-- pp정보 수정 -->
+	<update id="basePlazaUpdateAjax" parameterType="reqBox">
+		UPDATE RSVPPINFO SET
+			  PPNAME = #{ppName}
+			, WAREHOUSECODE = #{warehouseCode}
+			, STATUSCODE = #{statusCode}
+			, UPDATEUSER = #{sessionAccount}
+			, UPDATEDATE = GETDATE()
+		WHERE PPSEQ = #{ppSeq}
+	</update>
+	
+	<!-- pp정보 수정 이력 조회 -->
+	<select id="basePlazaHistoryListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+		    A.HISTORYSEQ
+		  , A.PPSEQ
+		  , A.PPNAME
+		  , A.WAREHOUSECODE
+		  , B.CODENAME STATUSCODE
+		  , A.MODIFYDATETIME
+		  , A.MODIFIER
+		FROM RSVPPHISTORY A
+			LEFT OUTER JOIN COMMONCODE B
+			ON(A.STATUSCODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'YN3')
+		ORDER BY A.HISTORYSEQ DESC
+	</select>
+	
+	<!-- pp정보 수정 이력 등록 -->
+	<insert id="basePlazaHistoryInsert" parameterType="reqBox">
+		INSERT INTO RSVPPHISTORY (
+			  HISTORYSEQ
+			, PPSEQ
+			, PPNAME
+			, STATUSCODE
+			, WAREHOUSECODE
+      		, MODIFYDATETIME
+      		, MODIFIER
+			, INSERTUSER
+			, INSERTDATE
+		) VALUES (
+        	  ISNULL((SELECT MAX(HISTORYSEQ) +1 FROM RSVPPHISTORY), 1)
+			, #{ppSeq}
+			, #{ppName}
+			, #{statusCode}
+			, #{warehouseCode}
+			, GETDATE()
+			, #{sessionAccount}
+			, #{sessionAccount}
+			, GETDATE()
+		)
+	</insert>
+</mapper>

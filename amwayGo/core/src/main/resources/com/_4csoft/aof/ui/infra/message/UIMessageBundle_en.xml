@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+<!-- 멤버 -->
+    <entry key="필드:멤버:식별자">식별자</entry>
+    <entry key="필드:멤버:아이디">아이디</entry>
+    <entry key="필드:멤버:이름">이름</entry>
+    <entry key="필드:멤버:아이디">아이디</entry>
+    <entry key="필드:멤버:이름국문">이름(국문)</entry>
+    <entry key="필드:멤버:이름영문">이름(영문)</entry>
+    <entry key="필드:멤버:이름한문">이름(한문)</entry>
+    <entry key="필드:멤버:닉네임">닉네임</entry>
+    <entry key="필드:멤버:소속">소속</entry>
+    <entry key="필드:멤버:비밀번호">비밀번호</entry>
+    <entry key="필드:멤버:비밀번호확인">비밀번호확인</entry>
+    <entry key="필드:멤버:이전비밀번호">이전비밀번호</entry>
+    <entry key="필드:멤버:업무">업무</entry>
+    <entry key="필드:멤버:이메일">이메일</entry>
+    <entry key="필드:멤버:이메일수신여부">E-mail 수신여부</entry>
+    <entry key="필드:멤버:이메일개인">E-mail(개인)</entry>
+    <entry key="필드:멤버:주소">주소</entry>
+    <entry key="필드:멤버:상세주소">상세주소</entry>
+    <entry key="필드:멤버:모바일전화번호">모바일전화번호</entry>
+    <entry key="필드:멤버:휴대전화">휴대전화</entry>
+    <entry key="필드:멤버:SMS수신여부">SMS 수신여부</entry>
+    <entry key="필드:멤버:집전화번호">집전화번호</entry>
+    <entry key="필드:멤버:자택전화번호">자택전화번호</entry>
+    <entry key="필드:멤버:전화번호">전화번호</entry>
+    <entry key="필드:멤버:사진">사진</entry>
+    <entry key="필드:멤버:상태">상태</entry>
+    <entry key="필드:멤버:계정상태">계정상태</entry>
+    <entry key="필드:멤버:회원탈퇴일">회원탈퇴일</entry>
+    <entry key="필드:멤버:회원가입일">회원가입일</entry>
+    <entry key="필드:멤버:회원구분">회원구분</entry>
+    <entry key="필드:멤버:우편번호">우편번호</entry>
+    <entry key="필드:멤버:학사상태">학사상태</entry>
+    <entry key="필드:멤버:최종동기화일시">최종 동기화 일시</entry>
+    <entry key="필드:멤버:현재비밀번호">현재 비밀번호</entry>
+    <entry key="필드:멤버:새비밀번호">새 비밀번호</entry>
+    <entry key="필드:멤버:새비밀번호확인">새 비밀번호 확인</entry>
+    <entry key="필드:멤버:학부">학부</entry>
+    <entry key="필드:멤버:학과">학과</entry>
+    <entry key="필드:멤버:성별">성별</entry>
+    <entry key="필드:멤버:국적">국적</entry>
+    <entry key="필드:멤버:거주유형">거주유형</entry>
+    <entry key="필드:멤버:학적상태">학적상태</entry>
+    <entry key="필드:멤버:생년월일">생년월일</entry>
+    <entry key="필드:멤버:학년">학년</entry>
+    <entry key="필드:멤버:전공">전공</entry>
+    <entry key="필드:멤버:담당교수">담당교수</entry>
+    <entry key="필드:멤버:주소록">주소록</entry>
+    <entry key="필드:멤버:교수명">교수명</entry>
+    <entry key="필드:멤버:교수선택">교수 선택</entry>
+    <entry key="필드:멤버:년도">년도</entry>
+    <entry key="필드:멤버:일">일</entry>
+    <entry key="필드:멤버:월">월</entry>
+    <entry key="필드:멤버:수강이력">수강이력</entry>
+    <entry key="필드:멤버:기본정보">기본정보</entry>
+    <entry key="필드:멤버:운영과목">운영과목</entry>
+    <entry key="필드:멤버:콘텐츠개발">콘텐츠개발</entry>
+    <entry key="필드:맴버:개인정보관리">개인정보관리</entry>
+    <entry key="필드:맴버:운영과목정보">운영과목정보</entry>
+    <entry key="필드:맴버:수강이력">수강이력</entry>
+    <entry key="필드:멤버:사용자명">사용자명</entry>
+    <entry key="필드:멤버:프로젝트이력">프로젝트이력</entry>
+    <entry key="필드:멤버:학기">학기</entry>
+
+    <entry key="글:멤버:교과목분류">교과목분류</entry>
+    <entry key="글:멤버:이미사용중인아이디입니다">이미 사용중인 아이디입니다</entry>
+    <entry key="글:멤버:사용가능한아이디입니다">사용 가능한 아이디입니다</entry>
+    <entry key="글:멤버:이미사용중인닉네임입니다">이미 사용중인 닉네임입니다</entry>
+    <entry key="글:멤버:사용가능한닉네임입니다">사용 가능한 닉네임입니다</entry>
+    <entry key="글:멤버:아이디중복검사를실시하십시오">아이디중복검사를실시하십시오</entry>
+    <entry key="글:멤버:닉네임중복검사를실시하십시오">닉네임중복검사를실시하십시오</entry>
+    <entry key="글:멤버:아이디는영문숫자특수문자만가능합니다">아이디는 영문,숫자,특수문자만 가능합니다</entry>
+    <entry key="글:멤버:비밀번호가일치하지않습니다">비밀번호가 일치하지 않습니다</entry>
+    <entry key="글:멤버:현재비밀번호가일치하지않습니다">현재 비밀번호가 일치하지 않습니다</entry>
+    <entry key="글:멤버:비밀번호는영문숫자혼용으로사용가능합니다">비밀번호는 영문/숫자 혼용으로 사용가능합니다.</entry>
+    <entry key="글:멤버:회원을선택하십시오">회원을 선택하십시오</entry>
+    <entry key="글:멤버:구분자없이숫자만입력하십시오">구분자 없이 숫자만 입력하십시오</entry>
+    <entry key="글:멤버:비밀번호를다시한번입력하십시오">비밀번호를 다시 한번 입력하십시오</entry>
+    <entry key="글:멤버:비밀번호변경">비밀번호 변경</entry>
+    <entry key="글:멤버:비밀번호를변경하시겠습니까">비밀번호를 변경 하시겠습니까</entry>
+    <entry key="글:멤버:비밀번호를변경처리중입니다">비밀번호를 변경 처리중 입니다.</entry>
+    <entry key="글:멤버:비밀번호가변경되었습니다">비밀번호가 변경 되었습니다.</entry>
+    <entry key="글:멤버:수신여부">수신여부</entry>
+    <entry key="글:멤버:새로사용할비밀번호를입력하시기바랍니다">새로 사용 할 비밀번호를 입력하시기 바랍니다.</entry>
+    <entry key="글:멤버:6자이상입력하십시오">6자 이상 입력하십시오</entry>
+    <entry key="글:멤버:변경할비밀번호다시한번입력하십시오">변경할 비밀번호 다시 한번 입력 하십시오</entry>
+
+    <entry key="버튼:멤버:교수선택">교수 선택</entry>
+    <entry key="버튼:멤버:외부학습자등록">외부학습자 등록</entry>
+
+<!-- 롤그룹 -->
+    <entry key="필드:권한그룹:권한그룹명">권한그룹명</entry>
+    <entry key="필드:권한그룹:권한구분">권한구분</entry>
+    <entry key="필드:권한그룹:메뉴아이디">메뉴아이디</entry>
+    <entry key="필드:권한그룹:권한">권한</entry>
+    <entry key="필드:권한그룹:멤버">멤버</entry>
+    <entry key="필드:권한그룹:구성원">구성원</entry>
+    <entry key="필드:권한그룹:메뉴">메뉴</entry>
+    <entry key="필드:권한그룹:FTP디렉토리">FTP디렉토리</entry>
+    <entry key="필드:권한그룹:상위권한그룹">상위 권한그룹</entry>
+
+    <entry key="글:권한그룹:멤버추가">멤버추가</entry>
+    <entry key="글:권한그룹:구성원추가">구성원추가</entry>
+    <entry key="글:권한그룹:메뉴추가">메뉴추가</entry>
+    <entry key="글:권한그룹:FTP디렉토리는콘텐츠관리에서이용됩니다">FTP디렉토리는 콘텐츠관리에서 이용됩니다</entry>
+
+<!-- 롤그룹 (나중에 삭제 예정 2014.02.18 김현우) -->
+    <entry key="필드:롤그룹:롤그룹명">롤그룹명</entry>
+    <entry key="필드:롤그룹:권한그룹">권한그룹</entry>
+    <entry key="필드:롤그룹:롤구분">롤구분</entry>
+    <entry key="필드:롤그룹:메뉴아이디">메뉴아이디</entry>
+    <entry key="필드:롤그룹:권한">권한</entry>
+    <entry key="필드:롤그룹:멤버">멤버</entry>
+    <entry key="필드:롤그룹:메뉴">메뉴</entry>
+    <entry key="필드:롤그룹:FTP디렉토리">FTP디렉토리</entry>
+    <entry key="필드:롤그룹:상위롤그룹">상위롤그룹</entry>
+
+    <entry key="글:롤그룹:멤버추가">멤버추가</entry>
+    <entry key="글:롤그룹:메뉴추가">메뉴추가</entry>
+    <entry key="글:롤그룹:FTP디렉토리는콘텐츠관리에서이용됩니다">FTP디렉토리는 콘텐츠관리에서 이용됩니다</entry>
+
+
+<!-- 코드 -->
+    <entry key="필드:코드:코드그룹">코드그룹</entry>
+    <entry key="필드:코드:코드">코드</entry>
+    <entry key="필드:코드:코드명">코드명</entry>
+    <entry key="필드:코드:참조명1">참조명1</entry>
+    <entry key="필드:코드:참조명2">참조명2</entry>
+    <entry key="필드:코드:참조명3">참조명3</entry>
+    <entry key="필드:코드:설명">설명</entry>
+    <entry key="필드:코드:정렬순서">정렬순서</entry>
+    <entry key="필드:코드:그룹코드명">그룹코드명</entry>
+    <entry key="필드:코드:그룹코드">그룹코드</entry>
+    <entry key="필드:코드:코드">코드</entry>
+    <entry key="필드:코드:코드명">코드명</entry>
+    <entry key="필드:코드:참조1">참조1</entry>
+    <entry key="필드:코드:참조2">참조2</entry>
+    <entry key="필드:코드:참조3">참조3</entry>
+    <entry key="필드:코드:설명">설명</entry>
+    <entry key="필드:코드:코드추가">코드추가</entry>
+    <entry key="필드:코드:코드수정">코드수정</entry>
+    <entry key="필드:코드:사용">사용</entry>
+    <entry key="필드:코드:정렬">정렬</entry>
+    <entry key="필드:코드:정렬수정">정렬수정</entry>
+    
+    <entry key="글:코드:삭제된코드와중복혹은DBAccess에러입니다">삭제된코드와 중복 혹은 DBAccess에러 입니다[error Code : {0}]</entry>
+    <entry key="글:코드:이미사용중인코드입니다">이미 사용중인 코드입니다</entry>
+    <entry key="글:코드:사용가능한코드입니다">사용 가능한 코드입니다</entry>
+    <entry key="글:코드:이미사용중인그룹코드입니다">이미 사용중인 그룹코드입니다</entry>
+    <entry key="글:코드:사용가능한그룹코드입니다">사용 가능한 그룹코드입니다</entry>
+    <entry key="글:코드:그룹코드중복검사를실시하십시오">그룹코드 중복검사를 실시하십시오</entry>
+    <entry key="글:코드:코드중복검사를실시하십시오">코드 중복검사를 실시하십시오</entry>
+    <entry key="글:코드:정렬순서가잘못되었습니다">정렬순서가 잘못되었습니다</entry>
+    
+
+<!-- 분류 -->
+    <entry key="필드:분류:분류">분류</entry>
+    <entry key="필드:분류:분류제목">분류제목</entry>
+    <entry key="필드:분류:사용여부">사용여부</entry>
+    <entry key="필드:분류:학과">학과</entry>
+    <entry key="필드:분류:대상인원">대상인원</entry>
+
+    <entry key="글:분류:최상위">최상위</entry>
+    <entry key="글:분류:하위분류">하위분류</entry>
+    <entry key="글:분류:에분류추가">에 분류추가</entry>
+    <entry key="글:분류:분류선택">분류선택</entry>
+    <entry key="글:분류:사용중인분류는삭제할수없습니다">사용중인 분류는 삭제할 수 없습니다</entry>
+
+
+<!-- 메뉴 -->
+    <entry key="필드:메뉴:메뉴아이디">메뉴아이디</entry>
+    <entry key="필드:메뉴:메뉴명">메뉴명</entry>
+    <entry key="필드:메뉴:url">Url</entry>
+    <entry key="필드:메뉴:urlTarget">Target</entry>
+    <entry key="필드:메뉴:설명">설명</entry>
+    <entry key="필드:메뉴:노출여부">노출여부</entry>
+    <entry key="필드:메뉴:필수여부">필수여부</entry>
+
+    <entry key="글:메뉴:메뉴아이디의자릿수는3의배수로구성되어야합니다">메뉴아이디의 자릿수는 3의배수로 구성되어야 합니다</entry>
+    <entry key="글:메뉴:메뉴아이디중복검사를실시하십시오">메뉴아이디 중복검사를 실시하십시오</entry>
+    <entry key="글:메뉴:이미사용중인아이디입니다">이미 사용중인 아이디입니다</entry>
+    <entry key="글:메뉴:사용가능한아이디입니다">사용 가능한 아이디입니다</entry>
+    <entry key="글:메뉴:메뉴아이디는대중소3자리씩구성됩니다">메뉴아이디는 대/중/소 3자리씩 구성됩니다</entry>
+    <entry key="글:메뉴:읽기권한필수메뉴입니다">읽기권한 필수 메뉴입니다</entry>
+
+
+<!-- 일정 -->
+    <entry key="필드:일정:일자">일자</entry>
+    <entry key="필드:일정:제목">제목</entry>
+    <entry key="필드:일정:일정구분">일정구분</entry>
+    <entry key="필드:일정:반복여부">반복여부</entry>
+    <entry key="필드:일정:반복구분">반복구분</entry>
+    <entry key="필드:일정:반복종료일">반복종료일</entry>
+    <entry key="필드:일정:반복주기">반복주기</entry>
+    <entry key="필드:일정:반복요일">반복요일</entry>
+    <entry key="필드:일정:시작일시">시작일시</entry>
+    <entry key="필드:일정:종료일시">종료일시</entry>
+
+    <entry key="글:일정:일정관리">일정관리</entry>
+    <entry key="글:일정:무제한">무제한</entry>
+    <entry key="글:일정:X년마다">{0}년마다</entry>
+    <entry key="글:일정:X개월마다">{0}개월마다</entry>
+    <entry key="글:일정:X주마다">{0}주마다</entry>
+    <entry key="글:일정:X일마다">{0}일마다</entry>
+    <entry key="글:일정:X까지">{0}까지</entry>
+    <entry key="글:일정:반복">반복</entry>
+    <entry key="글:일정:매년">매년</entry>
+    <entry key="글:일정:매월">매월</entry>
+    <entry key="글:일정:매주">매주</entry>
+    <entry key="글:일정:매일">매일</entry>
+    <entry key="글:일정:월">월</entry>
+    <entry key="글:일정:화">화</entry>
+    <entry key="글:일정:수">수</entry>
+    <entry key="글:일정:목">목</entry>
+    <entry key="글:일정:금">금</entry>
+    <entry key="글:일정:토">토</entry>
+    <entry key="글:일정:일">일</entry>
+
+<!-- 쪽지 -->
+    <entry key="필드:쪽지:보낸사람">보낸사람</entry>
+    <entry key="필드:쪽지:받은사람">받은사람</entry>
+    <entry key="필드:쪽지:받는사람">받는사람</entry>
+    <entry key="필드:쪽지:전송일시">전송일시</entry>
+    <entry key="필드:쪽지:쪽지내용">쪽지내용</entry>
+    <entry key="필드:쪽지:쪽지확인">쪽지확인</entry>
+    <entry key="필드:쪽지:개별">개별</entry>
+    <entry key="필드:쪽지:그룹">그룹</entry>
+    <entry key="필드:쪽지:쪽지대상선택">쪽지 대상 선택</entry>
+    <entry key="필드:쪽지:첨부파일">첨부파일</entry>
+    <entry key="필드:쪽지:대상선택">대상 선택</entry>
+    <entry key="필드:쪽지:단체발송">단체발송</entry>
+    <entry key="필드:쪽지:새로운쪽지">새로운쪽지</entry>
+    
+    <entry key="글:쪽지:쪽지">쪽지</entry>
+    <entry key="글:쪽지:받은쪽지">받은쪽지</entry>
+    <entry key="글:쪽지:보낸쪽지">보낸쪽지</entry>
+    <entry key="글:쪽지:쪽지보내기">쪽지보내기</entry>
+    <entry key="글:쪽지:건의쪽지가발송되었습니다">{0}건의 쪽지가 발송되었습니다</entry>
+    <entry key="글:쪽지:건의그룹이추가되었습니다">{0}건의 그룹이 추가되었습니다</entry>
+    <entry key="글:쪽지:명이추가되었습니다">{0}명이 추가되었습니다</entry>
+    <entry key="글:쪽지:발송되었습니다">발송되었습니다</entry>
+    <entry key="글:쪽지:건의같은아이디가있습니다확인해주십시오">{0}건의같은 아이디가 있습니다 확인해주시오</entry>
+    <entry key="글:쪽지:쪽지를보내시겠습니까">쪽지를보내시겠습니까?</entry>
+    <entry key="글:쪽지:받는사람을선택하십시오">받는사람을 선택하십시오</entry>
+    <entry key="글:쪽지:새쪽지">새쪽지</entry>
+    <entry key="글:쪽지:주소록그룹">주소록 그룹</entry>
+    <entry key="글:쪽지:그룹명">그룹명</entry>
+    <entry key="글:쪽지:인원">인원</entry>
+    <entry key="글:쪽지:그룹추가">그룹추가</entry>
+    <entry key="글:쪽지:인적정보검색">인적 정보 검색</entry>
+    <entry key="글:쪽지:추가할대상자를선택">추가할 대상자를</entry>
+    <entry key="글:쪽지:쪽지를발송할대상자를">쪽지를 발송할 대상자를</entry>
+    <entry key="글:쪽지:쪽지를발송할대상자를선택하십시오">쪽지를 발송할 대상자를 선택하십시오</entry>
+    <entry key="글:쪽지:쪽지쓰기">쪽지쓰기</entry>
+    <entry key="글:쪽지:받을그룹을선택해주십시오">받을 그룹을 선택해 주십시오</entry>
+    <entry key="글:쪽지:받을사람을선택해주십시오">받을 사람을 선택해 주십시오</entry>
+    <entry key="글:쪽지:두글자이상입력하십시오">두 글자 이상 입력하십시오</entry>
+    <entry key="글:쪽지:상세내용">상세내용</entry>
+    <entry key="글:쪽지:타이틀">쪽지</entry>
+    <entry key="글:쪽지:외"> 외</entry>
+    <entry key="글:쪽지:그룹쪽지확인">그룹 쪽지확인</entry>
+    <entry key="글:쪽지:건의단체발송이추가되었습니다">{0}건의 단체발송이 추가되었습니다</entry>
+    <entry key="글:쪽지:통">통</entry>
+    
+    <entry key="버튼:쪽지:발송">발송</entry>
+    <entry key="버튼:쪽지:쪽지보내기">쪽지보내기</entry>
+    <entry key="버튼:쪽지:답장하기">답장하기</entry>
+    <entry key="버튼:쪽지:쪽지쓰기">쪽지쓰기</entry>
+    <entry key="버튼:쪽지:인원추가">인원추가</entry>
+    <entry key="버튼:쪽지:답장">답장</entry>
+    <entry key="버튼:쪽지:주소록">주소록</entry>
+   
+<!-- SMS -->     
+    <entry key="필드:sms:보내는사람">보내는 사람</entry>
+    <entry key="필드:sms:이름/전화번호">보내는 사람</entry>
+    <entry key="필드:sms:받는사람">받는 사람</entry>
+    <entry key="필드:sms:SMS템플릿">SMS템플릿</entry>
+    <entry key="필드:sms:내용">내용</entry>
+    <entry key="필드:sms:SMS보내기">SMS보내기</entry>
+    <entry key="필드:쪽지:아이디">아이디</entry>
+    
+    <entry key="버튼:sms:주소록">주소록</entry>
+    <entry key="버튼:sms:보내기">보내기</entry>
+    <entry key="버튼:sms:취소">취소</entry>
+    
+    <entry key="글:sms:발송되었습니다.">발송되었습니다.</entry>
+    <entry key="글:sms:발송하시겠습니까?">발송하시겠습니까?</entry>
+    <entry key="글:sms:이름/전화번호입력하십시오">이름/전화번호 입력하십시오.</entry>
+       <entry key="글:sms:사용자정의">사용자정의</entry>
+       <entry key="글:sms:sms발송">SMS발송</entry>
+       <entry key="글:sms:장문바이트">장문 : 2,000byte</entry>
+       <entry key="글:sms:단문바이트">단문 : 80byte</entry>
+       <entry key="글:sms:단문">단문</entry>
+
+<!-- 이메일 -->    
+    <entry key="필드:이메일:수신자">수신자</entry>
+    <entry key="필드:이메일:발송자">발송자</entry>
+    <entry key="필드:이메일:제목">제목</entry>
+    <entry key="필드:이메일:메일템플릿">메일템플릿</entry>
+    <entry key="필드:이메일:내용">내용</entry>
+    <entry key="필드:이메일:첨부파일">첨부파일</entry>
+    
+    <entry key="글:이메일:이메일발송">이메일발송</entry>
+    <entry key="글:이메일:메일을보내시겠습니까">메일을보내시겠습니까</entry>
+    <entry key="글:이메일:발송되었습니다">발송되었습니다.</entry>
+    <entry key="글:이메일:사용자정의">사용자정의</entry>
+    
+    <entry key="버튼:이메일:보내기">보내기</entry>
+    <entry key="버튼:이메일:취소">취소</entry>
+    
+
+    
+<!-- 주소록 -->
+    <entry key="메뉴:쪽지">쪽지함목록</entry>
+    <entry key="필드:주소록:이름">이름</entry>
+    <entry key="필드:주소록:그룹인원">그룹인원</entry>
+    <entry key="필드:주소록:상세보기">상세보기</entry>
+    <entry key="필드:주소록:전화번호">전화번호</entry>
+    <entry key="필드:주소록:이메일">이메일</entry>
+    <entry key="필드:주소록:소속">소속</entry>
+    <entry key="필드:주소록:그룹">그룹</entry>
+    <entry key="필드:주소록:전체">전체</entry>
+    
+    <entry key="글:주소록:명">명</entry>
+    <entry key="글:주소록:그룹명">그룹명</entry>
+    <entry key="글:주소록:문자/메일수신여부N선택한회원입니다.">"-" 문자/메일 수신여부 N 선택한 회원입니다.</entry>
+    <entry key="글:주소록:그룹명등록">그룹명 등록</entry>
+    <entry key="글:주소록:그룹명수정">그룹명 수정</entry>
+    <entry key="글:주소록:그룹원추가">그룹원 추가</entry>
+    <entry key="글:주소록:그룹관리상세정보">그룹관리 상세정보</entry>
+    <entry key="글:주소록:대상자를선택해주세요">대상자를</entry>
+    <entry key="글:주소록:글:X명이그룹에추가되었습니다">{0}명이 그룹에 추가되었습니다.</entry>
+    <entry key="글:주소록:이름이나그룹명을입력하십시오">이름이나 그룹명을 입력하십시오</entry>
+    
+    <entry key="버튼:주소록:그룹등록">그룹등록</entry>
+    <entry key="버튼:주소록:그룹명수정">그룹명수정</entry>
+    <entry key="버튼:주소록:그룹원추가">그룹원 추가</entry>
+    
+
+<!-- 설정 -->
+    <entry key="글:설정:라인의첫문자가#으로시작하면적용되지않습니다">라인의 첫문자가 #으로 시작하면 적용되지 않습니다</entry>
+    <entry key="글:설정:금칙어도움말"><![CDATA[
+    <h4>등록형식</h4>
+    <ul>
+    <li><strong style="text-decoration:underline;">금칙어=대체문자열</strong></li>
+    <li>TEXT 또는 HTML 형식의 글을 출력할 때 제한하는 단어를 라인단위로 등록합니다</li>
+    <li><strong style="text-decoration:underline;">정규식패턴</strong>으로 적용할 수 있습니다</li>
+    </ul>
+    ]]></entry>
+    <entry key="글:설정:허용태그도움말"><![CDATA[
+    <h4>등록형식</h4>
+    <ul>
+    <li>태그이름</li>
+    <li>HTML 형식의 글을 출력할 때 적용되어질 TAG를 <strong style="text-decoration:underline;">라인단위</strong>로 등록합니다</li>
+    </ul>
+    ]]></entry>
+    <entry key="글:설정:허용URL도움말"><![CDATA[
+    <h4>등록형식</h4>
+    <ul>
+    <li>허용태그 적용시(src, href) 허용할 URL을 <strong style="text-decoration:underline;">라인단위</strong>로 등록합니다</li>
+    </ul>
+    ]]></entry>
+    <entry key="글:설정:비허용태그도움말"><![CDATA[
+    <h4>등록형식</h4>
+    <ul>
+    <li>HTML 형식의 글을 출력할 때 적용되지 않아야 하는 TAG를 <strong style="text-decoration:underline;">라인단위</strong>로 등록합니다</li>
+    </ul>
+    ]]></entry>
+    <entry key="글:설정:비허용URL도움말"><![CDATA[
+    <h4>등록형식</h4>
+    <ul>
+    <li>비허용태그 적용시(src, href) 허용하지 않을 URL을 <strong style="text-decoration:underline;">라인단위</strong>로 등록합니다</li>
+    </ul>
+    ]]></entry>
+    <entry key="글:설정:스케줄러도움말"><![CDATA[
+    <h4>등록형식</h4>
+    <ul>
+    <li><strong style="text-decoration:underline;">JOB구분=스케줄형식구분=설정값</strong></li>
+    </ul>
+    <h4>JOB구분</h4>
+    <ul>
+    <li>JOB1 : 시스템에서 기본적을 제공하는 JOB - 임시 첨부파일 데이터 삭제 등</li>
+    <li>JOB2 : ...</li>
+    </ul>
+    <h4>스케줄형식구분</h4>
+    <ul>
+    <li>time : 이전에 실행된 Job의 시작 시간으로부터 정의한 시간 만큼 소비한 이후 Job 실행. <strong style="text-decoration:underline;">(분 단위로 정의)</strong><br>
+        설정값이 0이면 지금 즉시 적용하며 1번만 실행 된다
+    </li>
+    <li>cron : Cron Expression 형식을 따름</li>
+    </ul>
+    <h4>Cron Expression</h4>
+    <ul>
+    <li>cron expression의 각각의 필드는 다음을 나타낸다.(왼쪽 -> 오른쪽 순)</li>
+    <li>(예) 0 * * * * ?<br>
+        <table>
+        <tr><th>필드이름</th><th>허용 값</th><th>허용된 특수 문자</th></tr>
+        <tr><th>Seconds</th><th>0 ~ 59</th><th>- * /</th></tr>
+        <tr><th>Minutes</th><th>0 ~ 59</th><th>- * /</th></tr>
+        <tr><th>Hours</th><th>0 ~ 23</th><th>- * /</th></tr>
+        <tr><th>Day-of-month</th><th>1 ~ 31</th><th>- * ? / L W</th></tr>
+        <tr><th>Month</th><th>1 ~12 or JAN ~ DEC</th><th>- * /</th></tr>
+        <tr><th>Day-Of-Week</th><th>1 ~ 7 or SUN-SAT</th><th>- * ? / L #</th></tr>
+        <tr><th>Year(optional)</th><th>empty, 1970 ~ 2099</th><th>- * /</th></tr>
+        </table>
+    </li>
+    </ul>
+    <h4>Cron Expression 의 특수문자</h4>
+    <ul>
+    <li>'*' : 모든 수를 나타냄. 분의 위치에 * 설정하면 "매 분 마다" 라는 뜻.</li>
+    <li>'?' : day-of-month 와 day-of-week 필드에서만 사용가능. 특별한 값이 없음을 나타낸다.</li>
+    <li>'-' : "10-12" 과 같이 기간을 설정한다. 시간 필드에 "10-12" 이라 입력하면 "10, 11, 12시에 동작하도록 설정" 이란 뜻.</li>
+    <li>',' : "MON,WED,FRI"와 같이 특정 시간을 설정할 때 사용한다. "MON,WED,FRI" 이면 " '월,수,금' 에만 동작" 이란 뜻.</li>
+    <li>'/' : 증가를 표현합니다. 예를 들어 초 단위에 "0/15"로 세팅 되어 있다면 "0초 부터 시작하여 15초 이후에 동작" 이란 뜻.</li>
+    <li>'L' : day-of-month 와 day-of-week 필드에만 사용하며 마지막날을 나타냅. 만약 day-of-month 에 "L" 로 되어 있다면 이번 달의 마지막에 실행하겠다는 것을 나타냄.</li>
+    <li>'W' : day-of-month 필드에만 사용되며, 주어진 기간에 가장 가까운 평일(월~금)을 나타낸다. 만약 "15W" 이고 이번 달의 15일이 토요일이라면 가장가까운 14일 금요일날 실행된다. 또 15일이 일요일이라면 가장
+     가까운 평일인 16일 월요일에 실행되게 된다. 만약 15일이 화요일이라면 화요일인 15일에 수행된다.</li>
+    <li>'LW' : L과 W를 결합하여 사용할 수 있으며 "LW"는 "이번달 마지막 평일"을 나타냄</li>
+    <li>'#' : day-of-week에 사용된다. "6#3" 이면 3(3)번째 주 금요일(6) 이란 뜻이된다.1은 일요일 ~ 7은 토요일</li>
+    </ul>
+    ]]></entry>
+    
+
+<!-- 소속 -->
+    <entry key="필드:소속:소속">소속</entry>
+    <entry key="필드:소속:사업자번호">사업자번호</entry>
+    <entry key="필드:소속:주소">주소</entry>
+    <entry key="필드:소속:상세주소">상세주소</entry>
+    <entry key="필드:소속:전화번호">전화번호</entry>
+    <entry key="필드:소속:팩스번호">팩스번호</entry>
+    <entry key="필드:소속:소속인원">소속인원</entry>
+    <entry key="필드:소속:선택">선택</entry>
+    <entry key="필드:소속:상세보기">상세보기</entry>
+
+    <entry key="글:소속:소속명">소속명</entry>
+    <entry key="글:소속:소속을선택하십시오">소속을 선택하십시오</entry>
+    <entry key="글:소속:구분자없이숫자만입력하십시오">구분자 없이 숫자만 입력하십시오</entry>
+    <entry key="글:소속:소속회원">소속회원</entry>
+    <entry key="글:소속:X명의소속회원이있습니다">{0}명의 소속회원이 있습니다.</entry>
+    
+    <entry key="버튼:소속:보기">보기</entry>
+
+<!-- 우편번호 -->
+    <entry key="필드:우편번호:우편번호">우편번호</entry>
+    <entry key="필드:우편번호:주소">주소</entry>
+
+    <entry key="글:우편번호:도로명">도로명</entry>
+    <entry key="글:우편번호:건물명">건물명</entry>
+    <entry key="글:우편번호:건물번호">건물번호</entry>
+    <entry key="글:우편번호:동또는리를입력하십시오">동 또는 리를 입력하십시오</entry>
+    <entry key="글:우편번호:도로명건물번호를입력하십시오">도로명+건물번호를 입력하십시오</entry>
+    <entry key="글:우편번호:구주소">구주소</entry>
+    <entry key="글:우편번호:신주소">신주소</entry>
+    <entry key="글:우편번호:새주소찾기"><![CDATA[새주소(도로명주소)로 찾기 <br/> 도로명을 주소체계를 이용하여 주소를 검색 할 수 있습니다.]]></entry>
+    <entry key="글:우편번호:구주소찾기"><![CDATA[구주소(지번주소)찾기 <br/> 지번주소(읍/면/동 체계)를 이용하여 주소를 검색 할 수 있습니다.]]></entry>
+    <entry key="글:우편번호:입력예시">*입력예시 : 길동, 산본동, 대림동</entry>
+
+
+<!-- 로그인 -->
+    <entry key="필드:로그인:분석방법">분석방법</entry>
+    <entry key="필드:로그인:일별">일별</entry>
+    <entry key="필드:로그인:월별">월별</entry>
+    <entry key="필드:로그인:시간별">시간별</entry>
+    <entry key="필드:로그인:기간">기간</entry>
+    <entry key="필드:로그인:시작일">시작일</entry>
+    <entry key="필드:로그인:종료일">종료일</entry>
+    <entry key="필드:로그인:시작년도">시작년도</entry>
+    <entry key="필드:로그인:시작월">시작월</entry>
+    <entry key="필드:로그인:종료년도">종료년도</entry>
+    <entry key="필드:로그인:종료월">종료월</entry>
+    <entry key="필드:로그인:이번달">이번달</entry>
+    <entry key="필드:로그인:오늘">오늘</entry>
+    <entry key="필드:로그인:어제">어제</entry>
+    <entry key="필드:로그인:아이디">아이디</entry>
+    <entry key="필드:로그인:비밀번호">비밀번호</entry>
+    <entry key="필드:로그인:접속IP">접속IP</entry>
+    <entry key="필드:로그인:접속시간">접속시간</entry>
+
+    <entry key="글:로그인:X님안녕하세요">{0}님 안녕하세요</entry>
+    <entry key="글:로그인:아이디또는비밀번호가정확하지않습니다">아이디 또는 비밀번호가 정확하지않습니다</entry>
+    <entry key="글:로그인:다른곳에서로그인되었습니다">다른 곳에서 로그인 되었습니다</entry>
+    <entry key="글:로그인:다른곳에서로그인되어있습니다">다른 곳에서 로그인 되어있습니다</entry>
+    <entry key="글:로그인:접근권한이없습니다">접근권한이 없습니다</entry>
+    <entry key="글:로그인:다른사용자의접속을끊고로그인하시겠습니까">다른 사용자의 접속을 끊고 로그인 하시겠습니까?</entry>
+    <entry key="글:로그인:요청가능시간이초과되었습니다">요청 가능시간이 초과 되었습니다</entry>
+    
+    <entry key="글:로그인:로그인이필요합니다아이디와비밀번호를입력해주세요">로그인이 필요합니다. 아이디와 비밀번호를 입력해주세요.</entry>
+    <entry key="글:로그인:로그인이필요합니다">로그인이 필요합니다.</entry>
+    <entry key="글:로그인:아이디또는비밀번호를잊으셨나요">아이디 또는 비밀번호를 잊으셨나요?</entry>
+    <entry key="글:로그인:비밀번호를잊어버리셨나요아래의항목을정확히입력해주세요">비밀번호를 잊어버리셨나요? 아래의 항목을 정확히 입력해주세요?</entry>
+    <entry key="글:로그인:비밀번호를잊으셨나요">비밀번호를 잊으셨나요?</entry>
+    <entry key="글:로그인:비밀번호찾기">비밀번호찾기</entry>
+    <entry key="글:로그인:아직회원이아니신가요">아직 회원이 아니신가요?</entry>
+    <entry key="글:로그인:회원가입을하셔야사이트이용이가능합니다">회원가입을 하셔야 사이트이용이 가능합니다.</entry>
+    <entry key="글:로그인:회원가입하기">회원가입하기</entry>
+    <entry key="글:로그인:이용약관">이용약관</entry>
+    <entry key="글:로그인:반드시아래내용을확인하시기바랍니다">반드시 아래 내용을 확인하시기 바랍니다.</entry>
+    <entry key="글:로그인:이용약관에동의합니다">이용약관에 동의합니다.</entry>
+    <entry key="글:로그인:개인정보보호정책">개인정보보호정책</entry>
+    <entry key="글:로그인:개인정보보호정책에동의합니다">개인정보보호정책에 동의합니다.</entry>
+    <entry key="글:로그인:동의">동의</entry>
+    <entry key="글:로그인:회원가입">회원가입</entry>
+    <entry key="글:로그인:약관에동의하셔야회원가입을할수있습니다">약관에 동의하셔야 회원가입을 할 수 있습니다.</entry>
+    <entry key="글:로그인:정보입력폼">정보입력폼</entry>
+    <entry key="글:로그인:비밀번호확인">비밀번호확인</entry>
+    <entry key="글:로그인:완료">완료</entry>
+    <entry key="글:로그인:610자리영문숫자혼용">※ 6~10자리 영문,숫자 혼용</entry>
+    <entry key="글:로그인:이름">이름</entry>
+    <entry key="글:로그인:주민등록번호">주민등록번호</entry>
+    <entry key="글:로그인:메인페이지이동">메인페이지 이동</entry>
+    <entry key="글:로그인:회원가입에실패하였습니다">회원가입에 실패하였습니다.</entry>
+    <entry key="글:로그인:약관동의">약관동의</entry>
+    <entry key="글:로그인:정보입력">정보입력</entry>
+    <entry key="글:로그인:가입완료">가입완료</entry>
+    <entry key="글:로그인:회원님의비밀번호를Email로발송하였습니다">회원님의 비밀번호를 E-mail로 발송하였습니다.</entry>
+    <entry key="글:로그인:비밀번호를확인하십시오">비밀번호를 확인하십시오.</entry>
+    <entry key="글:로그인:메인페이지바로가기">메인 페이지 바로가기</entry>
+    <entry key="글:로그인:입력하신정보와일치하는회원정보가없습니다">입력하신 정보와 일치하는 회원정보가 없습니다.</entry>
+    <entry key="글:로그인:확인후다시시도해주시기바랍니다">확인 후 다시 시도해 주시기 바랍니다.</entry>
+    <entry key="글:로그인:비밀번호찾기관련하여계속문제가발생하는경우담당자에게문의하여주십시오">비밀번호 찾기 관련하여 계속 문제가 발생하는 경우 담당자에게 문의하여 주십시오.</entry>
+    <entry key="글:로그인:비밀번호찾기바로가기">비밀번호 찾기 바로가기</entry>
+    <entry key="글:로그인:이메일주소">이메일주소</entry>
+    
+    
+<!-- 시스템 -->
+    <entry key="글:시스템:사용률">사용률</entry>
+    <entry key="글:시스템:시스템메모리">시스템 메모리</entry>
+    <entry key="글:시스템:JVM메모리">JVM 메모리</entry>
+    <entry key="글:시스템:CPU">CPU</entry>
+    <entry key="글:시스템:크기">크기</entry>
+    <entry key="글:시스템:미디어플레이어">미디어플레이어</entry>
+    <entry key="글:시스템:플래시플레이어">플래시플레이어</entry>
+    <entry key="글:시스템:학습관련프로그램다운로드">학습관련 프로그램 다운로드</entry>
+    <entry key="글:시스템:최적의강의시청을위한학습프로그램을다운로드받으십시오">최적의 강의시청을 위한 학습프로그램을 다운로드 받으십시오</entry>
+    <entry key="글:시스템:설치되지않은학습프로그램이있다면다운로드받아설치해주십시오">설치되지 않은 학습프로그램이 있다면 다운로드 받아 설치해 주십시오</entry>
+    <entry key="글:시스템:대상">대상</entry>
+    <entry key="글:시스템:요청횟수">요청횟수</entry>
+    <entry key="글:시스템:평균응답시간">평균응답시간</entry>
+    <entry key="글:시스템:X초이상응답">{0}초이상응답</entry>
+    <entry key="글:시스템:로그파일">로그파일</entry>
+    <entry key="글:시스템:인원수">인원수</entry>
+    <entry key="글:시스템:접속자수">접속자수</entry>
+    <entry key="글:시스템:신규등록수">신규등록수</entry>
+    <entry key="글:시스템:기간">기간</entry>
+    
+ <!-- 템플릿 -->
+     <entry key="필드:템플릿:제목">제목</entry>
+     <entry key="필드:템플릿:내용">내용</entry>
+     <entry key="필드:템플릿:SMS내용">SMS 내용</entry>
+     <entry key="필드:템플릿:구분">구분</entry>
+     <entry key="필드:템플릿:사용여부">사용여부</entry>
+     <entry key="필드:템플릿:코드안내">코드안내</entry>
+     <entry key="필드:템플릿:설명">설명</entry>
+     <entry key="필드:템플릿:파일첨부">파일첨부</entry>
+     <entry key="필드:템플릿:템플릿미리보기">템플릿 미리보기</entry>
+     <entry key="필드:템플릿:코드이름">$이름</entry>
+     <entry key="필드:템플릿:코드이름내용">-> 사용예) $이름 님 환영합니다. -> 출력) 홍길동님 환영합니다.</entry>
+     <entry key="필드:템플릿:코드학과">$학과</entry>
+     <entry key="필드:템플릿:코드학과내용">-> 사용예) $학과에 입학하신 것을 환영합니다. -> 출력) 미용학과에 입학하신 것을 환영합니다.</entry>
+     <entry key="필드:템플릿:코드아이디">$아이디</entry>
+     <entry key="필드:템플릿:코드아이디내용">-> 사용예) $아이디 입니다. -> 출력) 2014576 아이디입니다.</entry>
+     <entry key="필드:템플릿:사용여부">사용여부</entry>
+     
+ <!-- 마이페이지 -->
+     <entry key="글:마이페이지:사이트QNA">사이트<![CDATA[Q&A]]></entry>
+     <entry key="글:마이페이지:사이트공지사항">사이트공지사항</entry>
+     <entry key="글:마이페이지:교직원게시판">교직원게시판</entry>
+     <entry key="글:마이페이지:나의할일">나의 할 일</entry>
+     <entry key="글:마이페이지:과목공지사항">과목공지사항</entry>
+     <entry key="글:마이페이지:과목QNA">과목<![CDATA[Q&A]]></entry>
+     <entry key="글:마이페이지:나의일정">나의일정</entry>
+     <entry key="글:마이페이지:더보기">more</entry>
+     <entry key="글:마이페이지:분반">분반</entry>
+     <entry key="글:마이페이지:기">기</entry>
+     <entry key="글:마이페이지:응시채점자">응시자 (채점완료자)</entry>
+     <entry key="글:마이페이지:교과목명">교과목명</entry>
+     <entry key="글:마이페이지:응시미채점">응시자 (미채점)</entry>
+     <entry key="글:마이페이지:채점하기">채점하기</entry>
+
+     <entry key="글:마이페이지:중간고사">중간고사</entry>
+     <entry key="글:마이페이지:중간고사대체과제">중간고사대체과제</entry>
+     <entry key="글:마이페이지:기말고사">기말고사</entry>
+     <entry key="글:마이페이지:기말고사대체과제">기말고사대체과제</entry>
+     <entry key="글:마이페이지:보충시험">보충시험</entry>
+     <entry key="글:마이페이지:과제일반">과제-일반</entry>
+     <entry key="글:마이페이지:과제보충">과제-보충</entry>
+     <entry key="글:마이페이지:팀프로젝트">팀프로젝트</entry>
+     <entry key="글:마이페이지:토론">토론</entry>
+     <entry key="글:마이페이지:제출완료일정렬">제출완료일 정렬</entry>
+     <entry key="글:마이페이지:교과목정렬">교과목 정렬</entry>
+     
+     <entry key="버튼:마이페이지:기본정보수정">기본정보 수정</entry>
+    <entry key="버튼:마이페이지:비밀번호변경">비밀번호 변경</entry>
+    <entry key="버튼:마이페이지:답변하기">답변하기</entry>
+    <entry key="버튼:마이페이지:채점하기">채점하기</entry>
+ 
+ <!-- 프론트 -->
+    <entry key="글:헤더:그리팅">4csoft 종합정보시스템에 오신것을 환영합니다</entry>
+    <entry key="글:풋터:주소">서울시 서초구 반포4동 59-4 송원빌딩 5층 / TEL:02-544-2822 / FAX:02-544-1009</entry>
+    <entry key="글:풋터:카피라이트">Copyright ⓒ 1999-2013 4CSoftINC. All Rights Reserved</entry>
+    
+    <entry key="글:헤더:즐겨찾기추가">    <![CDATA[<strong>즐겨찾기 추가</strong></br>현재 메뉴를 즐겨찾기에 추가합니다.]]></entry>
+    <entry key="글:헤더:즐겨찾기는최대5개까지만등록가능합니다">즐겨찾기는 최대 5개까지만 등록가능합니다.</entry>
+    <entry key="글:헤더:즐겨찾기">즐겨찾기</entry>
+    <entry key="글:헤더:즐겨찾기삭제">즐겨찾기삭제</entry>
+    <entry key="글:헤더:즐겨찾기체크온">즐겨찾기 체크 온</entry>
+    <entry key="글:헤더:즐겨찾기체크오프">즐겨찾기체크 오프</entry>
+    <entry key="글:헤더:즐겨찾기비활성화">즐겨찾기 비활성화</entry>
+
+<!-- 배치 -->
+	<entry key="필드:배치:성공">성공</entry>
+	<entry key="필드:배치:실패">실패</entry>
+	<entry key="필드:배치:기본정보">기본 정보</entry>
+	<entry key="필드:배치:작업명">작업 명</entry>
+	<entry key="필드:배치:최근수행시간">최근 수행 시간</entry>
+	<entry key="필드:배치:최근소요시간">최근 소요 시간</entry>
+	<entry key="필드:배치:총수행횟수">총 수행 횟수</entry>
+	<entry key="필드:배치:BINID">BIN ID</entry>
+	<entry key="필드:배치:작업상태">작업상태</entry>
+	<entry key="필드:배치:스케줄">스케줄</entry>
+	<entry key="필드:배치:작업중지">작업 중지</entry>
+	<entry key="필드:배치:작업재개">작업 재개</entry>
+	<entry key="필드:배치:수행이력">수행 이력</entry>
+	<entry key="필드:배치:상태">상태</entry>
+	<entry key="필드:배치:작업시간">작업 시간</entry>
+	<entry key="필드:배치:지속시간">지속시간</entry>
+	<entry key="필드:배치:시">시</entry>
+	
+	<entry key="버튼:배치:스케줄도움말보기">스케줄 도움말 보기</entry>
+	<entry key="버튼:배치:스케줄도움말닫기">스케줄 도움말 닫기</entry>    
+    
+</properties>

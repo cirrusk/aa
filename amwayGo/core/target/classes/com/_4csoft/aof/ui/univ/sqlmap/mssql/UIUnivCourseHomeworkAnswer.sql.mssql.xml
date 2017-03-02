@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseHomeworkAnswerMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkAnswerVO">
+        <selectKey resultType="Long" keyProperty="homeworkAnswerSeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>
+			/* UIUnivCourseHomeworkAnswer.insert */
+			INSERT INTO cs_course_homework_answer
+			       ( 
+						cs_course_apply_seq ,
+						cs_course_active_seq ,
+						cs_homework_seq ,
+						cs_course_team_seq ,
+						cs_homework_answer_title ,
+						cs_description ,
+						cs_comment ,
+						cs_open_yn ,
+						cs_prof_comment_member_seq ,
+                        cs_homework_score ,
+						cs_score_dtime ,
+						cs_send_dtime ,
+                        cs_send_degree ,
+			           	cs_delete_yn , 
+			           	cs_reg_member_seq , 
+			           	cs_upd_member_seq , 
+			           	cs_reg_dtime , 
+			           	cs_upd_dtime , 
+			           	cs_reg_ip , 
+			           	cs_upd_ip 
+			       ) 
+			   SELECT
+					#{courseApplySeq , 			jdbcType=NUMERIC} ,
+					#{courseActiveSeq ,			jdbcType=NUMERIC} ,
+					#{homeworkSeq ,				jdbcType=NUMERIC} ,
+					#{courseTeamSeq ,			jdbcType=NUMERIC} ,
+					#{homeworkAnswerTitle ,		jdbcType=VARCHAR} ,
+					#{description ,				jdbcType=VARCHAR} ,
+					#{comment ,					jdbcType=VARCHAR} ,						
+					#{openYn , 					jdbcType=VARCHAR} ,
+					#{profCommentMemberSeq , 	jdbcType=NUMERIC} ,	
+                       <choose>
+                          <when test='homeworkScore != null and !homeworkScore.equals("")'>
+                    #{homeworkScore ,         jdbcType=DOUBLE} ,
+                                
+                                <choose>
+                                   <when test='scoreDtime != null and !scoreDtime.equals("")'>
+                    #{scoreDtime ,            jdbcType=VARCHAR} , 
+                                   </when>
+                                   <otherwise>
+                    dbo.FN_NOW_TO_CHAR() ,
+                                   </otherwise>
+                                </choose>
+                          </when>
+                          <otherwise>
+                    #{homeworkScore ,         jdbcType=NUMERIC} ,
+                    #{scoreDtime ,            jdbcType=VARCHAR} , 
+                          </otherwise>
+                       </choose>
+                       
+			   		   <choose>
+			   		   		<when test='sendDtime != null and !sendDtime.equals("")'>
+			   		#{sendDtime , 				jdbcType=VARCHAR} ,
+			   		   		</when>
+				   		    <otherwise>
+	   		   		dbo.FN_NOW_TO_CHAR(),
+				   		    </otherwise>
+		   		   		</choose>
+                    #{sendDegree ,              jdbcType=VARCHAR} ,
+		   		   	'N' ,
+		           	#{regMemberSeq,   			jdbcType=NUMERIC} ,
+		           	#{updMemberSeq,   			jdbcType=NUMERIC} ,
+		           	dbo.FN_NOW_TO_CHAR() ,
+		           	dbo.FN_NOW_TO_CHAR() ,
+		           	#{regIp,          			jdbcType=VARCHAR} ,
+		            #{updIp,          			jdbcType=VARCHAR}
+    </insert>    
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkAnswerVO">
+		/* UIUnivCourseHomeworkAnswer.update */
+		UPDATE cs_course_homework_answer         
+		   SET 
+		   <if test='courseApplySeq != null and !courseApplySeq > 0'> 
+		   	   cs_course_apply_seq 			= #{courseApplySeq , 		jdbcType=NUMERIC} ,
+		   </if>
+		   <if test='courseActiveSeq != null and !courseActiveSeq > 0'> 
+			   cs_course_active_seq 		= #{courseActiveSeq ,		jdbcType=NUMERIC} ,
+		   </if>
+		   <if test='homeworkSeq != null and !homeworkSeq > 0'> 
+			   cs_homework_seq 				= #{homeworkSeq ,			jdbcType=NUMERIC} ,
+		   </if>
+		   <if test='courseTeamSeq != null and !courseTeamSeq > 0'>    
+			   cs_course_team_seq 			= #{courseTeamSeq ,			jdbcType=NUMERIC} ,
+   		   </if>
+		   <if test='homeworkScore != null and !homeworkScore.equals("")'> 
+			   cs_homework_score 			= #{homeworkScore ,			jdbcType=NUMERIC} ,
+                   <choose>
+                      <when test='scoreDtime != null and !scoreDtime.equals("")'>
+               cs_score_dtime               = #{scoreDtime ,            jdbcType=VARCHAR} , 
+                      </when>
+                      <otherwise>
+               cs_score_dtime               = dbo.FN_NOW_TO_CHAR() ,
+                   </otherwise>
+           </choose>
+   		   </if>
+   		   <if test='homeworkAnswerTitle != null and !homeworkAnswerTitle.equals("")'> 
+   		   	   cs_homework_answer_title     = #{homeworkAnswerTitle ,   jdbcType=VARCHAR} ,
+		   </if>
+		   <if test='description != null and !description.equals("")'> 
+               cs_description 				= #{description ,			jdbcType=VARCHAR} ,
+   		   </if>
+		   <if test='comment != null and !comment.equals("")'> 
+			   cs_comment 					= #{comment ,				jdbcType=VARCHAR} ,
+   		   </if>
+		   <if test='openYn != null and !openYn.equals("")'> 
+			   cs_open_yn 					= #{openYn , 				jdbcType=VARCHAR} ,
+   		   </if>
+		   <if test='profCommentMemberSeq != null and !profCommentMemberSeq.equals("")'> 
+			   cs_prof_comment_member_seq 	= #{profCommentMemberSeq , 	jdbcType=NUMERIC} ,
+   		   </if>
+		   <if test='sendDegree != null and !sendDegree.equals("")'> 
+			   cs_send_degree 				= #{sendDegree , 			jdbcType=VARCHAR} ,
+   		   </if>
+   		   <choose>
+   		   		<when test='sendDtime != null and !sendDtime.equals("")'>
+			   cs_send_dtime 				= #{sendDtime , 			jdbcType=VARCHAR} ,
+   		   		</when>
+	   		    <otherwise>
+	   		   cs_send_dtime 				= dbo.FN_NOW_TO_CHAR() ,
+	   		    </otherwise>
+   		   </choose>
+		   	   cs_upd_dtime  				= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 			= #{updMemberSeq, 			jdbcType=NUMERIC} ,
+		       cs_upd_ip         			= #{updIp, 					jdbcType=VARCHAR} 
+		 WHERE cs_homework_answer_seq   	= #{homeworkAnswerSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="updateUsr" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkAnswerVO">
+		/* UIUnivCourseHomeworkAnswer.updateUsr */
+		UPDATE cs_course_homework_answer
+		   SET cs_homework_answer_title 	= #{homeworkAnswerTitle ,	jdbcType=VARCHAR} ,
+		   	   cs_description 				= #{description ,			jdbcType=VARCHAR} ,
+			   cs_send_dtime 				= #{sendDtime , 			jdbcType=VARCHAR},
+		   	   cs_upd_dtime  				= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 			= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         			= #{updIp, jdbcType=VARCHAR} 
+		 WHERE cs_homework_answer_seq   	= #{homeworkAnswerSeq}
+		   AND cs_delete_yn = 'N'   
+    </update>
+ 
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkAnswerVO">
+		/* UIUnivCourseHomeworkAnswer.delete */
+		UPDATE cs_course_homework_answer 
+		   SET cs_upd_dtime      		= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip        		= #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn      		= 'Y' 
+		 WHERE cs_homework_answer_seq   = #{homeworkAnswerSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkAnswerRS">
+    	<result column="answer.homeworkAnswerSeq"       property="answer.homeworkAnswerSeq"/>
+   	 	<result column="answer.courseApplySeq"          property="answer.courseApplySeq"/>
+   	 	<result column="answer.courseActiveSeq"         property="answer.courseActiveSeq"/>
+   	 	<result column="answer.homeworkSeq"           	property="answer.homeworkSeq"/>
+   	 	<result column="answer.courseTeamSeq"           property="answer.courseTeamSeq"/>
+   	 	<result column="answer.homeworkScore"           property="answer.homeworkScore"/>
+   	 	<result column="answer.homeworkAnswerTitle"     property="answer.homeworkAnswerTitle"/>
+   	 	<result column="answer.description"           	property="answer.description"/>
+   	 	<result column="answer.comment"           		property="answer.comment"/>
+   	 	<result column="answer.openYn"           		property="answer.openYn"/>
+   	 	<result column="answer.profCommentMemberSeq"    property="answer.profCommentMemberSeq"/>
+   	 	<result column="answer.scoreDtime"           	property="answer.scoreDtime"/>
+   	 	<result column="answer.sendDegree"           	property="answer.sendDegree"/>
+   	 	<result column="answer.sendDtime"           	property="answer.sendDtime"/>
+   	 	<result column="answer.deleteYn"           		property="answer.deleteYn"/>
+   	 	<result column="answer.regMemberSeq"           	property="answer.regMemberSeq"/>
+   	 	<result column="answer.updMemberSeq"           	property="answer.updMemberSeq"/>
+   	 	<result column="answer.regDtime"          		property="answer.regDtime"/>
+   	 	<result column="answer.updDtime"           		property="answer.updDtime"/>
+   	 	<result column="answer.regIp"           		property="answer.regIp"/>
+   	 	<result column="answer.updIp"           		property="answer.updIp"/>
+   	 	<result column="answer.scaledScore"           	property="answer.scaledScore"/>
+    	<collection column="{referenceSeq=answer.homeworkAnswerSeq,referenceTablename=referenceTablename}" property="answer.unviAttachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>  	 	
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* UIUnivCourseHomeworkAnswer.getDetail */
+    	SELECT
+    		answer.cs_homework_answer_seq		AS "answer.homeworkAnswerSeq" ,
+    		answer.cs_course_apply_seq 			AS "answer.courseApplySeq" ,         
+			answer.cs_course_active_seq 		AS "answer.courseActiveSeq" ,        
+			answer.cs_homework_seq 				AS "answer.homeworkSeq" ,             
+			answer.cs_course_team_seq 			AS "answer.courseTeamSeq" ,          
+			answer.cs_homework_score 			AS "answer.homeworkScore" ,
+			answer.cs_homework_answer_title		AS "answer.homeworkAnswerTitle" ,          
+			answer.cs_description 				AS "answer.description" ,              
+			answer.cs_comment 					AS "answer.comment" ,                  
+			answer.cs_open_yn 					AS "answer.openYn" ,                  
+			answer.cs_prof_comment_member_seq 	AS "answer.profCommentMemberSeq" ,  
+			answer.cs_score_dtime 				AS "answer.scoreDtime" ,              
+			answer.cs_send_degree 				AS "answer.sendDegree" ,              
+			answer.cs_send_dtime 				AS "answer.sendDtime" ,               
+			answer.cs_delete_yn 				AS "answer.deleteYn" ,                
+			answer.cs_reg_member_seq 			AS "answer.regMemberSeq" ,           
+			answer.cs_upd_member_seq 			AS "answer.updMemberSeq" ,           
+			answer.cs_reg_dtime 				AS "answer.regDtime" ,                
+			answer.cs_upd_dtime 				AS "answer.updDtime" ,                
+			answer.cs_reg_ip 					AS "answer.regIp" ,                   
+			answer.cs_upd_ip                    AS "answer.updIp" ,
+			ISNULL(CASE
+				WHEN answer.cs_send_degree = 2 
+				THEN CONVERT(INT, (CONVERT(FLOAT, ISNULL(answer.cs_homework_score, 0)) / CONVERT(FLOAT, 100)) * ISNULL((SELECT subhomework.cs_rate2 FROM cs_course_homework subhomework WHERE subhomework.cs_homework_seq = answer.cs_homework_seq), 0))
+				ELSE answer.cs_homework_score 
+			END, 0) 							AS "answer.scaledScore" ,
+			'cs_course_homework_answer' 		AS "referenceTablename" 
+		FROM
+			cs_course_homework_answer answer
+		WHERE answer.cs_delete_yn = 'N'
+		  AND answer.cs_homework_answer_seq = #{homeworkAnswerSeq}
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkAnswerRS">
+   	 	<result column="answer.homeworkAnswerSeq"       property="answer.homeworkAnswerSeq"       />
+   	 	<result column="answer.courseApplySeq"          property="answer.courseApplySeq"       />
+   	 	<result column="answer.courseActiveSeq"         property="answer.courseActiveSeq"       />
+   	 	<result column="answer.homeworkSeq"           	property="answer.homeworkSeq"       />
+   	 	<result column="answer.courseTeamSeq"           property="answer.courseTeamSeq"       />
+   	 	<result column="answer.homeworkScore"           property="answer.homeworkScore"       />
+   	 	<result column="answer.homeworkAnswerTitle"     property="answer.homeworkAnswerTitle"/>
+   	 	<result column="answer.description"           	property="answer.description"       />
+   	 	<result column="answer.comment"           		property="answer.comment"       />
+   	 	<result column="answer.openYn"           		property="answer.openYn"       />
+   	 	<result column="answer.profCommentMemberSeq"    property="answer.profCommentMemberSeq"       />
+   	 	<result column="answer.scoreDtime"           	property="answer.scoreDtime"       />
+   	 	<result column="answer.sendDegree"           	property="answer.sendDegree"       />
+   	 	<result column="answer.sendDtime"           	property="answer.sendDtime"       />
+   	 	<result column="answer.deleteYn"           		property="answer.deleteYn"       />
+   	 	<result column="answer.regMemberSeq"           	property="answer.regMemberSeq"       />
+   	 	<result column="answer.updMemberSeq"           	property="answer.updMemberSeq"       />
+   	 	<result column="answer.regDtime"          		property="answer.regDtime"       />
+   	 	<result column="answer.updDtime"           		property="answer.updDtime"       />
+   	 	<result column="answer.regIp"           		property="answer.regIp"       />
+   	 	<result column="answer.updIp"           		property="answer.updIp"       />
+	</resultMap>          
+	
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseHomeworkCondition" resultMap="listResultMap">
+		/* UIUnivCourseHomeworkAnswer.getList */
+    	SELECT
+    		answer.cs_homework_answer_seq		AS "answer.homeworkAnswerSeq" ,
+    		answer.cs_course_apply_seq 			AS "answer.courseApplySeq" ,         
+			answer.cs_course_active_seq 		AS "answer.courseActiveSeq" ,        
+			answer.cs_homework_seq 				AS "answer.homeworkSeq" ,             
+			answer.cs_course_team_seq 			AS "answer.courseTeamSeq" ,          
+			answer.cs_homework_score 			AS "answer.homeworkScore" ,
+			answer.cs_homework_answer_title		AS "answer.homeworkAnswerTitle" ,           
+			answer.cs_description 				AS "answer.description" ,              
+			answer.cs_comment 					AS "answer.comment" ,                  
+			answer.cs_open_yn 					AS "answer.openYn" ,                  
+			answer.cs_prof_comment_member_seq 	AS "answer.profCommentMemberSeq" ,  
+			answer.cs_score_dtime 				AS "answer.scoreDtime" ,              
+			answer.cs_send_degree 				AS "answer.sendDegree" ,              
+			answer.cs_send_dtime 				AS "answer.sendDtime" ,               
+			answer.cs_delete_yn 				AS "answer.deleteYn" ,                
+			answer.cs_reg_member_seq 			AS "answer.regMemberSeq" ,           
+			answer.cs_upd_member_seq 			AS "answer.updMemberSeq" ,           
+			answer.cs_reg_dtime 				AS "answer.regDtime" ,                
+			answer.cs_upd_dtime 				AS "answer.updDtime" ,                
+			answer.cs_reg_ip 					AS "answer.regIp" ,                   
+			answer.cs_upd_ip                    AS "answer.updIp" 
+		FROM
+			cs_course_homework_answer answer
+		WHERE answer.cs_delete_yn = 'N'
+		  AND answer.cs_course_active_seq = #{srchCourseActiveSeq}
+    </select>
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseHomeworkCondition" resultType="int">
+		/* UIUnivCourseHomeworkAnswer.countList */
+		SELECT
+			COUNT(*)
+		FROM
+			cs_course_homework_answer answer
+		WHERE answer.cs_delete_yn = 'N'
+		  AND answer.cs_course_active_seq = #{srchCourseActiveSeq}
+    </select>
+    
+    <resultMap id="detailUserResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkAnswerRS">
+        <result column="cs_homework_answer_seq"     property="answer.homeworkAnswerSeq"/>
+        <result column="cs_course_active_seq"       property="answer.courseActiveSeq"/>
+        <result column="cs_course_teamproject_seq"  property="answer.courseTeamprojectSeq"/>
+        <result column="cs_course_team_seq"         property="answer.courseTeamSeq"/>
+        <result column="cs_team_title"              property="projectTeam.teamTitle"/>
+        <result column="cs_team_member_seq"         property="teamProjectMember.teamMemberSeq"/>
+        <result column="cs_homework_answer_title"   property="answer.homeworkAnswerTitle"/>
+        <result column="cs_description"             property="answer.description"/>
+        <result column="cs_member_name"             property="answer.memberName"/>
+        <result column="cs_member_id"               property="answer.memberId"/>
+        <result column="cs_send_dtime"              property="answer.sendDtime"/>
+        <result column="cs_homework_score"          property="answer.homeworkScore"/>
+        <result column="cs_score_dtime"             property="answer.scoreDtime"/>
+        <result column="cs_comment"                 property="answer.comment"/>
+        <result column="cs_active_element_seq"      property="courseActiveElement.activeElementSeq"/>
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=cs_homework_answer_seq,referenceTablename=referenceTablename}" property="answer.unviAttachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>        
+    </resultMap>
+    <select id="getDetailUser" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkAnswerVO" resultMap="detailUserResultMap">
+/* UIUnivCourseHomeworkAnswer.getDetailUser */
+SELECT cha.cs_homework_answer_seq, 
+       cha.cs_course_active_seq,
+       ctt.cs_team_title, 
+       ctt.cs_course_teamproject_seq, 
+       ctt.cs_course_team_seq, 
+       ctm.cs_team_member_seq, 
+       (SELECT cs_member_id
+         FROM cs_member 
+        WHERE cs_member_seq = ctm.cs_team_member_seq
+       ) AS cs_member_id,
+       cha.cs_homework_answer_title, 
+       cha.cs_description, 
+       cha.cs_send_dtime,
+       cha.cs_homework_score,
+       cha.cs_score_dtime,
+       cha.cs_comment,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = ctm.cs_team_member_seq
+       ) AS cs_member_name, 
+       'cs_course_homework_answer'                AS "referenceTablename",
+       cae.cs_active_element_seq 
+  FROM cs_course_teamproject_team ctt 
+ INNER JOIN cs_course_active_element cae
+    ON cae.cs_reference_seq = ctt.cs_course_teamproject_seq
+   AND cae.cs_delete_yn = 'N'
+   AND cae.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.TEAMPROJECT}'
+   AND cae.cs_course_active_seq = #{courseActiveSeq}
+ INNER JOIN cs_course_teamproject_member ctm 
+    ON ctm.cs_delete_yn = 'N' 
+   AND ctm.cs_chief_yn = 'Y' 
+   AND ctt.cs_course_team_seq = ctm.cs_course_team_seq 
+ INNER JOIN cs_course_homework_answer cha 
+    ON cha.cs_delete_yn = 'N' 
+   AND ctt.cs_course_team_seq = cha.cs_course_team_seq 
+   AND cha.cs_course_active_seq = #{courseActiveSeq}
+ WHERE ctt.cs_delete_yn = 'N' 
+   AND ctt.cs_course_team_seq = #{courseTeamSeq}
+    </select>
+    
+    <select id="countTeamProjectAnswer" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkAnswerVO" resultType="int">
+/* UIUnivCourseHomeworkAnswer.countTeamProjectAnswer */
+SELECT COUNT(*) 
+  FROM cs_course_homework_answer 
+ WHERE cs_course_active_seq = #{courseActiveSeq}
+   AND cs_course_team_seq = #{courseTeamSeq}
+   AND cs_delete_yn = 'N'
+    </select>
+    
+    <update id="updateTeamProjectAnswer" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkAnswerVO">
+/* updateTeamProjectAnswer.updateTeamProjectAnswer */
+UPDATE cs_course_homework_answer         
+   SET    <if test='homeworkScore != null and !homeworkScore.equals("")'> 
+       cs_homework_score            = #{homeworkScore ,         jdbcType=DOUBLE} ,
+       cs_score_dtime               = dbo.FN_NOW_TO_CHAR() ,
+          </if>
+          <if test='profCommentMemberSeq != null and !profCommentMemberSeq.equals("")'> 
+       cs_prof_comment_member_seq   = #{profCommentMemberSeq ,  jdbcType=NUMERIC},
+          </if>
+           <if test='homeworkAnswerTitle != null and !homeworkAnswerTitle.equals("")'> 
+       cs_homework_answer_title     = #{homeworkAnswerTitle ,   jdbcType=VARCHAR} ,
+       cs_send_dtime                = dbo.FN_NOW_TO_CHAR(),
+           </if>
+           <if test='description != null and !description.equals("")'> 
+       cs_description               = #{description ,           jdbcType=VARCHAR} ,
+           </if>
+           <if test='comment != null and !comment.equals("")'> 
+       cs_comment                   = #{comment ,               jdbcType=VARCHAR} ,
+           </if>
+           <if test='openYn != null and !openYn.equals("")'> 
+       cs_open_yn                   = #{openYn ,                jdbcType=VARCHAR} ,
+           </if>
+       cs_upd_member_seq            = #{updMemberSeq,           jdbcType=NUMERIC} ,
+       cs_upd_dtime                 = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip                    = #{updIp,                  jdbcType=VARCHAR}
+ WHERE cs_course_active_seq = #{courseActiveSeq}
+   AND cs_course_team_seq = #{courseTeamSeq}
+   AND cs_delete_yn = 'N'
+    </update>
+</mapper>

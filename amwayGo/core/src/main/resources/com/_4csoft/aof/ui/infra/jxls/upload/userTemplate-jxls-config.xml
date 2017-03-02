@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workbook>
+	<worksheet idx="0">
+	   <section startRow="0" endRow="1" />
+		<loop startRow="1" endRow="1" items="members" var="member" varType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+			<section startRow="3" endRow="3">
+			    <mapping row="3" col="0" nullAllowed="false">member.memberId</mapping>
+				<mapping row="3" col="1" nullAllowed="false">member.password</mapping>
+				<mapping row="3" col="2" nullAllowed="false">member.memberName</mapping>
+				<mapping row="3" col="3" nullAllowed="false">member.phoneMobile</mapping>
+				<mapping row="3" col="4" nullAllowed="false">member.email</mapping>
+				<mapping row="3" col="5" nullAllowed="false">member.sexCd</mapping>
+				<mapping row="3" col="6" nullAllowed="false">member.companyName</mapping>
+				<mapping row="3" col="7" nullAllowed="false">member.position</mapping>
+				<mapping row="3" col="8" nullAllowed="false">member.organizationString</mapping>
+				<mapping row="3" col="9" nullAllowed="false">member.memberStatusCd</mapping>
+				<mapping row="3" col="10" nullAllowed="false">member.joiningRolegroupSeq</mapping>
+			</section>
+			<loopbreakcondition>
+				<rowcheck offset="0">
+					<cellcheck offset="0"></cellcheck>
+				</rowcheck>
+			</loopbreakcondition>
+		</loop>
+	</worksheet>
+</workbook>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.session.mapper.UISessionMapper">
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.session.vo.resultset.UISessionRS">
+        <result column="cs.sessionSeq"              property="session.sessionSeq"               />
+        <result column="cs.sessionStartDate"        property="session.sessionStartDate"         />
+        <result column="cs.sessionEndDate"          property="session.sessionEndDate"           />
+        <result column="cs.classificationCode"      property="session.classificationCode"       />
+        <result column="cs.classificationNm"        property="session.classificationNm"         />
+        <result column="cs.sessionCode"             property="session.sessionCode"              />
+        <result column="cs.sessionName"             property="session.sessionName"              />
+        <result column="cs.eventLocation"           property="session.eventLocation"            />
+        <result column="cs.presenterName"           property="session.presenterName"            />
+        <result column="cs.presenterAppellation"    property="session.presenterAppellation"     />
+        <result column="cs.subPresenterName"        property="session.subPresenterName"         />
+        <result column="cs.subPresenterAppellation" property="session.subPresenterAppellation"  />
+        <result column="cs.presenterAttach"         property="session.presenterAttach"          />
+        <result column="cs.description"             property="session.description"              />
+    </resultMap>
+    
+    <select id="getDetail" parameterType="com._4csoft.aof.ui.session.vo.condition.UISessionCondition" resultMap="detailResultMap">
+/* UISessionMapper.getDetail */
+SELECT  cs.cx_session_seq                AS "cs.sessionSeq"
+       ,cs.cx_session_start_date         AS "cs.sessionStartDate"
+       ,cs.cx_session_end_date           AS "cs.sessionEndDate"
+       ,cs.cx_classification_code        AS "cs.classificationCode"
+       ,cs.cx_classification_nm          AS "cs.classificationNm"
+       ,cs.cx_session_code               AS "cs.sessionCode"
+       ,cs.cx_session_name               AS "cs.sessionName"
+       ,cs.cx_event_location             AS "cs.eventLocation"
+       ,cs.cx_presenter_name             AS "cs.presenterName"
+       ,cs.cx_presenter_appellation      AS "cs.presenterAppellation"
+       ,cs.cx_sub_presenter_name         AS "cs.subPresenterName"
+       ,cs.cx_sub_presenter_appellation  AS "cs.subPresenterAppellation"
+       ,cs.cx_presenter_attach           AS "cs.presenterAttach"
+       ,cs.cx_description                AS "cs.description"
+  FROM cx_session cs
+ WHERE 1 = 1
+ 	    <if test='srchClassificationCode != null and !srchClassificationCode.equals("")'>
+       AND cs.cx_classification_code = #{srchClassificationCode}         
+        </if>
+        <if test='srchSessionCode != null and !srchSessionCode.equals("")'>
+       AND cs.cx_session_code = #{srchSessionCode}         
+        </if>  
+       
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.session.vo.resultset.UISessionRS">
+        <result column="cs.sessionSeq"              property="session.sessionSeq"               />
+        <result column="cs.sessionStartDate"        property="session.sessionStartDate"         />
+        <result column="cs.sessionEndDate"          property="session.sessionEndDate"           />
+        <result column="cs.classificationCode"      property="session.classificationCode"       />
+        <result column="cs.classificationNm"        property="session.classificationNm"         />
+        <result column="cs.sessionCode"             property="session.sessionCode"              />
+        <result column="cs.sessionName"             property="session.sessionName"              />
+        <result column="cs.eventLocation"           property="session.eventLocation"            />
+        <result column="cs.presenterName"           property="session.presenterName"            />
+        <result column="cs.presenterAppellation"    property="session.presenterAppellation"     />
+        <result column="cs.subPresenterName"        property="session.subPresenterName"         />
+        <result column="cs.subPresenterAppellation" property="session.subPresenterAppellation"  />
+        <result column="cs.presenterAttach"         property="session.presenterAttach"          />
+        <result column="cs.description"             property="session.description"              />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.session.vo.condition.UISessionCondition" resultMap="listResultMap">
+/* UISessionMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+    ORDER BY "cs.cx_session_seq" ASC
+) AS rownumber, * FROM (
+        </if>
+SELECT  cs.cx_session_seq                AS "cs.sessionSeq"
+       ,cs.cx_session_start_date         AS "cs.sessionStartDate"
+       ,cs.cx_session_end_date           AS "cs.sessionEndDate"
+       ,cs.cx_classification_code        AS "cs.classificationCode"
+       ,cs.cx_classification_nm          AS "cs.classificationNm"
+       ,cs.cx_session_code               AS "cs.sessionCode"
+       ,cs.cx_session_name               AS "cs.sessionName"
+       ,cs.cx_event_location             AS "cs.eventLocation"
+       ,cs.cx_presenter_name             AS "cs.presenterName"
+       ,cs.cx_presenter_appellation      AS "cs.presenterAppellation"
+       ,cs.cx_sub_presenter_name         AS "cs.subPresenterName"
+       ,cs.cx_sub_presenter_appellation  AS "cs.subPresenterAppellation"
+       ,cs.cx_presenter_attach           AS "cs.presenterAttach"
+       ,cs.cx_description                AS "cs.description"
+  FROM cx_session cs
+ WHERE 
+       1 = 1
+        <if test='srchClassificationCode != null and !srchClassificationCode.equals("")'>
+       AND cs.cx_classification_code = #{srchClassificationCode}         
+        </if>
+        <if test='srchSessionCode != null and !srchSessionCode.equals("")'>
+       AND cs.cx_session_code = #{srchSessionCode}         
+        </if>   
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.session.vo.condition.UISessionCondition" resultType="int">
+/* UISessionMapper.countList */
+SELECT COUNT(*)
+  FROM cx_session 
+ WHERE 
+       1 = 1
+        <if test='srchClassificationCode != null and !srchClassificationCode.equals("")'>
+       AND cs.cx_classification_code = #{srchClassificationCode}         
+        </if>
+        <if test='srchSessionCode != null and !srchSessionCode.equals("")'>
+       AND cs.cx_session_code = #{srchSessionCode}         
+        </if>        
+    </select>
+    
+</mapper>

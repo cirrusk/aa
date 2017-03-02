@@ -1,0 +1,240 @@
+@charset "utf-8";
+/* CSS Document */
+body.bgw{background:#FFF}
+
+/* icon */
+.icon_filedown {display:inline-block; background: url("/images/hanwha/win/ehrd/common/icon/icon_fdown.png") right center no-repeat; padding-right:25px;}
+
+/* grid link font */
+.bgw a,a:hover,a:active{font-weight:bold; font-size:14px; color:blue;}
+#popwrap a,a:hover,a:active{font-weight:bold; font-size:14px;}
+
+/* layout */
+/*
+#wrap {min-width:1200px; background:#dfdfe0}
+#wrap:after {content:""; display:block; clear:both}
+#header {position:relative; background:#4b4643; z-index:1; height:65px; padding:0px 20px;}
+#container{position:relative;margin:20px; background:#FFF}
+#container:after {content:""; display:block; clear:both}
+#lnbwrap{ position:absolute; top:0; left:0;width:278px;background: #0C0}
+.lnb{display:block;min-height:750px; background:#FFF}
+#content{position:relative;margin-left:277px;min-height:798px;background:#FFF;border:1px solid #dadada; border-top:none; }
+#content:after {content:""; display:block; clear:both}
+#inner{padding:20px}
+#footer{position:relative; background:#333333; zoom:1; z-index:;}
+
+.btn_toggle{position:absolute;background:#fff url(../../../sample/axisj/img/btn_toggle_off.png) 0 0 no-repeat;border:1px solid #dadada;left:-20px;top:0px;width:18px;height:46px;z-index:10000;cursor:pointer;}
+.on{background:#fff url(../../../sample/axisj/img/btn_toggle_on.png) 0 0 no-repeat;	}
+
+#header ul{color:#FFF; display:block;}
+#header li{float:left; width:26%; text-align:right;color:#FFF;}
+#header li:first-child{ text-align:left; width:14%;}
+#header li:last-child{width:34%; text-align:right}
+
+#header li.hlogo h2{padding:12px 0}
+#header li.hlink{ margin:0; padding:0}
+#header li.hlink ol{ float:right}
+#header li.hlink ol li{ width:130px;height:65px; } 
+#header li.hlink ol li a{display:block;padding-left:65px;height:65px;line-height:65px;color:#b4b2b2; text-align:left; font-weight:bold}
+#header li.hlink ol li a:hover{background:#706455}
+#header li.hlink ol li a.email{background:#4b4643 url(images/icon_email_off.png) 26px 13px no-repeat}
+#header li.hlink ol li a.sms{ background:#4b4643 url(images/icon_sms_off.png) 26px 13px no-repeat}
+#header li.hlink ol li a.email:hover{background:#706455 url(images/icon_email_on.png) 26px 13px no-repeat; color:#FFF}
+#header li.hlink ol li a.sms:hover{background:#706455 url(images/icon_sms_on.png) 26px 13px no-repeat; color:#FFF}
+
+#header li.hsearch{padding-top:18px}
+#header li.hsearch span{ padding-right:10px;color:#FFFFFF; height:30px; line-height:30px}
+#header li.hsearch input[type=text]{ padding:0; margin:0; height:30px; line-height:30px; width:159px; padding:0 10px; background:#3d3931; border:none; color:#FFF}
+#header li.hsearch input[type=button]{padding:0; margin:0; height:30px; line-height:30px; width:34px; text-indent:-9999px;background:#706455 url(images/btn_top_search.png) 0 0 no-repeat; text-align:center; border:none; color:#FFF; cursor:pointer}
+
+#header li.hinfo{padding-top:18px; text-align:right;}
+#header li.hinfo span{ padding-right:10px;color:#a49d9a; height:30px; line-height:30px; vertical-align:top}
+#header li.hinfo span strong{ color:#bca47d; vertical-align:top}
+#header li.hinfo select{ height:30px; width:156px; line-height:30px; color:#9e9e9e;background:#3d3931; margin-right:10px; border:none; padding-left:10px; vertical-align:top }
+#header li.hinfo input[type=button]{ height:30px; line-height:30px; width:73px; background:#706455; text-align:center; border:none; color:#FFF; cursor:pointer; vertical-align:top}
+*/
+.contents_title{ margin-right:20px; padding-bottom:10px; line-height:10px}
+.contents_title h2{ display:inline-block; height:30px; line-height:30px; font-size:17px; color:#000; font-weight:bold}
+.contents_title li{ float:left;}
+
+.conts_search ul{display:block;margin:0; padding:0;background:#fbfbfb; border:1px solid #dadbdb; padding:12px; margin-bottom:27px}
+.conts_search ul:after{content:""; display:block; clear:both}
+.conts_search li{float:left; display:inline-block;padding-left:10px;margin:3px; height:30px}
+.conts_search li label{display:inline-block; text-align:left;width:80px; line-height:30px; vertical-align:top}
+.conts_search li select{display:inline-block;height:30px;width:70px; line-height:30px; color:#000;background:#FFF; margin-right:10px; border:1px solid #dddddd; padding-left:10px; vertical-align:top}
+.conts_search li input[type=text]{display:inline-block;padding:0; margin:0; height:28px; width:130px; line-height:28px; padding:0 10px; background:#FFF; border:1px solid #dddddd; color:#000; vertical-align:top}
+.conts_search li input[type=button]{display:inline-block;padding-left:30px; margin-left:5px; height:30px; line-height:30px; width:64px;background: url(images/content_search.png) 0 0 no-repeat; text-align:left; border:none; color:#FFF;cursor:pointer; vertical-align:top}
+
+.btnwrap_index{padding-bottom:6px; text-align:right}
+
+.btnwrap {margin-right:20px;padding-bottom:6px; text-align:center}
+.btnwrap1 {margin:5px;padding:0px; text-align:center}
+.btnwrap:after{ content:""; display:block; clear:both}
+.btn_left{float:left; margin-left:-5px}
+.btn_right{ float:right}
+.mb20{ margin-bottom:20px;}
+
+a.btn_gray{display:inline-block;height:30px; line-height:30px; background:#8d8d8d; padding:0 15px; margin-left:5px;color:#FFF; vertical-align:middle}
+a.btn_orange{display:inline-block;height:30px; line-height:30px; background:#db8843; padding:0 15px; margin-left:5px; color:#FFF; vertical-align:middle}
+a.btn_green{display:inline-block;height:30px; line-height:30px; background:#3D6C1F; padding:0 15px; margin-left:5px; color:#FFF; vertical-align:middle}
+a.btn_white{display:inline-block;height:28px; line-height:28px; background:#FFF; padding:0 15px; margin-left:5px; border:1px solid #cccccc; color:#666; vertical-align:middle}
+a.btn_excel{display:inline-block;height:28px; line-height:28px; background:#FFF url(images/icon_excel.png) 10px 0 no-repeat; padding:0 15px 0 45px; margin-left:5px; border:1px solid #cccccc; color:#666; vertical-align:middle}
+a.btn_gray:hover,a.btn_gray:active,
+a.btn_orange:hover,a.btn_orange:active,
+a.btn_white:hover,a.btn_white:active,
+a.btn_excel:hover,a.btn_excel:active{color:#000}
+a.btn_big30{height:30px; line-height:30px;padding:0 30px;}
+a.btn_big{height:40px; line-height:40px;padding:0 15px;min-width:60px;}
+a.btn_green:hover,a.btn_green:active{color:#fff450}
+
+.tree_search{height:46px; border:1px solid #dadada; border-bottom:none; background:#f5f5f6}
+.tree_search label{display:inline-block;padding:8px; vertical-align:top; cursor:pointer}
+.tree_search input[type=text]{display:inline-block;height:28px; width:180px; line-height:28px; padding:0 10px; background:#f5f5f6; border:1px solid #f5f5f6; color:#000; margin-top:8px; vertical-align:top}
+.tree_search input[type=text]:focus{border:1px solid #dadada;}
+
+
+
+.bgw .AXGrid { margin-right:20px; }
+
+#popwrap {position:relative; background:#ffffff; z-index:1; }
+#popwrap .title{ line-height:30px;background:#4b4643;padding:10px 20px; }
+#popwrap .title h2{ font-size:17px; font-weight:bold; color:#FFF; line-height:30px;}
+#popwrap .title .btn_close{ display:inline-block;height:30px; line-height:30px; width:30px; background:#706455; text-align:center; border:none; color:#FFF; cursor:pointer; vertical-align:top}
+
+#popcontainer{background:#ffffff;padding:0px;overflow:auto}
+#popcontainer:after {content:""; display:block; clear:both}
+
+#popcontent{padding:20px; background:#FFF;border:0px solid #dadada;}
+#popcontent:after {content:""; display:block; clear:both}
+#popcontent .img {border:1px solid #e7ecf1;width:100%;height:330px;margin-bottom:10px;}
+#popcontent .imgpage {width:100%;margin-bottom:10px;text-align:center;font-size:17px;}
+#popcontent .imgpage a{margin-left:30px;margin-right:30px;}
+#popcontent .imgpage span.totimg {font-size:17px; font-weight:bold; color:red;}
+
+.poptitle{ padding-bottom:10px; line-height:30px; height:30px}
+.poptitle h3{ font-size:15px; line-height:30px; height:30px; font-weight:bold; color:#000}
+
+.navigation{}
+.navigation li{ float:left; background:url(/images/navigation_arr.png) 100% 0 no-repeat}
+.navigation li a{ display:block; padding:0 25px 0 20px; line-height:30px; height:30px; font-size:12px; color:#999}
+.navigation li.end{ display:block; padding:0 0 0 20px; line-height:30px; height:30px; font-size:12px;color:#000; font-weight:bold; background:none}
+.navigation li.home a{ display:block; width:30px; height:30px; line-height:30px; margin-right:20px; padding:0; text-indent:-9999px; background:url(/images/navigation_home.png) 0 0 no-repeat}
+
+/* tbl_write */
+.tbl_write{margin-right:20px; margin-bottom:20px; line-height:30px;}
+.tbl_write table{border:1px solid #e7ecf1; border-top:2px solid #a5acb3}
+.tbl_write th {font-weight:normal; line-height:1.2em; text-align:left; padding:5px; border:1px solid #e7ecf1; background:#f7f7f7; color:#444}
+.tbl_write th i{display:inline-block; padding-left:5px;font-style:normal; color:#F90}
+.tbl_write td {padding:5px; border:1px solid #e7ecf1; background:#FFF}
+.tbl_write td label{display:inline-block; text-align:left;line-height:30px; vertical-align:middle; padding:0 20px 0 5px}
+.tbl_write td select{width:auto; min-width:200px}
+
+/* tbl_write1 - layer pop*/
+.tbl_write1{margin-bottom:20px; line-height:30px;}
+.tbl_write1 table{border:1px solid #e7ecf1; border-top:2px solid #a5acb3}
+.tbl_write1 th {font-weight:normal; line-height:1.2em; text-align:left; padding:5px; border:1px solid #e7ecf1; background:#f7f7f7; color:#444}
+.tbl_write1 th i{display:inline-block; padding-left:5px;font-style:normal; color:#F90}
+.tbl_write1 td {padding:5px; border:1px solid #e7ecf1; background:#FFF; text-align:left}
+.tbl_write1 td label{display:inline-block; text-align:left;line-height:30px; vertical-align:middle; padding:0 20px 0 5px}
+
+/* tbl_write2 td center */
+.tbl_write2{margin-right:20px; margin-bottom:20px; line-height:30px;}
+.tbl_write2 table{border:1px solid #e7ecf1; border-top:2px solid #a5acb3}
+.tbl_write2 th {font-weight:normal; line-height:1.2em; text-align:center; padding:5px; border:1px solid #e7ecf1; background:#f7f7f7; color:#444; height:28px;}
+.tbl_write2 th i{display:inline-block; padding-left:5px;font-style:normal; color:#F90}
+.tbl_write2 td {padding:5px; border:1px solid #e7ecf1; background:#FFF; text-align:center; height:28px;}
+.tbl_write2 td label{display:inline-block; text-align:left;line-height:30px; vertical-align:middle; padding:0 20px 0 5px}
+
+/* tbl_write_pop - layer pop list */
+.tbl_write_pop{margin-bottom:20px; line-height:30px;}
+.tbl_write_pop table{border:1px solid #e7ecf1; border-top:2px solid #a5acb3;}
+.tbl_write_pop thead th {font-weight:normal; line-height:2.0em; text-align:center; padding:5px; border:1px solid #e7ecf1; background:#FFFFFF; color:#444}
+.tbl_write_pop tbody tr {line-height:1.8em;}
+.tbl_write_pop tbody td {padding:5px; border:1px solid #e7ecf1; text-align:center}
+.tbl_write_pop tfoot td {padding:5px; border:1px solid #e7ecf1; background:#FFF; text-align:left}
+/* .tbl_write_pop td label{display:inline-block; text-align:left;line-height:30px; vertical-align:middle; padding:0 20px 0 5px} */
+
+.tabView{margin:5px 5px 5px 5px;}
+
+/*
+.targerFrame{ width:100%; height:710px; background:#FFF}
+*/
+
+/* Button */
+.btn {display:inline-block; font-size:14px;}
+.btn_area {margin-top:0; padding-bottom:10px}
+.btn_area a {margin-left:10px;}
+.btn_area a:first-child {margin-left:0;}
+
+/* Button Size */
+.btn.small {padding:0 13px; font-size:13px; line-height:28px;}
+.btn.medium {padding:0 23px; line-height:38px;}
+.btn.medium02 {padding:0 19px; font-size:13px; line-height:34px;}
+.btn.medium03 {padding:0 31px; font-size:13px; line-height:44px;}
+.btn.big {padding:25px; *min-width:27px;}
+.btn.btn_sq {padding:0; width:45px; text-align:center;}
+
+/* Button Color */
+.btn.orange {background:#db8843; border:1px solid #db8843; color:white;}
+.btn.blue {background:#5373bd; border:1px solid #5373bd; color:white;}
+.btn.green {background:#7fb50f; border:1px solid #7fb50f; color:white;}
+.btn.white {background:white; border:1px solid #a6a6a6; color:#828282;}
+.btn.gray {background:#8d8d8d; border:1px solid #8d8d8d; color:white;}
+.btn.lightgray {background:#eee; border:1px solid #d7d7d7; color:#303030;}
+
+.btn.white:hover, .btn.white:focus {background-color:#fbfbfb; border:1px solid #a6a6a6;}
+
+
+
+
+
+/* Layer Popup */
+div.modal{position:absolute; z-index:100; padding:0px; display:none}
+
+/* 백보드 div */
+div.overlay {width:100%;height:100%;z-index:2;background-color:#000; opacity:0.4; filter: alpha(opacity=40); -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)"; position:fixed; top:0; left:0;	margin:0;	padding:0; display:none}
+
+/* 20151229 추가*/
+
+/* modal frame */
+.modalTargetFrame{ width:100%; background:#FFF; padding:0; border:none; overflow-x: hidden; overflow-y: auto;}
+
+/* Gap */
+.mt00 {margin-top:0px !important;}
+.mt10 {margin-top:10px !important;}
+.mt15 {margin-top:15px !important;}
+.mt20 {margin-top:20px !important;}
+.mt25 {margin-top:25px !important;}
+.mt30 {margin-top:30px !important;}
+.mb30 {margin-bottom:30px;}
+.mb50 {margin-bottom:50px;}
+.ml10 {margin-left:10px !important;}
+.ml20 {margin-left:20px !important;}
+
+.courseLy{display:none;}
+.courseOpenClose{display:inline-block; width:29px; height:30px; background:#FFF url(/images/hanwha/win/ehrd/common/icon/dx-down-arrows.png) 0 0 no-repeat; color:#FFF; font-weight:bold; cursor:pointer}
+.courseOpenClose:hover{ background-position:0 -30px}
+.courseOpenClose.on{background:#FFF url(/images/hanwha/win/ehrd/common/icon/dx-up-arrows.png) 0 0 no-repeat;}
+.courseOpenClose.on:hover{ background-position:0 -30px}
+
+.modalTreeFrame{width:100%; height:400px; background:#FFF; padding:0; border:none; overflow-x: hidden; overflow-y: auto;}
+
+.treeWrap{ margin:0; padding:0}
+.treeWrap .frameTree{width:250px; float:left; }
+.treeWrap .frameTree .treeCheck{ line-height:40px; display:block; height:40px; border:1px solid #dadada; border-bottom:none; background:#f5f5f6; padding-left:10px}
+.treeWrap .treeView{margin-left:272px;}
+
+.courseTree{ width:100%; height:560px}
+.courseTree.modal3{ height:390px}
+
+.treeMove{ display:block}
+.treeMove li{float:left; text-align:center; width:10%}
+.treeMove li:first-child, .treeMove li:last-child{ width:45%}
+.treeMove li a{ display:block; height:100%; padding:166px 0; vertical-align:middle; background:#FFF}
+.treeMove li a:hover{ background:#fafafa}
+
+
+.modalBg { position:fixed; width:100%; height:100%; left:0; top:0; background:#000; opacity:0.4; z-index:1000; }
+
+
+

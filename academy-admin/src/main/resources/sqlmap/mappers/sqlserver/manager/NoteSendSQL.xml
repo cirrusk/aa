@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.noteSend.service.impl.NoteSendMapper">
+
+    <!-- 쪽지설정 리스트 카운트 -->
+    <select id="noteSendListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(NOTESENDSEQ) AS TOTAL_CNT
+        FROM   NOTESEND
+        WHERE  1=1
+        <if test='startday != null and !startday.equals("")'>
+            AND SENDDATE  <![CDATA[ >= ]]> replace(#{startday},'/','')
+        </if>
+        <if test='endday != null and !endday.equals("")'>
+            AND SENDDATE  <![CDATA[ <= ]]> replace(#{endday},'/','')
+        </if>
+         <if test="noteservice != null and !noteservice.equals('')">
+             AND NOTESERVICE = #{noteservice}
+         </if>
+        <if test="newcheck != null and !newcheck.equals('')">
+            AND (SELECT DATEDIFF(HH,SENDDATE,GETDATE())) <![CDATA[ < ]]>  #{newcheck}
+        </if>
+        <if test="searchword != null and !searchword.equals('') ">
+            <if test="searchtype.equals('1') ">
+                AND UID = #{searchword }
+            </if>
+            <if test="searchtype.equals('2') ">
+                AND NAME LIKE '%' + #{searchword } + '%'
+            </if>
+        </if>
+        <if test="deleteyn != null and !deleteyn.equals('')">
+            AND DELETEYN = #{deleteyn}
+        </if>
+    </select>
+
+    <select id="noteSendList" parameterType="reqBox" resultType="dataBox">
+           SELECT AI.ROW_NUM
+                , AI.NOTESENDSEQ
+                , AI.SENDDATE
+                , AI.NOTESERVICE
+                , AI.NOTECONTENT
+                , AI.NAME
+                , AI.UID
+                , AI.NEWYN
+                , AI.STARTDAY
+                , AI.ENDDAY
+                , AI.DELETEYN
+           FROM (
+           SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType} ) AS ROW_NUM
+                , NOTESENDSEQ
+                , SENDDATE
+                , NOTESERVICE
+                , NOTECONTENT
+                , NAME
+                , UID
+                , (SELECT DATEDIFF(HH,SENDDATE,GETDATE())) AS NEWYN
+                , SENDDATE AS STARTDAY
+                , SENDDATE AS ENDDAY
+                , DELETEYN
+           FROM   NOTESEND
+           WHERE  1=1
+            <if test='startday != null and !startday.equals("")'>
+                AND SENDDATE  <![CDATA[ >= ]]> replace(#{startday},'/','')
+            </if>
+            <if test='endday != null and !endday.equals("")'>
+                AND SENDDATE  <![CDATA[ <= ]]> replace(#{endday},'/','')
+            </if>
+            <if test="noteservice != null and !noteservice.equals('')">
+                AND NOTESERVICE = #{noteservice}
+            </if>
+            <if test="newcheck != null and !newcheck.equals('')">
+                AND (SELECT DATEDIFF(HH,SENDDATE,GETDATE()))  <![CDATA[ < ]]>  #{newcheck}
+            </if>
+            <if test="searchword != null and !searchword.equalsIgnoreCase('') ">
+                <if test="searchtype.equalsIgnoreCase('1') ">
+                    AND UID = #{searchword }
+                </if>
+                <if test="searchtype.equalsIgnoreCase('2') ">
+                    AND NAME LIKE '%' + #{searchword } + '%'
+                </if>
+            </if>
+            <if test="deleteyn != null and !deleteyn.equals('')">
+                AND DELETEYN = #{deleteyn}
+            </if>
+        ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+</mapper>

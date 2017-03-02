@@ -1,0 +1,789 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveExamPaperMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO">
+		<selectKey resultType="Long" keyProperty="courseActiveExamPaperSeq" order="AFTER">
+        SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseActiveExamPaper.insert */
+INSERT INTO cs_course_active_exam_paper
+	(
+		cs_course_master_seq ,
+		cs_course_active_seq ,
+		cs_exam_paper_seq ,
+		cs_middle_final_type_cd ,
+		cs_basic_supplement_cd ,
+		cs_onoff_cd ,
+		cs_start_dtime ,
+		cs_end_dtime ,
+		cs_start_day ,
+		cs_end_day ,
+		cs_reference_seq ,
+		cs_limit_standard_cd ,
+		cs_limit_progress ,
+		cs_retake_score ,
+		cs_retake_count ,
+		cs_exam_time ,
+		cs_rate ,
+		cs_reg_member_seq ,
+		cs_reg_dtime ,
+		cs_reg_ip ,
+		cs_upd_member_seq ,
+		cs_upd_dtime ,
+		cs_upd_ip	
+	)
+	VALUES
+	(
+		#{courseMasterSeq, jdbcType=NUMERIC} ,
+		#{courseActiveSeq, jdbcType=NUMERIC} ,
+		#{examPaperSeq, jdbcType=NUMERIC} ,
+		#{middleFinalTypeCd, jdbcType=VARCHAR} ,
+		#{basicSupplementCd, jdbcType=VARCHAR} ,
+		#{onOffCd, jdbcType=VARCHAR} ,
+		#{startDtime, jdbcType=VARCHAR} ,
+		#{endDtime, jdbcType=VARCHAR} ,
+		#{startDay, jdbcType=NUMERIC} ,
+		#{endDay, jdbcType=NUMERIC} ,
+		#{referenceSeq, jdbcType=NUMERIC} ,
+		#{limitStandardCd, jdbcType=VARCHAR} ,
+		#{limitProgress, jdbcType=NUMERIC} ,
+		#{retakeScore, jdbcType=NUMERIC} ,
+		#{retakeCount, jdbcType=NUMERIC} ,
+		#{examTime, jdbcType=NUMERIC} ,
+		#{rate, jdbcType=NUMERIC} ,
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+		dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO">
+/* UIUnivCourseActiveExamPaper.update */
+UPDATE cs_course_active_exam_paper 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       <if test='examPaperSeq != null'>
+	   ,cs_exam_paper_seq = #{examPaperSeq, jdbcType=NUMERIC} 
+	   </if>
+	   <if test='middleFinalTypeCd != null'>
+	   ,cs_middle_final_type_cd = #{middleFinalTypeCd, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='basicSupplementCd != null'>
+	   ,cs_basic_supplement_cd = #{basicSupplementCd, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='startDtime != null'>
+	   ,cs_start_dtime = #{startDtime, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='endDtime != null'>
+	   ,cs_end_dtime = #{endDtime, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='startDay != null'>
+	   ,cs_start_day = #{startDay, jdbcType=VARCHAR}
+	   </if>
+	   <if test='endDay != null'>
+	   ,cs_end_day = #{endDay, jdbcType=VARCHAR}
+	   </if>
+	   <if test='referenceSeq != null'>
+	   ,cs_reference_seq = #{referenceSeq, jdbcType=NUMERIC} 
+	   </if>
+	   <if test='limitStandardCd != null'>
+	   ,cs_limit_standard_cd = #{limitStandardCd, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='limitProgress != null'>
+	   ,cs_limit_progress = #{limitProgress, jdbcType=NUMERIC} 
+	   </if>
+	   <if test='retakeScore != null'>
+	   ,cs_retake_score = #{retakeScore, jdbcType=NUMERIC} 
+	   </if>
+	   <if test='retakeCount != null'>
+	   ,cs_retake_count = #{retakeCount, jdbcType=NUMERIC} 
+	   </if>
+	   <if test='examTime != null'>
+	   ,cs_exam_time = #{examTime, jdbcType=NUMERIC} 
+	   </if>
+	   <if test='openYn != null'>
+	   ,cs_open_yn = #{openYn, jdbcType=NUMERIC}
+	   </if>
+	   <if test='rate != null'>
+	   ,cs_rate = #{rate, jdbcType=NUMERIC}
+	   </if>
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}	   	
+	</update>
+	
+	<update id="updateRate" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO">
+/* UIUnivCourseActiveExamPaper.updateRate */
+UPDATE cs_course_active_exam_paper 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_rate = #{rate, jdbcType=NUMERIC}
+WHERE cs_delete_yn = 'N'
+   AND cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}	
+	</update>
+	
+	<update id="updateReferenceSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO">
+/* UIUnivCourseActiveExamPaper.updateReferenceSeq */
+UPDATE cs_course_active_exam_paper
+   SET cs_reference_seq = #{courseActiveExamPaperSeq, jdbcType=NUMERIC}
+ WHERE cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+   AND cs_delete_yn = 'N'
+	</update>
+	
+	<update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO">
+/* UIUnivCourseActiveExamPaper.delete */
+UPDATE cs_course_active_exam_paper 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}	
+	</update>
+    
+    <update id="deleteMiddleFinalTypeCd" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO">
+/* UIUnivCourseActiveExamPaper.deleteMiddleFinalTypeCd */
+UPDATE cs_course_active_exam_paper 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{courseActiveSeq}
+   AND  cs_middle_final_type_cd = #{middleFinalTypeCd}   
+    </update>
+	
+	<resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperRS">
+		<result column="caep.courseActiveExamPaperSeq"  property="courseActiveExamPaper.courseActiveExamPaperSeq"  />   
+	    <result column="caep.courseMasterSeq"  		    property="courseActiveExamPaper.courseMasterSeq"  		   />    
+	    <result column="caep.courseActiveSeq"  		    property="courseActiveExamPaper.courseActiveSeq"  		   />   
+	    <result column="caep.examPaperSeq"  		    property="courseActiveExamPaper.examPaperSeq"  		       />
+	    <result column="caep.middleFinalTypeCd"  	    property="courseActiveExamPaper.middleFinalTypeCd"  	   />   
+	    <result column="caep.basicSupplementCd"         property="courseActiveExamPaper.basicSupplementCd"         /> 
+	    <result column="caep.onOffCd"         	        property="courseActiveExamPaper.onOffCd"                   /> 
+	    <result column="caep.startDtime"  			  	property="courseActiveExamPaper.startDtime"  			   />   
+	    <result column="caep.endDtime"  			  	property="courseActiveExamPaper.endDtime"  			       />
+	    <result column="caep.startDay"  			  	property="courseActiveExamPaper.startDay"  			       />
+	    <result column="caep.endDay"  			  		property="courseActiveExamPaper.endDay"  			       />
+	    <result column="caep.referenceSeq"  		  	property="courseActiveExamPaper.referenceSeq"  		       />
+	    <result column="caep.limitStandardCd"  		    property="courseActiveExamPaper.limitStandardCd"  		   />   
+	    <result column="caep.limitProgress"  		  	property="courseActiveExamPaper.limitProgress"  		   />   
+	    <result column="caep.retakeScore"  			    property="courseActiveExamPaper.retakeScore"  			   />   
+	    <result column="caep.retakeCount"  			    property="courseActiveExamPaper.retakeCount"  			   />
+	    <result column="caep.examTime"  			    property="courseActiveExamPaper.examTime"  			   	   />   
+	    <result column="caep.openYn"  			        property="courseActiveExamPaper.openYn"  			   	   />   
+	    <result column="caep.rate"  			        property="courseActiveExamPaper.rate"  			   	   	   />   
+	    <result column="caep.deleteYn"  			    property="courseActiveExamPaper.deleteYn"  			       />   
+	    <result column="caep.regMemberSeq"  		  	property="courseActiveExamPaper.regMemberSeq"  		       />
+	    <result column="caep.regDtime"  			  	property="courseActiveExamPaper.regDtime"  			       />
+	    <result column="caep.regIp"  				  	property="courseActiveExamPaper.regIp"  				   />   
+	    <result column="caep.updMemberSeq"  		  	property="courseActiveExamPaper.updMemberSeq"  		       />
+	    <result column="caep.updDtime"  			  	property="courseActiveExamPaper.updDtime"  			       />
+	    <result column="caep.updIp"  				  	property="courseActiveExamPaper.updIp"  				   />   
+	    <result column="cep.examPaperTitle"  		  	property="courseExamPaper.examPaperTitle"  				   />   
+	    <result column="caep.regMemberName"             property="courseActiveExamPaper.regMemberName"             />  
+	    <result column="caep.updMemberName"             property="courseActiveExamPaper.updMemberName"             />
+	    <result column="caep.targetCount"             	property="courseActiveExamPaper.targetCount"               />  
+	    <result column="summary.memberCount"          	property="courseActiveSummary.memberCount"                 />
+	    <result column="caep.answerCount"          	    property="courseActiveExamPaper.answerCount"               />  
+	    <result column="caep.scoredCount"          	    property="courseActiveExamPaper.scoredCount"               />  
+	    <result column="caep.activeElementSeq"          property="courseActiveExamPaper.activeElementSeq"          />  
+	</resultMap>
+	
+	<select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIUnivCourseActiveExamPaper.getDetail */
+SELECT caep.cs_course_active_exam_paper_seq 		AS "caep.courseActiveExamPaperSeq" , 
+       caep.cs_course_master_seq 					AS "caep.courseMasterSeq" , 			
+       caep.cs_course_active_seq 					AS "caep.courseActiveSeq" , 			
+       caep.cs_exam_paper_seq 						AS "caep.examPaperSeq" , 				
+       caep.cs_middle_final_type_cd 				AS "caep.middleFinalTypeCd" , 		
+       caep.cs_basic_supplement_cd 					AS "caep.basicSupplementCd" , 			
+       caep.cs_onoff_cd 							AS "caep.onOffCd" , 			
+       caep.cs_start_dtime 							AS "caep.startDtime" , 					
+       caep.cs_end_dtime 							AS "caep.endDtime" ,
+       caep.cs_start_day							AS "caep.startDay" ,
+       caep.cs_end_day								AS "caep.endDay" , 					
+       caep.cs_reference_seq 						AS "caep.referenceSeq" , 				
+       caep.cs_limit_standard_cd 					AS "caep.limitStandardCd" , 			
+       caep.cs_limit_progress 						AS "caep.limitProgress" , 				
+       caep.cs_retake_score 						AS "caep.retakeScore" , 				
+       caep.cs_retake_count 						AS "caep.retakeCount" ,
+       caep.cs_exam_time 							AS "caep.examTime" ,
+       caep.cs_open_yn								AS "caep.openYn" ,
+       caep.cs_rate									AS "caep.rate" ,
+       caep.cs_delete_yn							AS "caep.deleteYn" , 				
+       caep.cs_reg_member_seq 						AS "caep.regMemberSeq" , 				
+       caep.cs_reg_dtime 							AS "caep.regDtime" , 					
+       caep.cs_reg_ip 								AS "caep.regIp" , 						
+       caep.cs_upd_member_seq 						AS "caep.updMemberSeq" , 				
+       caep.cs_upd_dtime 							AS "caep.updDtime" , 					
+       caep.cs_upd_ip 								AS "caep.updIp" ,
+       cep.cs_exam_paper_title 						AS "cep.examPaperTitle" , 
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = caep.cs_reg_member_seq
+       ) AS "caep.regMemberName" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = caep.cs_upd_member_seq
+       ) AS "caep.updMemberName" ,
+       CASE
+	    	WHEN caep.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' THEN summary.cs_member_count
+	    	ELSE
+			    ISNULL(
+			    	(SELECT COUNT(*) 
+			    	   FROM cs_course_active_exam_paper_target target 
+			    	  WHERE target.cs_delete_yn = 'N' 
+			    	    AND target.cs_course_active_exam_paper_seq = caep.cs_course_active_exam_paper_seq)
+			    	, 0)						
+		END											AS "caep.targetCount" ,
+		summary.cs_member_count 	    			AS "summary.memberCount" ,
+		(SELECT COUNT(*)
+		   FROM cs_course_apply_element apply
+		  INNER JOIN cs_course_active_element active
+		     ON apply.cs_active_element_seq = active.cs_active_element_seq
+		    AND active.cs_reference_seq = caep.cs_course_active_exam_paper_seq
+		    AND active.cs_reference_type_cd = 
+		    CASE WHEN caep.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' 
+		    THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}' 
+		    ELSE '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}' END
+		  WHERE apply.cs_delete_yn = 'N'
+		    AND apply.cs_course_active_seq = caep.cs_course_active_seq
+		) AS "caep.answerCount" ,
+		(SELECT COUNT(*)
+		   FROM cs_course_active_exam_paper_target target
+		  WHERE cs_delete_yn = 'N'
+		    AND target.cs_course_active_exam_paper_seq = caep.cs_course_active_exam_paper_seq
+		    AND cs_score_yn = 'Y'
+		) AS "caep.scoredCount" ,
+		(
+		SELECT active.cs_active_element_seq
+		   FROM cs_course_active_element active
+		 WHERE active.cs_delete_yn = 'N' 
+		      AND active.cs_reference_seq = caep.cs_course_active_exam_paper_seq
+		      AND active.cs_reference_type_cd = CASE WHEN caep.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}' ELSE '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}' END
+			  AND active.cs_course_active_seq = caep.cs_course_active_seq
+		) AS "caep.activeElementSeq"
+  FROM cs_course_active_exam_paper caep
+  LEFT OUTER JOIN cs_course_exam_paper cep
+    ON caep.cs_exam_paper_seq = cep.cs_exam_paper_seq
+   AND cep.cs_delete_yn = 'N'
+ INNER JOIN cs_course_active_summary summary
+	ON caep.cs_course_active_seq = summary.cs_course_active_seq
+ WHERE caep.cs_delete_yn = 'N'
+   AND caep.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}    	 	
+	</select>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperRS">
+		<result column="caep.courseActiveExamPaperSeq"  property="courseActiveExamPaper.courseActiveExamPaperSeq"  />   
+	    <result column="caep.courseMasterSeq"  		    property="courseActiveExamPaper.courseMasterSeq"  		   />    
+	    <result column="caep.courseActiveSeq"  		    property="courseActiveExamPaper.courseActiveSeq"  		   />   
+	    <result column="caep.examPaperSeq"  		    property="courseActiveExamPaper.examPaperSeq"  		       />
+	    <result column="caep.middleFinalTypeCd"  	    property="courseActiveExamPaper.middleFinalTypeCd"  	   />   
+	    <result column="caep.basicSupplementCd"         property="courseActiveExamPaper.basicSupplementCd"         />
+	    <result column="caep.onOffCd"         	        property="courseActiveExamPaper.onOffCd"                   /> 
+	    <result column="caep.startDtime"  			  	property="courseActiveExamPaper.startDtime"  			   />   
+	    <result column="caep.endDtime"  			  	property="courseActiveExamPaper.endDtime"  			       />
+	    <result column="caep.startDay"  			  	property="courseActiveExamPaper.startDay"  			       />
+	    <result column="caep.endDay"  			  		property="courseActiveExamPaper.endDay"  			       />
+	    <result column="caep.referenceSeq"  		  	property="courseActiveExamPaper.referenceSeq"  		       />
+	    <result column="caep.limitStandardCd"  		    property="courseActiveExamPaper.limitStandardCd"  		   />   
+	    <result column="caep.limitProgress"  		  	property="courseActiveExamPaper.limitProgress"  		   />   
+	    <result column="caep.retakeScore"  			    property="courseActiveExamPaper.retakeScore"  			   />   
+	    <result column="caep.retakeCount"  			    property="courseActiveExamPaper.retakeCount"  			   />
+	    <result column="caep.examTime"  			    property="courseActiveExamPaper.examTime"  			   	   />
+	    <result column="caep.openYn"  			        property="courseActiveExamPaper.openYn"  			   	   />
+	    <result column="caep.rate"  			        property="courseActiveExamPaper.rate"  			   	   	   />
+	    <result column="caep.deleteYn"  			    property="courseActiveExamPaper.deleteYn"  			       />   
+	    <result column="caep.regMemberSeq"  		  	property="courseActiveExamPaper.regMemberSeq"  		       />
+	    <result column="caep.regDtime"  			  	property="courseActiveExamPaper.regDtime"  			       />
+	    <result column="caep.regIp"  				  	property="courseActiveExamPaper.regIp"  				   />   
+	    <result column="caep.updMemberSeq"  		  	property="courseActiveExamPaper.updMemberSeq"  		       />
+	    <result column="caep.updDtime"  			  	property="courseActiveExamPaper.updDtime"  			       />
+	    <result column="caep.updIp"  				  	property="courseActiveExamPaper.updIp"  				   />
+	    <result column="cep.examPaperTitle"  		  	property="courseExamPaper.examPaperTitle"  				   />   
+	    <result column="caep.regMemberName"             property="courseActiveExamPaper.regMemberName"             />  
+	    <result column="caep.updMemberName"             property="courseActiveExamPaper.updMemberName"             />  
+	    <result column="caep.updMemberName"             property="courseActiveExamPaper.updMemberName"             />  
+	    <result column="caep.targetCount"             	property="courseActiveExamPaper.targetCount"               />  
+	    <result column="summary.memberCount"          	property="courseActiveSummary.memberCount"                 />  
+	    <result column="caep.answerCount"          	    property="courseActiveExamPaper.answerCount"               />  
+	    <result column="caep.scoredCount"          	    property="courseActiveExamPaper.scoredCount"               />  
+	</resultMap>
+	
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO" resultMap="listResultMap">
+/* UIUnivCourseActiveExamPaper.getList */
+SELECT caep.cs_course_active_exam_paper_seq 		AS "caep.courseActiveExamPaperSeq" , 
+       caep.cs_course_master_seq 					AS "caep.courseMasterSeq" , 			
+       caep.cs_course_active_seq 					AS "caep.courseActiveSeq" , 			
+       caep.cs_exam_paper_seq 						AS "caep.examPaperSeq" , 				
+       caep.cs_middle_final_type_cd 				AS "caep.middleFinalTypeCd" , 		
+       caep.cs_basic_supplement_cd 					AS "caep.basicSupplementCd" ,
+       caep.cs_onoff_cd 							AS "caep.onOffCd" , 			
+       caep.cs_start_dtime 							AS "caep.startDtime" , 					
+       caep.cs_end_dtime 							AS "caep.endDtime" ,
+       caep.cs_start_day							AS "caep.startDay" ,
+       caep.cs_end_day								AS "caep.endDay" ,  					
+       caep.cs_reference_seq 						AS "caep.referenceSeq" , 				
+       caep.cs_limit_standard_cd 					AS "caep.limitStandardCd" , 			
+       caep.cs_limit_progress 						AS "caep.limitProgress" , 				
+       caep.cs_retake_score 						AS "caep.retakeScore" , 				
+       caep.cs_retake_count 						AS "caep.retakeCount" ,
+       caep.cs_exam_time 							AS "caep.examTime" ,
+       caep.cs_open_yn								AS "caep.openYn" ,
+       caep.cs_rate									AS "caep.rate" ,
+       caep.cs_delete_yn							AS "caep.deleteYn" , 				
+       caep.cs_reg_member_seq 						AS "caep.regMemberSeq" , 				
+       caep.cs_reg_dtime 							AS "caep.regDtime" , 					
+       caep.cs_reg_ip 								AS "caep.regIp" , 						
+       caep.cs_upd_member_seq 						AS "caep.updMemberSeq" , 				
+       caep.cs_upd_dtime 							AS "caep.updDtime" , 					
+       caep.cs_upd_ip 								AS "caep.updIp" , 						
+       cep.cs_exam_paper_title 						AS "cep.examPaperTitle" ,					
+       member.cs_member_name 						AS "caep.regMemberName" ,
+       membersec.cs_member_name 					AS "caep.updMemberName" ,
+       CASE
+	    	WHEN caep.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' THEN summary.cs_member_count
+	    	ELSE
+			    ISNULL(
+			    	(SELECT COUNT(*) 
+			    	   FROM cs_course_active_exam_paper_target target 
+			    	  WHERE target.cs_delete_yn = 'N' 
+			    	    AND target.cs_course_active_exam_paper_seq = caep.cs_course_active_exam_paper_seq)
+			    	, 0)						
+		END											AS "caep.targetCount" ,
+		summary.cs_member_count 	    			AS "summary.memberCount" ,
+		(SELECT COUNT(*)
+		   FROM cs_course_apply_element apply
+		  INNER JOIN cs_course_active_element active
+		     ON apply.cs_active_element_seq = active.cs_active_element_seq
+		    AND active.cs_reference_seq = caep.cs_course_active_exam_paper_seq
+		    AND active.cs_reference_type_cd = 
+		   CASE WHEN caep.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' 
+		   THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}' 
+		   ELSE '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}' END
+		  WHERE apply.cs_delete_yn = 'N'
+		    AND apply.cs_course_active_seq = caep.cs_course_active_seq
+		) AS "caep.answerCount" ,
+		(SELECT COUNT(*)
+		   FROM cs_course_active_exam_paper_target target
+		  WHERE cs_delete_yn = 'N'
+		    AND target.cs_course_active_exam_paper_seq = caep.cs_course_active_exam_paper_seq 
+		    AND cs_score_yn = 'Y'
+		) AS "caep.scoredCount"
+  FROM cs_course_active_exam_paper caep
+  LEFT OUTER JOIN cs_course_exam_paper cep
+    ON caep.cs_exam_paper_seq = cep.cs_exam_paper_seq
+   AND cep.cs_delete_yn = 'N'
+ INNER JOIN cs_course_active_summary summary
+	ON caep.cs_course_active_seq = summary.cs_course_active_seq
+ INNER JOIN cs_member member
+ 	ON member.cs_member_seq = caep.cs_reg_member_seq
+ INNER JOIN cs_member membersec
+ 	ON membersec.cs_member_seq = caep.cs_upd_member_seq
+ WHERE caep.cs_delete_yn = 'N'
+   AND caep.cs_course_active_seq = #{courseActiveSeq}
+   AND caep.cs_middle_final_type_cd = #{middleFinalTypeCd}
+ ORDER BY caep.cs_basic_supplement_cd ASC ,	caep.cs_reg_dtime DESC
+	</select>
+	
+	<select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO" resultType="int">
+/* UIUnivCourseActiveExamPaper.countList */
+SELECT COUNT(*)
+  FROM cs_course_active_exam_paper caep
+  LEFT OUTER JOIN cs_course_exam_paper cep
+    ON caep.cs_exam_paper_seq = cep.cs_exam_paper_seq
+   AND cep.cs_delete_yn = 'N'
+ INNER JOIN cs_course_active_summary summary
+	ON caep.cs_course_active_seq = summary.cs_course_active_seq
+ INNER JOIN cs_member member
+ 	ON member.cs_member_seq = caep.cs_reg_member_seq
+ INNER JOIN cs_member membersec
+ 	ON membersec.cs_member_seq = caep.cs_upd_member_seq
+ WHERE caep.cs_delete_yn = 'N'
+   AND caep.cs_course_active_seq = #{courseActiveSeq}
+   AND caep.cs_middle_final_type_cd = #{middleFinalTypeCd}	
+	</select>
+	
+    <resultMap id="detailBasicResultMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO">
+        <result column="cs_course_master_seq"           property="courseMasterSeq"           />    
+        <result column="cs_course_active_seq"           property="courseActiveSeq"           />   
+        <result column="cs_exam_paper_seq"              property="examPaperSeq"              />
+        <result column="cs_middle_final_type_cd"        property="middleFinalTypeCd"         />   
+        <result column="cs_basic_supplement_cd"         property="basicSupplementCd"         /> 
+        <result column="cs_onoff_cd"                    property="onOffCd"                   /> 
+        <result column="cs_limit_standard_cd"           property="limitStandardCd"           />   
+        <result column="cs_limit_progress"              property="limitProgress"             />   
+        <result column="cs_retake_score"                property="retakeScore"               />   
+        <result column="cs_retake_count"                property="retakeCount"               />
+        <result column="cs_exam_time"                   property="examTime"                  />   
+        <result column="cs_open_yn"                     property="openYn"                    />   
+        <result column="cs_rate"                        property="rate"                      />   
+        <result column="cs_start_day"                   property="startDay"                  />
+        <result column="cs_end_day"                     property="endDay"                    />
+    </resultMap>
+    <select id="getListCopyBasicExamPaper" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO" resultMap="detailBasicResultMap">
+/* UIUnivCourseActiveExamPaper.getListCopyBasicExamPaper */
+SELECT #{targetCourseActiveSeq} AS cs_course_active_seq,
+       cs_course_master_seq,
+       cs_exam_paper_seq,
+       cs_middle_final_type_cd,
+       cs_basic_supplement_cd,
+       cs_limit_standard_cd,
+       cs_limit_progress,
+       cs_retake_score,
+       cs_retake_count,
+       cs_open_yn,
+       cs_exam_time,
+       cs_onoff_cd,
+       cs_rate,
+       cs_start_day,
+       cs_end_day
+  FROM cs_course_active_exam_paper
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{sourceCourseActiveSeq}
+   AND cs_middle_final_type_cd = #{middleFinalTypeCd}
+	   <choose>
+	   		<when test="basicSupplementCd == null">
+   AND cs_basic_supplement_cd IS NULL
+	   		</when>
+	   		<otherwise>
+   AND cs_basic_supplement_cd = #{basicSupplementCd}
+	   		</otherwise>
+	   </choose>
+    </select>
+    
+    <resultMap id="examPaperByApplyMemberResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperRS">
+    	<result column="paper.courseActiveExamPaperSeq"  property="courseActiveExamPaper.courseActiveExamPaperSeq"  />
+        <result column="paper.courseMasterSeq"           property="courseActiveExamPaper.courseMasterSeq"           />
+        <result column="paper.courseActiveSeq"           property="courseActiveExamPaper.courseActiveSeq"           />
+        <result column="paper.examPaperSeq"              property="courseActiveExamPaper.examPaperSeq"              />
+        <result column="paper.referenceSeq"              property="courseActiveExamPaper.referenceSeq"              />
+        <result column="paper.middleFinalTypeCd"         property="courseActiveExamPaper.middleFinalTypeCd"         />
+        <result column="paper.basicSupplementCd"         property="courseActiveExamPaper.basicSupplementCd"         />
+        <result column="paper.startDtime"                property="courseActiveExamPaper.startDtime"                />
+        <result column="paper.endDtime"                  property="courseActiveExamPaper.endDtime"                  />
+        <result column="paper.openYn"                    property="courseActiveExamPaper.openYn"                    />
+        <result column="paper.examTime"                  property="courseActiveExamPaper.examTime"                  />
+        <result column="paper.onOffCd"                   property="courseActiveExamPaper.onOffCd"                   />
+        <result column="paper.rate"                      property="courseActiveExamPaper.rate"                      />
+        <result column="paper.examPaperTitle"            property="courseActiveExamPaper.examPaperTitle"            />
+        <result column="homework.homeworkSeq"            property="courseHomework.homeworkSeq"                      />
+        <result column="homework.homeworkTitle"          property="courseHomework.homeworkTitle"                    />
+        <result column="homework.profMemberSeq"          property="courseHomework.profMemberSeq"                    />
+        <result column="homework.start2Dtime"            property="courseHomework.start2Dtime"                      />
+        <result column="homework.end2Dtime"              property="courseHomework.end2Dtime"                        />
+        <result column="homework.rate"                   property="courseHomework.rate"                             />
+        <result column="homework.rate2"                  property="courseHomework.rate2"                            />
+        <result column="homework.useYn"                  property="courseHomework.useYn"                            />
+        <result column="homework.referenceType"          property="courseHomework.referenceType"                    />
+        <result column="paper.completeCount"             property="courseActiveExamPaper.completeCount"             />
+        <result column="paper.scoredCount"               property="courseActiveExamPaper.scoredCount"               />
+        <result column="paper.activeElementSeq"          property="courseActiveExamPaper.activeElementSeq"          />
+    </resultMap>
+    
+    <select id="getExamPaperByApplyMember" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO" resultMap="examPaperByApplyMemberResultMap">
+/* UIUnivCourseActiveExamPaper.getExamPaperByApplyMember */
+SELECT paper.cs_course_active_exam_paper_seq	AS "paper.courseActiveExamPaperSeq" , 
+       paper.cs_course_master_seq				AS "paper.courseMasterSeq" , 
+       paper.cs_course_active_seq				AS "paper.courseActiveSeq" , 
+       paper.cs_exam_paper_seq					AS "paper.examPaperSeq" , 
+       paper.cs_reference_seq					AS "paper.referenceSeq" , 
+       paper.cs_middle_final_type_cd			AS "paper.middleFinalTypeCd" , 
+       paper.cs_basic_supplement_cd				AS "paper.basicSupplementCd" , 
+       paper.cs_start_dtime						AS "paper.startDtime" , 
+       paper.cs_end_dtime						AS "paper.endDtime" , 
+       paper.cs_open_yn							AS "paper.openYn" , 
+       paper.cs_exam_time						AS "paper.examTime" , 
+       paper.cs_onoff_cd						AS "paper.onOffCd" , 
+       paper.cs_rate							AS "paper.rate" , 
+       exam.cs_exam_paper_title					AS "paper.examPaperTitle" , 
+       0										AS "homework.homeworkSeq" ,   
+       ''										AS "homework.homeworkTitle" , 
+       0										AS "homework.profMemberSeq" , 
+       ''										AS "homework.start2Dtime" ,   
+       ''										AS "homework.end2Dtime" ,     
+       0										AS "homework.rate" ,          
+       0										AS "homework.rate2" ,         
+       ''										AS "homework.useYn" ,         
+       'EXAM'									AS "homework.referenceType" , 
+       (SELECT COUNT(*) 
+         FROM cs_course_apply_element apply 
+        WHERE active.cs_course_active_seq = apply.cs_course_active_seq 
+              AND apply.cs_active_element_seq = active.cs_active_element_seq 
+              AND apply.cs_course_apply_seq = #{courseApplySeq} 
+              AND apply.cs_complete_yn = 'Y' 
+       ) AS "paper.completeCount" ,  
+       (SELECT COUNT(*) 
+         FROM cs_course_active_exam_paper_target target 
+        WHERE target.cs_delete_yn = 'N' 
+              AND target.cs_course_active_exam_paper_seq = paper.cs_course_active_exam_paper_seq 
+              AND target.cs_course_apply_seq = #{courseApplySeq} 
+              AND target.cs_score_yn = 'Y' 
+       ) AS "paper.scoredCount" ,
+       active.cs_active_element_seq AS "paper.activeElementSeq" 
+  FROM cs_course_active_exam_paper paper 
+   INNER JOIN cs_course_exam_paper exam 
+       ON paper.cs_exam_paper_seq = exam.cs_exam_paper_seq 
+       AND exam.cs_delete_yn = 'N'
+ INNER JOIN cs_course_active_element active 
+       ON active.cs_course_active_seq = paper.cs_course_active_seq 
+       AND active.cs_reference_seq = paper.cs_course_active_exam_paper_seq 
+       AND active.cs_reference_type_cd = 
+       ( 
+           CASE 
+               WHEN paper.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' 
+               THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}' 
+               WHEN paper.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.FINAL}' 
+               THEN '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}' 
+           END 
+       )         
+ WHERE paper.cs_delete_yn = 'N' 
+       AND paper.cs_course_active_seq = #{courseActiveSeq}
+       <choose>
+       	<when test='courseActiveExamPaperSeq != null and !courseActiveExamPaperSeq.equals("")'>
+       AND paper.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+       	</when>
+       	<otherwise>
+    UNION ALL 
+SELECT 0 									AS "paper.courseActiveExamPaperSeq" , 
+       0 									AS "paper.courseMasterSeq" ,          
+       homework.cs_course_active_seq		AS "paper.courseActiveSeq" ,          
+       0 									AS "paper.examPaperSeq" ,             
+       homework.cs_reference_seq			AS "paper.referenceSeq" ,             
+       homework.cs_middle_final_type_cd		AS "paper.middleFinalTypeCd" ,        
+       homework.cs_basic_supplement_cd		AS "paper.basicSupplementCd" ,        
+       homework.cs_start_dtime				AS "paper.startDtime" ,               
+       homework.cs_end_dtime				AS "paper.endDtime" ,                 
+       homework.cs_open_yn					AS "paper.openYn" ,                   
+       0 									AS "paper.examTime" ,                 
+       homework.cs_onoff_cd					AS "paper.onOffCd" ,                  
+       0 									AS "paper.rate" ,                     
+       '' 									AS "paper.examPaperTitle" ,           
+       homework.cs_homework_seq				AS "homework.homeworkSeq" , 
+       homework.cs_homework_title 			AS "homework.homeworkTitle" , 
+       homework.cs_prof_member_seq			AS "homework.profMemberSeq" , 
+       homework.cs_start2_dtime				AS "homework.start2Dtime" , 
+       homework.cs_end2_dtime				AS "homework.end2Dtime" , 
+       homework.cs_rate						AS "homework.rate" , 
+       homework.cs_rate2 					AS "homework.rate2" , 
+       homework.cs_use_yn					AS "homework.useYn" , 
+       homework.cs_reference_type			AS "homework.referenceType" , 
+       0									AS "paper.completeCount" , 
+       0									AS "paper.scoredCount" ,
+       0									AS "paper.activeElementSeq"  
+  FROM cs_course_homework homework 
+ WHERE homework.cs_delete_yn = 'N' 
+       AND homework.cs_replace_yn = 'Y' 
+       AND homework.cs_course_active_seq = #{courseActiveSeq}
+ORDER BY cs_middle_final_type_cd DESC, cs_basic_supplement_cd ASC     
+       	</otherwise>
+       </choose>
+    </select>
+    
+    <resultMap id="quizByApplyMemberResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperRS">
+    	<result column="paper.courseActiveExamPaperSeq"  property="courseActiveExamPaper.courseActiveExamPaperSeq"  />
+        <result column="paper.courseMasterSeq"           property="courseActiveExamPaper.courseMasterSeq"           />
+        <result column="paper.courseActiveSeq"           property="courseActiveExamPaper.courseActiveSeq"           />
+        <result column="paper.examPaperSeq"              property="courseActiveExamPaper.examPaperSeq"              />
+        <result column="paper.referenceSeq"              property="courseActiveExamPaper.referenceSeq"              />
+        <result column="paper.middleFinalTypeCd"         property="courseActiveExamPaper.middleFinalTypeCd"         />
+        <result column="paper.basicSupplementCd"         property="courseActiveExamPaper.basicSupplementCd"         />
+        <result column="paper.startDtime"                property="courseActiveExamPaper.startDtime"                />
+        <result column="paper.endDtime"                  property="courseActiveExamPaper.endDtime"                  />
+        <result column="paper.openYn"                    property="courseActiveExamPaper.openYn"                    />
+        <result column="paper.examTime"                  property="courseActiveExamPaper.examTime"                  />
+        <result column="paper.onOffCd"                   property="courseActiveExamPaper.onOffCd"                   />
+        <result column="paper.rate"                      property="courseActiveExamPaper.rate"                      />
+        <result column="paper.examPaperTitle"            property="courseActiveExamPaper.examPaperTitle"            />
+        <result column="paper.completeCount"             property="courseActiveExamPaper.completeCount"             />
+        <result column="paper.scoredCount"               property="courseActiveExamPaper.scoredCount"               />
+        <result column="paper.activeElementSeq"          property="courseActiveExamPaper.activeElementSeq"          />
+        <result column="paper.dDayCount"          		 property="courseActiveExamPaper.dDayCount"          		/>
+    </resultMap>
+    
+    <select id="getQuizByApplyMember" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO" resultMap="quizByApplyMemberResultMap">
+/* UIUnivCourseActiveExamPaper.getQuizByApplyMember */
+SELECT exam.cs_course_active_exam_paper_seq	AS "paper.courseActiveExamPaperSeq" , 
+       exam.cs_course_master_seq				AS "paper.courseMasterSeq" , 
+       exam.cs_course_active_seq				AS "paper.courseActiveSeq" , 
+       exam.cs_exam_paper_seq					AS "paper.examPaperSeq" , 
+       exam.cs_reference_seq					AS "paper.referenceSeq" , 
+       exam.cs_middle_final_type_cd				AS "paper.middleFinalTypeCd" , 
+       exam.cs_basic_supplement_cd				AS "paper.basicSupplementCd" , 
+       exam.cs_start_dtime						AS "paper.startDtime" , 
+       exam.cs_end_dtime						AS "paper.endDtime" ,
+       DATEDIFF(DAY, GETDATE(), DBO.FN_TO_DATE(exam.cs_end_dtime)) AS "paper.dDayCount" ,
+       exam.cs_open_yn							AS "paper.openYn" , 
+       exam.cs_exam_time						AS "paper.examTime" , 
+       exam.cs_onoff_cd							AS "paper.onOffCd" , 
+       exam.cs_rate								AS "paper.rate" , 
+       exam.cs_exam_paper_title					AS "paper.examPaperTitle" , 
+       (SELECT COUNT(*) 
+         FROM cs_course_apply_element apply 
+        WHERE exam.cs_course_active_seq = apply.cs_course_active_seq 
+              AND apply.cs_active_element_seq = exam.cs_active_element_seq 
+              AND apply.cs_course_apply_seq = #{courseApplySeq} 
+              AND apply.cs_complete_yn = 'Y' 
+       ) AS "paper.completeCount" ,  
+       (SELECT COUNT(*) 
+         FROM cs_course_active_exam_paper_target target 
+        WHERE target.cs_delete_yn = 'N' 
+              AND target.cs_course_active_exam_paper_seq = exam.cs_course_active_exam_paper_seq 
+              AND target.cs_course_apply_seq = #{courseApplySeq} 
+              AND target.cs_score_yn = 'Y' 
+       ) AS "paper.scoredCount" ,
+       exam.cs_active_element_seq AS "paper.activeElementSeq"
+FROM
+(
+SELECT paper.cs_course_active_exam_paper_seq , 
+       paper.cs_course_master_seq , 
+       paper.cs_course_active_seq , 
+       paper.cs_exam_paper_seq , 
+       paper.cs_reference_seq , 
+       paper.cs_middle_final_type_cd , 
+       paper.cs_basic_supplement_cd , 
+       	<choose>
+       		<when test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+       REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, paper.cs_start_day ,dbo.FN_TO_DATE(apply.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS cs_start_dtime ,
+	   REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, paper.cs_end_day ,dbo.FN_TO_DATE(apply.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS cs_end_dtime ,
+       		</when>
+       		<otherwise>
+       paper.cs_start_dtime , 
+       paper.cs_end_dtime , 
+       		</otherwise>
+      	</choose>
+       paper.cs_open_yn , 
+       paper.cs_exam_time , 
+       paper.cs_onoff_cd , 
+       paper.cs_rate , 
+       exam.cs_exam_paper_title , 
+       active.cs_active_element_seq 
+  FROM cs_course_active_exam_paper paper 
+ INNER JOIN cs_course_exam_paper exam 
+       ON paper.cs_exam_paper_seq = exam.cs_exam_paper_seq 
+       AND exam.cs_delete_yn = 'N'
+ INNER JOIN cs_course_apply apply
+    ON apply.cs_course_active_seq = paper.cs_course_active_seq
+   AND apply.cs_course_apply_seq = #{courseApplySeq}
+ INNER JOIN cs_course_active_element active 
+       ON active.cs_course_active_seq = paper.cs_course_active_seq 
+       AND active.cs_reference_seq = paper.cs_course_active_exam_paper_seq 
+       AND active.cs_reference_type_cd = #{referenceTypeCd}
+ WHERE paper.cs_delete_yn = 'N' 
+       AND paper.cs_course_active_seq = #{courseActiveSeq}
+       AND paper.cs_middle_final_type_cd = #{middleFinalTypeCd}
+       <if test='courseActiveExamPaperSeq != null and !courseActiveExamPaperSeq.equals("")'>
+       AND paper.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+       </if>
+)exam           
+    </select>
+    
+    <resultMap id="detailByApplyMemberResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperRS">
+		<result column="caep.courseActiveExamPaperSeq"  property="courseActiveExamPaper.courseActiveExamPaperSeq"  />   
+	    <result column="caep.courseMasterSeq"  		    property="courseActiveExamPaper.courseMasterSeq"  		   />    
+	    <result column="caep.courseActiveSeq"  		    property="courseActiveExamPaper.courseActiveSeq"  		   />   
+	    <result column="caep.examPaperSeq"  		    property="courseActiveExamPaper.examPaperSeq"  		       />
+	    <result column="caep.middleFinalTypeCd"  	    property="courseActiveExamPaper.middleFinalTypeCd"  	   />   
+	    <result column="caep.basicSupplementCd"         property="courseActiveExamPaper.basicSupplementCd"         /> 
+	    <result column="caep.onOffCd"         	        property="courseActiveExamPaper.onOffCd"                   /> 
+	    <result column="caep.startDtime"  			  	property="courseActiveExamPaper.startDtime"  			   />   
+	    <result column="caep.endDtime"  			  	property="courseActiveExamPaper.endDtime"  			       />
+	    <result column="caep.startDay"  			  	property="courseActiveExamPaper.startDay"  			       />
+	    <result column="caep.endDay"  			  		property="courseActiveExamPaper.endDay"  			       />
+	    <result column="caep.referenceSeq"  		  	property="courseActiveExamPaper.referenceSeq"  		       />
+	    <result column="caep.limitStandardCd"  		    property="courseActiveExamPaper.limitStandardCd"  		   />   
+	    <result column="caep.limitProgress"  		  	property="courseActiveExamPaper.limitProgress"  		   />   
+	    <result column="caep.retakeScore"  			    property="courseActiveExamPaper.retakeScore"  			   />   
+	    <result column="caep.retakeCount"  			    property="courseActiveExamPaper.retakeCount"  			   />
+	    <result column="caep.examTime"  			    property="courseActiveExamPaper.examTime"  			   	   />   
+	    <result column="caep.openYn"  			        property="courseActiveExamPaper.openYn"  			   	   />   
+	    <result column="caep.rate"  			        property="courseActiveExamPaper.rate"  			   	   	   />   
+	    <result column="caep.deleteYn"  			    property="courseActiveExamPaper.deleteYn"  			       />   
+	    <result column="caep.regMemberSeq"  		  	property="courseActiveExamPaper.regMemberSeq"  		       />
+	    <result column="caep.regDtime"  			  	property="courseActiveExamPaper.regDtime"  			       />
+	    <result column="caep.regIp"  				  	property="courseActiveExamPaper.regIp"  				   />   
+	    <result column="caep.updMemberSeq"  		  	property="courseActiveExamPaper.updMemberSeq"  		       />
+	    <result column="caep.updDtime"  			  	property="courseActiveExamPaper.updDtime"  			       />
+	    <result column="caep.updIp"  				  	property="courseActiveExamPaper.updIp"  				   />   
+	    <result column="cep.examPaperTitle"  		  	property="courseExamPaper.examPaperTitle"  				   />   
+	    <result column="caep.regMemberName"             property="courseActiveExamPaper.regMemberName"             />  
+	    <result column="caep.updMemberName"             property="courseActiveExamPaper.updMemberName"             />
+	    <result column="summary.memberCount"          	property="courseActiveSummary.memberCount"                 />
+	    <result column="caep.answerCount"          	    property="courseActiveExamPaper.answerCount"               />  
+	    <result column="caep.activeElementSeq"          property="courseActiveExamPaper.activeElementSeq"          />  
+	</resultMap>
+	
+	<select id="getDetailByApplyMember" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO" resultMap="detailByApplyMemberResultMap">
+/* UIUnivCourseActiveExamPaper.getDetailByApplyMember */
+SELECT caep.cs_course_active_exam_paper_seq 		AS "caep.courseActiveExamPaperSeq" , 
+       caep.cs_course_master_seq 					AS "caep.courseMasterSeq" , 			
+       caep.cs_course_active_seq 					AS "caep.courseActiveSeq" , 			
+       caep.cs_exam_paper_seq 						AS "caep.examPaperSeq" , 				
+       caep.cs_middle_final_type_cd 				AS "caep.middleFinalTypeCd" , 		
+       caep.cs_basic_supplement_cd 					AS "caep.basicSupplementCd" , 			
+       caep.cs_onoff_cd 							AS "caep.onOffCd" , 			
+       	<choose>
+       		<when test='courseTypeCd.equals("${CD.COURSE_TYPE.ALWAYS}")'>
+       REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, caep.cs_start_day ,dbo.FN_TO_DATE(apply.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "caep.startDtime" ,
+	   REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, caep.cs_end_day ,dbo.FN_TO_DATE(apply.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "caep.endDtime" ,	
+       		</when>
+       		<otherwise>
+       caep.cs_start_dtime                          AS "caep.startDtime" ,
+       caep.cs_end_dtime                            AS "caep.endDtime" ,        
+       		</otherwise>
+      	 </choose>
+       caep.cs_reference_seq 						AS "caep.referenceSeq" , 				
+       caep.cs_limit_standard_cd 					AS "caep.limitStandardCd" , 			
+       caep.cs_limit_progress 						AS "caep.limitProgress" , 				
+       caep.cs_retake_score 						AS "caep.retakeScore" , 				
+       caep.cs_retake_count 						AS "caep.retakeCount" ,
+       caep.cs_exam_time 							AS "caep.examTime" ,
+       caep.cs_open_yn								AS "caep.openYn" ,
+       caep.cs_rate									AS "caep.rate" ,
+       caep.cs_delete_yn							AS "caep.deleteYn" , 				
+       caep.cs_reg_member_seq 						AS "caep.regMemberSeq" , 				
+       caep.cs_reg_dtime 							AS "caep.regDtime" , 					
+       caep.cs_reg_ip 								AS "caep.regIp" , 						
+       caep.cs_upd_member_seq 						AS "caep.updMemberSeq" , 				
+       caep.cs_upd_dtime 							AS "caep.updDtime" , 					
+       caep.cs_upd_ip 								AS "caep.updIp" ,
+       cep.cs_exam_paper_title 						AS "cep.examPaperTitle" , 						
+		(SELECT COUNT(*)
+		   FROM cs_course_apply_element apply
+		  INNER JOIN cs_course_active_element active
+		     ON apply.cs_active_element_seq = active.cs_active_element_seq
+		    AND active.cs_reference_seq = caep.cs_course_active_exam_paper_seq
+		    AND active.cs_reference_type_cd = 
+		    CASE WHEN caep.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' 
+		    THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}' 
+		    ELSE '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}' END
+		  WHERE apply.cs_delete_yn = 'N'
+		    AND apply.cs_course_active_seq = caep.cs_course_active_seq
+		) AS "caep.answerCount" ,
+		(
+		SELECT active.cs_active_element_seq
+		   FROM cs_course_active_element active
+		 WHERE active.cs_delete_yn = 'N' 
+		      AND active.cs_reference_seq = caep.cs_course_active_exam_paper_seq
+		      AND active.cs_reference_type_cd = CASE WHEN caep.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}' ELSE '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}' END
+			  AND active.cs_course_active_seq = caep.cs_course_active_seq
+		) AS "caep.activeElementSeq"
+  FROM cs_course_active_exam_paper caep
+  INNER JOIN cs_course_apply apply
+    ON apply.cs_course_active_seq = caep.cs_course_active_seq
+   AND apply.cs_course_apply_seq = #{courseApplySeq}
+  LEFT OUTER JOIN cs_course_exam_paper cep
+    ON caep.cs_exam_paper_seq = cep.cs_exam_paper_seq
+   AND cep.cs_delete_yn = 'N'
+ WHERE caep.cs_delete_yn = 'N'
+   AND caep.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}    	 	
+	</select>
+    
+</mapper>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.basePenalty.service.impl.BasePenaltyMapper">
+
+	<!-- pp정보 목록 조회 -->
+	<select id="basePenaltyListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT * FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY AA.UPDATEDATE DESC) AS ROW_NUM, AA.* FROM(
+				SELECT
+					  A.PENALTYSEQ
+					, B.CODENAME AS TYPECODE
+        			, C.CODENAME AS STATUSCODE
+        			, REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+        			, CONCAT(
+							case 
+								when A.PERIODVALUE = 0 then '당월 ' 
+								when A.PERIODVALUE = 1 then '명월 ' 
+								else ''
+        					end
+        					, E.CODENAME, ' '
+        					, A.APPLYTYPEVALUE
+        					, case 
+        						when A.APPLYTYPECODE = 'P01' then '%' 
+        						when A.APPLYTYPECODE = 'P02' then '일'
+        						else '회' 
+        					end
+        					) AS APPLYTYPECODE
+					, ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER
+					, ISNULL(Format(A.UPDATEDATE, N'yyyy-MM-dd HH:mm:ss'), Format(A.INSERTDATE, N'yyyy-MM-dd HH:mm:ss')) AS UPDATEDATE
+				FROM RSVPENALTYSETTING A
+					LEFT OUTER JOIN COMMONCODE B
+						ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+					LEFT OUTER JOIN COMMONCODE C
+						ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+					LEFT OUTER JOIN COMMONCODE D
+						ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+					LEFT OUTER JOIN COMMONCODE E
+						ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+				WHERE 1=1
+					<if test='searchStatusCode != null and !searchStatusCode.equals("")'>
+					  AND A.STATUSCODE = #{searchStatusCode}
+					</if>
+					AND A.TYPECODE != 'P05'
+				) AS AA
+			) AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- pp정보 목록 카운트 -->
+	<select id="basePenaltyListCountAjax" parameterType="reqBox" resultType="int">
+		SELECT count(*) AS TOTAL_CNT FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY AA.UPDATEDATE DESC) AS ROW_NUM, AA.* FROM(
+				SELECT
+					  A.PENALTYSEQ
+					, B.CODENAME AS TYPECODE
+        			, C.CODENAME AS STATUSCODE
+        			, REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+        			, CONCAT(
+							case 
+								when A.PERIODVALUE = 0 then '당월 ' 
+								when A.PERIODVALUE = 1 then '명월 ' 
+								else ''
+        					end
+        					, E.CODENAME, ' '
+        					, A.APPLYTYPEVALUE
+        					, case 
+        						when A.APPLYTYPECODE = 'P01' then '%' 
+        						when A.APPLYTYPECODE = 'P02' then '일'
+        						else '회' 
+        					end
+        					) AS APPLYTYPECODE
+					, ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER
+					, ISNULL(A.UPDATEDATE, A.INSERTDATE) AS UPDATEDATE
+				FROM RSVPENALTYSETTING A
+					LEFT OUTER JOIN COMMONCODE B
+						ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+					LEFT OUTER JOIN COMMONCODE C
+						ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+					LEFT OUTER JOIN COMMONCODE D
+						ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+					LEFT OUTER JOIN COMMONCODE E
+						ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+				WHERE 1=1
+					<if test='searchStatusCode != null and !searchStatusCode.equals("")'>
+					  AND A.STATUSCODE = #{searchStatusCode}
+					</if>
+					AND A.TYPECODE != 'P05'
+				) AS AA
+			) AS BB
+	</select>
+	
+	<!-- 패널티 정책 취소 패널티 등록 -->
+	<insert id="basePenaltyCencelInsertAjax" parameterType="reqBox">
+		INSERT INTO RSVPENALTYSETTING (
+			  PENALTYSEQ
+			, TYPECODE
+			, STATUSCODE
+			, TYPEDETAILCODE
+			, TYPEVALUE
+			, PERIODCODE
+			, PERIODVALUE
+			, APPLYTYPECODE
+			, APPLYTYPEVALUE
+			, INSERTUSER
+			, INSERTDATE
+		) VALUES (
+			  ISNULL((SELECT MAX(PENALTYSEQ) +1 FROM RSVPENALTYSETTING), 1)
+			, #{typeCode}
+			, #{statusCode}
+			, #{typeDetailCode}
+			, #{typeValue}
+			, #{periodCode}
+			, #{periodValue}
+			, #{applyTypeCode}
+			, #{applyTypeValue}
+			, #{sessionAccount}
+			, GETDATE()
+		)
+	</insert>
+	
+	<!-- pp정보 상세 조회 -->
+	<select id="basePenaltyDetailAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			  PENALTYSEQ
+			, TYPECODE
+			, STATUSCODE
+			, TYPEDETAILCODE
+			, TYPEVALUE
+			, PERIODCODE
+			, PERIODVALUE
+			, APPLYTYPECODE
+			, APPLYTYPEVALUE
+		FROM 
+			RSVPENALTYSETTING
+		WHERE
+			PENALTYSEQ = #{penaltySeq}
+	</select>
+	
+	<!-- 패널티 정책 수정 -->
+	<update id="basePenaltyUpdateAjax" parameterType="reqBox">
+		UPDATE RSVPENALTYSETTING SET
+			  TYPECODE = #{typeCode}
+			, TYPEDETAILCODE = #{typeDetailCode}
+			, TYPEVALUE = #{typeValue}
+			, PERIODCODE = #{periodCode}
+			, PERIODVALUE = #{periodValue}
+			, APPLYTYPECODE = #{applyTypeCode}
+			, APPLYTYPEVALUE = #{applyTypeValue}
+			, UPDATEUSER = #{sessionAccount}
+			, UPDATEDATE = GETDATE()
+			, STATUSCODE = #{statusCode}
+		WHERE PENALTYSEQ = #{penaltySeq}
+	</update>
+	
+</mapper>

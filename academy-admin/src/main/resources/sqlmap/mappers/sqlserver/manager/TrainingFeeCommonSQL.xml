@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.trainingFee.trainingFeeCommon.service.impl.TrainingFeeCommonMapper">
+	
+	<select id="selectTargetInfoList" parameterType="reqBox" resultType="dataBox">
+		SELECT   A.GIVEYEAR
+		       , A.GIVEMONTH
+		       , A.ABO_NO
+		       , B.NAME AS ABO_NAME
+		       , A.CODE
+		       , B.HIGHESTACHIEVE <!-- 가장 높은 레벨 -->
+		       , B.GROUPS <!-- 현재 레벨 -->
+		       , ( SELECT   C.TARGETCODENAME  
+		             FROM   dbo.TARGETCODE C
+		            WHERE   C.TARGETMASTERSEQ = 'PINCODE'
+		              AND   C.TARGETCODESEQ   = B.GROUPS ) GROUPSNAME
+		       , B.LOANAMEKOR
+		       , B.QUALIFYDIA <!-- CUPDIA -->
+		       , dbo.F_GETABONAME(B.QUALIFYDIA) AS QUALIFYDIANAME
+		       , A.BR
+		       , A.DEPARTMENT
+		       , A.SALES
+		       , A.TRFEE
+		       , A.GROUPCODE
+		       , A.AUTHGROUP
+		       , A.AUTHPERSON
+		       , A.AUTHMANAGEFLAG
+		       , A.DELEGTYPECODE
+		       , A.DEPABO_NO
+		       , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+		       , A.DEPCODE
+		       , A.REJECTTEXT
+		       , A.SMSTEXT
+		       , A.PROCESSSTATUS
+		       , A.AS400UPLOADFALG
+		       , A.NOTE
+		       , (SELECT REFERENCE
+		            FROM dbo.TRFEETARGETFULL
+		           WHERE ABO_NO = #{abono }) AS REFERENCE
+		       , A.MODIFIER
+		       , A.MODIFYDATE
+		       , A.REGISTRANT
+		       , A.REGISTRANTDATE
+		       , ( SELECT  substring(PHONE_NUMBER, 1, 3) + '-' +
+					       substring(PHONE_NUMBER, 4, 4) + '-' +
+					       substring(PHONE_NUMBER, 8, 4) FROM KRWD174.MAILDB.DBO.MAILLOS WHERE DIST_NO=#{abono } ) AS ABOTEL
+		  FROM   DBO.TRFEETARGETMONTH A
+	 LEFT JOIN   DBO.MEMBER B ON A.ABO_NO = B.UID
+		 WHERE   A.GIVEYEAR  = #{giveyear }
+		   AND   A.GIVEMONTH = #{givemonth }
+	 	   AND   A.ABO_NO    = #{abono }
+	</select>
+	
+	<select id="selectBRList" parameterType="reqBox" resultType="dataBox">
+		SELECT   DISTINCT
+		         BR AS CODE, BR AS NAME
+		  FROM   dbo.TRFEETARGETFULL
+	</select>
+	
+	<select id="selectGrpCdList" parameterType="reqBox" resultType="dataBox">
+		SELECT   DISTINCT
+		         GROUPCODE AS CODE, GROUPNAME AS NAME
+		  FROM   dbo.TRFEEGROUPCODE
+	</select>
+	
+	<select id="selectCodeList" parameterType="reqBox" resultType="dataBox">
+		SELECT   DISTINCT
+		         CODE AS CODE, CODE AS NAME
+		  FROM   dbo.TRFEETARGETFULL
+	</select>
+	
+	<select id="selectLOAList" parameterType="reqBox" resultType="dataBox">
+		SELECT   DISTINCT
+		         LOANAMEKOR AS CODE
+               , LOANAMEKOR AS NAME
+		  FROM   dbo.TRFEETARGETFULL A
+     LEFT JOIN   DBO.MEMBER B ON A.ABO_NO = B.UID
+	</select>
+	
+	<select id="selectDeptList" parameterType="reqBox" resultType="dataBox">
+		SELECT   DISTINCT
+		         DEPARTMENT AS CODE, DEPARTMENT AS NAME
+		  FROM   dbo.TRFEETARGETFULL
+	</select>
+	
+	<select id="selectCPinList" parameterType="reqBox" resultType="dataBox">
+		SELECT   TARGETCODEORDER,
+		         TARGETCODESEQ AS CODE, CASEONE AS NAME
+		  FROM   dbo.TARGETCODE
+		 WHERE   TARGETMASTERSEQ = 'PINCODE'
+		   AND   USEYN = 'Y'
+	  ORDER BY   TARGETCODEORDER ASC
+
+	</select>
+</mapper>

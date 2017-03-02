@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib version="2.0" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd">
+
+    <description>functions library</description>
+    <display-name>functions</display-name>
+    <tlib-version>1.1</tlib-version>
+    <short-name>aoffn</short-name>
+
+    <function>
+        <name>config</name>
+        <description>환경변수</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String config(java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:config('domain.web')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>configVariable</name>
+        <description>환경변수</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String configVariable(java.lang.String, javax.servlet.http.HttpServletRequest)</function-signature>
+        <example>&lt;c:out value="${aoffn:config('domain.web', pageContext.request)}"&gt;</example>
+    </function>
+
+    <function>
+        <name>configList</name>
+        <description>환경변수</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.util.List configList(java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:configList('domain.web')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>code</name>
+        <description>코드값</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String code(java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:code('CD.YESNO.Y')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>toInt</name>
+        <description>toInt</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>int toInt(java.lang.Object)</function-signature>
+        <example>&lt;c:out value="${aoffn:toInt('1')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>toDouble</name>
+        <description>toDouble</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>double toDouble(java.lang.Object)</function-signature>
+        <example>&lt;c:out value="${aoffn:toDouble('1')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>trimDouble</name>
+        <description>trimDouble</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String trimDouble(java.lang.Object)</function-signature>
+        <example>&lt;c:out value="${aoffn:trimDouble('1')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>toMMSS</name>
+        <description>toMMSS</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.util.Map toMMSS(long)</function-signature>
+        <example>&lt;c:out value="${aoffn:toMMSS(2000)}"&gt;</example>
+    </function>
+
+    <function>
+        <name>matchAntPathPattern</name>
+        <description>Ant Path Pattern 검사</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>boolean matchAntPathPattern(java.lang.String, java.lang.String)</function-signature>
+        <example>&lt;c:if test="${aoffn:matchAntPathPattern('/**/*.jsp', 'index.jsp')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>encrypt</name>
+        <description>암호화</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String encrypt(java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:encrypt('string')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>decrypt</name>
+        <description>복호화</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String decrypt(java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:decrypt('string')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>encryptSecure</name>
+        <description>암호화(동적인 암호화키를 이용함)</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String encryptSecure(java.lang.Object, javax.servlet.http.HttpServletRequest)</function-signature>
+        <example>&lt;c:out value="${aoffn:encryptSecure('string', pageContext.request)}"&gt;</example>
+    </function>
+
+    <function>
+        <name>decryptSecure</name>
+        <description>복호화(동적인 암호화키를 이용함)</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String decryptSecure(java.lang.String, javax.servlet.http.HttpServletRequest)</function-signature>
+        <example>&lt;c:out value="${aoffn:decryptSecure('string', pageContext.request)}"&gt;</example>
+    </function>
+
+    <function>
+        <name>accessible</name>
+        <description>접근권한검사</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>boolean accessible(com._4csoft.aof.infra.vo.RolegroupMenuVO, java.lang.String)</function-signature>
+        <example>&lt;c:if test="${aoffn:accessible(appCurrentMenu, 'C')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>substringLastAfter</name>
+        <description>input에서 마지막 str 이후의 문자열을 리턴</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String substringLastAfter(java.lang.String, java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:substringLastAfter('/a/b/c', '/')}"&gt;</example>
+    </function>
+
+    <function>
+        <name>getFilesize</name>
+        <description>파일사이즈</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String getFilesize(long)</function-signature>
+        <example>&lt;c:out value="${aoffn:getFilesize(size)}"&gt;</example>
+    </function>
+
+    <function>
+        <name>crToBr</name>
+        <description>\r\n 을 "&lt;br>로 바꾼다</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String crToBr(java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:crToBr(s)}"&gt;</example>
+    </function>
+
+    <function>
+        <name>toList</name>
+        <description>주어진 스트링(구분자로 연결된 스트링)을 List로 리턴</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.util.List toList(java.lang.String, java.lang.String)</function-signature>
+        <example>&lt;c:set var="list" value="${aoffn:toList(stringlist, delimiter)}"></example>
+    </function>
+
+    <function>
+        <name>removeList</name>
+        <description>주어진 스트링(구분자로 연결된 스트링)에 해당 스트링이 존재하면 제거한다</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String removeList(java.lang.String, java.lang.String, java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:removelist(stringlist, removelist, delimiter)}"></example>
+    </function>
+
+    <function>
+        <name>reverseList</name>
+        <description>리스트 객체의 순서를 역순으로 만든다</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.util.List reverseList(java.util.List)</function-signature>
+        <example>&lt;c:set var="list" value="${aoffn:reverseList(list)}"></example>
+    </function>
+
+    <function>
+        <name>contains</name>
+        <description>주어진 스트링(구분자로 연결된 스트링)에 해당 스트링이 존재하는지 검사</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>boolean contains(java.lang.String, java.lang.String, java.lang.String)</function-signature>
+        <example>&lt;c:if test="${aoffn:contains(stringlist, value, delimiter)}"></example>
+    </function>
+
+    <function>
+        <name>containsCollection</name>
+        <description>주어진 collection 내에 object가 존재하는지 검사</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>boolean containsCollection(java.util.Collection, java.lang.Object)</function-signature>
+        <example>&lt;c:if test="${aoffn:containsCollection(collection, value)}"></example>
+    </function>
+
+    <function>
+        <name>size</name>
+        <description>리스트의 크기</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>int size(java.util.List)</function-signature>
+        <example>&lt;c:out value="${aoffn:size(list)}"></example>
+    </function>
+
+    <function>
+        <name>isInTerm</name>
+        <description>스트링날짜의 기간내 여부를 검사</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>boolean isInTerm(java.lang.String, java.lang.String, java.lang.String, java.lang.String)</function-signature>
+        <example>&lt;c:if test="${aoffn:isInTerm(today, fromDate, toDate, 'yyyyMMdd')}"></example>
+    </function>
+
+    <function>
+        <name>diffDate</name>
+        <description>두 날짜 차이 일 수</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>long diffDate(java.lang.String, java.lang.String, java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:diffDate(date1, date2, 'yyyyMMdd')}"></example>
+    </function>
+
+    <function>
+        <name>random</name>
+        <description>범위내의 정수 중에서 random 값을 리턴</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>int random(int, int)</function-signature>
+        <example>&lt;c:out value="${aoffn:random(0, 10)}"></example>
+    </function>
+
+    <function>
+        <name>today</name>
+        <description>오늘</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.util.Date today()</function-signature>
+        <example>&lt;c:out value="${aoffn:today()}"></example>
+    </function>
+
+    <function>
+        <name>leftPad</name>
+        <description>주어진 문자열의 왼쪽에 크기만큼 문자열을 채운다.</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String leftPad(java.lang.String, int, java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:leftPad('1', 5, '0')}"></example>
+    </function>
+
+    <function>
+        <name>rightPad</name>
+        <description>주어진 문자열의 오른쪽에 크기만큼 문자열을 채운다.</description>
+        <function-class>com._4csoft.aof.infra.support.taglib.Functions</function-class>
+        <function-signature>java.lang.String rightPad(java.lang.String, int, java.lang.String)</function-signature>
+        <example>&lt;c:out value="${aoffn:rightPad('1', 5, '0')}"></example>
+    </function>
+
+</taglib>

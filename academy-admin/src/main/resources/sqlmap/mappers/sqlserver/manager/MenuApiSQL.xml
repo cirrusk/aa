@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.menuApi.service.impl.MenuApiMapper">
+
+	<insert id="navigationInsert" parameterType="java.util.Map">
+		IF (NOT EXISTS(SELECT *
+					     FROM HYBRISMENU
+						WHERE NAVIGATIONCODE = #{code}
+					   )
+			)
+		BEGIN
+			INSERT INTO HYBRISMENU(
+				  NAVIGATIONCODE
+				, NAVIGATIONNAME
+				, PARENTCODE
+				, URL
+				, ACTIVE
+				, CREATIONTIME
+				, MODIFIEDTIME
+            ) VALUES (
+				  #{code}
+			   	, #{name}
+			   	, #{parentCode}
+			   	, #{url}
+			   	, #{visible}
+			   	, #{creationtime}
+			   	, #{modifiedtime}
+            )
+		END
+		ELSE IF (NOT EXISTS(SELECT *
+					          FROM HYBRISMENU
+							 WHERE NAVIGATIONCODE = #{code}
+							   AND NAVIGATIONNAME = #{name}
+							   AND PARENTCODE = #{parentCode}
+							   AND URL = #{url}
+							   AND ACTIVE = #{visible}
+							   AND CREATIONTIME = #{creationtime}
+							   AND MODIFIEDTIME = #{modifiedtime}
+							)
+				)
+		BEGIN
+			 UPDATE HYBRISMENU SET
+				    NAVIGATIONNAME = #{name}
+			      , PARENTCODE = #{parentCode}
+			      , URL = #{url}
+			      , ACTIVE = #{visible}
+			      , CREATIONTIME = #{creationtime}
+			      , MODIFIEDTIME = #{modifiedtime}
+			  WHERE NAVIGATIONCODE = #{code}
+		END
+	</insert>
+
+</mapper>

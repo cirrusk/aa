@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd			
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+    <bean id="egov.propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:/egovframework/egovProps/globals.properties</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- 실행환경에서 빈이름 참조(EgovAbstractDAO) -->
+    <bean id="egov.lobHandler" class="org.springframework.jdbc.support.lob.DefaultLobHandler" lazy-init="true" />
+
+    <!-- SqlMap setup for iBATIS Database Layer -->
+    <bean id="egov.sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocations">
+            <list>
+                <value>classpath:/egovframework/sqlmap/config/${Globals.DbType}/*.xml</value>
+            </list>
+        </property>
+        <property name="dataSource" ref="egov.dataSource"/>
+        <property name="lobHandler" ref="egov.lobHandler"/>
+    </bean>
+
+    <!-- myBatis 설정 -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="egov.dataSource"/>
+        <property name="configLocation"  value="/WEB-INF/config/aof/mybatis.xml" />
+        <property name="mapperLocations" value="${aof5.mapper.location}:com/_4csoft/aof/ui/**/sqlmap/${Globals.DbType}/*.sql.${Globals.DbType}.xml"/>
+        <!-- 
+             JVM arguments 에 -Daof5.mapper.location="classpath" 추가
+             이클립스에서 개발시(core를 Link Source 설정하여 사용하는 경우)에는 classpath 로 설정하여 WEB-INF/classes 파일을 읽게한다. 
+             실서버 상에서는 이클립스를 이용하지 않으므로 classpath* 로 설정. core 의 jar를 읽게한다.       
+         -->
+    </bean>
+
+    <bean class="egovframework.rte.psl.dataaccess.mapper.MapperConfigurer">
+        <property name="basePackage" value="com._4csoft.aof.**.mapper" />
+    </bean>
+
+</beans>	

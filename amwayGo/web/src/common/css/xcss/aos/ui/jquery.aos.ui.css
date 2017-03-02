@@ -1,0 +1,16 @@
+@charset "utf-8";
+
+.aos-auto-combo {border:solid 1px #cdcdcd; z-index:100; padding:2px; background-color:#ffffff;}
+.aos-auto-combo .item a {width:100%; display:inline-block; }
+.aos-auto-combo .item a:hover {background-color:#cdcdcd; }
+
+.aos-scroller                   {}
+.aos-scroller .scrollbar        {background-color:#cdcdcd; opacity:0.70; border-radius:5px; -moz-border-radius:5px; -webkit-border-radius:5px; visibility:hidden; }
+.aos-scroller .scrollbar .thumb {background-color:#000000; border-radius:5px; -moz-border-radius:5px; -webkit-border-radius:5px; }
+.aos-scroller .vscroll          {width:10px; height:100%; }
+.aos-scroller .vscroll .thumb   {width:8px; height:20px; margin-left:1px;}
+.aos-scroller .hscroll          {width:100%; height:10px; }
+.aos-scroller .hscroll .thumb   {width:20px; height:8px; margin-top:1px;}
+.aos-scroller:hover .scrollbar  {visibility:visible;}
+.aos-scroller .active           {visibility:visible;}
+

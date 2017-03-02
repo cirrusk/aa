@@ -1,0 +1,1299 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.MemberMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+        <selectKey resultType="Long" keyProperty="memberSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIMember.insert */
+INSERT INTO cs_member 
+       ( 
+           cs_member_id ,
+           cs_member_name ,
+           cs_member_name_eng ,
+           cs_member_name_chi ,
+           cs_password ,
+           cs_nickname ,
+           cs_photo ,
+           cs_email ,
+           <if test='emailYn != null and !emailYn.equals("")'>
+           cs_email_yn ,
+           </if>
+           cs_phone_mobile ,
+           <if test='smsYn != null and !smsYn.equals("")'>
+           cs_sms_yn ,
+           </if>
+           cs_phone_home ,
+           cs_zipcode ,
+           cs_address ,
+           cs_address_detail ,
+           cs_leave_dtime ,
+           cs_mig_member_id ,
+           cs_mig_lasttime ,
+           cs_country_cd ,
+           cs_military_type_cd ,
+           cs_country_residence_cd ,
+           cs_category_organization_seq ,
+           cs_member_status_cd ,
+           cs_member_ems_type_cd ,
+           cs_sex_cd ,
+           cs_student_status_cd ,
+           cs_organization_string ,
+			<if test='studentYear != null and !studentYear.equals("")'>
+           cs_student_year ,
+       	 	</if>
+           cs_birthday ,
+           cs_password_upd_dtime ,
+		   cs_plan_password_upd_dtime ,
+		   cx_position,
+		   cx_motto,
+		   cx_company_name,
+           <if test='pincode != null and !pincode.equals("")'>
+           pincode,
+           </if>
+            <if test='pinName != null and !pinName.equals("")'>
+           pinName,
+           </if>		   
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+       VALUES 
+       ( 
+           #{memberId, jdbcType=VARCHAR} ,
+           #{memberName, jdbcType=VARCHAR} ,
+           #{memberNameEng, jdbcType=VARCHAR} ,
+           #{memberNameChi, jdbcType=VARCHAR} ,
+           #{password, jdbcType=VARCHAR} ,
+           #{nickname, jdbcType=VARCHAR} ,
+           #{photo, jdbcType=VARCHAR} ,
+           #{email, jdbcType=VARCHAR} ,
+           <if test='emailYn != null and !emailYn.equals("")'>
+           #{emailYn, jdbcType=VARCHAR} ,
+           </if>
+           #{phoneMobile, jdbcType=VARCHAR} ,
+           <if test='smsYn != null and !smsYn.equals("")'>
+           #{smsYn, jdbcType=VARCHAR} ,
+           </if>
+           #{phoneHome, jdbcType=VARCHAR} ,
+           #{zipcode, jdbcType=VARCHAR} ,
+           #{address, jdbcType=VARCHAR} ,
+           #{addressDetail, jdbcType=VARCHAR} ,
+           #{leaveDtime, jdbcType=VARCHAR} ,
+           #{migMemberId, jdbcType=VARCHAR} ,
+           #{migLastTime, jdbcType=VARCHAR} ,
+           #{countryCd, jdbcType=VARCHAR} ,
+           #{militaryTypeCd, jdbcType=VARCHAR} ,
+           #{countryResidenceCd, jdbcType=VARCHAR} ,
+           #{categoryOrganizationSeq, jdbcType=NUMERIC} ,
+           #{memberStatusCd, jdbcType=VARCHAR} ,
+           #{memberEmsTypeCd, jdbcType=VARCHAR} ,
+           #{sexCd, jdbcType=VARCHAR} ,
+           #{studentStatusCd, jdbcType=VARCHAR} ,
+           #{organizationString, jdbcType=VARCHAR} ,
+		<if test='studentYear != null and !studentYear.equals("")'>
+           #{studentYear, jdbcType=NUMERIC} ,
+        </if>
+           #{birthday, jdbcType=VARCHAR} ,
+           dbo.FN_NOW_TO_CHAR() ,
+		   #{planPasswordUpdDtime, jdbcType=VARCHAR} ,
+		   #{position, jdbcType=VARCHAR} ,
+           #{motto, jdbcType=VARCHAR} ,
+		   #{companyName, jdbcType=VARCHAR} ,
+           <if test='pincode != null and !pincode.equals("")'>
+           #{pincode, jdbcType=VARCHAR},
+           </if>
+            <if test='pinName != null and !pinName.equals("")'>
+           #{pinName, jdbcType=VARCHAR},
+           </if>			   
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+/* UIMember.update */
+UPDATE cs_member
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+        <if test='memberName != null'>
+       ,cs_member_name = #{memberName, jdbcType=VARCHAR}
+        </if>
+        <if test='memberNameEng != null'>
+       ,cs_member_name_eng = #{memberNameEng, jdbcType=VARCHAR}
+        </if>
+        <if test='memberNameChi != null'>
+       ,cs_member_name_chi = #{memberNameChi, jdbcType=VARCHAR}
+        </if>
+        <if test='nickname != null'>
+       ,cs_nickname = #{nickname, jdbcType=VARCHAR}
+        </if>
+        <if test='photo != null'>
+       ,cs_photo = #{photo, jdbcType=VARCHAR}
+        </if>
+        <if test='email != null'>
+       ,cs_email = #{email, jdbcType=VARCHAR}
+        </if>
+        <if test='emailYn != null'>
+       ,cs_email_yn = #{emailYn, jdbcType=VARCHAR}
+        </if>
+        <if test='phoneMobile != null'>
+       ,cs_phone_mobile = #{phoneMobile, jdbcType=VARCHAR}
+        </if>
+        <if test='smsYn != null'>
+       ,cs_sms_yn = #{smsYn, jdbcType=VARCHAR}
+        </if>
+        <if test='phoneHome != null'>
+       ,cs_phone_home = #{phoneHome, jdbcType=VARCHAR}
+        </if>
+        <if test='zipcode != null'>
+       ,cs_zipcode = #{zipcode, jdbcType=VARCHAR}
+        </if>
+        <if test='address != null'>
+       ,cs_address = #{address, jdbcType=VARCHAR}
+        </if>
+        <if test='addressDetail != null'>
+       ,cs_address_detail = #{addressDetail, jdbcType=VARCHAR}
+        </if>
+        <if test='migMemberId != null'>
+       ,cs_mig_member_id = #{migMemberId, jdbcType=VARCHAR}
+        </if>
+        <if test='migLastTime != null'>
+       ,cs_mig_lasttime = #{migLastTime, jdbcType=VARCHAR}
+        </if>
+        <if test='countryCd != null'>
+       ,cs_country_cd = #{countryCd, jdbcType=VARCHAR}
+        </if>
+        <if test='militaryTypeCd != null'>
+       ,cs_military_type_cd = #{militaryTypeCd, jdbcType=VARCHAR}
+        </if>
+        <if test='countryResidenceCd != null'>
+       ,cs_country_residence_cd = #{countryResidenceCd, jdbcType=VARCHAR}
+        </if>
+        <if test='categoryOrganizationSeq != null'>
+       ,cs_category_organization_seq = #{categoryOrganizationSeq, jdbcType=NUMERIC}
+        </if>
+        <if test='memberStatusCd != null'>
+       ,cs_member_status_cd = #{memberStatusCd, jdbcType=VARCHAR}
+            <choose>
+                <when test='memberStatusCd.equals("leave")'>
+       ,cs_leave_dtime = dbo.FN_NOW_TO_CHAR()
+                </when>
+                <otherwise>
+       ,cs_leave_dtime = ''
+                </otherwise>
+            </choose>
+        </if>
+        <if test='memberEmsTypeCd != null'>
+       ,cs_member_ems_type_cd = #{memberEmsTypeCd, jdbcType=VARCHAR}
+        </if>
+        <if test='sexCd != null'>
+       ,cs_sex_cd = #{sexCd, jdbcType=VARCHAR}
+        </if>
+        <if test='studentStatusCd != null'>
+       ,cs_student_status_cd = #{studentStatusCd, jdbcType=VARCHAR}
+        </if>
+        <if test='organizationString != null'>
+       ,cs_organization_string = #{organizationString, jdbcType=VARCHAR}
+       	</if>
+        <if test='studentYear != null'>
+       ,cs_student_year = #{studentYear, jdbcType=NUMERIC}
+        </if>
+        <if test='birthday != null'>
+       ,cs_birthday = #{birthday, jdbcType=VARCHAR}
+        </if>
+        <if test='planPasswordUpdDtime != null'>
+	   ,cs_plan_password_upd_dtime = #{planPasswordUpdDtime, jdbcType=VARCHAR}
+		</if>
+		<if test='position != null'>
+	   ,cx_position = #{position, jdbcType=VARCHAR}
+		</if>
+		<if test='motto != null'>
+	   ,cx_motto = #{motto, jdbcType=VARCHAR}
+		</if>
+		<if test='companyName != null'>
+	   ,cx_company_name = #{companyName, jdbcType=VARCHAR}
+		</if>
+		<if test='agreementYn != null'>
+	   ,cx_agreement_yn = #{agreementYn, jdbcType=VARCHAR}
+	   ,cx_agreement_dtime = dbo.FN_NOW_TO_CHAR()
+		</if>
+ WHERE cs_member_seq = #{memberSeq}
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updatePassword" parameterType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+/* UIMember.updatePassword */
+UPDATE cs_member 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_password = #{password, jdbcType=VARCHAR} ,
+	   cs_password_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	   cs_plan_password_upd_dtime = #{planPasswordUpdDtime, jdbcType=VARCHAR}
+ WHERE cs_member_seq = #{memberSeq} 
+       AND cs_delete_yn = 'N'  
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+/* UIMember.delete */
+UPDATE cs_member 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_member_seq = #{memberSeq} 
+       AND cs_delete_yn = 'N'  
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMemberRS">
+        <result column="memb.memberSeq"                  property="member.memberSeq"                  />
+        <result column="memb.memberId"                   property="member.memberId"                   />
+        <result column="memb.memberName"                 property="member.memberName"                 />
+        <result column="memb.memberNameEng"              property="member.memberNameEng"              />
+        <result column="memb.memberNameChi"              property="member.memberNameChi"              />
+        <result column="memb.password"              	 property="member.password"		              />
+        <result column="memb.nickname"                   property="member.nickname"                   />
+		<result column="memb.photo"                      property="member.photo"                      />        
+        <result column="memb.email"                      property="member.email"                      />
+        <result column="memb.emailYn"                    property="member.emailYn"                    />        
+        <result column="memb.phoneMobile"                property="member.phoneMobile"                />
+        <result column="memb.smsYn"                      property="member.smsYn"                      />
+        <result column="memb.phoneHome"                  property="member.phoneHome"                  />
+        <result column="memb.zipcode"                    property="member.zipcode"                    />
+        <result column="memb.address"                    property="member.address"                    />
+        <result column="memb.addressDetail"              property="member.addressDetail"              />
+        <result column="memb.leaveDtime"                 property="member.leaveDtime"                 />
+        <result column="memb.migMemberId"                property="member.migMemberId"                />
+        <result column="memb.migLastTime"                property="member.migLastTime"                />
+        <result column="memb.countryCd"                  property="member.countryCd"                  />
+        <result column="memb.militaryTypeCd"             property="member.militaryTypeCd"             />
+        <result column="memb.countryResidenceCd"         property="member.countryResidenceCd"         />
+        <result column="memb.categoryOrganizationSeq"    property="member.categoryOrganizationSeq"    />
+        <result column="memb.memberStatusCd"             property="member.memberStatusCd"             />
+        <result column="memb.memberEmsTypeCd"            property="member.memberEmsTypeCd"            />
+        <result column="memb.sexCd"                      property="member.sexCd"                      />
+        <result column="memb.studentStatusCd"            property="member.studentStatusCd"            />
+        <result column="memb.organizationString"         property="member.organizationString"         />
+        <result column="memb.studentYear"                property="member.studentYear"                />
+        <result column="memb.birthday"                	 property="member.birthday"                	  />
+        <result column="memb.passwordUpdDtime"           property="member.passwordUpdDtime"           />
+        <result column="memb.planPasswordUpdDtime"       property="member.planPasswordUpdDtime"       />
+        <result column="memb.position"       			 property="member.position"       			  />
+        <result column="memb.deleteYn"                   property="member.deleteYn"                   />
+        <result column="memb.regMemberSeq"               property="member.regMemberSeq"               />
+        <result column="memb.regDtime"                   property="member.regDtime"                   />
+        <result column="memb.regIp"                      property="member.regIp"                      />
+        <result column="memb.updMemberSeq"               property="member.updMemberSeq"               />
+        <result column="memb.updDtime"                   property="member.updDtime"                   />
+        <result column="memb.updIp"                      property="member.updIp"                      />
+        <result column="memb.updMemberName"              property="member.updMemberName"              />
+        <result column="memb.motto"     		         property="member.motto"            		  />
+        <result column="memb.companyName"         	     property="member.companyName"                />
+        <result column="memb.agreementYn"				 property="member.agreementYn"                />
+        <result column="memb.agreementDtime"			 property="member.agreementDtime"             />
+        <result column="adm.memberSeq"                   property="admin.memberSeq"                   />
+        <result column="adm.jobTypeCd"                   property="admin.jobTypeCd"                   />
+        <result column="adm.profTypeCd"                  property="admin.profTypeCd"                  />
+        <result column="adm.cdmsTaskTypeCd"              property="admin.cdmsTaskTypeCd"              />
+        <result column="adm.deleteYn"                    property="admin.deleteYn"                    />
+        <result column="adm.regMemberSeq"                property="admin.regMemberSeq"                />
+        <result column="adm.regDtime"                    property="admin.regDtime"                    />
+        <result column="adm.regIp"                       property="admin.regIp"                       />
+        <result column="adm.updMemberSeq"                property="admin.updMemberSeq"                />
+        <result column="adm.updDtime"                    property="admin.updDtime"                    />
+        <result column="adm.updIp"                       property="admin.updIp"                       />
+        <result column="company.companySeq"				 property="company.companySeq"                />
+        <result column="cate.categoryString"             property="category.categoryString"           />
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIMember.getDetail */
+SELECT memb.cs_member_seq                   AS "memb.memberSeq" ,
+       memb.cs_member_id                    AS "memb.memberId" ,
+       memb.cs_member_name                  AS "memb.memberName" ,
+       memb.cs_member_name_eng              AS "memb.memberNameEng" ,
+       memb.cs_member_name_chi              AS "memb.memberNameChi" ,
+       memb.cs_password						AS "memb.password" ,
+       memb.cs_nickname                     AS "memb.nickname" ,
+       memb.cs_photo                        AS "memb.photo" ,
+       memb.cs_email                        AS "memb.email" ,
+       memb.cs_email_yn                     AS "memb.emailYn" ,
+       memb.cs_phone_mobile                 AS "memb.phoneMobile" ,
+       memb.cs_sms_yn                       AS "memb.smsYn" ,
+       memb.cs_phone_home                   AS "memb.phoneHome" ,
+       memb.cs_zipcode                      AS "memb.zipcode" ,
+       memb.cs_address                      AS "memb.address" ,
+       memb.cs_address_detail               AS "memb.addressDetail" ,
+       memb.cs_leave_dtime                  AS "memb.leaveDtime" ,
+       memb.cs_mig_member_id                AS "memb.migMemberId" ,
+       memb.cs_mig_lasttime                 AS "memb.migLastTime" ,
+       memb.cs_country_cd                   AS "memb.countryCd" ,
+       memb.cs_military_type_cd             AS "memb.militaryTypeCd" ,
+       memb.cs_country_residence_cd         AS "memb.countryResidenceCd" ,
+       memb.cs_category_organization_seq    AS "memb.categoryOrganizationSeq" ,
+       memb.cs_member_status_cd             AS "memb.memberStatusCd" ,
+       memb.cs_member_ems_type_cd           AS "memb.memberEmsTypeCd" ,
+       memb.cs_sex_cd                       AS "memb.sexCd" ,
+       memb.cs_student_status_cd            AS "memb.studentStatusCd" ,
+       memb.cs_organization_string			AS "memb.organizationString" ,
+       memb.cs_student_year                 AS "memb.studentYear" ,
+       memb.cs_birthday						AS "memb.birthday" ,
+       memb.cs_password_upd_dtime			AS "memb.passwordUpdDtime" ,
+	   memb.cs_plan_password_upd_dtime		AS "memb.planPasswordUpdDtime" ,
+	   memb.cx_position						AS "memb.position",
+	   memb.cx_motto						AS "memb.motto",
+	   memb.cx_company_name					AS "memb.companyName",
+	   memb.cx_agreement_dtime				AS "memb.agreementDtime",
+	   memb.cx_agreement_yn					AS "memb.agreementYn",
+       memb.cs_delete_yn                    AS "memb.deleteYn" ,
+       memb.cs_reg_member_seq               AS "memb.regMemberSeq" ,
+       memb.cs_reg_dtime                    AS "memb.regDtime" ,
+       memb.cs_reg_ip                       AS "memb.regIp" ,
+       memb.cs_upd_member_seq               AS "memb.updMemberSeq" ,
+       memb.cs_upd_dtime                    AS "memb.updDtime" ,
+       memb.cs_upd_ip                       AS "memb.updIp" ,
+       (SELECT umem.cs_member_name FROM cs_member umem WHERE umem.cs_member_seq = memb.cs_upd_member_seq) AS "memb.updMemberName" ,
+       adm.cs_member_seq					AS "adm.memberSeq",
+       adm.cs_job_type_cd                   AS "adm.jobTypeCd" ,
+       adm.cs_prof_type_cd                  AS "adm.profTypeCd" ,
+       adm.cs_cdms_task_type_cd				AS "adm.cdmsTaskTypeCd" ,
+       adm.cs_delete_yn                     AS "adm.deleteYn" ,
+       adm.cs_reg_member_seq                AS "adm.regMemberSeq" ,
+       adm.cs_reg_dtime                     AS "adm.regDtime" ,
+       adm.cs_reg_ip                        AS "adm.regIp" ,
+       adm.cs_upd_member_seq                AS "adm.updMemberSeq" ,
+       adm.cs_upd_dtime                     AS "adm.updDtime" ,
+       adm.cs_upd_ip                        AS "adm.updIp" ,
+       company.cs_company_seq				AS "company.companySeq" , 
+       company.cs_company_name				AS "company.companyName" ,
+       cate.cs_category_string				AS "cate.categoryString"
+  FROM cs_member memb
+  LEFT OUTER JOIN cs_member_admin adm
+  	ON memb.cs_member_seq = adm.cs_member_seq
+  	AND adm.cs_delete_yn = 'N'
+  LEFT OUTER JOIN cs_company_member cmemb
+     ON cmemb.cs_member_seq = memb.cs_member_seq
+	 AND cmemb.cs_delete_yn = 'N'
+  LEFT OUTER JOIN cs_company company
+	 ON company.cs_company_seq = cmemb.cs_company_seq
+	 AND company.cs_delete_yn = 'N'
+  LEFT OUTER JOIN cs_category cate
+  	ON cate.cs_category_seq = memb.cs_category_organization_seq
+  	AND cate.cs_delete_yn = 'N'
+ WHERE memb.cs_member_seq = #{memberSeq}
+       AND memb.cs_delete_yn = 'N'  
+    </select>
+
+    <select id="getDetailByMemberId" parameterType="String" resultType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+/* UIMember.getDetailByMemberId */
+SELECT memb.cs_member_seq                AS "memberSeq" ,
+       memb.cs_member_id                 AS "memberId" ,
+       memb.cs_member_name               AS "memberName" ,
+       memb.cs_member_name_eng           AS "memberNameEng" , 
+       memb.cs_member_name_chi           AS "memberNameChi" , 
+       memb.cs_password                  AS "password" ,
+       memb.cs_nickname                  AS "nickname" ,
+       memb.cs_photo                     AS "photo" ,
+       memb.cs_email                     AS "email" ,
+       memb.cs_email_yn                  AS "emailYn" , 
+       memb.cs_phone_mobile              AS "phoneMobile" ,
+       memb.cs_sms_yn                    AS "smsYn" , 
+       memb.cs_phone_home                AS "phoneHome" ,
+       memb.cs_zipcode                   AS "zipcode" ,
+       memb.cs_address                   AS "address" ,
+       memb.cs_address_detail            AS "addressDetail" ,
+       memb.cs_leave_dtime               AS "leaveDtime" ,
+       memb.cs_mig_member_id             AS "migMemberId" , 
+       memb.cs_mig_lasttime              AS "migLastTime" , 
+       memb.cs_country_cd                AS "countryCd" , 
+       memb.cs_military_type_cd          AS "militaryTypeCd" , 
+       memb.cs_country_residence_cd      AS "countryResidenceCd" , 
+       memb.cs_category_organization_seq AS "categoryOrganizationSeq" ,
+       memb.cs_member_status_cd          AS "memberStatusCd" , 
+       memb.cs_member_ems_type_cd        AS "memberEmsTypeCd" , 
+       memb.cs_sex_cd                    AS "sexCd" , 
+       memb.cs_student_status_cd         AS "studentStatusCd" , 
+       memb.cs_organization_string		 AS "organizationString" ,
+       memb.cs_student_year              AS "studentYear" , 
+       memb.cs_birthday					 AS "birthday" ,
+       memb.cx_position					 AS "position",
+	   memb.cx_motto					 AS "motto",
+	   memb.cx_company_name				 AS "companyName",
+	   memb.cx_agreement_dtime			 AS "agreementDtime",
+	   memb.cx_agreement_yn				 AS "agreementYn",
+       memb.cs_delete_yn                 AS "deleteYn" , 
+       memb.cs_reg_member_seq            AS "regMemberSeq" , 
+       memb.cs_reg_dtime                 AS "regDtime" , 
+       memb.cs_reg_ip                    AS "regIp" , 
+       memb.cs_upd_member_seq            AS "updMemberSeq" , 
+       memb.cs_upd_dtime                 AS "updDtime" , 
+       memb.cs_upd_ip                    AS "updIp",
+       (SELECT COUNT(*) 
+         FROM cs_message_send ms 
+   INNER JOIN cs_message_receive mr
+           ON ms.cs_message_send_seq = mr.cs_message_send_seq
+          AND mr.cs_receive_type_cd = '${CD.MESSAGE_RECEIVE_TYPE.002}'
+          AND mr.cs_delete_yn = 'N'
+        WHERE ms.cs_message_type_cd = '${CD.MESSAGE_TYPE.MEMO}'
+          AND memb.cs_member_seq = mr.cs_receive_member_seq
+          AND ms.cs_delete_yn = 'N')         AS "memoCount"
+  FROM cs_member memb 
+ WHERE memb.cs_member_id = #{memberId} 
+       AND memb.cs_member_status_cd = '${CD.MEMBER_STATUS.APPROVAL}' 
+       AND memb.cs_delete_yn = 'N'  
+    </select>
+    
+    <select id="getDetailByEmail" parameterType="String" resultType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+/* UIMember.getDetailByEmail */
+SELECT memb.cs_member_seq                AS "memberSeq" ,
+       memb.cs_member_id                 AS "memberId" ,
+       memb.cs_member_name               AS "memberName" ,
+       memb.cs_member_name_eng           AS "memberNameEng" , 
+       memb.cs_member_name_chi           AS "memberNameChi" , 
+       memb.cs_password                  AS "password" ,
+       memb.cs_nickname                  AS "nickname" ,
+       memb.cs_photo                     AS "photo" ,
+       memb.cs_email                     AS "email" ,
+       memb.cs_email_yn                  AS "emailYn" , 
+       memb.cs_phone_mobile              AS "phoneMobile" ,
+       memb.cs_sms_yn                    AS "smsYn" , 
+       memb.cs_phone_home                AS "phoneHome" ,
+       memb.cs_zipcode                   AS "zipcode" ,
+       memb.cs_address                   AS "address" ,
+       memb.cs_address_detail            AS "addressDetail" ,
+       memb.cs_leave_dtime               AS "leaveDtime" ,
+       memb.cs_mig_member_id             AS "migMemberId" , 
+       memb.cs_mig_lasttime              AS "migLastTime" , 
+       memb.cs_country_cd                AS "countryCd" , 
+       memb.cs_military_type_cd          AS "militaryTypeCd" , 
+       memb.cs_country_residence_cd      AS "countryResidenceCd" , 
+       memb.cs_category_organization_seq AS "categoryOrganizationSeq" ,
+       memb.cs_member_status_cd          AS "memberStatusCd" , 
+       memb.cs_member_ems_type_cd        AS "memberEmsTypeCd" , 
+       memb.cs_sex_cd                    AS "sexCd" , 
+       memb.cs_student_status_cd         AS "studentStatusCd" , 
+       memb.cs_organization_string		 AS "organizationString" ,
+       memb.cs_student_year              AS "studentYear" , 
+       memb.cs_birthday					 AS "birthday" ,
+       memb.cx_position					 AS "position",
+       memb.cx_agreement_dtime			 AS "agreementDtime",
+	   memb.cx_agreement_yn				 AS "agreementYn", 
+       memb.cs_delete_yn                 AS "deleteYn" , 
+       memb.cs_reg_member_seq            AS "regMemberSeq" , 
+       memb.cs_reg_dtime                 AS "regDtime" , 
+       memb.cs_reg_ip                    AS "regIp" , 
+       memb.cs_upd_member_seq            AS "updMemberSeq" , 
+       memb.cs_upd_dtime                 AS "updDtime" , 
+       memb.cs_upd_ip                    AS "updIp" 
+  FROM cs_member memb 
+ WHERE memb.cs_email = #{email} 
+       AND memb.cs_member_status_cd = '${CD.MEMBER_STATUS.APPROVAL}' 
+       AND memb.cs_delete_yn = 'N'  
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMemberRS">
+        <result column="memb.memberSeq"                  property="member.memberSeq"                  />
+        <result column="memb.memberId"                   property="member.memberId"                   />
+        <result column="memb.memberName"                 property="member.memberName"                 />
+        <result column="memb.pincode" 					 property="member.pincode"					  />
+        <result column="memb.pinname" 					 property="member.pinName"					  />
+        <result column="memb.memberNameEng"              property="member.memberNameEng"              />
+        <result column="memb.memberNameChi"              property="member.memberNameChi"              />
+        <result column="memb.nickname"                   property="member.nickname"                   />
+        <result column="memb.photo"                      property="member.photo"                      />
+        <result column="memb.email"                      property="member.email"                      />
+        <result column="memb.emailYn"                    property="member.emailYn"                    />
+        <result column="memb.phoneMobile"                property="member.phoneMobile"                />
+        <result column="memb.smsYn"                      property="member.smsYn"                      />
+        <result column="memb.phoneHome"                  property="member.phoneHome"                  />
+        <result column="memb.zipcode"                    property="member.zipcode"                    />
+        <result column="memb.address"                    property="member.address"                    />
+        <result column="memb.addressDetail"              property="member.addressDetail"              />
+        <result column="memb.leaveDtime"                 property="member.leaveDtime"                 />
+        <result column="memb.migMemberId"                property="member.migMemberId"                />
+        <result column="memb.migLastTime"                property="member.migLastTime"                />
+        <result column="memb.countryCd"                  property="member.countryCd"                  />
+        <result column="memb.militaryTypeCd"             property="member.militaryTypeCd"             />
+        <result column="memb.countryResidenceCd"         property="member.countryResidenceCd"         />
+        <result column="memb.categoryOrganizationSeq"    property="member.categoryOrganizationSeq"    />
+        <result column="memb.memberStatusCd"             property="member.memberStatusCd"             />
+        <result column="memb.memberEmsTypeCd"            property="member.memberEmsTypeCd"            />
+        <result column="memb.sexCd"                      property="member.sexCd"                      />
+        <result column="memb.studentStatusCd"            property="member.studentStatusCd"            />
+        <result column="memb.organizationString"         property="member.organizationString"         />
+        <result column="memb.studentYear"                property="member.studentYear"                />
+        <result column="memb.birthday"                	 property="member.birthday"                	  />
+        <result column="memb.position"                	 property="member.position"                	  />
+        <result column="memb.motto"     		         property="member.motto"            		  />
+        <result column="memb.companyName"         	     property="member.companyName"                />
+        <result column="memb.agreementYn"				 property="member.agreementYn"                />
+        <result column="memb.agreementDtime"			 property="member.agreementDtime"             />
+        <result column="memb.deleteYn"                   property="member.deleteYn"                   />
+        <result column="memb.regMemberSeq"               property="member.regMemberSeq"               />
+        <result column="memb.regDtime"                   property="member.regDtime"                   />
+        <result column="memb.regIp"                      property="member.regIp"                      />
+        <result column="memb.updMemberSeq"               property="member.updMemberSeq"               />
+        <result column="memb.updDtime"                   property="member.updDtime"                   />
+        <result column="memb.updIp"                      property="member.updIp"                      />
+        <result column="memb.updMemberName"              property="member.updMemberName"              />
+        <result column="cate.categoryString"             property="category.categoryString"           />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMemberCondition" resultMap="listResultMap">
+/* UIMember.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "memb.memberName" ASC</when>
+            <when test='orderby == -1'>ORDER BY "memb.memberName" DESC</when>
+            <when test='orderby == 2'>ORDER BY "memb.memberId" ASC</when>
+            <when test='orderby == -2'>ORDER BY "memb.memberId" DESC</when>
+            <when test='orderby == 3'>ORDER BY "memb.categoryOrganizationSeq" ASC</when>
+            <when test='orderby == -3'>ORDER BY "memb.categoryOrganizationSeq" DESC</when>
+            <when test='orderby == 4'>ORDER BY "memb.memberEmsTypeCd" ASC</when>
+            <when test='orderby == -4'>ORDER BY "memb.memberEmsTypeCd" DESC</when>
+            <when test='orderby == 5'>ORDER BY "memb.studentStatusCd" ASC</when>
+            <when test='orderby == -5'>ORDER BY "memb.studentStatusCd" DESC</when>
+            <otherwise>ORDER BY "memb.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+
+SELECT memb.cs_member_seq                   AS "memb.memberSeq" ,
+       memb.cs_member_id                    AS "memb.memberId" ,
+       memb.pincode							AS "memb.pincode",
+       memb.pinname							AS "memb.pinname",
+       memb.cs_member_name                  AS "memb.memberName" ,
+       memb.cs_member_name_eng              AS "memb.memberNameEng" ,
+       memb.cs_member_name_chi              AS "memb.memberNameChi" ,
+       memb.cs_nickname                     AS "memb.nickname" ,
+       memb.cs_photo                        AS "memb.photo" ,
+       memb.cs_email                        AS "memb.email" ,
+       memb.cs_email_yn                     AS "memb.emailYn" ,
+       memb.cs_phone_mobile                 AS "memb.phoneMobile" ,
+       memb.cs_sms_yn                       AS "memb.smsYn" ,
+       memb.cs_phone_home                   AS "memb.phoneHome" ,
+       memb.cs_zipcode                      AS "memb.zipcode" ,
+       memb.cs_address                      AS "memb.address" ,
+       memb.cs_address_detail               AS "memb.addressDetail" ,
+       memb.cs_leave_dtime                  AS "memb.leaveDtime" ,
+       memb.cs_mig_member_id                AS "memb.migMemberId" ,
+       memb.cs_mig_lasttime                 AS "memb.migLastTime" ,
+       memb.cs_country_cd                   AS "memb.countryCd" ,
+       memb.cs_military_type_cd             AS "memb.militaryTypeCd" ,
+       memb.cs_country_residence_cd         AS "memb.countryResidenceCd" ,
+       memb.cs_category_organization_seq    AS "memb.categoryOrganizationSeq" ,
+       memb.cs_member_status_cd             AS "memb.memberStatusCd" ,
+       memb.cs_member_ems_type_cd           AS "memb.memberEmsTypeCd" ,
+       memb.cs_sex_cd                       AS "memb.sexCd" ,
+       memb.cs_student_status_cd            AS "memb.studentStatusCd" ,
+       memb.cs_organization_string			AS "memb.organizationString" ,
+       memb.cs_student_year                 AS "memb.studentYear" ,
+       memb.cs_birthday						AS "memb.birthday" ,
+       memb.cx_position						AS "memb.position" ,
+	   memb.cx_motto						AS "memb.motto",
+	   memb.cx_company_name					AS "memb.companyName",
+       memb.cx_agreement_dtime				AS "memb.agreementDtime",
+	   memb.cx_agreement_yn					AS "memb.agreementYn",
+       memb.cs_delete_yn                    AS "memb.deleteYn" ,
+       memb.cs_reg_member_seq               AS "memb.regMemberSeq" ,
+       memb.cs_reg_dtime                    AS "memb.regDtime" ,
+       memb.cs_reg_ip                       AS "memb.regIp" ,
+       memb.cs_upd_member_seq               AS "memb.updMemberSeq" ,
+       memb.cs_upd_dtime                    AS "memb.updDtime" ,
+       memb.cs_upd_ip                       AS "memb.updIp" ,
+       umem.cs_member_name 					AS "memb.updMemberName",
+       cate.cs_category_string				AS "cate.categoryString"
+  FROM cs_member memb 
+    INNER JOIN cs_member umem
+        ON umem.cs_member_seq = memb.cs_upd_member_seq
+  	LEFT OUTER JOIN cs_member_admin adm
+  		ON memb.cs_member_seq = adm.cs_member_seq
+  		AND adm.cs_delete_yn = 'N' 
+  	LEFT OUTER JOIN cs_category cate
+  		ON cate.cs_category_seq = memb.cs_category_organization_seq
+  		AND cate.cs_delete_yn = 'N'
+  		<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+	LEFT OUTER JOIN cs_rolegroup_member rolm  
+		ON rolm.cs_member_seq = memb.cs_member_seq
+		AND rolm.cs_rolegroup_seq = #{srchNotInRolegroupSeq}
+		AND rolm.cs_delete_yn = 'N' 	
+	  	</if>
+ WHERE memb.cs_delete_yn = 'N'  
+ 	    <if test='srchMemberType != null and !srchMemberType.equals("all")'>
+ 	   AND adm.cs_member_seq IS NULL
+ 	    </if>
+ 	    <if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+ 	   AND rolm.cs_member_seq IS NULL
+ 	    </if>
+        <if test='srchMemberEmsTypeCd != null and !srchMemberEmsTypeCd.equals("")'>
+       AND memb.cs_member_ems_type_cd = #{srchMemberEmsTypeCd}
+        </if>
+        <if test='srchStudentStatusCd != null and !srchStudentStatusCd.equals("")'>
+       AND memb.cs_student_status_cd = #{srchStudentStatusCd}
+        </if>
+        <if test='srchPosition != null and !srchPosition.equals("")'>
+       AND memb.cx_position = #{srchPosition}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("memberId")'>
+       AND memb.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("memberName")'>
+       AND memb.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("nickname")'>
+       AND memb.cs_nickname LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("organization")'>
+       AND memb.cs_organization_string LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+       AND cate.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%'
+        </if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo}
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMemberCondition" resultType="int">
+/* UIMember.countList */
+SELECT COUNT(*) 
+  FROM cs_member memb 
+  	LEFT OUTER JOIN cs_member_admin adm
+  		ON memb.cs_member_seq = adm.cs_member_seq
+  		AND adm.cs_delete_yn = 'N' 
+  	LEFT OUTER JOIN cs_category cate
+  		ON cate.cs_category_seq = memb.cs_category_organization_seq
+  		AND cate.cs_delete_yn = 'N'
+	  	<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+	LEFT OUTER JOIN cs_rolegroup_member rolm  
+		ON rolm.cs_member_seq = memb.cs_member_seq
+		AND rolm.cs_rolegroup_seq = #{srchNotInRolegroupSeq}
+		AND rolm.cs_delete_yn = 'N' 	
+	  	</if>
+ WHERE memb.cs_delete_yn = 'N'  
+ 	    <if test='srchMemberType != null and !srchMemberType.equals("all")'>
+ 	   AND adm.cs_member_seq IS NULL
+ 	    </if>
+ 	    <if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+ 	   AND rolm.cs_member_seq IS NULL
+ 	    </if>
+        <if test='srchCategoryOrgSeq != null and !srchCategoryOrgSeq.equals("")'>
+       AND memb.cs_category_organization_seq = #{srchCategoryOrgSeq}
+        </if>
+        <if test='srchMemberEmsTypeCd != null and !srchMemberEmsTypeCd.equals("")'>
+       AND memb.cs_member_ems_type_cd = #{srchMemberEmsTypeCd}
+        </if>
+        <if test='srchStudentStatusCd != null and !srchStudentStatusCd.equals("")'>
+       AND memb.cs_student_status_cd = #{srchStudentStatusCd}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("memberId")'>
+       AND memb.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("memberName")'>
+       AND memb.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("nickname")'>
+       AND memb.cs_nickname LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("organization")'>
+       AND memb.cs_organization_string LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='srchPosition != null and !srchPosition.equals("")'>
+       AND memb.cx_position = #{srchPosition}
+        </if>
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+       AND cate.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%'
+        </if>
+    </select>
+
+    <select id="countByMemberId" parameterType="map" resultType="int">
+/* UIMember.countMemberId */
+SELECT COUNT(*) 
+  FROM cs_member 
+ WHERE cs_member_id = #{memberId} 
+        <if test='memberSeq != null and !memberSeq.equals("")'>
+       AND cs_member_seq != #{memberSeq}
+        </if>
+    </select>
+
+    <select id="countByNickname" parameterType="map" resultType="int">
+/* UIMember.countByNickname */
+SELECT COUNT(*) 
+  FROM cs_member 
+ WHERE cs_nickname = #{nickname} 
+       AND LEN(cs_nickname) > 0 
+        <if test='memberSeq != null and !memberSeq.equals("")'>
+       AND cs_member_seq != #{memberSeq}
+        </if>
+    </select>
+
+    <resultMap id="listStatisticsResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMemberRS">
+        <result column="memb.statisticsDate"   property="member.statisticsDate"  />
+        <result column="memb.statisticsCount"  property="member.statisticsCount" />
+    </resultMap>
+    <select id="getListStatistics" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMemberCondition" resultMap="listStatisticsResultMap">
+/* UIMember.getListStatistics */
+SELECT memb.regDate AS "memb.statisticsDate" ,
+       COUNT(*) AS "memb.statisticsCount" 
+  FROM 
+       (SELECT 
+        <choose>
+            <when test='srchStatisticsType != null and srchStatisticsType.equals("month")'>
+               SUBSTRING(cs_reg_dtime, 5, 2) AS regDate
+            </when>
+            <when test='srchStatisticsType != null and srchStatisticsType.equals("hour")'>
+               SUBSTRING(cs_reg_dtime, 9, 2) AS regDate
+            </when>
+            <otherwise>
+               SUBSTRING(cs_reg_dtime, 7, 2) AS regDate
+            </otherwise>
+       </choose>
+         FROM cs_member 
+        WHERE cs_reg_dtime BETWEEN #{srchStartRegDate} AND #{srchEndRegDate} 
+       ) memb 
+GROUP BY memb.regDate 
+ORDER BY memb.regDate
+    </select>
+
+    <resultMap id="detailStatisticsResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMemberRS">
+        <result column="memb.totalCount"       property="member.totalCount"      />
+        <result column="memb.todayCount"       property="member.todayCount"      />
+        <result column="memb.yesterdayCount"   property="member.yesterdayCount"  />
+        <result column="memb.thisMonthCount"   property="member.thisMonthCount"  />
+    </resultMap>
+    <select id="getDetailStatistics" resultMap="detailStatisticsResultMap">
+/* UIMember.getDetailStatistics */
+SELECT 
+       (SELECT COUNT(*) 
+         FROM cs_member 
+       ) AS "memb.totalCount", 
+       (SELECT COUNT(*) 
+         FROM cs_member 
+        WHERE cs_reg_dtime LIKE CONVERT(VARCHAR(8), GETDATE(), 112) + '%' 
+       ) AS "memb.todayCount", 
+       (SELECT COUNT(*) 
+         FROM cs_member 
+        WHERE cs_reg_dtime LIKE CONVERT(VARCHAR(8), GETDATE() - 1, 112) + '%' 
+       ) AS "memb.yesterdayCount", 
+       (SELECT COUNT(*) 
+         FROM cs_member 
+        WHERE cs_reg_dtime LIKE CONVERT(VARCHAR(6), GETDATE(), 112) + '%' 
+       ) AS "memb.thisMonthCount" 
+    </select>
+    
+    <resultMap id="listResultPoupMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMemberRS">
+        <result column="memb.memberSeq"						property="member.memberSeq"						/>
+        <result column="memb.memberName"					property="member.memberName"					/>
+        <result column="memb.memberId"						property="member.memberId"						/>
+        <result column="memb.categoryOrganizationSeq"		property="member.categoryOrganizationSeq"		/>
+        <result column="memb.organizationString"			property="member.organizationString"			/>
+        <result column="memb.memberEmsTypeCd"				property="member.memberEmsTypeCd"				/>
+        <result column="memb.phoneMobile"					property="member.phoneMobile"					/>
+        <result column="memb.email"							property="member.email"							/>
+        <result column="adm.jobTypeCd"						property="admin.jobTypeCd"						/>
+        <result column="adm.profTypeCd"						property="admin.profTypeCd"						/>
+        <result column="adm.cdmsTaskTypeCd"					property="admin.cdmsTaskTypeCd"					/>
+        <result column="company.companySeq"					property="company.companySeq"					/>
+        <result column="company.companyName"				property="company.companyName"					/>
+        <result column="cate.categoryString"				property="category.categoryString"				/>        
+    </resultMap>
+    <select id="getListAddressGroup" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMemberCondition" resultMap="listResultPoupMap">
+	/* UIMember.getListAddressGroup */
+	        <if test='currentPage != 0'>
+	SELECT Z.* FROM (SELECT Row_Number() OVER (
+	            ORDER BY "memb.memberName" DESC
+	) AS rownumber, * FROM (
+	        </if>
+	SELECT
+		mem.cs_member_seq 					AS "memb.memberSeq",
+		mem.cs_member_name 					AS "memb.memberName",
+		mem.cs_member_id 					AS "memb.memberId",
+		mem.cs_category_organization_seq 	AS "memb.categoryOrganizationSeq",
+		mem.cs_organization_string 			AS "memb.organizationString",
+		mem.cs_member_ems_type_cd 			AS "memb.memberEmsTypeCd",
+		mem.cs_phone_mobile       			AS "memb.phoneMobile",
+		mem.cs_email			  			AS "memb.email",
+		adm.cs_job_type_cd 					AS "adm.jobTypeCd",
+		adm.cs_prof_type_cd 				AS "adm.profTypeCd",
+		adm.cs_cdms_task_type_cd 			AS "adm.cdmsTaskTypeCd",
+		company.cs_company_seq 				AS "company.companySeq",
+		company.cs_company_name 			AS "company.companyName",
+		cate.cs_category_string 			AS "cate.categoryString"
+	FROM
+		cs_member mem
+		LEFT OUTER JOIN cs_member_admin adm
+			ON adm.cs_member_seq = mem.cs_member_seq
+			AND adm.cs_delete_yn = 'N'
+		LEFT OUTER JOIN cs_company_member cm
+			ON cm.cs_member_seq = mem.cs_member_seq
+			AND cm.cs_delete_yn = 'N'
+		LEFT OUTER JOIN cs_company company
+			ON company.cs_company_seq = cm.cs_company_seq
+			AND company.cs_delete_yn = 'N'
+		LEFT OUTER JOIN cs_category cate
+			ON cate.cs_category_seq = mem.cs_category_organization_seq
+			AND cate.cs_delete_yn = 'N'
+		LEFT OUTER JOIN cs_message_address ma
+			ON mem.cs_member_seq = ma.cs_member_seq
+			AND ma.cs_address_group_seq = #{srchAddressGroupSeq}
+			AND ma.cs_delete_yn = 'N'			  		
+		<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+		LEFT OUTER JOIN cs_rolegroup_member rolm  
+			ON rolm.cs_member_seq = mem.cs_member_seq
+			AND rolm.cs_rolegroup_seq = #{srchNotInRolegroupSeq}
+			AND rolm.cs_delete_yn = 'N' 	
+		</if>
+		<if test='srchNotInCourseActiveSeq != null and !srchNotInCourseActiveSeq.equals("")'>
+		LEFT OUTER JOIN cs_course_active_lecturer cal  
+			ON cal.cs_member_seq = mem.cs_member_seq
+			AND cal.cs_course_active_seq = #{srchNotInCourseActiveSeq}
+			AND cal.cs_delete_yn = 'N' 	
+		</if>
+		<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+		INNER JOIN 
+			(
+				SELECT 
+					sub.cs_prof_member_seq 
+				FROM 
+					cs_course_active_lecturer sub
+				WHERE sub.cs_delete_yn = 'N' 
+				  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+				GROUP BY sub.cs_prof_member_seq
+			) calg
+		ON calg.cs_prof_member_seq = mem.cs_member_seq
+		</if>
+	WHERE
+		MEM.CS_DELETE_YN = 'N'
+		AND ma.cs_member_seq IS NULL
+	<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+	    AND rolm.cs_member_seq IS NULL
+	</if>
+	<if test='srchNotInCourseActiveSeq != null and !srchNotInCourseActiveSeq.equals("")'>
+		AND cal.cs_member_seq IS NULL
+	</if>
+	<if test='srchMemberType != null and srchMemberType.equals("USER")'>
+		AND adm.cs_member_seq IS NULL
+	</if>
+	<if test='srchMemberType != null and srchMemberType.equals("ADMIN")'>
+		AND adm.cs_member_seq IS NOT NULL
+		AND adm.cs_prof_type_cd IS NULL 
+		AND adm.cs_cdms_task_type_cd IS NULL
+	</if>
+	<if test='srchMemberType != null and srchMemberType.equals("PROF")'>
+		AND adm.cs_member_seq IS NOT NULL
+		AND adm.cs_prof_type_cd IS NOT NULL
+	</if>
+	<if test='srchMemberType != null and srchMemberType.equals("CDMS")'>
+		AND adm.cs_member_seq IS NOT NULL
+		AND adm.cs_cdms_task_type_cd IS NOT NULL
+	</if>
+	<if test='srchCdmsTaskTypeCd != null and !srchCdmsTaskTypeCd.equals("")'>
+		AND adm.cs_cdms_task_type_cd = #{srchCdmsTaskTypeCd}
+	</if>
+	<if test='srchMemberStatusCd != null and !srchMemberStatusCd.equals("")'>
+		AND mem.cs_member_status_cd = #{srchMemberStatusCd}
+	</if>
+	<if test='srchCompanySeq != null and !srchCompanySeq.equals("")'>
+		AND cm.cs_company_seq = #{srchCompanySeq}
+	</if>
+	<if test='srchInCompanySeqs != null'>
+		AND cm.cs_company_seq IN 
+	    <foreach collection="srchInCompanySeqs" item="item" open="(" separator="," close=")" index="index">
+	        #{item}
+	    </foreach>
+	</if>
+	<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+		AND cate.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%'
+	</if>
+	<if test='srchWord != null and !srchWord.equals("")'>
+	     <if test='srchKey.equals("memberId")'>
+		AND mem.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+	     </if>
+	     <if test='srchKey.equals("memberName")'>
+		AND mem.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+	     </if>
+	 </if>
+    	<if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select> 
+ 
+    <select id="countListAddressGroup" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMemberCondition" resultType="int">
+	/* UIMember.countListAddressGroup */
+	SELECT
+		count(*)
+	FROM
+		cs_member mem
+		LEFT OUTER JOIN cs_member_admin adm
+			ON adm.cs_member_seq = mem.cs_member_seq
+			AND adm.cs_delete_yn = 'N'
+		LEFT OUTER JOIN cs_company_member cm
+			ON cm.cs_member_seq = mem.cs_member_seq
+			AND cm.cs_delete_yn = 'N'
+		LEFT OUTER JOIN cs_category cate
+			ON cate.cs_category_seq = mem.cs_category_organization_seq
+			AND cate.cs_delete_yn = 'N'
+		LEFT OUTER JOIN cs_message_address ma
+			ON mem.cs_member_seq = ma.cs_member_seq
+			AND ma.cs_address_group_seq = #{srchAddressGroupSeq}
+			AND ma.cs_delete_yn = 'N'			
+		<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+		LEFT OUTER JOIN cs_rolegroup_member rolm  
+			ON rolm.cs_member_seq = mem.cs_member_seq
+			AND rolm.cs_rolegroup_seq = #{srchNotInRolegroupSeq}
+			AND rolm.cs_delete_yn = 'N' 	
+		</if>
+		<if test='srchNotInCourseActiveSeq != null and !srchNotInCourseActiveSeq.equals("")'>
+		LEFT OUTER JOIN cs_course_active_lecturer cal  
+			ON cal.cs_member_seq = mem.cs_member_seq
+			AND cal.cs_course_active_seq = #{srchNotInCourseActiveSeq}
+			AND cal.cs_delete_yn = 'N' 	
+		</if>
+		<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+		INNER JOIN 
+			(
+				SELECT 
+					sub.cs_prof_member_seq 
+				FROM 
+					cs_course_active_lecturer sub
+				WHERE sub.cs_delete_yn = 'N' 
+				  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+				GROUP BY sub.cs_prof_member_seq
+			) calg
+		ON calg.cs_prof_member_seq = mem.cs_member_seq
+		</if>
+	WHERE
+		MEM.CS_DELETE_YN = 'N'
+		AND ma.cs_member_seq IS NULL
+	<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+	    AND rolm.cs_member_seq IS NULL
+	</if>
+	<if test='srchNotInCourseActiveSeq != null and !srchNotInCourseActiveSeq.equals("")'>
+		AND cal.cs_member_seq IS NULL
+	</if>
+	<if test='srchMemberType != null and srchMemberType.equals("USER")'>
+		AND adm.cs_member_seq IS NULL
+	</if>
+	<if test='srchMemberType != null and srchMemberType.equals("ADMIN")'>
+		AND adm.cs_member_seq IS NOT NULL
+		AND adm.cs_prof_type_cd IS NULL 
+		AND adm.cs_cdms_task_type_cd IS NULL
+	</if>
+	<if test='srchMemberType != null and srchMemberType.equals("PROF")'>
+		AND adm.cs_member_seq IS NOT NULL
+		AND adm.cs_prof_type_cd IS NOT NULL
+	</if>
+	<if test='srchMemberType != null and srchMemberType.equals("CDMS")'>
+		AND adm.cs_member_seq IS NOT NULL
+		AND adm.cs_cdms_task_type_cd IS NOT NULL
+	</if>
+	<if test='srchCdmsTaskTypeCd != null and !srchCdmsTaskTypeCd.equals("")'>
+		AND adm.cs_cdms_task_type_cd = #{srchCdmsTaskTypeCd}
+	</if>
+	<if test='srchMemberStatusCd != null and !srchMemberStatusCd.equals("")'>
+		AND mem.cs_member_status_cd = #{srchMemberStatusCd}
+	</if>
+	<if test='srchCompanySeq != null and !srchCompanySeq.equals("")'>
+		AND cm.cs_company_seq = #{srchCompanySeq}
+	</if>
+	<if test='srchInCompanySeqs != null'>
+	    AND cm.cs_company_seq IN 
+	    <foreach collection="srchInCompanySeqs" item="item" open="(" separator="," close=")" index="index">
+	        #{item}
+	    </foreach>
+	</if>
+	<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+		AND cate.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%'
+	</if>
+	<if test='srchWord != null and !srchWord.equals("")'>
+	    <if test='srchKey.equals("memberId")'>
+		AND mem.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+	    </if>
+	    <if test='srchKey.equals("memberName")'>
+		AND mem.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+	    </if>
+	</if>
+    </select> 
+
+
+    <select id="getListExtend" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMemberCondition" resultMap="listResultPoupMap">
+/* UIMember.getListExtend */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+            ORDER BY "memb.memberName" DESC
+) AS rownumber, * FROM (
+        </if>
+SELECT
+	mem.cs_member_seq 					AS "memb.memberSeq",
+	mem.cs_member_name 					AS "memb.memberName",
+	mem.cs_member_id 					AS "memb.memberId",
+	mem.cs_category_organization_seq 	AS "memb.categoryOrganizationSeq",
+	mem.cs_organization_string 			AS "memb.organizationString",
+	mem.cs_member_ems_type_cd 			AS "memb.memberEmsTypeCd",
+	mem.cs_phone_mobile       			AS "memb.phoneMobile",
+	mem.cs_email			  			AS "memb.email",
+	adm.cs_job_type_cd 					AS "adm.jobTypeCd",
+	adm.cs_prof_type_cd 				AS "adm.profTypeCd",
+	adm.cs_cdms_task_type_cd 			AS "adm.cdmsTaskTypeCd",
+	company.cs_company_seq 				AS "company.companySeq",
+	company.cs_company_name 			AS "company.companyName",
+	cate.cs_category_string 			AS "cate.categoryString"
+FROM
+	cs_member mem
+	LEFT OUTER JOIN cs_member_admin adm
+		ON adm.cs_member_seq = mem.cs_member_seq
+		AND adm.cs_delete_yn = 'N'
+	LEFT OUTER JOIN cs_company_member cm
+		ON cm.cs_member_seq = mem.cs_member_seq
+		AND cm.cs_delete_yn = 'N'
+	LEFT OUTER JOIN cs_company company
+		ON company.cs_company_seq = cm.cs_company_seq
+		AND company.cs_delete_yn = 'N'
+	LEFT OUTER JOIN cs_category cate
+		ON cate.cs_category_seq = mem.cs_category_organization_seq
+		AND cate.cs_delete_yn = 'N'
+	<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+	LEFT OUTER JOIN cs_rolegroup_member rolm  
+		ON rolm.cs_member_seq = mem.cs_member_seq
+		AND rolm.cs_rolegroup_seq = #{srchNotInRolegroupSeq}
+		AND rolm.cs_delete_yn = 'N' 	
+	</if>
+	<if test='srchNotInCourseActiveSeq != null and !srchNotInCourseActiveSeq.equals("")'>
+	LEFT OUTER JOIN cs_course_active_lecturer cal  
+		ON cal.cs_member_seq = mem.cs_member_seq
+		AND cal.cs_course_active_seq = #{srchNotInCourseActiveSeq}
+		AND cal.cs_delete_yn = 'N' 	
+	</if>
+	<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+	INNER JOIN 
+		(
+			SELECT 
+				sub.cs_prof_member_seq 
+			FROM 
+				cs_course_active_lecturer sub
+			WHERE sub.cs_delete_yn = 'N' 
+			  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+			GROUP BY sub.cs_prof_member_seq
+		) calg
+	ON calg.cs_prof_member_seq = mem.cs_member_seq
+	</if>
+WHERE
+	MEM.CS_DELETE_YN = 'N'
+<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+    AND rolm.cs_member_seq IS NULL
+</if>
+<if test='srchNotInCourseActiveSeq != null and !srchNotInCourseActiveSeq.equals("")'>
+	AND cal.cs_member_seq IS NULL
+</if>
+<if test='srchMemberType != null and srchMemberType.equals("USER")'>
+	AND adm.cs_member_seq IS NULL
+</if>
+<if test='srchMemberType != null and srchMemberType.equals("ADMIN")'>
+	AND adm.cs_member_seq IS NOT NULL
+	AND adm.cs_prof_type_cd IS NULL 
+	AND adm.cs_cdms_task_type_cd IS NULL
+</if>
+<if test='srchMemberType != null and srchMemberType.equals("PROF")'>
+	AND adm.cs_member_seq IS NOT NULL
+	AND adm.cs_prof_type_cd IS NOT NULL
+</if>
+<if test='srchMemberType != null and srchMemberType.equals("CDMS")'>
+	AND adm.cs_member_seq IS NOT NULL
+	AND adm.cs_cdms_task_type_cd IS NOT NULL
+</if>
+<if test='srchCdmsTaskTypeCd != null and !srchCdmsTaskTypeCd.equals("")'>
+	AND adm.cs_cdms_task_type_cd = #{srchCdmsTaskTypeCd}
+</if>
+<if test='srchMemberStatusCd != null and !srchMemberStatusCd.equals("")'>
+	AND mem.cs_member_status_cd = #{srchMemberStatusCd}
+</if>
+<if test='srchCompanySeq != null and !srchCompanySeq.equals("")'>
+	AND cm.cs_company_seq = #{srchCompanySeq}
+</if>
+<if test='srchInCompanySeqs != null'>
+	AND cm.cs_company_seq IN 
+    <foreach collection="srchInCompanySeqs" item="item" open="(" separator="," close=")" index="index">
+        #{item}
+    </foreach>
+</if>
+<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+	AND cate.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%'
+</if>
+<if test='srchMessageType != null'>
+	 <if test='srchMessageType.equals("sms")'>
+	 	AND (mem.cs_phone_mobile != '' and mem.cs_phone_mobile is not null) 
+	 </if>
+	 <if test='srchMessageType.equals("email")'>
+		AND (mem.cs_email != '' and mem.cs_email is not null)
+	 </if>
+</if>
+<if test='srchWord != null and !srchWord.equals("")'>
+     <if test='srchKey.equals("memberId")'>
+	AND mem.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+     </if>
+     <if test='srchKey.equals("memberName")'>
+	AND mem.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+     </if>
+ </if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countListExtend" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMemberCondition" resultType="int">
+/* MemberMapper.countListExtend */
+SELECT
+	count(*)
+FROM
+	cs_member mem
+	LEFT OUTER JOIN cs_member_admin adm
+		ON adm.cs_member_seq = mem.cs_member_seq
+		AND adm.cs_delete_yn = 'N'
+	LEFT OUTER JOIN cs_company_member cm
+		ON cm.cs_member_seq = mem.cs_member_seq
+		AND cm.cs_delete_yn = 'N'
+	LEFT OUTER JOIN cs_category cate
+		ON cate.cs_category_seq = mem.cs_category_organization_seq
+		AND cate.cs_delete_yn = 'N'
+	<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+	LEFT OUTER JOIN cs_rolegroup_member rolm  
+		ON rolm.cs_member_seq = mem.cs_member_seq
+		AND rolm.cs_rolegroup_seq = #{srchNotInRolegroupSeq}
+		AND rolm.cs_delete_yn = 'N' 	
+	</if>
+	<if test='srchNotInCourseActiveSeq != null and !srchNotInCourseActiveSeq.equals("")'>
+	LEFT OUTER JOIN cs_course_active_lecturer cal  
+		ON cal.cs_member_seq = mem.cs_member_seq
+		AND cal.cs_course_active_seq = #{srchNotInCourseActiveSeq}
+		AND cal.cs_delete_yn = 'N' 	
+	</if>
+	<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+	INNER JOIN 
+		(
+			SELECT 
+				sub.cs_prof_member_seq 
+			FROM 
+				cs_course_active_lecturer sub
+			WHERE sub.cs_delete_yn = 'N' 
+			  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+			GROUP BY sub.cs_prof_member_seq
+		) calg
+	ON calg.cs_prof_member_seq = mem.cs_member_seq
+	</if>
+WHERE
+	MEM.CS_DELETE_YN = 'N'
+<if test='srchNotInRolegroupSeq != null and !srchNotInRolegroupSeq.equals("")'>
+    AND rolm.cs_member_seq IS NULL
+</if>
+<if test='srchNotInCourseActiveSeq != null and !srchNotInCourseActiveSeq.equals("")'>
+	AND cal.cs_member_seq IS NULL
+</if>
+<if test='srchMemberType != null and srchMemberType.equals("USER")'>
+	AND adm.cs_member_seq IS NULL
+</if>
+<if test='srchMemberType != null and srchMemberType.equals("ADMIN")'>
+	AND adm.cs_member_seq IS NOT NULL
+	AND adm.cs_prof_type_cd IS NULL 
+	AND adm.cs_cdms_task_type_cd IS NULL
+</if>
+<if test='srchMemberType != null and srchMemberType.equals("PROF")'>
+	AND adm.cs_member_seq IS NOT NULL
+	AND adm.cs_prof_type_cd IS NOT NULL
+</if>
+<if test='srchMemberType != null and srchMemberType.equals("CDMS")'>
+	AND adm.cs_member_seq IS NOT NULL
+	AND adm.cs_cdms_task_type_cd IS NOT NULL
+</if>
+<if test='srchCdmsTaskTypeCd != null and !srchCdmsTaskTypeCd.equals("")'>
+	AND adm.cs_cdms_task_type_cd = #{srchCdmsTaskTypeCd}
+</if>
+<if test='srchMemberStatusCd != null and !srchMemberStatusCd.equals("")'>
+	AND mem.cs_member_status_cd = #{srchMemberStatusCd}
+</if>
+<if test='srchCompanySeq != null and !srchCompanySeq.equals("")'>
+	AND cm.cs_company_seq = #{srchCompanySeq}
+</if>
+<if test='srchInCompanySeqs != null'>
+    AND cm.cs_company_seq IN 
+    <foreach collection="srchInCompanySeqs" item="item" open="(" separator="," close=")" index="index">
+        #{item}
+    </foreach>
+</if>
+<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+	AND cate.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%'
+</if>
+<if test='srchMessageType != null'>
+	 <if test='srchMessageType.equals("sms")'>
+	 	AND (mem.cs_phone_mobile != '' and mem.cs_phone_mobile is not null) 
+	 </if>
+	 <if test='srchMessageType.equals("email")'>
+		AND (mem.cs_email != '' and mem.cs_email is not null)
+	 </if>
+</if>
+<if test='srchWord != null and !srchWord.equals("")'>
+    <if test='srchKey.equals("memberId")'>
+	AND mem.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+    </if>
+    <if test='srchKey.equals("memberName")'>
+	AND mem.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+    </if>
+</if>
+    </select>
+
+
+    <!-- 메세지발송용 멤버정보 -->
+    <select id="getDetailVO" parameterType="Long" resultType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+	/* UIMember.getDetailVO */
+	SELECT memb.cs_member_seq                AS "memberSeq" ,
+	       memb.cs_member_id                 AS "memberId" ,
+		   memb.cs_member_name               AS "memberName" ,
+	       memb.cs_email                     AS "email" ,
+	       memb.cs_email_yn                  AS "emailYn" , 
+	       memb.cs_phone_mobile              AS "phoneMobile" ,
+	       memb.cs_sms_yn                    AS "smsYn" ,
+		   memb.cs_category_organization_seq AS "categoryOrganizationSeq" ,
+		   ISNULL(cate.cs_category_name, '') as "categoryOrganizationString"	       
+	  FROM cs_member memb 
+	  LEFT OUTER JOIN cs_category cate
+	  	ON memb.cs_category_organization_seq = cate.cs_category_seq
+	  	AND cate.cs_delete_yn = 'N'
+	 WHERE memb.cs_member_seq = #{memberSeq} 
+	       AND memb.cs_delete_yn = 'N'
+    </select>
+    
+    <!-- 소속정보별 메세지발송용 멤버정보 -->
+    <select id="getListByCategorySeq" parameterType="Long" resultType="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+	/* UIMember.getListByCategorySeq */
+	SELECT memb.cs_member_seq                AS "memberSeq" ,
+	       memb.cs_member_id                 AS "memberId" ,
+		   memb.cs_member_name               AS "memberName" ,
+	       memb.cs_email                     AS "email" ,
+	       memb.cs_email_yn                  AS "emailYn" , 
+	       memb.cs_phone_mobile              AS "phoneMobile" ,
+	       memb.cs_sms_yn                    AS "smsYn" ,
+	       memb.cs_category_organization_seq AS "categoryOrganizationSeq" ,
+		   ISNULL(cate.cs_category_name, '') as "categoryOrganizationString"
+	  FROM cs_member memb 
+	  LEFT OUTER JOIN cs_category cate
+	  	ON memb.cs_category_organization_seq = cate.cs_category_seq
+	  	AND cate.cs_delete_yn = 'N'
+	 WHERE memb.cs_category_organization_seq = #{categoryOrgSeq} 
+	       AND memb.cs_delete_yn = 'N'
+		   AND memb.cs_member_ems_type_cd = '${CD.MEMBER_EMP_TYPE.001}'	       
+    </select>
+
+</mapper>

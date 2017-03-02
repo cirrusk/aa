@@ -1,0 +1,82 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if IE 9]><html lang="ko" class="modern ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>AOF5-UNIV WWW DEMO</title>
+<link rel="stylesheet" href="../../css/www/base.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/common.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/content.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/style.css" type="text/css"/>
+<link type="text/css" rel="stylesheet" href="../../css/www/classroom.css" />
+<script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="../../js/select.js"></script>
+<script type="text/javascript">
+</script>
+</head>
+<body>
+	<!-- classroom -->
+	<div class="classroom">
+		<!-- header -->
+		<div class="header">
+			<div class="my-info">
+				<div class="average">
+					<strong>평균진도</strong>
+					<div class="progress">
+						<!-- 진척율 % = style(width) -->
+						<p class="bar" style="width:80%;"><img src="../../images/www/bg/bar_blue.png" alt="진척율 그래프" /><span class="left"></span><span class="right"></span></p>
+					</div>
+					<p class="percent"><span>90%</span> (10.2/45)</p>
+				</div>
+				<div class="my">
+					<strong>나의진도</strong>
+					<div class="progress">
+						<!-- 진척율 % = style(width) -->
+						<p class="bar" style="width:100%;"><img src="../../images/www/bg/bar_red.png" alt="진척율 그래프" /><span class="left"></span><span class="right"></span></p>
+					</div>
+					<p class="percent"><span>90%</span> (4/45)</p>
+				</div>
+				<p class="attend">출석 : <span>4회</span> 지각 : <span>1회</span> 결석 : 0회</p>
+			</div>
+			<div class="my-subject">
+				<h1>2014년 1학기 아동 문학 창작론</h1>
+				<p class="info"><span>전공필수</span><span>3학점</span><span>안재현,김명수</span><a href="#" class="plan">강의계획서 보기</a></p>
+				<p class="view">과정더보기 <a href="#"><img src="../../images/www/common/icon_view.png" alt="과정 더보기" /></a></p>
+			</div>
+			<a href="#" class="out">강의실 나가기</a>
+		</div>
+		<!-- //header -->
+		<!-- container -->
+		<div class="container">
+			<div class="nav m02"><!-- 메뉴 활성화 : on 된 목록(li) 에 클래스(m01..)를 div.nav 에 추가 -->
+				<ul>
+					<li class="m01"><a href="#">Home</a></li>
+					<li class="m02 on"><a href="#">온라인학습</a></li>
+					<li class="m03"><a href="#">과정게시판</a></li>
+				</ul>
+				<a href="#" class="array"><img src="../../images/www/btn/btn_array.gif" alt="정렬" /></a>
+			</div>
+			<!-- content -->
+			<div class="content">
+				<!-- 본문 내용 -->
+				<h2 class="heading">타이틀</h2>
+				<!-- iframe 삽입 -->
+				<iframe src="popup.html" frameborder="0" width="925" height="498" title="공지사항"></iframe><!-- 불러오는 컨텐츠에 따라 title="xxxx" 값적용 -->
+				<!-- //iframe 삽입 -->
+				<!-- //본문 내용 -->
+			</div>
+			<!-- //content -->
+			<div class="slides-nav">
+				<a href="#" class="prev">이전</a>
+				<a href="#" class="next">다음</a>
+			</div>
+		</div>
+		<!-- //container -->
+	</div>
+	<!-- //classroom -->
+</body>
+</html>

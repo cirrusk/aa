@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseBbsResultMapper">
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseBbsResultRS">
+        <result column="groupbbs.cs_reference_seq"  property="board.referenceSeq"   />
+		<result column="bbsEvaluateData"   			property="bbsEvaluateData"      />
+		<result column="bbs_score"       			property="bbsScore"      		/>
+		<result column="member.cs_member_seq"       property="member.memberSeq"     />
+		<result column="member.cs_member_id"       	property="member.memberId"      />
+		<result column="member.cs_member_name"      property="member.memberName"    />
+		<result column="member.cs_phone_mobile"		property="member.phoneMobile"	/>
+		<result column="category.cs_category_name"  property="category.categoryName"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseBbsResultCondition" resultMap="listResultMap">
+		/* UIUnivCourseBbsResult.getList */
+        <if test='currentPage != 0'>
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "member.cs_member_name" ASC</when>
+            <when test='orderby ==-1'>ORDER BY "member.cs_member_name" DESC</when>
+            <when test='orderby == 2'>ORDER BY "member.cs_member_id" ASC, "member.cs_member_name" ASC</when>
+            <when test='orderby ==-2'>ORDER BY "member.cs_member_id" DESC, "member.cs_member_name" ASC</when>
+            <when test='orderby == 3'>ORDER BY "category.cs_category_name" ASC, "member.cs_member_name" ASC</when>
+            <when test='orderby ==-3'>ORDER BY "category.cs_category_name" DESC, "member.cs_member_name" ASC</when>
+            <otherwise>ORDER BY "member.cs_member_name" ASC</otherwise>
+        </choose>
+		) AS rownumber, * FROM (
+        </if>
+			SELECT groupbbs.cs_reference_seq 		AS "groupbbs.cs_reference_seq",
+				   member.cs_member_seq 			AS "member.cs_member_seq",
+				   member.cs_member_id 				AS "member.cs_member_id", 
+				   member.cs_member_name 			AS "member.cs_member_name",
+				   member.cs_phone_mobile 			AS "member.cs_phone_mobile", 
+				   category.cs_category_name 		AS "category.cs_category_name",
+				   (CASE 
+						WHEN (SELECT evaluate.cs_to_count 
+								FROM cs_course_post_evaluate evaluate 
+							   WHERE evaluate.cs_post_type = 'board'
+								 AND evaluate.cs_course_active_seq = groupbbs.cs_reference_seq 
+								 AND evaluate.cs_sort_order = 3
+								 <![CDATA[
+					       		 AND evaluate.cs_delete_yn = 'N') >= groupbbs.score_count
+					       		 ]]>
+						THEN (SELECT evaluate.cs_score
+								FROM cs_course_post_evaluate evaluate 
+							   WHERE evaluate.cs_post_type = 'board'
+								 AND evaluate.cs_course_active_seq = groupbbs.cs_reference_seq
+								 AND evaluate.cs_sort_order = 3
+					       		 AND evaluate.cs_delete_yn = 'N')
+						WHEN (SELECT evaluate.cs_to_count 
+								FROM cs_course_post_evaluate evaluate 
+							   WHERE evaluate.cs_post_type = 'board'
+								 AND evaluate.cs_course_active_seq = groupbbs.cs_reference_seq
+								 AND evaluate.cs_sort_order = 2
+								 <![CDATA[
+					       		 AND evaluate.cs_delete_yn = 'N') >= groupbbs.score_count
+					       		 ]]>
+						THEN (SELECT evaluate.cs_score
+								FROM cs_course_post_evaluate evaluate 
+							   WHERE evaluate.cs_post_type = 'board'
+								 AND evaluate.cs_course_active_seq = groupbbs.cs_reference_seq
+								 AND evaluate.cs_sort_order = 2
+					       		 AND evaluate.cs_delete_yn = 'N')		
+						ELSE (SELECT evaluate.cs_score
+								FROM cs_course_post_evaluate evaluate 
+							   WHERE evaluate.cs_post_type = 'board'
+								 AND evaluate.cs_course_active_seq = groupbbs.cs_reference_seq
+								 AND evaluate.cs_sort_order = 1
+					       		 AND evaluate.cs_delete_yn = 'N')
+				   END) 							AS "bbs_score",
+				   ISNULL(REPLACE(STUFF( 
+						(SELECT '#' + STR(subgroupbbs.cs_board_seq) + '__' + subgroupbbs.cs_board_type_cd + '__' + 
+							    STR(subgroupbbs.evaluate_yes_count) + '__' + STR(subgroupbbs.evaluate_no_count) 
+						   FROM (SELECT ISNULL(COUNT(CASE WHEN bbs.cs_evaluate_yn = 'Y' THEN 1 END), 0) 	AS "evaluate_yes_count", 
+										ISNULL( COUNT(CASE WHEN bbs.cs_evaluate_yn = 'N' THEN 1 END) , 0)	AS "evaluate_no_count",
+										board.cs_board_type_cd 												AS "cs_board_type_cd",
+										bbs.cs_reg_member_seq 												AS "cs_member_seq",
+										board.cs_board_seq 													AS "cs_board_seq"
+								   FROM cs_board board
+							 INNER JOIN cs_course_active_bbs bbs
+									 ON board.cs_reference_seq = bbs.cs_course_active_seq
+					  				AND board.cs_board_type_cd = bbs.cs_board_type_cd
+									AND bbs.cs_delete_yn = 'N'
+								  WHERE board.cs_reference_seq = #{srchCourseActiveSeq}
+									AND board.cs_delete_yn = 'N'
+							   GROUP BY board.cs_board_seq, board.cs_board_type_cd, board.cs_reference_seq, bbs.cs_reg_member_seq
+								) subgroupbbs
+							WHERE subgroupbbs.cs_member_seq = groupbbs.cs_member_seq
+							FOR XML PATH('')), 1, 1, '')  
+					, ' ', ''), '')					AS "bbsEvaluateData"
+			 FROM (SELECT ISNULL(COUNT(CASE WHEN bbs.cs_evaluate_yn = 'Y' THEN 1 END), 0) 	AS "score_count", 
+			 			  bbs.cs_reg_member_seq 											AS "cs_member_seq",
+						  board.cs_reference_seq 											AS "cs_reference_seq"
+					 FROM cs_board board
+			   INNER JOIN cs_course_active_bbs bbs
+					   ON board.cs_reference_seq = bbs.cs_course_active_seq
+					  AND board.cs_board_type_cd = bbs.cs_board_type_cd
+					  AND bbs.cs_delete_yn = 'N'
+					WHERE board.cs_reference_seq = #{srchCourseActiveSeq}
+					  AND board.cs_delete_yn = 'N'
+				 GROUP BY board.cs_reference_seq, bbs.cs_reg_member_seq
+				  ) groupbbs
+	   INNER JOIN cs_course_apply apply
+			   ON groupbbs.cs_reference_seq = apply.cs_course_active_seq
+			  AND groupbbs.cs_member_seq = apply.cs_member_seq
+			  AND apply.cs_delete_yn = 'N'
+	   INNER JOIN cs_member member
+			   ON apply.cs_member_seq = member.cs_member_seq
+			  AND member.cs_delete_yn = 'N'
+  	   LEFT OUTER JOIN cs_category category 
+		       ON member.cs_category_organization_seq = category.cs_category_seq 
+			  AND category.cs_delete_yn = 'N' 
+			WHERE 1=1
+		<if test='srchKey != null and !srchKey.equals("")'> 
+			<choose>
+				<when test='srchKey.equals("memberId")'>
+					<if test='srchWordDB != null and !srchWordDB.equals("")'> 
+			  AND member.cs_member_id = #{srchWordDB}
+					</if>
+				</when>
+		    	<when test='srchKey.equals("memberName")'>
+		    		<if test='srchWordDB != null and !srchWordDB.equals("")'> 
+			  AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+		    		</if>
+		    	</when>
+		    </choose>
+		</if>
+		<if test='srchCategoryString != null and !srchCategoryString.equals("")'>
+			  AND category.cs_category_string LIKE '%' + #{srchCategoryStringDB} + '%' 
+		</if>
+		<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+			  AND category.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%' 
+		</if>        
+        <if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseBbsResultCondition" resultType="int">
+		/* UIUnivCourseBbsResult.countList */
+		   SELECT COUNT(*)
+			 FROM (SELECT ISNULL(COUNT(CASE WHEN bbs.cs_evaluate_yn = 'Y' THEN 1 END), 0) 	AS "score_count", 
+			 			  bbs.cs_reg_member_seq 											AS "cs_member_seq",
+						  board.cs_reference_seq 											AS "cs_reference_seq"
+					 FROM cs_board board
+			   INNER JOIN cs_course_active_bbs bbs
+					   ON board.cs_reference_seq = bbs.cs_course_active_seq
+					  AND board.cs_board_type_cd = bbs.cs_board_type_cd
+					  AND bbs.cs_delete_yn = 'N'
+					WHERE board.cs_reference_seq = #{srchCourseActiveSeq}
+					  AND board.cs_delete_yn = 'N'
+				 GROUP BY board.cs_reference_seq, bbs.cs_reg_member_seq
+				  ) groupbbs
+	   INNER JOIN cs_course_apply apply
+			   ON groupbbs.cs_reference_seq = apply.cs_course_active_seq
+			  AND groupbbs.cs_member_seq = apply.cs_member_seq
+			  AND apply.cs_delete_yn = 'N'
+	   INNER JOIN cs_member member
+			   ON apply.cs_member_seq = member.cs_member_seq
+			  AND member.cs_delete_yn = 'N'
+  LEFT OUTER JOIN cs_category category 
+		       ON member.cs_category_organization_seq = category.cs_category_seq 
+			  AND category.cs_delete_yn = 'N'
+			WHERE 1=1
+		<if test='srchKey != null and !srchKey.equals("")'> 
+			<choose>
+				<when test='srchKey.equals("memberId")'>
+					<if test='srchWordDB != null and !srchWordDB.equals("")'> 
+			  AND member.cs_member_id = #{srchWordDB}
+					</if>
+				</when>
+		    	<when test='srchKey.equals("memberName")'>
+		    		<if test='srchWordDB != null and !srchWordDB.equals("")'> 
+			  AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+		    		</if>
+		    	</when>
+		    </choose>
+		</if>
+		<if test='srchCategoryString != null and !srchCategoryString.equals("")'>
+			  AND category.cs_category_string LIKE '%' + #{srchCategoryStringDB} + '%' 
+		</if>
+		<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+			  AND category.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%' 
+		</if>  		    
+    </select>
+
+</mapper>

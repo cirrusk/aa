@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsContentsMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsContentsVO">
+        <selectKey resultType="Long" keyProperty="contentsSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UILcmsContentsMapper.insert */
+INSERT INTO cs_lcms_contents 
+       ( 
+           cs_title ,
+           cs_category_seq ,
+           cs_member_seq ,
+           cs_status_cd ,
+           cs_description ,
+           cs_week_count ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+       VALUES 
+       ( 
+           #{title} ,
+           #{categorySeq, jdbcType=NUMERIC} ,
+           #{memberSeq, jdbcType=NUMERIC} ,
+           #{statusCd, jdbcType=VARCHAR} ,
+           #{description, jdbcType=VARCHAR} ,
+           '0',
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       )
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsContentsVO">
+/* UILcmsContentsMapper.update */
+UPDATE cs_lcms_contents 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_title = #{title, jdbcType=VARCHAR} ,
+       cs_category_seq = #{categorySeq, jdbcType=NUMERIC} ,
+       cs_member_seq = #{memberSeq, jdbcType=NUMERIC} ,
+       cs_status_cd = #{statusCd, jdbcType=VARCHAR} ,
+       cs_description = #{description, jdbcType=VARCHAR} 
+ WHERE cs_contents_seq = #{contentsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateMemberSeq" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsContentsVO">
+/* UILcmsContentsMapper.updateMemberSeq */
+UPDATE cs_lcms_contents 
+   SET cs_member_seq = #{memberSeq, jdbcType=NUMERIC} 
+ WHERE cs_contents_seq = #{contentsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateWeekCount" parameterType="Long">
+/* UILcmsContentsMapper.updateWeekCount */
+UPDATE cs_lcms_contents 
+   SET cs_week_count = (
+       SELECT COUNT(*) 
+         FROM cs_lcms_contents_organization 
+        WHERE cs_contents_seq = #{contentsSeq} 
+          AND cs_delete_yn = 'N'
+       ) 
+ WHERE cs_contents_seq = #{contentsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsContentsVO">
+/* UILcmsContentsMapper.delete */
+UPDATE cs_lcms_contents 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_contents_seq = #{contentsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsContentsRS">
+        <result column="cnt.contentsSeq"       property="contents.contentsSeq" />
+        <result column="cnt.categorySeq"       property="contents.categorySeq" />
+        <result column="cnt.memberSeq"         property="contents.memberSeq" />
+        <result column="cnt.memberName"        property="contents.memberName" />
+        <result column="cnt.title"             property="contents.title" />
+        <result column="cnt.statusCd"          property="contents.statusCd" />
+        <result column="cnt.description"       property="contents.description" />
+        <result column="cnt.weekCount"         property="contents.weekCount" />
+        <result column="cnt.deleteYn"          property="contents.deleteYn" />
+        <result column="cnt.regMemberSeq"      property="contents.regMemberSeq" />
+        <result column="cnt.regDtime"          property="contents.regDtime" />
+        <result column="cnt.regIp"             property="contents.regIp" />
+        <result column="cnt.updMemberSeq"      property="contents.updMemberSeq" />
+        <result column="cnt.updDtime"          property="contents.updDtime" />
+        <result column="cnt.updIp"             property="contents.updIp" />
+        <result column="cnt.regMemberName"     property="contents.regMemberName" />
+        <result column="cnt.updMemberName"     property="contents.updMemberName" />
+        <result column="cnt.categoryString"    property="contents.categoryString" />
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UILcmsContentsMapper.getDetail */
+SELECT cnt.cs_contents_seq          AS "cnt.contentsSeq" ,
+       cnt.cs_category_seq          AS "cnt.categorySeq" ,
+       cnt.cs_member_seq            AS "cnt.memberSeq" ,
+       cnt.cs_title                 AS "cnt.title" ,
+       cnt.cs_status_cd             AS "cnt.statusCd" ,
+       cnt.cs_description           AS "cnt.description" ,
+       cnt.cs_week_count            AS "cnt.weekCount" ,
+       cnt.cs_delete_yn             AS "cnt.deleteYn" ,
+       cnt.cs_reg_member_seq        AS "cnt.regMemberSeq" ,
+       cnt.cs_reg_dtime             AS "cnt.regDtime" ,
+       cnt.cs_reg_ip                AS "cnt.regIp" ,
+       cnt.cs_upd_member_seq        AS "cnt.updMemberSeq" ,
+       cnt.cs_upd_dtime             AS "cnt.updDtime" ,
+       cnt.cs_upd_ip                AS "cnt.updIp" ,
+       (SELECT memb.cs_member_name FROM cs_member memb WHERE memb.cs_member_seq = cnt.cs_member_seq) AS "cnt.memberName" ,
+       (SELECT rmem.cs_member_name FROM cs_member rmem WHERE rmem.cs_member_seq = cnt.cs_reg_member_seq) AS "cnt.regMemberName" ,
+       (SELECT umem.cs_member_name FROM cs_member umem WHERE umem.cs_member_seq = cnt.cs_upd_member_seq) AS "cnt.updMemberName" ,
+       (SELECT cate.cs_category_string FROM cs_category cate WHERE cate.cs_category_seq = cnt.cs_category_seq) AS "cnt.categoryString" 
+  FROM cs_lcms_contents cnt 
+ WHERE cnt.cs_contents_seq = #{contentsSeq} 
+       AND cnt.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsContentsRS">
+        <result column="cnt.contentsSeq"       property="contents.contentsSeq" />
+        <result column="cnt.categorySeq"       property="contents.categorySeq" />
+        <result column="cnt.memberSeq"         property="contents.memberSeq" />
+        <result column="cnt.memberName"        property="contents.memberName" />
+        <result column="cnt.title"             property="contents.title" />
+        <result column="cnt.statusCd"          property="contents.statusCd" />
+        <result column="cnt.description"       property="contents.description" />
+        <result column="cnt.weekCount"         property="contents.weekCount" />
+        <result column="cnt.deleteYn"          property="contents.deleteYn" />
+        <result column="cnt.regMemberSeq"      property="contents.regMemberSeq" />
+        <result column="cnt.regDtime"          property="contents.regDtime" />
+        <result column="cnt.regIp"             property="contents.regIp" />
+        <result column="cnt.updMemberSeq"      property="contents.updMemberSeq" />
+        <result column="cnt.updDtime"          property="contents.updDtime" />
+        <result column="cnt.updIp"             property="contents.updIp" />
+        <result column="cnt.regMemberName"     property="contents.regMemberName" />
+        <result column="cnt.categoryString"    property="contents.categoryString" />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsContentsCondition" resultMap="listResultMap">
+/* UILcmsContentsMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "cnt.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "cnt.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "cnt.title" ASC</when>
+            <when test='orderby == -2'>ORDER BY "cnt.title" DESC</when>
+            <when test='orderby == 3'>ORDER BY "cnt.statusCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "cnt.statusCd" DESC</when>
+            <otherwise>ORDER BY "cnt.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT cnt.cs_contents_seq          AS "cnt.contentsSeq" ,
+       cnt.cs_category_seq          AS "cnt.categorySeq" ,
+       cnt.cs_member_seq            AS "cnt.memberSeq" ,
+       cnt.cs_title                 AS "cnt.title" ,
+       cnt.cs_status_cd             AS "cnt.statusCd" ,
+       cnt.cs_description           AS "cnt.description" ,
+       cnt.cs_week_count            AS "cnt.weekCount" ,
+       cnt.cs_delete_yn             AS "cnt.deleteYn" ,
+       cnt.cs_reg_member_seq        AS "cnt.regMemberSeq" ,
+       cnt.cs_reg_dtime             AS "cnt.regDtime" ,
+       cnt.cs_reg_ip                AS "cnt.regIp" ,
+       cnt.cs_upd_member_seq        AS "cnt.updMemberSeq" ,
+       cnt.cs_upd_dtime             AS "cnt.updDtime" ,
+       cnt.cs_upd_ip                AS "cnt.updIp" ,
+       memb.cs_member_name	        AS "cnt.memberName" ,
+       rmem.cs_member_name   		AS "cnt.regMemberName",
+       cate.cs_category_string		AS "cnt.categoryString"
+  FROM cs_lcms_contents cnt 
+   INNER JOIN cs_category cate
+      ON cate.cs_category_seq = cnt.cs_category_seq
+   INNER JOIN cs_member memb
+      ON memb.cs_member_seq = cnt.cs_member_seq
+   INNER JOIN cs_member rmem
+      ON rmem.cs_member_seq = cnt.cs_reg_member_seq
+ WHERE cnt.cs_delete_yn = 'N'
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+        AND cate.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+        </if>
+        <if test='srchStatusCd != null and !srchStatusCd.equals("")'>
+        AND cnt.cs_status_cd = #{srchStatusCd}
+        </if>
+        <if test='srchMemberSeq != null and !srchMemberSeq.equals(0L)'>
+        AND (cnt.cs_member_seq = #{srchMemberSeq} OR cnt.cs_reg_member_seq = #{srchMemberSeq})
+        </if>
+        <if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+		AND (
+				cnt.cs_member_seq IN (
+											SELECT 
+												sub.cs_prof_member_seq 
+											FROM 
+												cs_course_active_lecturer sub
+											WHERE sub.cs_delete_yn = 'N' 
+											  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+											GROUP BY sub.cs_prof_member_seq
+									 )
+				 OR cnt.cs_reg_member_seq = #{srchAssistMemberSeq}
+			)
+		</if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+        AND cnt.cs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+        AND cnt.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsContentsCondition" resultType="int">
+/* UILcmsContentsMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_lcms_contents cnt 
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   INNER JOIN cs_category cate
+      ON cate.cs_category_seq = cnt.cs_category_seq
+        </if>
+ WHERE cnt.cs_delete_yn = 'N'
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+        AND cate.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+        </if>
+        <if test='srchStatusCd != null and !srchStatusCd.equals("")'>
+        AND cnt.cs_status_cd = #{srchStatusCd}
+        </if>
+        <if test='srchMemberSeq != null and !srchMemberSeq.equals(0L)'>
+        AND (cnt.cs_member_seq = #{srchMemberSeq} OR cnt.cs_reg_member_seq = #{srchMemberSeq})
+        </if>
+        <if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+		AND (
+				cnt.cs_member_seq IN (
+											SELECT 
+												sub.cs_prof_member_seq 
+											FROM 
+												cs_course_active_lecturer sub
+											WHERE sub.cs_delete_yn = 'N' 
+											  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+											GROUP BY sub.cs_prof_member_seq
+									 )
+				 OR cnt.cs_reg_member_seq = #{srchAssistMemberSeq}
+			)
+		</if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       AND cnt.cs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND cnt.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+
+    <resultMap id="listWithOrganizationResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsContentsRS">
+        <result column="cnt.contentsSeq"     property="contents.contentsSeq" />
+        <result column="cnt.categorySeq"     property="contents.categorySeq" />
+        <result column="cnt.memberSeq"       property="contents.memberSeq" />
+        <result column="cnt.memberName"      property="contents.memberName" />
+        <result column="cnt.title"           property="contents.title" />
+        <result column="cnt.statusCd"        property="contents.statusCd" />
+        <result column="cnt.description"     property="contents.description" />
+        <result column="cnt.deleteYn"        property="contents.deleteYn" />
+        <result column="cnt.categoryString"  property="contents.categoryString" />
+        <collection column="cnt.contentsSeq" property="listOrganization" javaType="List" 
+            ofType="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsContentsOrganizationRS" select="com._4csoft.aof.lcms.mapper.LcmsContentsOrganizationMapper.getList"/>
+    </resultMap>
+    <select id="getListWithOrganization" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsContentsCondition" resultMap="listWithOrganizationResultMap">
+/* UILcmsContentsMapper.getListWithOrganization */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "cnt.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "cnt.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "cnt.title" ASC</when>
+            <when test='orderby == -2'>ORDER BY "cnt.title" DESC</when>
+            <when test='orderby == 3'>ORDER BY "cnt.statusCd" ASC</when>
+            <when test='orderby == -3'>ORDER BY "cnt.statusCd" DESC</when>
+            <otherwise>ORDER BY "cnt.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+	SELECT cnt.cs_contents_seq  AS "cnt.contentsSeq" ,
+	       cnt.cs_category_seq  AS "cnt.categorySeq" ,
+	       cnt.cs_member_seq    AS "cnt.memberSeq" ,
+	       cnt.cs_title         AS "cnt.title" ,
+	       cnt.cs_status_cd     AS "cnt.statusCd" ,
+	       cnt.cs_description   AS "cnt.description" ,
+	       cnt.cs_delete_yn     AS "cnt.deleteYn" ,
+	       memb.cs_member_name  AS "cnt.memberName" ,
+	       cate.cs_category_string AS "cnt.categoryString"
+      FROM cs_lcms_contents cnt 
+INNER JOIN cs_category cate
+        ON cate.cs_category_seq = cnt.cs_category_seq
+INNER JOIN cs_member memb
+        ON memb.cs_member_seq = cnt.cs_member_seq
+     WHERE cnt.cs_delete_yn = 'N'
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+        AND cnt.cs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+        AND cnt.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+</mapper>

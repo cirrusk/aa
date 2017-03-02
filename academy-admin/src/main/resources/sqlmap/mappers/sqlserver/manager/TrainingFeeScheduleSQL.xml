@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.trainingFee.proof.service.impl.TrainingFeeScheduleMapper">
+
+	<!--일정관리 리스트  -->
+	<select id="selectPlanList" parameterType="reqBox" resultType="dataBox">
+		WITH GIVEYEARMONTH AS ( SELECT #{giveyear} GIVEYEAR, '01' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '02' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '03' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '04' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '05' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '06' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '07' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '08' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '09' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '10' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '11' AS GIVEMONTH UNION
+							    SELECT #{giveyear} GIVEYEAR, '12' AS GIVEMONTH
+		                      )
+		SELECT   Z.* 
+		  FROM   ( SELECT   ROW_NUMBER() OVER( ORDER BY GIVEYEAR ) AS ROW_NUM 
+			              , X.* 
+			         FROM   ( SELECT   A.GIVEYEAR
+								     , A.GIVEMONTH
+								     , CONVERT(DATE, B.STARTDT) AS STARTDT
+                                     , B.STARTTIME
+                                     , CONVERT(DATE, B.ENDDT) AS ENDDT
+                                     , B.ENDTIME
+								     , CASE WHEN LEN(B.GIVEYEAR) > 0 THEN 'U' ELSE 'I' END ROWMODE
+								     , CASE WHEN LEN(B.GIVEYEAR) > 0 THEN '수정' ELSE '등록' END ROWMODEBUT
+								     , B.SMSSENDFLAG
+							    FROM   GIVEYEARMONTH A
+					 LEFT OUTER JOIN   DBO.TRFEESCHEDULE B ON ( B.GIVEYEAR  = #{giveyear}
+					                                          AND B.GIVEYEAR  = A.GIVEYEAR 
+					                                          AND B.GIVEMONTH = A.GIVEMONTH )
+			                 )AS X
+		         ) AS Z
+		 WHERE   ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+
+	<!-- 일정관리 상세보기  -->
+	<select id="trainingFeePlanDetail" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			  GIVEYEAR
+			, GIVEMONTH
+			, CONVERT(DATE, STARTDT) AS STARTDT
+			, STARTTIME
+			, CONVERT(DATE, ENDDT) AS ENDDT
+			, ENDTIME
+			, SMSSENDFLAG
+		FROM DBO.TRFEESCHEDULE
+		WHERE 
+			GIVEYEAR = #{giveyear} AND GIVEMONTH = #{givemonth}
+	</select>
+
+	<!-- 일정관리 등록 -->
+	<insert id="insertPlanAjax" parameterType="reqBox">
+		INSERT INTO DBO.TRFEESCHEDULE 
+		           ( GIVEYEAR
+		           , GIVEMONTH
+		           , STARTDT
+		           , STARTTIME
+		           , ENDDT
+		           , ENDTIME
+		           , SMSSENDFLAG
+		           , MODIFIER
+		           , MODIFYDATE
+		           , REGISTRANT
+		           , REGISTRANTDATE
+		           )VALUES(
+		             #{giveyear}
+		           , #{givemonth}
+		           , CONVERT(VARCHAR, CONVERT (DATE, #{startdt}), 112)
+		           , #{starttime}
+		           , CONVERT(VARCHAR, CONVERT (DATE, #{enddt}), 112)
+		           , #{endtime}
+		           , #{smssendflag}
+		           , #{adminId}
+		           , Getdate()
+		           , #{adminId}
+		           , Getdate()
+		           )
+	</insert>
+	
+	<!-- 일정관리 수정 -->
+	<update id="trainingFeePlanUpdateAjax" parameterType="reqBox">
+		UPDATE DBO.TRFEESCHEDULE 
+		   SET STARTDT     = CONVERT(VARCHAR, CONVERT (DATE, #{startdt}), 112)
+			 , STARTTIME   = #{starttime}
+		     , ENDDT       = CONVERT(VARCHAR, CONVERT (DATE, #{enddt}), 112)
+		     , ENDTIME     = #{endtime}
+		     , SMSSENDFLAG = #{smssendflag}
+		     , MODIFIER    = #{adminId}
+  		     , MODIFYDATE  = Getdate()
+		 WHERE GIVEYEAR    = #{giveyear}
+		   AND GIVEMONTH   = #{givemonth}
+	</update>
+	
+	<select id="selectTrFeeScheduleVal" parameterType="reqBox" resultType="dataBox">
+	WITH SCHEDULELIST AS (
+							SELECT   GIVEYEAR
+							       , GIVEMONTH
+							       , STARTDT+''+STARTTIME+'00' AS STARTTIME
+							       , ENDDT+''+CASE ENDTIME WHEN '10' THEN '0'+CONVERT(VARCHAR, (ENDTIME-1)) ELSE CONVERT(VARCHAR, (ENDTIME-1)) END +'59' AS ENDTIME
+							  FROM DBO.TRFEESCHEDULE 
+							 WHERE GIVEYEAR = #{giveyear}
+							   AND GIVEMONTH   != #{givemonth} )
+		SELECT   GIVEYEAR
+		       , GIVEMONTH
+		  FROM   SCHEDULELIST
+		 WHERE ( STARTTIME BETWEEN CONVERT(VARCHAR, CONVERT (DATE, #{startdt}), 112) + #{starttime} + '00'
+		                       AND CONVERT(VARCHAR, CONVERT (DATE, #{enddt}), 112) + #{endtime} + '00' )
+		    OR ( ENDTIME BETWEEN CONVERT(VARCHAR, CONVERT (DATE, #{startdt}), 112) + #{starttime} + '00'
+		                     AND CONVERT(VARCHAR, CONVERT (DATE, #{enddt}), 112) + #{endtime} + '00' )
+	</select>
+	
+	<select id="selectTrFeeTargetVal" parameterType="reqBox" resultType="dataBox">
+		SELECT   GIVEYEAR
+		       , GIVEMONTH
+		       , DEPABO_NO
+		  FROM   dbo.TRFEETARGETMONTH
+		 WHERE   GIVEYEAR  = #{giveyear}
+		   AND   GIVEMONTH = #{givemonth}
+	</select>
+	
+	<insert id="insertNoteSend" parameterType="reqBox">
+		INSERT 
+		  INTO   dbo.NOTESEND
+		       ( NOTESERVICE
+               , NAME
+               , UID
+               , NOTEITEM
+               , NOTECONTENT
+               , SENDDATE
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE
+               , DELETEYN )
+        SELECT ( NOTESERVICE
+               , DEPABONAME
+               , UID
+               , NOTEITEM
+               , NOTECONTENT
+               , SENDDATE
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE
+               , DELETEYN
+          FROM ( SELECT  '2' AS NOTESERVICE
+				       , DEPABONAME
+				       , depabo_no UID
+				       , '501' AS NOTEITEM
+				       , '리더님. '+GIVEMONTH+'월 교육비 등록이 명일부터 가능 합니다.' AS NOTECONTENT
+				       , DATEADD(HH, 9, DATEADD(DD, -3, CONVERT(VARCHAR, CONVERT (DATE, #{startdt}), 112) )) AS SENDDATE
+				       , #{adminId} MODIFIER
+				       , GETDATE() MODIFYDATE
+				       , #{adminId} REGISTRANT
+				       , GETDATE() REGISTRANTDATE
+				       , 'N' DELETEYN
+				  FROM V_TRFEETARGET
+				WHERE GIVEYEAR = #{giveyear}
+				  AND GIVEMONTH = #{givemonth}
+				UNION ALL
+				SELECT  '2' AS NOTESERVICE
+				       , DEPABONAME
+				       , depabo_no UID
+				       , '502' AS NOTEITEM
+				       , '리더님. '+GIVEMONTH+'월 교육비 등록이 명일 마감 됩니다.' AS NOTECONTENT
+				       , DATEADD(HH, 9, DATEADD(DD, -3, CONVERT(VARCHAR, CONVERT (DATE, #{enddt}), 112) )) AS SENDDATE
+				       , #{adminId}
+				       , GETDATE()
+				       , #{adminId}
+				       , GETDATE()
+				       , 'N'
+				  FROM V_TRFEETARGET
+				WHERE GIVEYEAR = #{giveyear}
+				  AND GIVEMONTH = #{givemonth} ) A
+	</insert>
+	
+	<select id="selectSMSData" parameterType="reqBox" resultType="dataBox">
+		 SELECT  DEPABO_NO
+               , CONTENT
+               , TO_NAME
+               , TO_PHONE
+               , FROM_NAME
+               , FROM_PHONE
+               , SMS_STATUS
+               , REG_DATE
+               , SMS_TYPE
+               , DEPT_CODE
+               , SVC_CODE
+               , SMS_FLAG
+          FROM ( SELECT  DEPABO_NO
+				       , '[한국암웨이] 안녕하세요 리더님. '+CONVERT(VARCHAR(2), GIVEMONTH)+'월 교육비 등록이 명일부터 가능하오니 ABN 사이트를 통해 등록해주시기 바랍니다. 감사합니다.' AS CONTENT
+				       , ( SELECT NAME FROM dbo.MEMBER WHERE UID=DEPABO_NO) AS TO_NAME
+                       , '010' <!--  ( SELECT PHONE_NUMBER FROM KRWD174.MAILDB.DBO.MAILLOS WHERE DIST_NO=DEPABO_NO )--> AS TO_PHONE
+		               , '한국암웨이' AS FROM_NAME
+		               , '02-3468-6000' AS FROM_PHONE
+		               , '1' AS SMS_STATUS
+		               , DATEADD(HH, 9, DATEADD(DD, -3, CONVERT(VARCHAR, CONVERT (DATE, #{startdt}), 112) )) AS REG_DATE
+		               , 4 AS SMS_TYPE
+		               , '2' AS DEPT_CODE
+		               , '1' AS SVC_CODE
+		               , 'L' AS SMS_FLAG
+				  FROM V_TRFEETARGET
+				WHERE GIVEYEAR = #{giveyear}
+				  AND GIVEMONTH = #{givemonth}
+				UNION ALL
+				SELECT   DEPABO_NO
+				       , '[한국암웨이] 안녕하세요 리더님. '+CONVERT(VARCHAR(2), GIVEMONTH)+'월 교육비 등록이 명일 마감되오니, 아직 등록하지 않으셨다면 ABN 사이트를 통해 등록해주시기 바랍니다.감사합니다.' AS CONTENT
+				       , ( SELECT NAME FROM dbo.MEMBER WHERE UID=DEPABO_NO) AS TO_NAME
+                       , '010' <!--  ( SELECT PHONE_NUMBER FROM KRWD174.MAILDB.DBO.MAILLOS WHERE DIST_NO=DEPABO_NO )--> AS TO_PHONE
+		               , '한국암웨이' AS FROM_NAME
+		               , '02-3468-6000' AS FROM_PHONE
+		               , '1' AS SMS_STATUS
+		               , DATEADD(HH, 9, DATEADD(DD, -1, CONVERT(VARCHAR, CONVERT (DATE, #{enddt}), 112) )) AS REG_DATE
+		               , 4 AS SMS_TYPE
+		               , '2' AS DEPT_CODE
+		               , '1' AS SVC_CODE
+		               , 'L' AS SMS_FLAG
+				  FROM V_TRFEETARGET
+				WHERE GIVEYEAR = #{giveyear}
+				  AND GIVEMONTH = #{givemonth} ) A
+	</select>
+	
+	
+	<insert id="insertSMSSendHIST" parameterType="reqBox">
+		INSERT
+		  INTO   dbo.TRFEESMS
+               ( GIVEYEAR
+               , GIVEMONTH
+               , DEPABO_NO
+               , SENDSEQ
+               , SENDDATE
+               , NOTETEXT
+               , SMSTEXT
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE )
+        SELECT   GIVEYEAR
+               , GIVEMONTH
+               , DEPABO_NO
+               , ( SELECT   ISNULL(MAX(SENDSEQ),0)
+                     FROM   dbo.TRFEESMS
+                    WHERE   GIVEYEAR = #{giveyear}
+				      AND   GIVEMONTH = #{givemonth} ) + ROW_NUMBER() OVER (ORDER BY GIVEYEAR) SENDSEQ
+               , SENDDATE
+               , NOTETEXT
+               , SMSTEXT
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE
+          FROM ( SELECT  GIVEYEAR
+                       , GIVEMONTH
+                       , DEPABO_NO
+                       , DATEADD(HH, 9, DATEADD(DD, -3, CONVERT(VARCHAR, CONVERT (DATE, #{startdt}), 112) )) AS SENDDATE
+                       , '리더님. '+GIVEMONTH+'월 교육비 등록이 명일부터 가능 합니다.' AS NOTETEXT
+				       , CONVERT(VARCHAR(80),'[한국암웨이] 안녕하세요 리더님. '+GIVEMONTH+'월 교육비 등록이 명일부터 가능하오니 ABN 사이트를 통해 등록해주시기 바랍니다. 감사합니다.') AS SMSTEXT
+				       , #{adminId} AS MODIFIER
+				       , GETDATE() AS MODIFYDATE
+				       , #{adminId} AS REGISTRANT
+				       , GETDATE() AS REGISTRANTDATE
+				  FROM V_TRFEETARGET
+				WHERE GIVEYEAR = #{giveyear}
+				  AND GIVEMONTH = #{givemonth}
+				UNION ALL
+				SELECT   GIVEYEAR
+                       , GIVEMONTH
+                       , DEPABO_NO
+                       , DATEADD(HH, 9, DATEADD(DD, -1, CONVERT(VARCHAR, CONVERT (DATE, #{enddt}), 112) )) AS SENDDATE
+				       , '리더님. '+GIVEMONTH+'월 교육비 등록이 명일 마감 됩니다.' AS NOTETEXT
+				       , CONVERT(VARCHAR(80),'[한국암웨이] 안녕하세요 리더님. '+GIVEMONTH+'월 교육비 등록이 명일 마감되오니, 아직 등록하지 않으셨다면 ABN 사이트를 통해 등록해주시기 바랍니다.감사합니다.') AS SMSTEXT
+				       , #{adminId}
+				       , GETDATE()
+				       , #{adminId}
+				       , GETDATE()
+				  FROM V_TRFEETARGET
+				WHERE GIVEYEAR = #{giveyear}
+				  AND GIVEMONTH = #{givemonth} ) A
+	</insert>
+	
+	<!-- 오프라인 1일전 안내 쪽지 발송 procedure -->
+	<select id="sptrfeePTList" statementType="CALLABLE" resultType="java.util.Map">
+     {call
+            DBO.ABN_DB_IMC_DOWN_LOAD(
+                       #{orddt, mode=IN, jdbcType=VARCHAR}
+            )
+       }
+	</select>
+	
+	<!-- 오프라인 1일전 안내 쪽지 발송 procedure -->
+	<select id="sptrfeePTList1" statementType="CALLABLE" resultType="java.util.Map">
+     {call
+            DBO.IMPORT_TB_EDUPAY_MONTHPAY_SUB(
+                         #{giveyear, mode=IN, jdbcType=VARCHAR}
+                       , #{givemonth, mode=IN, jdbcType=VARCHAR}
+            )
+       }
+	</select>
+	
+	<select id="callSmsAllSend" parameterType="java.util.Map" statementType="CALLABLE">
+		{call
+            DBO.TRFEESMSSEND(
+				 #{giveyear, mode=IN, jdbcType=VARCHAR}
+				,#{givemonth, mode=IN, jdbcType=VARCHAR}
+				,#{errCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+				,#{errMsg, mode=OUT, jdbcType=VARCHAR, javaType=String})
+       }
+	</select>
+	
+	<insert id="insertSMSSend" parameterType="reqBox">
+		SET XACT_ABORT ON
+		INSERT
+		  INTO   KRWD308.ums.dbo.SMS_IBO_NO_MAILQUEUE
+               ( TO_ID
+               , CONTENT
+               , TO_NAME
+               , TO_PHONE
+               , FROM_NAME
+               , FROM_PHONE
+               , SMS_STATUS
+               , REG_DATE
+               , SMS_TYPE
+               , DEPT_CODE
+               , SVC_CODE
+               , SMS_FLAG)
+        VALUES ( #{depabo_no}
+               , #{content}
+               , #{to_name}
+               , #{to_phone}
+               , #{from_name}
+               , #{from_phone}
+               , #{sms_status}
+               , #{reg_date}
+               , #{sms_type}
+               , #{dept_code}
+               , #{svc_code}
+               , #{sms_flag} )
+       SET XACT_ABORT OFF
+	</insert>
+</mapper>

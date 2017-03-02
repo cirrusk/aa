@@ -1,0 +1,679 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.trainingFee.agreelist.service.impl.TrainingFeeAgreeLogMapper">
+	
+	<select id="selectAgreeLogListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeAgreeList.xml  selectAgreeLogListCount  */
+		WITH AGREELIST AS ( SELECT   A.FISCALYEAR
+					               , A.DEPABO_NO
+					               , A.AGREEID
+					               , B.AGREETITLE
+					               , A.AGREEFLAG
+					               , A.AGREEDATE
+					               , A.REGISTRANTDATE
+					          FROM   DBO.TRFEEAGREEPLEDGE A
+					     LEFT JOIN   DBO.TRFEEAGREEMANAGE B ON B.FISCALYEAR = A.FISCALYEAR
+					                                       AND B.AGREEID    = A.AGREEID
+					         WHERE   B.AGREETYPECODE = '100'
+					           AND   B.FISCALYEAR    = #{fiscalyear})
+		SELECT   COUNT(*) AS TOTAL_CNT
+		  FROM (
+						SELECT   DISTINCT 
+					                        B.FISCALYEAR
+								          , A.DEPABO_NO
+								          , A.DEPABONAME
+								          , A.GROUPCODE
+								          , ISNULL(B.AGREEFLAG, 'N') AS AGREEFLAG
+								          , B.AGREEDATE
+								          , B.REGISTRANTDATE
+								          , B.AGREETITLE
+								          , B.AGREEID
+				          FROM   V_TRFEETARGET A
+				  LEFT OUTER JOIN   AGREELIST  B ON A.DEPABO_NO = B.DEPABO_NO  
+						    WHERE ( A.GIVEYEAR = #{fiscalyear} -1 AND A.GIVEMONTH IN ('11','12') 
+						         OR A.GIVEYEAR = #{fiscalyear}    AND A.GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') )
+							 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+							 		AND A.DEPABO_NO = #{searchDepositNm } 
+							 	</if>
+							 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+							 		AND A.DEPABONAME LIKE '%'+#{searchDepositNm }+'%' 
+							 	</if>
+							 </if>
+							<if test="searchBR != null and !searchBR.equals('') ">
+								AND A.BR = #{searchBR } 
+							</if>
+							<if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+								AND A.GROUPCODE = #{searchGrpCd }
+							</if>
+							<if test="searchCode != null and !searchCode.equals('') ">
+								AND A.CODE = #{searchCode }
+							</if>
+							<if test="searchLoa != null and !searchLoa.equals('') ">
+								AND A.LOANAMEKOR = #{searchLoa}
+							</if>
+							<if test="searchCPin != null and !searchCPin.equals('') ">
+								AND A.GROUPS = #{searchCPin}
+							</if>
+							<if test="searchDept != null and !searchDept.equals('') ">
+								AND A.DEPARTMENT = #{searchDept }
+							</if>) A
+							<if test="cbApprove != null and !cbApprove.equals('') ">
+								WHERE A.AGREEFLAG = #{cbApprove }
+							</if>
+	</select>
+	
+	<select id="selectAgreeLogList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeAgreeList.xml  selectAgreeLogList  */
+		WITH AGREELIST AS ( SELECT   A.FISCALYEAR
+					               , A.DEPABO_NO
+					               , A.AGREEID
+					               , B.AGREETITLE
+					               , A.AGREEFLAG
+					               , A.AGREEDATE
+					               , A.REGISTRANTDATE
+					          FROM   DBO.TRFEEAGREEPLEDGE A
+					     LEFT JOIN   DBO.TRFEEAGREEMANAGE B ON B.FISCALYEAR = A.FISCALYEAR
+					                                       AND B.AGREEID    = A.AGREEID
+					         WHERE   B.AGREETYPECODE = '100'
+					           AND   B.FISCALYEAR    = #{fiscalyear})
+		SELECT   * 
+		  FROM (  SELECT   ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+			             , AA.* 
+			        FROM ( SELECT   A.FISCALYEAR
+						          , A.DEPABO_NO
+						          , A.DEPABONAME
+						          , A.GROUPCODE
+						          , A.AGREEFLAG
+						          , A.AGREEDATE
+						          , A.REGISTRANTDATE
+						          , A.AGREETITLE
+						          , A.AGREEID
+			                 FROM (SELECT   DISTINCT 
+					                        #{fiscalyear} FISCALYEAR
+								          , A.DEPABO_NO
+								          , A.DEPABONAME
+								          , A.GROUPCODE
+								          , B.AGREEFLAG AS AGREEFLAG
+								          , B.AGREEDATE
+								          , B.REGISTRANTDATE
+								          , B.AGREETITLE
+								          , B.AGREEID
+								     FROM   V_TRFEETARGET A
+						  LEFT OUTER JOIN   AGREELIST  B ON A.DEPABO_NO = B.DEPABO_NO  
+								    WHERE ( A.GIVEYEAR = #{fiscalyear} -1 AND A.GIVEMONTH IN ('11','12') 
+								         OR A.GIVEYEAR = #{fiscalyear}    AND A.GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') )
+									<if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+										<if test="searchDepSchType.equalsIgnoreCase('1') ">
+											AND A.DEPABO_NO = #{searchDepositNm } 
+										</if>
+										<if test="searchDepSchType.equalsIgnoreCase('2') ">
+											AND A.DEPABONAME LIKE '%'+#{searchDepositNm }+'%' 
+										</if>
+									</if>
+									<if test="searchBR != null and !searchBR.equals('') ">
+										AND A.BR = #{searchBR } 
+									</if>
+									<if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+										AND A.GROUPCODE = #{searchGrpCd }
+									</if>
+									<if test="searchCode != null and !searchCode.equals('') ">
+										AND A.CODE = #{searchCode }
+									</if>
+									<if test="searchLoa != null and !searchLoa.equals('') ">
+										AND A.LOANAMEKOR = #{searchLoa}
+									</if>
+									<if test="searchCPin != null and !searchCPin.equals('') ">
+										AND A.GROUPS = #{searchCPin}
+									</if>
+									<if test="searchDept != null and !searchDept.equals('') ">
+										AND A.DEPARTMENT = #{searchDept }
+									</if>
+									 ) A
+						<if test="cbApprove != null and !cbApprove.equals('') ">
+							WHERE A.AGREEFLAG = #{cbApprove }
+						</if>
+						   
+			)AS AA
+		)AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectAgreeDelegLogListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeAgreeList.xml  selectAgreeDelegLogListCount  */
+		WITH AGREEDELEGLIST AS (
+									SELECT   B.FISCALYEAR
+									       , A.DEPABO_NO
+									       , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+									       , B.DELEGATORABO_NO
+									       , dbo.F_GETABONAME(B.DELEGATORABO_NO) AS DELEGATORABONAME
+									       , A.DELEGTYPECODE
+									  FROM   dbo.TRFEETARGETMONTH a
+								INNER JOIN   DBO.TRFEEAGREEDELEG B ON B.DELEGABO_NO = a.DEPABO_NO
+									                               AND B.FISCALYEAR = #{fiscalyear}
+									 WHERE   ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') 
+									   OR      GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') )
+									   and   B.DELEGTYPECODE = '1'
+									UNION
+									SELECT   #{fiscalyear} AS FISCALYEAR
+									       , A.DEPABO_NO
+									       , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+									       , A.ABO_NO
+									       , dbo.F_GETABONAME(A.ABO_NO) AS DELEGATORABONAME
+									       , A.DELEGTYPECODE
+									  FROM   dbo.TRFEETARGETMONTH a
+									 WHERE   ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') 
+									   OR      GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') )
+									   and   A.DELEGTYPECODE = '2')
+				, AGREELIST AS ( SELECT   A.FISCALYEAR
+				               , A.DELEGABO_NO
+				                                   , A.DELEGATORABO_NO
+				                                   , A.DELEGTYPECODE
+				               , A.AGREEID
+				               , B.AGREETITLE
+				               , A.AGREEFLAG
+				               , A.AGREEDATE
+				               , A.REGISTRANTDATE
+				          FROM   DBO.TRFEEAGREEDELEG A
+				     LEFT JOIN   DBO.TRFEEAGREEMANAGE B ON B.FISCALYEAR = A.FISCALYEAR
+				                                       AND B.AGREEID    = A.AGREEID
+				         WHERE   B.AGREETYPECODE = '200'
+				           AND   B.FISCALYEAR    = #{fiscalyear})
+				           
+			SELECT   COUNT(*) AS TOTAL_CNT
+			  FROM (
+			SELECT   A.DEPABO_NO
+			       , ISNULL(B.AGREEFLAG, 'N') AS AGREEFLAG
+			  FROM   AGREEDELEGLIST A
+		 LEFT JOIN   AGREELIST B ON B.FISCALYEAR      = A.FISCALYEAR
+			                    AND B.DELEGABO_NO     = A.DEPABO_NO
+			                    AND B.DELEGATORABO_NO = A.DELEGATORABO_NO
+			  JOIN   DBO.TRFEETARGETFULL C ON C.ABO_NO = A.DEPABO_NO
+			  JOIN   DBO.MEMBER D ON D.UID = A.DEPABO_NO
+			 WHERE  A.FISCALYEAR = #{fiscalyear}
+				<if test="searchCalculationNm != null and !searchCalculationNm.equals('') ">
+				 	<if test="searchCalSchType.equalsIgnoreCase('1') ">
+				 		AND A.DEPABO_NO = #{searchCalculationNm } 
+				 	</if>
+				 	<if test="searchCalSchType.equalsIgnoreCase('2') ">
+				 		AND A.DEPABONAME LIKE '%' + #{searchCalculationNm } + '%' 
+				 	</if>
+				 </if>
+				 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+				 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+				 		AND A.DELEGATORABO_NO = #{searchDepositNm } 
+				 	</if>
+				 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+				 		AND A.DELEGATORABONAME LIKE '%'+#{searchDepositNm }+'%' 
+				 	</if>
+				 </if>
+				 
+				<if test="searchBR != null and !searchBR.equals('') ">
+					AND C.BR = #{searchBR } 
+				</if>
+				<if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+					AND C.GROUPCODE = #{searchGrpCd }
+				</if>
+				<if test="searchCode != null and !searchCode.equals('') ">
+					AND C.CODE = #{searchCode }
+				</if>
+				<if test="searchLoa != null and !searchLoa.equals('') ">
+					AND D.LOANAMEKOR = #{searchLoa}
+				</if>
+				<if test="searchCPin != null and !searchCPin.equals('') ">
+					AND D.GROUPS = #{searchCPin}
+				</if>
+				<if test="searchDept != null and !searchDept.equals('') ">
+					AND C.DEPARTMENT = #{searchDept }
+				</if>
+			   <if test="delegtypecode != null and !delegtypecode.equalsIgnoreCase('') ">
+			   AND   A.DELEGTYPECODE   = #{delegtypecode}
+			   </if> ) A
+			   <if test="cbApprove != null and !cbApprove.equalsIgnoreCase('') ">
+							   WHERE   A.AGREEFLAG   = #{cbApprove}
+							   </if>
+	</select>
+	
+	<select id="selectAgreeDelegLogList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeAgreeList.xml  selectAgreeDelegLogList  */
+		WITH AGREEDELEGLIST AS (
+									SELECT   #{fiscalyear} AS FISCALYEAR
+									       , A.DEPABO_NO
+									       , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+									       , B.DELEGATORABO_NO
+									       , dbo.F_GETABONAME(B.DELEGATORABO_NO) AS DELEGATORABONAME
+									       , B.DELEGTYPECODE
+									  FROM   dbo.TRFEETARGETMONTH a
+							    INNER JOIN   DBO.TRFEEAGREEDELEG B ON B.DELEGABO_NO = a.DEPABO_NO
+									                               AND B.FISCALYEAR = #{fiscalyear}
+									 WHERE   ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') 
+									   OR      GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') )
+									   and   B.DELEGTYPECODE = '1'
+									UNION
+									SELECT   #{fiscalyear} AS FISCALYEAR
+									       , A.DEPABO_NO
+									       , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+									       , A.ABO_NO
+									       , dbo.F_GETABONAME(A.ABO_NO) AS DELEGATORABONAME
+									       , A.DELEGTYPECODE
+									  FROM   dbo.TRFEETARGETMONTH a
+									 WHERE   ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') 
+									   OR      GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') )
+									   and   A.DELEGTYPECODE = '2')
+				, AGREELIST AS ( SELECT   A.FISCALYEAR
+				               , A.DELEGABO_NO
+				                                   , A.DELEGATORABO_NO
+				                                   , A.DELEGTYPECODE
+				               , A.AGREEID
+				               , B.AGREETITLE
+				               , A.AGREEFLAG
+				               , A.AGREEDATE
+				               , A.REGISTRANTDATE
+				          FROM   DBO.TRFEEAGREEDELEG A
+				     LEFT JOIN   DBO.TRFEEAGREEMANAGE B ON B.FISCALYEAR = A.FISCALYEAR
+				                                       AND B.AGREEID    = A.AGREEID
+				         WHERE   B.AGREETYPECODE = '200'
+				           AND   B.FISCALYEAR    = #{fiscalyear})
+		SELECT   * 
+		  FROM (  SELECT   ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+			             , AA.* 
+			        FROM ( 
+			              SELECT   A.FISCALYEAR
+						       , A.DELEGTYPECODE
+						       , A.DELEGTYPENAME
+						       , A.DEPABO_NO
+						       , A.DEPABONAME
+						       , A.DELEGATORABO_NO
+						       , A.DELEGATORABONAME
+						       , A.AGREEFLAG
+						       , A.AGREEDATE
+						       , A.REGISTRANTDATE
+						       , A.AGREETITLE
+						       , A.AGREEID
+			                FROM			              
+			              ( SELECT   A.FISCALYEAR
+							       , A.DELEGTYPECODE
+							       , dbo.F_CMM_CODENAME('TR5', A.DELEGTYPECODE) AS DELEGTYPENAME
+							       , A.DEPABO_NO
+							       , A.DEPABONAME
+							       , A.DELEGATORABO_NO
+							       , A.DELEGATORABONAME
+							       , B.AGREEFLAG AS AGREEFLAG
+							       , B.AGREEDATE
+							       , B.REGISTRANTDATE
+							       , B.AGREETITLE
+							       , B.AGREEID
+							  FROM   AGREEDELEGLIST A
+						 LEFT JOIN   AGREELIST B ON B.FISCALYEAR      = A.FISCALYEAR
+							                    AND B.DELEGABO_NO     = A.DEPABO_NO
+							                    AND B.DELEGATORABO_NO = A.DELEGATORABO_NO
+							  JOIN   DBO.TRFEETARGETFULL C ON C.ABO_NO = A.DEPABO_NO
+							  JOIN   DBO.MEMBER D ON D.UID = A.DEPABO_NO
+							 WHERE  A.FISCALYEAR = #{fiscalyear}
+							   <if test="searchCalculationNm != null and !searchCalculationNm.equals('') ">
+								 	<if test="searchCalSchType.equalsIgnoreCase('1') ">
+								 		AND A.DEPABO_NO = #{searchCalculationNm } 
+								 	</if>
+								 	<if test="searchCalSchType.equalsIgnoreCase('2') ">
+								 		AND A.DEPABONAME LIKE '%' + #{searchCalculationNm } + '%' 
+								 	</if>
+								 </if>
+								 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+								 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+								 		AND A.DELEGATORABO_NO = #{searchDepositNm } 
+								 	</if>
+								 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+								 		AND A.DELEGATORABONAME LIKE '%'+#{searchDepositNm }+'%' 
+								 	</if>
+								 </if>
+								<if test="searchBR != null and !searchBR.equals('') ">
+									AND C.BR = #{searchBR } 
+								</if>
+								<if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+									AND C.GROUPCODE = #{searchGrpCd }
+								</if>
+								<if test="searchCode != null and !searchCode.equals('') ">
+									AND C.CODE = #{searchCode }
+								</if>
+								<if test="searchLoa != null and !searchLoa.equals('') ">
+									AND D.LOANAMEKOR = #{searchLoa}
+								</if>
+								<if test="searchCPin != null and !searchCPin.equals('') ">
+									AND D.GROUPS = #{searchCPin}
+								</if>
+								<if test="searchDept != null and !searchDept.equals('') ">
+									AND C.DEPARTMENT = #{searchDept }
+								</if>
+							   <if test="delegtypecode != null and !delegtypecode.equalsIgnoreCase('') ">
+							   AND   A.DELEGTYPECODE   = #{delegtypecode}
+							   </if> ) A
+							   <if test="cbApprove != null and !cbApprove.equalsIgnoreCase('') ">
+							   WHERE   A.AGREEFLAG   = #{cbApprove}
+							   </if>
+				)AS AA
+			)AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectThirdpersonLogListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeAgreeList.xml  selectThirdpersonLogListCount  */
+		WITH TARGETLIST AS (SELECT   DISTINCT 
+							         #{fiscalyear} AS FISCALYEAR
+							       , A.DEPABO_NO
+							       , A.DEPABONAME
+							       , B.GROUPCODE
+							       , A.LOANAMEKOR
+							       , A.GROUPS
+							       , B.CODE
+							       , B.BR
+							       , B.DEPARTMENT
+							  FROM   V_TRFEETARGET A
+							  JOIN   TRFEETARGETFULL B ON A.DEPABO_NO = B.ABO_NO
+							 WHERE ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') 
+							    OR   GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') ) )
+		   , AUTHMANAGE AS (SELECT   DISTINCT 
+							         DEPABO_NO
+							       , GROUPCODE
+							  FROM   V_TRFEETARGET
+							 WHERE ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') 
+							    OR   GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') )
+							  AND AUTHMANAGEFLAG = 'Y' )
+		   , AGREELIST AS ( SELECT   A.FISCALYEAR
+					               , A.DEPABO_NO
+                                   , A.THIRDPERSON
+					               , A.AGREEID
+					               , B.AGREETITLE
+					               , A.AGREEFLAG
+					               , A.AGREEDATE
+					               , A.REGISTRANTDATE
+					          FROM   DBO.TRFEEAGREETHIRDPERSON A
+					     LEFT JOIN   DBO.TRFEEAGREEMANAGE B ON B.FISCALYEAR = A.FISCALYEAR
+					                                       AND B.AGREEID    = A.AGREEID
+					         WHERE   B.AGREETYPECODE = '300'
+					           AND   B.FISCALYEAR    = #{fiscalyear})
+		SELECT   COUNT(*) AS TOTAL_CNT
+		  FROM   TARGETLIST A
+		  JOIN   AUTHMANAGE B ON A.GROUPCODE = B.GROUPCODE
+	 LEFT JOIN   AGREELIST C ON C.DEPABO_NO = A.DEPABO_NO
+		                    AND C.THIRDPERSON = B.DEPABO_NO
+		                    AND C.FISCALYEAR = A.FISCALYEAR
+		 WHERE   A.DEPABO_NO != B.DEPABO_NO
+		 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+		 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+		 		AND A.DEPABO_NO = #{searchDepositNm } 
+		 	</if>
+		 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+		 		AND A.DEPABONAME LIKE '%'+#{searchDepositNm }+'%' 
+		 	</if>
+		 </if>
+		<if test="searchBR != null and !searchBR.equals('') ">
+			AND A.BR = #{searchBR } 
+		</if>
+		<if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+			AND A.GROUPCODE = #{searchGrpCd }
+		</if>
+		<if test="searchCode != null and !searchCode.equals('') ">
+			AND A.CODE = #{searchCode }
+		</if>
+		<if test="searchLoa != null and !searchLoa.equals('') ">
+			AND A.LOANAMEKOR = #{searchLoa}
+		</if>
+		<if test="searchCPin != null and !searchCPin.equals('') ">
+			AND A.GROUPS = #{searchCPin}
+		</if>
+		<if test="searchDept != null and !searchDept.equals('') ">
+			AND A.DEPARTMENT = #{searchDept }
+		</if>
+		<if test="cbApprove != null and !cbApprove.equals('') ">
+			AND ISNULL(C.AGREEFLAG, 'N') = #{cbApprove }
+		</if>
+	</select>
+	
+	<select id="selectThirdpersonLogList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeAgreeList.xml  selectThirdpersonLogList  */
+		WITH TARGETLIST AS (SELECT   DISTINCT 
+							         #{fiscalyear} AS FISCALYEAR
+							       , A.DEPABO_NO
+							       , A.DEPABONAME
+							       , B.GROUPCODE
+							       , A.LOANAMEKOR
+							       , A.GROUPS
+							       , B.CODE
+							       , B.BR
+							       , B.DEPARTMENT
+							  FROM   V_TRFEETARGET A
+							  JOIN   TRFEETARGETFULL B ON A.DEPABO_NO = B.ABO_NO
+							 WHERE ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') 
+							    OR   GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') ) )
+		   , AUTHMANAGE AS (SELECT   DISTINCT 
+							         DEPABO_NO
+							       , GROUPCODE
+							  FROM   V_TRFEETARGET
+							 WHERE ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') 
+							    OR   GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') )
+							  AND AUTHMANAGEFLAG = 'Y' )
+		   , AGREELIST AS ( SELECT   A.FISCALYEAR
+					               , A.DEPABO_NO
+                                   , A.THIRDPERSON
+					               , A.AGREEID
+					               , B.AGREETITLE
+					               , A.AGREEFLAG
+					               , A.AGREEDATE
+					               , A.REGISTRANTDATE
+					          FROM   DBO.TRFEEAGREETHIRDPERSON A
+					     LEFT JOIN   DBO.TRFEEAGREEMANAGE B ON B.FISCALYEAR = A.FISCALYEAR
+					                                       AND B.AGREEID    = A.AGREEID
+					         WHERE   B.AGREETYPECODE = '300'
+					           AND   B.FISCALYEAR    = #{fiscalyear})
+		SELECT   * 
+		  FROM (  SELECT   ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+			             , AA.* 
+			        FROM (  SELECT   A.FISCALYEAR
+			                       , A.DEPABO_NO
+							       , A.DEPABONAME
+							       , B.DEPABO_NO AS THIRDPERSON
+							       , dbo.F_GETABONAME(B.DEPABO_NO) AS THIRDPERSONNAME
+							       , A.GROUPCODE
+							       , C.AGREEFLAG AS AGREEFLAG
+							       , C.AGREEDATE
+							       , C.REGISTRANTDATE
+							       , C.AGREETITLE
+							       , C.AGREEID
+							  FROM   TARGETLIST A
+							  JOIN   AUTHMANAGE B ON A.GROUPCODE = B.GROUPCODE
+						 LEFT JOIN   AGREELIST C ON C.DEPABO_NO = A.DEPABO_NO
+							                    AND C.THIRDPERSON = B.DEPABO_NO
+							                    AND C.FISCALYEAR = A.FISCALYEAR
+							 WHERE   A.DEPABO_NO != B.DEPABO_NO
+							 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+							 		AND A.DEPABO_NO = #{searchDepositNm } 
+							 	</if>
+							 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+							 		AND A.DEPABONAME LIKE '%'+#{searchDepositNm }+'%' 
+							 	</if>
+							 </if>
+							<if test="searchBR != null and !searchBR.equals('') ">
+								AND A.BR = #{searchBR } 
+							</if>
+							<if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+								AND A.GROUPCODE = #{searchGrpCd }
+							</if>
+							<if test="searchCode != null and !searchCode.equals('') ">
+								AND A.CODE = #{searchCode }
+							</if>
+							<if test="searchLoa != null and !searchLoa.equals('') ">
+								AND A.LOANAMEKOR = #{searchLoa}
+							</if>
+							<if test="searchCPin != null and !searchCPin.equals('') ">
+								AND A.GROUPS = #{searchCPin}
+							</if>
+							<if test="searchDept != null and !searchDept.equals('') ">
+								AND A.DEPARTMENT = #{searchDept }
+							</if>
+							<if test="cbApprove != null and !cbApprove.equals('') ">
+								AND ISNULL(C.AGREEFLAG, 'N') = #{cbApprove }
+							</if>
+							 
+			)AS AA
+		)AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectSpecialLogListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*) AS TOTAL_CNT
+		  FROM   DBO.TRFEEAGREESPECIAL A
+	 LEFT JOIN   DBO.FILEMANAGEMENT B ON B.FILEKEY = A.ATTACHFILE
+	</select>
+	
+	<select id="selectSpecialLogList" parameterType="reqBox" resultType="dataBox">
+		SELECT   * 
+		  FROM (  SELECT   ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+			             , AA.* 
+			        FROM (
+							SELECT A.FISCALYEAR
+			                       , A.SPECIALID
+							       , dbo.F_USEADMINNAME(A.REGISTRANT) AS REGISTRANT
+							       , A.REGISTRANTDATE
+							       , A.ATTACHFILE
+							       , B.UPLOADSEQ
+							       , B.REALFILENAME
+							       , B.STOREFILENAME
+							       , B.FILEFULLURL
+							  FROM   DBO.TRFEEAGREESPECIAL A
+						 LEFT JOIN   DBO.FILEMANAGEMENT B ON B.FILEKEY = A.ATTACHFILE ) AS AA
+						) AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectSaveSpecialLogCount" parameterType="reqBox" resultType="int">
+		SELECT   COUNT(*) AS TOTAL_CNT
+		  FROM   DBO.TRFEEAGREESPECIAL A
+		 WHERE   A.FISCALYEAR = #{fiscalyear}
+	</select>
+	<insert id="insertSpecialLog" parameterType="reqBox" >
+		INSERT
+		  INTO   DBO.TRFEEAGREESPECIAL
+		       ( FISCALYEAR
+               , SPECIALID
+               , ATTACHFILE
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE )
+		VALUES ( #{fiscalyear}
+               , (SELECT isNull(max(SPECIALID),0)+1 FROM DBO.TRFEEAGREESPECIAL WHERE FISCALYEAR = #{fiscalyear})
+               , #{fileKey}
+               , #{adminId}
+               , GETDATE()
+               , #{adminId}
+               , GETDATE() )
+	</insert>
+	
+	<update id="updateSpecialLog" parameterType="reqBox" >
+		UPDATE   DBO.TRFEEAGREESPECIAL
+		   SET   ATTACHFILE = #{fileKey}
+		       , MODIFIER   = #{adminId}
+		       , MODIFYDATE = GETDATE()
+		 WHERE   FISCALYEAR = #{fiscalyear}
+	</update>
+	
+	<select id="selectAgreePledgePrint" parameterType="reqBox" resultType="dataBox">
+		WITH AGREEPLEDGE AS ( SELECT   A.FISCALYEAR
+		                             , A.AGREEID
+		                             , A.DEPABO_NO
+		                             , A.AGREEFLAG
+		                             , CONVERT(VARCHAR(4), YEAR(A.AGREEDATE))+ '년 '
+		                               + CONVERT(VARCHAR(2),MONTH(A.AGREEDATE)) + '월 '
+		                               + CONVERT(VARCHAR(2),DAY(A.AGREEDATE))+'일' AS AGREEDATE
+		                             , B.AGREETITLE
+		                             , B.AGREETEXT
+		                        FROM   DBO.TRFEEAGREEPLEDGE A
+		                        JOIN   DBO.TRFEEAGREEMANAGE B ON A.FISCALYEAR = B.FISCALYEAR
+		                                                     AND A.AGREEID = B.AGREEID
+		                       WHERE   A.FISCALYEAR = #{fiscalyear}
+		                         AND   A.DEPABO_NO  = #{depaboNo})
+			SELECT   #{fiscalyear} AS FISCALYEAR
+			       , A.ABO_NO
+			       , B.NAME
+			       , C.AGREEDATE
+			       , C.AGREETITLE
+			       , C.AGREETEXT
+			  FROM   DBO.TRFEETARGETFULL A
+			  JOIN   DBO.MEMBER B ON A.ABO_NO = B.UID
+		 LEFT JOIN   AGREEPLEDGE C ON A.ABO_NO = C.DEPABO_NO
+			 WHERE   ABO_NO = #{depaboNo}
+ 	</select>
+ 	
+	<select id="selectAgreeDelegPrint" parameterType="reqBox" resultType="dataBox">
+		WITH AGREEPLEDGE AS ( SELECT   A.FISCALYEAR
+		                             , A.AGREEID
+		                             , A.DELEGABO_NO as abo_no
+                                     , A.DELEGATORABO_NO
+                                     , dbo.F_GETABONAME(A.DELEGATORABO_NO) AS DELEGATORABONAME
+		                             , A.AGREEFLAG
+		                             , CONVERT(VARCHAR(4), YEAR(A.AGREEDATE))+ '년 '
+		                               + CONVERT(VARCHAR(2),MONTH(A.AGREEDATE)) + '월 '
+		                               + CONVERT(VARCHAR(2),DAY(A.AGREEDATE))+'일' AS AGREEDATE
+		                             , B.AGREETITLE
+		                             , B.AGREETEXT
+		                        FROM   DBO.TRFEEAGREEDELEG A
+		                   LEFT JOIN   DBO.TRFEEAGREEMANAGE B ON A.FISCALYEAR = B.FISCALYEAR
+		                                                     AND A.AGREEID = B.AGREEID
+		                       WHERE   A.FISCALYEAR = #{fiscalyear}
+		                         AND   A.DELEGABO_NO  = #{depaboNo}
+		                         AND   A.DELEGTYPECODE = #{delegtypecode})
+			SELECT   #{fiscalyear} AS FISCALYEAR
+			       , A.ABO_NO
+			       , B.NAME
+			       , C.DELEGATORABO_NO
+			       , C.DELEGATORABONAME
+			       , C.AGREEDATE
+			       , C.AGREETITLE
+			       , C.AGREETEXT
+			  FROM   DBO.TRFEETARGETFULL A
+			  JOIN   DBO.MEMBER B ON A.ABO_NO = B.UID
+		 LEFT JOIN   AGREEPLEDGE C ON A.ABO_NO = C.ABO_NO
+			 WHERE   a.ABO_NO = #{depaboNo}
+ 	</select>
+ 	
+	<select id="selectThirdpersonPrint" parameterType="reqBox" resultType="dataBox">
+		WITH AGREEPLEDGE AS ( SELECT   A.FISCALYEAR
+		                             , A.AGREEID
+		                             , A.DEPABO_NO as abo_no
+                                     , A.THIRDPERSON
+                                     , dbo.F_GETABONAME(A.THIRDPERSON) AS THIRDPERSONNAME
+		                             , A.AGREEFLAG
+		                             , CONVERT(VARCHAR(4), YEAR(A.AGREEDATE))+ '년 '
+		                               + CONVERT(VARCHAR(2),MONTH(A.AGREEDATE)) + '월 '
+		                               + CONVERT(VARCHAR(2),DAY(A.AGREEDATE))+'일' AS AGREEDATE
+		                             , B.AGREETITLE
+		                             , B.AGREETEXT
+		                        FROM   dbo.TRFEEAGREETHIRDPERSON A
+		                   LEFT JOIN   DBO.TRFEEAGREEMANAGE B ON A.FISCALYEAR = B.FISCALYEAR
+		                                                     AND A.AGREEID = B.AGREEID
+		                       WHERE   A.FISCALYEAR = #{fiscalyear}
+		                         AND   A.DEPABO_NO  = #{depaboNo})
+			SELECT   #{fiscalyear} AS FISCALYEAR
+			       , A.ABO_NO
+			       , B.NAME
+			       , C.THIRDPERSON
+			       , C.THIRDPERSONNAME
+			       , C.AGREEDATE
+			       , B.LOANAMEKOR
+			       , C.AGREETITLE
+			       , C.AGREETEXT
+			  FROM   DBO.TRFEETARGETFULL A
+			  JOIN   DBO.MEMBER B ON A.ABO_NO = B.UID
+		 LEFT JOIN   AGREEPLEDGE C ON A.ABO_NO = C.ABO_NO
+			 WHERE   a.ABO_NO = #{depaboNo}
+ 	</select>
+ 	
+ 	<delete id="deleteSpecialLog" parameterType="java.util.Map">
+		DELETE   
+		  FROM   DBO.TRFEEAGREESPECIAL
+		 WHERE   FISCALYEAR = #{fiscalyear}
+		   AND   SPECIALID  = #{specialid}
+	</delete>
+</mapper>

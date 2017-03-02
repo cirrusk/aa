@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.baseType.service.impl.ReservationTypeMapper">
+
+	<!-- 예약타입 리스트 조회 -->
+	<select id="reservationTypeListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT * FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM, AA.* FROM(
+				SELECT
+				  A.TYPENAME
+				, C.CODENAME AS STATUSNAME
+				, ISNULL(Format(A.UPDATEDATE, N'yyyy-MM-dd HH:mm:ss'), Format(A.INSERTDATE, N'yyyy-MM-dd HH:mm:ss')) AS UPDATEDATE
+				, ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER
+				, A.RSVTYPECODE
+				, A.TYPESEQ
+				, A.STATUSCODE
+				, A.RESERVATIONINFO
+				, B.CODENAME AS RSVTYPENAME
+				FROM RSVTYPEINFO A
+				  LEFT OUTER JOIN COMMONCODE B
+				    ON(A.RSVTYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'RT1')
+				  LEFT OUTER JOIN COMMONCODE C
+				    ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+				WHERE 1=1
+				 <if test="searchTypeClass != null and !searchTypeClass.equals('') ">
+					AND A.RSVTYPECODE = #{searchTypeClass}
+				</if>
+				) AS AA
+			) AS BB
+			WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 예약타입 리스트 카운트 -->
+	<select id="reservationTypeListCountAjax" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*) FROM(
+			SELECT
+			  A.TYPENAME
+			, C.CODENAME AS STATUSNAME
+			, A.UPDATEDATE
+			, A.UPDATEUSER
+			, A.RSVTYPECODE
+			, A.TYPESEQ
+			, A.STATUSCODE
+			, A.RESERVATIONINFO
+			, B.CODENAME AS RSVTYPENAME
+			FROM RSVTYPEINFO A
+			  LEFT OUTER JOIN COMMONCODE B
+			    ON(A.RSVTYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'RT1')
+			  LEFT OUTER JOIN COMMONCODE C
+			    ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+			WHERE 1=1
+			 <if test="searchTypeClass != null and !searchTypeClass.equals('') ">
+				AND A.RSVTYPECODE = #{searchTypeClass}
+			</if>
+		) AS BB
+	</select>
+	
+	<!-- 예약타입 등록 -->
+	<insert id="reservationTypeInsertAjax" parameterType="reqBox">
+		INSERT INTO dbo.RSVTYPEINFO (
+			  RSVTYPECODE
+			, TYPENAME
+			, STATUSCODE
+			, RESERVATIONINFO
+			, INSERTUSER
+			, INSERTDATE
+		)VALUES(
+			  #{popRsvTypeClassify}
+			, #{popRsvTypeName}
+			, #{popRsvUseState}
+			, #{popRsvInfo}
+			, #{sessionAccount}
+			, Getdate()
+		)
+	</insert>
+	
+	<!-- 예약타입 상세보기 -->
+	<select id="reservationTypeDetailAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			  RSVTYPECODE
+			, TYPESEQ
+			, TYPENAME
+			, STATUSCODE
+			, RESERVATIONINFO
+		FROM RSVTYPEINFO
+		WHERE TYPESEQ = #{reservationTypeseq}
+	</select>
+	
+	<!-- 예약타입 수정 -->
+	<update id="reservationTypeUpdateAjax" parameterType="reqBox">
+		UPDATE RSVTYPEINFO 
+			SET 
+				  RSVTYPECODE = #{popRsvTypeClassify}
+				, TYPENAME = #{popRsvTypeName}
+				, STATUSCODE = #{popRsvUseState}
+				, RESERVATIONINFO = #{popRsvInfo}
+				, UPDATEUSER = #{sessionAccount}
+				, UPDATEDATE = Getdate()
+		WHERE TYPESEQ = #{popTypeseq}
+	</update>
+</mapper>

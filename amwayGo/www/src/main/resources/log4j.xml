@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" ERROR="false">
+
+    <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ABSOLUTE} %-5p [%c{1}] %m%n" />
+        </layout>
+    </appender>
+    <appender name="ERRORAppender" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log4j.path}/ERROR.www.log" />
+        <param name="Append" value="true" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd-HH'.log'" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n" />
+        </layout>
+    </appender>
+    <appender name="SqlAppender" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log4j.path}/sql.www.log" />
+        <param name="Append" value="true" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd-HH'.log'" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n" />
+        </layout>
+    </appender>
+    <appender name="LearningAppender" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log4j.path}/learning.www.log" />
+        <param name="Append" value="true" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd-HH'.log'" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n" />
+        </layout>
+    </appender>
+    <appender name="ErrorAppender" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log4j.path}/error.www.log" />
+        <param name="Append" value="true" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n" />
+        </layout>
+    </appender>
+    <appender name="MailAppender" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="${log4j.path}/mail.www.log" />
+        <param name="Append" value="true" />
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%m%n" />
+        </layout>
+    </appender>
+
+    <logger name="java.sql">
+        <level value="ERROR" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="egovframework" additivity="false">
+        <level value="ERROR" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <!-- log SQL with timing information, post execution -->
+    <logger name="jdbc.sqltiming" additivity="false">
+        <level value="ERROR" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="org.springframework" additivity="false">
+        <level value="ERROR" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="org.springframework.web.servlet.view" additivity="false">
+        <level value="ERROR" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="com._4csoft">
+        <level value="ERROR" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="com.ibatis" additivity="false">
+        <level value="ERROR" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="org.apache">
+        <level value="ERROR" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="ERROR_LOGGER">
+        <level value="ERROR" />
+        <appender-ref ref="ERRORAppender" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="LEARNING_LOGGER">
+        <level value="ERROR" />
+        <appender-ref ref="LearningAppender" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="SQL_LOGGER">
+        <level value="ERROR" />
+        <appender-ref ref="SqlAppender" />
+        <appender-ref ref="console" />
+    </logger>
+    
+    <logger name="ERROR_LOGGER">
+        <level value="ERROR" />
+        <appender-ref ref="ErrorAppender" />
+        <appender-ref ref="console" />
+    </logger>
+
+    <logger name="MAIL_LOGGER">
+        <level value="ERROR" />
+        <appender-ref ref="MailAppender" />
+        <appender-ref ref="console" />
+    </logger>
+
+</log4j:configuration>

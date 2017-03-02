@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsStudioMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioVO">
+        <selectKey resultType="Long" keyProperty="studioSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsStudioMapper.insert */
+INSERT INTO cs_cdms_studio 
+       ( 
+           cs_studio_name ,
+           cs_week_day ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{studioName, jdbcType=VARCHAR} ,
+           #{weekDay, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioVO">
+/* UICdmsStudioMapper.update */
+UPDATE cs_cdms_studio 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+       <if test='studioName != null'>
+       ,cs_studio_name = #{studioName, jdbcType=VARCHAR}
+       </if>
+       <if test='weekDay != null'>
+       ,cs_week_day = #{weekDay, jdbcType=VARCHAR}
+       </if>
+       <if test='useYn != null'>
+       ,cs_use_yn = #{useYn, jdbcType=VARCHAR}
+       </if>
+ WHERE cs_studio_seq = #{studioSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioVO">
+/* UICdmsStudioMapper.delete */
+UPDATE cs_cdms_studio 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_studio_seq = #{studioSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsStudioRS">
+        <result column="studio.studioSeq"      property="studio.studioSeq"/>
+        <result column="studio.studioName"     property="studio.studioName"/>
+        <result column="studio.weekDay"        property="studio.weekDay"/>
+        <result column="studio.useYn"          property="studio.useYn"/>
+        <result column="studio.deleteYn"       property="studio.deleteYn"/>
+        <result column="studio.regMemberSeq"   property="studio.regMemberSeq"/>
+        <result column="studio.regDtime"       property="studio.regDtime"/>
+        <result column="studio.regIp"          property="studio.regIp"/>
+        <result column="studio.updMemberSeq"   property="studio.updMemberSeq"/>
+        <result column="studio.updDtime"       property="studio.updDtime"/>
+        <result column="studio.updIp"          property="studio.updIp"/>
+        <collection column="studio.studioSeq"  property="listStudioMember" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsStudioMemberRS" select="com._4csoft.aof.cdms.mapper.CdmsStudioMemberMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="getDetail_result">
+/* UICdmsStudioMapper.getDetail */
+SELECT studio.cs_studio_seq      AS "studio.studioSeq" ,
+       studio.cs_studio_name     AS "studio.studioName" ,
+       studio.cs_week_day        AS "studio.weekDay" ,
+       studio.cs_use_yn          AS "studio.useYn" ,
+       studio.cs_delete_yn       AS "studio.deleteYn" ,
+       studio.cs_reg_member_seq  AS "studio.regMemberSeq" ,
+       studio.cs_reg_dtime       AS "studio.regDtime" ,
+       studio.cs_reg_ip          AS "studio.regIp" ,
+       studio.cs_upd_member_seq  AS "studio.updMemberSeq" ,
+       studio.cs_upd_dtime       AS "studio.updDtime" ,
+       studio.cs_upd_ip          AS "studio.updIp"
+  FROM cs_cdms_studio studio
+ WHERE studio.cs_studio_seq = #{studioSeq} 
+       AND studio.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsStudioRS">
+        <result column="studio.studioSeq"      property="studio.studioSeq"/>
+        <result column="studio.studioName"     property="studio.studioName"/>
+        <result column="studio.weekDay"        property="studio.weekDay"/>
+        <result column="studio.useYn"          property="studio.useYn"/>
+        <result column="studio.deleteYn"       property="studio.deleteYn"/>
+        <result column="studio.regMemberSeq"   property="studio.regMemberSeq"/>
+        <result column="studio.regDtime"       property="studio.regDtime"/>
+        <result column="studio.regIp"          property="studio.regIp"/>
+        <result column="studio.updMemberSeq"   property="studio.updMemberSeq"/>
+        <result column="studio.updDtime"       property="studio.updDtime"/>
+        <result column="studio.updIp"          property="studio.updIp"/>
+        <collection column="studio.studioSeq"  property="listStudioMember" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsStudioMemberRS" select="com._4csoft.aof.cdms.mapper.CdmsStudioMemberMapper.getList"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsStudioCondition" resultMap="getList_result">
+/* UICdmsStudioMapper.getList */
+SELECT studio.cs_studio_seq      AS "studio.studioSeq" ,
+       studio.cs_studio_name     AS "studio.studioName" ,
+       studio.cs_week_day        AS "studio.weekDay" ,
+       studio.cs_use_yn          AS "studio.useYn" ,
+       studio.cs_delete_yn       AS "studio.deleteYn" ,
+       studio.cs_reg_member_seq  AS "studio.regMemberSeq" ,
+       studio.cs_reg_dtime       AS "studio.regDtime" ,
+       studio.cs_reg_ip          AS "studio.regIp" ,
+       studio.cs_upd_member_seq  AS "studio.updMemberSeq" ,
+       studio.cs_upd_dtime       AS "studio.updDtime" ,
+       studio.cs_upd_ip          AS "studio.updIp"
+  FROM cs_cdms_studio studio 
+  	LEFT OUTER JOIN cs_cdms_studio_member smember
+		ON smember.cs_studio_seq = studio.cs_studio_seq
+		AND smember.cs_delete_yn = 'N'
+	INNER JOIN cs_member member
+		ON member.cs_member_seq = smember.cs_member_seq
+		AND member.cs_delete_yn = 'N'
+ WHERE studio.cs_delete_yn = 'N' 
+ <if test='srchWord != null and !srchWord.equals("")'>
+       <if test='srchKey.equals("studioName")'>
+  AND studio.cs_studio_name LIKE '%' + #{srchWordDB} + '%'
+       </if>
+       <if test='srchKey.equals("memberName")'>
+  AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+       </if>
+   </if>
+GROUP BY studio.cs_studio_seq,
+       studio.cs_studio_name,
+       studio.cs_week_day,
+       studio.cs_use_yn,
+       studio.cs_delete_yn,
+       studio.cs_reg_member_seq,
+       studio.cs_reg_dtime,
+       studio.cs_reg_ip,
+       studio.cs_upd_member_seq,
+       studio.cs_upd_dtime,
+       studio.cs_upd_ip
+ORDER BY studio.cs_studio_name ASC 
+    </select>
+
+</mapper>

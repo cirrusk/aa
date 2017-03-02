@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ManageExcelMapper">
+	
+	<!-- ***************************************************************************************************************************************** 1. 월별대상자 : 일정관리 start -->
+	<!-- 일정등록 체크 -->
+	<select id="selectScheduleExcelData" parameterType="java.util.Map" resultType="int">
+		SELECT   COUNT(*) AS CNT
+		  FROM   DBO.TRFEESCHEDULE
+		 WHERE   GIVEYEAR = SUBSTRING(#{giveyear}, 1, 4)
+		   AND   GIVEMONTH = SUBSTRING(#{giveyear}, 6, 2)
+	</select>
+	
+	<insert id="insertScheduleExcelData" parameterType="java.util.Map">
+		INSERT 
+		  INTO   DBO.TRFEESCHEDULE
+		       ( GIVEYEAR
+		       , GIVEMONTH
+		       , STARTDT
+		       , STARTTIME
+		       , ENDDT
+		       , ENDTIME
+		       , SMSSENDFLAG
+		       , MODIFIER
+		       , MODIFYDATE
+		       , REGISTRANT
+		       , REGISTRANTDATE ) 
+		VALUES ( SUBSTRING(#{giveyear}, 1, 4)
+		       , SUBSTRING(#{giveyear}, 6, 2)
+		       , REPLACE(REPLACE(#{startdate},'-',''),'/','')
+		       , #{starttime}
+		       , REPLACE(REPLACE(#{enddate},'-',''),'/','')
+		       , #{endtime}
+		       , #{smssendflag}
+		       , #{modifier}
+		       , getdate()
+		       , #{registrant}
+		       , getdate()     )
+	</insert>
+	
+	<update id="updateScheduleExcelData" parameterType="java.util.Map">
+		UPDATE   DBO.TRFEESCHEDULE
+		   SET   STARTDT     = REPLACE(REPLACE(#{startdate},'-',''),'/','')
+		       , STARTTIME   = #{starttime}
+		       , ENDDT       = REPLACE(REPLACE(#{enddate},'-',''),'/','')
+		       , ENDTIME     = #{endtime}
+		       , SMSSENDFLAG = #{smssendflag}
+		       , MODIFIER    = #{modifier}
+		       , MODIFYDATE  = getdate()
+		 WHERE   GIVEYEAR    = SUBSTRING(#{giveyear}, 1, 4)
+		   AND   GIVEMONTH   = SUBSTRING(#{giveyear}, 6, 2)
+	</update>
+	<!-- ***************************************************************************************************************************************** 1. 월별대상자 : 일정관리 end -->
+	
+	<!-- ***************************************************************************************************************************************** 2. 월별대상자 : 누적대상자 start -->
+	<!-- 누적대상자 체크 -->
+	<select id="selectTargetExcelData" parameterType="java.util.Map" resultType="int">
+		SELECT   COUNT(*) AS CNT
+		  FROM   DBO.TRFEETARGETFULL
+		 WHERE   ABO_NO = #{abono}
+	</select>
+	
+	<insert id="insertTargetExcelData" parameterType="java.util.Map">
+		INSERT 
+		  INTO   DBO.TRFEETARGETFULL
+		       ( ABO_NO
+		       , CODE
+		       , BR
+		       , DEPARTMENT
+		       , GROUPCODE
+		       , AUTHGROUP
+               , AUTHPERSON
+               , AUTHMANAGEFLAG
+	           , MODIFIER
+	           , MODIFYDATE
+	           , REGISTRANT
+	           , REGISTRANTDATE   )
+		VALUES ( #{abono}
+		       , #{code}
+		       , #{br}
+		       , #{dept}
+		       , #{groupcode}
+		       , #{authgroup}
+		       , #{authperson}
+		       , #{authmanager}
+		       , #{modifier}
+		       , getdate()
+		       , #{registrant}
+		       , getdate()     )
+	</insert>
+	
+	<update id="updateTargetExcelData" parameterType="java.util.Map">
+		UPDATE   DBO.TRFEETARGETFULL
+		   SET   CODE       = #{code}
+	           , BR         = #{br}
+	           , DEPARTMENT = #{dept}
+	           , GROUPCODE  = #{groupcode}
+	           , AUTHGROUP      = #{authgroup}
+	           , AUTHPERSON     = #{authperson}
+	           , AUTHMANAGEFLAG = #{authmanager}
+               , MODIFIER   = #{modifier}
+		       , MODIFYDATE = getdate()
+	     WHERE   ABO_NO     = #{abono}
+	</update>
+	<!-- ***************************************************************************************************************************************** 2. 월별대상자 : 누적대상자 end -->
+	
+	<!-- ***************************************************************************************************************************************** 3. 월별대상자 : 월별대상자 start -->
+	<!-- 지급대상자 존재 여부 체크 -->
+	<select id="selectGiveTargetExcelData" parameterType="java.util.Map" resultType="int">
+		SELECT   COUNT(*) AS CNT
+		  FROM   DBO.TRFEETARGETMONTH
+		 WHERE   GIVEYEAR = SUBSTRING(#{giveyear}, 1, 4)
+		   AND   GIVEMONTH = SUBSTRING(#{giveyear}, 6, 2)
+		   AND   ABO_NO = #{abono}
+	</select>
+	
+	<insert id="insertGiveTargetExcelData" parameterType="java.util.Map">
+		INSERT 
+		  INTO   DBO.TRFEETARGETMONTH
+		       ( GIVEYEAR
+		       , GIVEMONTH
+		       , ABO_NO
+		       , CODE
+		       , BR
+		       , DEPARTMENT
+		       , SALES
+		       , TRFEE
+		       , GROUPCODE
+		       , AUTHGROUP
+		       , AUTHPERSON
+		       , AUTHMANAGEFLAG
+		       , DELEGTYPECODE
+		       , DEPABO_NO
+		       , DEPCODE
+		       , MODIFIER
+		       , MODIFYDATE
+		       , REGISTRANT
+		       , REGISTRANTDATE)
+		VALUES ( SUBSTRING(#{giveyear}, 1, 4)
+		       , SUBSTRING(#{giveyear}, 6, 2)
+		       , #{abono}
+		       , #{code}
+		       , #{br}
+		       , #{dept}
+		       , #{salesfee}
+		       , #{trainingfee}
+		       , #{groupcode}
+		       , #{authgroup}
+		       , #{authperson}
+		       , #{authmanager}
+		       , #{authtype}
+		       , #{depositabono}
+		       , #{depositcode}
+		       , #{modifier}
+		       , getdate()
+		       , #{registrant}
+		       , getdate()     )
+	</insert>
+	
+	<update id="updateGiveTargetExcelData" parameterType="java.util.Map">
+		UPDATE   DBO.TRFEETARGETMONTH
+		   SET   CODE           = #{code}
+	           , BR             = #{br}
+	           , DEPARTMENT     = #{dept}
+	           , SALES          = #{salesfee}
+	           , TRFEE          = #{trainingfee}
+	           , GROUPCODE      = #{groupcode}
+	           , AUTHGROUP      = #{authgroup}
+	           , AUTHPERSON     = #{authperson}
+	           , AUTHMANAGEFLAG = #{authmanager}
+	           , DELEGTYPECODE  = #{authtype}
+	           , DEPABO_NO      = #{depositabono}
+	           , DEPCODE        = #{depositcode}
+	           , MODIFIER       = #{modifier}
+	           , MODIFYDATE     = getdate()
+	     WHERE   GIVEYEAR       = SUBSTRING(#{giveyear}, 1, 4)
+		   AND   GIVEMONTH      = SUBSTRING(#{giveyear}, 6, 2)
+		   AND   ABO_NO         = #{abono}
+	</update>
+	<!-- ***************************************************************************************************************************************** 3. 월별대상자 : 월별대상자 end -->
+	
+	<!-- ***************************************************************************************************************************************** 4. 월별대상자 : 운영그룹 start -->
+	<!-- 운영그룹 체크 -->
+	<select id="selectGroupCodeExcelData" parameterType="java.util.Map" resultType="int">
+		SELECT   COUNT(*) AS CNT
+		  FROM   DBO.TRFEEGROUPCODE
+		 WHERE   GROUPCODE = #{groupcode}
+	</select>
+	
+	<insert id="insertGroupCodeExcelData" parameterType="java.util.Map">
+		INSERT 
+		  INTO   DBO.TRFEEGROUPCODE
+		       ( GROUPCODE
+		       , GROUPNAME
+		       , MODIFIER
+		       , MODIFYDATE
+		       , REGISTRANT
+		       , REGISTRANTDATE)
+		VALUES ( #{groupcode}
+		       , #{groupcode}
+		       , #{modifier}
+		       , getdate()
+		       , #{registrant}
+		       , getdate()     )
+	</insert>
+	<!-- ***************************************************************************************************************************************** 3. 월별대상자 : 운영그룹 end -->
+	
+	<!-- ***************************************************************************************************************************************** 교육비 위임동의서 엑셀 업로드 -->
+	<!-- ***************************************************************************************************************************************** 유효체크 1.존재 하는 ABO인가 -->
+	<select id="selectValidAgree" parameterType="java.util.Map" resultType="int">
+		SELECT   COUNT(*) AS CNT
+		  FROM   DBO.TRFEETARGETMONTH
+		 WHERE   DEPABO_NO     = #{depabono}
+		   AND   DELEGTYPECODE = '1'
+<!-- 		   ( GIVEYEAR = #{fiscalyear} -1 AND GIVEMONTH IN ('11','12') ) -->
+<!-- 		   OR    ( GIVEYEAR = #{fiscalyear} AND GIVEMONTH IN ('01','02','03','04','05','06','07','08','09','10') ) -->
+<!-- 		   AND    -->
+	</select>
+	<!-- ***************************************************************************************************************************************** 유효체크 1.존재 하는 ABO인가 end-->
+		
+	<select id="selectAgreeExcelData" parameterType="java.util.Map" resultType="int">
+		SELECT   COUNT(*) AS CNT
+		  FROM   DBO.TRFEEAGREEDELEG
+		 WHERE   FISCALYEAR      = #{fiscalyear}
+		   AND   DELEGABO_NO     = #{delegabo_no}
+		   AND   DELEGATORABO_NO = #{delegatorabo_no}
+		   AND   DELEGTYPECODE = '1'
+	</select>
+	
+	<select id="selectAgreeExcelData1" parameterType="java.util.Map" resultType="int">
+		SELECT   COUNT(*) AS CNT
+		  FROM   DBO.TRFEEAGREEDELEG
+		 WHERE   FISCALYEAR      = #{fiscalyear}
+		   AND   DELEGABO_NO     = #{delegatorabo_no}
+		   AND   DELEGATORABO_NO = #{delegabo_no}
+		   AND   DELEGTYPECODE = '1'
+	</select>
+	
+	<insert id="insertAgreeExcelData" parameterType="java.util.Map">
+		INSERT 
+		  INTO   DBO.TRFEEAGREEDELEG
+		       ( FISCALYEAR
+               , DELEGTYPECODE
+               , DELEGABO_NO
+               , DELEGATORABO_NO
+               , AGREEID
+               , AGREEFLAG
+               , AGREEDATE
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE )
+        VALUES ( #{fiscalyear}
+               , #{delegtypecode}
+               , #{delegabo_no}
+               , #{delegatorabo_no}
+               , NULL
+               , NULL
+               , NULL
+               , #{modifier}
+		       , getdate()
+		       , #{registrant}
+		       , getdate()  )
+	</insert>
+	
+	<insert id="insertAgreeExcelData1" parameterType="java.util.Map">
+		INSERT 
+		  INTO   DBO.TRFEEAGREEDELEG
+		       ( FISCALYEAR
+               , DELEGTYPECODE
+               , DELEGABO_NO
+               , DELEGATORABO_NO
+               , AGREEID
+               , AGREEFLAG
+               , AGREEDATE
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE )
+        VALUES ( #{fiscalyear}
+               , #{delegtypecode}
+               , #{delegatorabo_no}
+               , #{delegabo_no}
+               , NULL
+               , NULL
+               , NULL
+               , #{modifier}
+		       , getdate()
+		       , #{registrant}
+		       , getdate()  )
+	</insert>
+
+	<!-- ***************************************************************************************************************************************** 교육비 위임동의서 엑셀 업로드 end -->
+</mapper>

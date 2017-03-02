@@ -1,0 +1,1577 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveVO">
+        <selectKey resultType="Long" keyProperty="courseActiveSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseActive.insert */
+INSERT INTO cs_course_active 
+       ( 
+        cs_course_master_seq,
+        cs_yearterm,
+        cs_year,
+        cs_week_count,
+        cs_use_count,
+        cs_study_start_date,
+        cs_study_end_date,
+        cs_study_day,
+        cs_sequence_yn,
+        cs_sample_organization_index,
+        cs_sample_item_index,
+        cs_resume_end_date,
+        cs_resume_day,
+        cs_relative_rate,
+        cs_quota,
+        cs_photo,
+        cs_period_number,
+        cs_organization_string,
+        cs_open_start_date,
+        cs_open_end_date,
+        cs_memo,
+        cs_limit_progress_type_cd,
+        cs_limit_progress,
+        cs_introduction,
+        cs_goal,
+        cs_evaluate_method_type_cd,
+        cs_division,
+        cs_course_type_cd,
+        cs_course_active_title,
+        cs_course_active_status_cd,
+        cs_complete_division_point,
+        cs_complete_division_cd,
+        cs_category_organization_seq,
+        cs_cancel_start_date,
+        cs_cancel_end_date,
+        cs_cancel_day,
+        cs_apply_type_cd,
+        cs_apply_start_date,
+        cs_apply_end_date,
+        cs_delete_yn,
+        cs_reg_member_seq ,
+        cs_reg_dtime ,
+        cs_reg_ip ,
+        cs_upd_member_seq ,
+        cs_upd_dtime ,
+        cs_upd_ip 
+        <if test='competitionYn != null'>
+       ,CX_COMPETITION_YN
+       </if>
+       ) 
+VALUES
+      (    
+        #{courseMasterSeq, jdbcType=NUMERIC} ,
+        #{yearTerm, jdbcType=VARCHAR} ,
+        #{year, jdbcType=VARCHAR} ,
+        #{weekCount, jdbcType=NUMERIC} ,
+        #{useCount, jdbcType=NUMERIC} ,
+        #{studyStartDate, jdbcType=VARCHAR} ,
+        #{studyEndDate, jdbcType=VARCHAR} ,
+        #{studyDay, jdbcType=NUMERIC} ,
+        #{sequenceYn, jdbcType=VARCHAR} ,
+        #{sampleOrganizationIndex, jdbcType=NUMERIC} ,
+        #{sampleItemIndex, jdbcType=NUMERIC} ,
+        #{resumeEndDate, jdbcType=VARCHAR} ,
+        #{resumeDay, jdbcType=NUMERIC} ,
+        #{relativeRate, jdbcType=NUMERIC} ,
+        #{quota, jdbcType=NUMERIC} ,
+        #{photo, jdbcType=VARCHAR} ,
+        #{periodNumber, jdbcType=VARCHAR} ,
+        #{organizationString, jdbcType=VARCHAR} ,
+        #{openStartDate, jdbcType=VARCHAR} ,
+        #{openEndDate, jdbcType=VARCHAR} ,
+        #{memo, jdbcType=VARCHAR} ,
+        #{limitProgressTypeCd, jdbcType=VARCHAR} ,
+        #{limitProgress, jdbcType=NUMERIC} ,
+        #{introduction, jdbcType=VARCHAR} ,
+        #{goal, jdbcType=VARCHAR} ,
+        #{evaluateMethodTypeCd, jdbcType=VARCHAR} ,
+        #{division, jdbcType=NUMERIC} ,
+        #{courseTypeCd, jdbcType=VARCHAR} ,
+        #{courseActiveTitle, jdbcType=VARCHAR} ,
+        #{courseActiveStatusCd, jdbcType=VARCHAR} ,
+        #{completeDivisionPoint, jdbcType=VARCHAR} ,
+        #{completeDivisionCd, jdbcType=VARCHAR} ,
+        #{categoryOrganizationSeq, jdbcType=VARCHAR} ,
+        #{cancelStartDate, jdbcType=VARCHAR} ,
+        #{cancelEndDate, jdbcType=VARCHAR} ,
+        #{cancelDay, jdbcType=NUMERIC} ,
+        #{applyTypeCd, jdbcType=VARCHAR} ,
+        #{applyStartDate, jdbcType=VARCHAR} ,
+        #{applyEndDate, jdbcType=VARCHAR} ,
+        'N',
+        #{regMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+        <if test='competitionYn != null'>
+       , #{competitionYn, jdbcType=VARCHAR}
+       </if>
+       )
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveVO">
+/* UIUnivCourseActive.update */
+UPDATE cs_course_active 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+       <if test='courseGroupTitle != null'>
+       , cs_course_group_title = #{courseGroupTitle}
+       </if>
+        <if test='year != null'>
+       , cs_year = #{year, jdbcType=VARCHAR}
+        </if>
+        <if test='weekCount != null'>
+       , cs_week_count = #{weekCount, jdbcType=NUMERIC}
+        </if>
+        <if test='useCount != null'>
+       , cs_use_count = #{useCount, jdbcType=NUMERIC}
+        </if>
+        <if test='studyStartDate != null'>
+       , cs_study_start_date= #{studyStartDate, jdbcType=VARCHAR}
+        </if>
+        <if test='studyEndDate != null'>
+       , cs_study_end_date= #{studyEndDate, jdbcType=VARCHAR}
+        </if>
+        <if test='studyDay != null'>
+       , cs_study_day= #{studyDay, jdbcType=NUMERIC}
+        </if>
+        <if test='sequenceYn != null'>
+       , cs_sequence_yn = #{sequenceYn, jdbcType=VARCHAR}
+        </if>
+        <if test='sampleOrganizationIndex != null'>
+       , cs_sample_organization_index= #{sampleOrganizationIndex, jdbcType=NUMERIC}
+        </if>
+        <if test='sampleItemIndex != null'>
+       , cs_sample_item_index= #{sampleItemIndex, jdbcType=NUMERIC}
+        </if>
+        <if test='resumeEndDate != null'>
+       , cs_resume_end_date= #{resumeEndDate, jdbcType=VARCHAR}
+        </if>
+        <if test='resumeDay != null'>
+       , cs_resume_day= #{resumeDay, jdbcType=NUMERIC}
+        </if>
+        <if test='relativeRate != null'>
+       , cs_relative_rate= #{relativeRate, jdbcType=NUMERIC}
+        </if>
+        <if test='quota != null'>
+       , cs_quota= #{quota, jdbcType=NUMERIC}
+        </if>
+        <if test='photo != null'>
+       , cs_photo = #{photo, jdbcType=VARCHAR}
+        </if>
+        <if test='periodNumber != null'>
+       , cs_period_number = #{periodNumber, jdbcType=VARCHAR}
+        </if>
+        <if test='organizationString != null'>
+       , cs_organization_string = #{organizationString, jdbcType=VARCHAR}
+        </if>
+        <if test='openStartDate != null'>
+       , cs_open_start_date = #{openStartDate, jdbcType=VARCHAR}
+        </if>
+        <if test='openEndDate != null'>
+       , cs_open_end_date = #{openEndDate, jdbcType=VARCHAR}
+        </if>
+        <if test='memo != null'>
+       , cs_memo = #{memo, jdbcType=VARCHAR}
+        </if>
+        <if test='limitProgressTypeCd != null'>
+       , cs_limit_progress_type_cd = #{limitProgressTypeCd, jdbcType=VARCHAR}
+        </if>
+        <if test='limitProgress != null'>
+       , cs_limit_progress = #{limitProgress, jdbcType=NUMERIC}
+        </if>
+        <if test='introduction != null'>
+       , cs_introduction = #{introduction, jdbcType=VARCHAR}
+        </if>
+        <if test='goal != null'>
+       , cs_goal = #{goal, jdbcType=VARCHAR}
+        </if>
+        <if test='evaluateMethodTypeCd != null'>
+       , cs_evaluate_method_type_cd = #{evaluateMethodTypeCd, jdbcType=VARCHAR}
+        </if>
+        <if test='division != null'>
+       , cs_division = #{division, jdbcType=NUMERIC}
+        </if>
+        <if test='courseTypeCd != null'>
+       , cs_course_type_cd = #{courseTypeCd, jdbcType=VARCHAR}
+        </if>
+        <if test='courseActiveTitle != null'>
+       , cs_course_active_title = #{courseActiveTitle, jdbcType=VARCHAR}
+        </if>
+        <if test='courseActiveStatusCd != null'>
+       , cs_course_active_status_cd = #{courseActiveStatusCd, jdbcType=VARCHAR}
+        </if>
+        <if test='completeDivisionPoint != null'>
+       , cs_complete_division_point = #{completeDivisionPoint, jdbcType=VARCHAR}
+        </if>
+        <if test='completeDivisionCd != null'>
+       , cs_complete_division_cd = #{completeDivisionCd, jdbcType=VARCHAR}
+        </if>
+        <if test='categoryOrganizationSeq != null'>
+       , cs_category_organization_seq = #{categoryOrganizationSeq, jdbcType=VARCHAR}
+        </if>
+        <if test='cancelStartDate != null'>
+       , cs_cancel_start_date = #{cancelStartDate, jdbcType=VARCHAR}
+        </if>
+        <if test='cancelEndDate != null'>
+       , cs_cancel_end_date = #{cancelEndDate, jdbcType=VARCHAR}
+        </if>
+        <if test='cancelDay != null'>
+       , cs_cancel_day = #{cancelDay, jdbcType=NUMERIC}
+        </if>
+        <if test='applyTypeCd != null'>
+       , cs_apply_type_cd = #{applyTypeCd, jdbcType=VARCHAR}
+        </if>
+        <if test='applyStartDate != null'>
+       , cs_apply_start_date = #{applyStartDate, jdbcType=VARCHAR}
+        </if>
+        <if test='applyEndDate != null'>
+       , cs_apply_end_date = #{applyEndDate, jdbcType=VARCHAR} 
+        </if>
+        <if test='gradeCompleteYn != null'>
+       , cs_grade_complete_yn = #{gradeCompleteYn, jdbcType=VARCHAR} 
+        </if>
+        <if test='gradeCompleteYn != null'>
+       , cs_grade_complete_dtime = dbo.FN_NOW_TO_CHAR() 
+        </if>
+        <if test='completionScore != null'>
+       , cs_completion_score = #{completionScore}
+        </if>
+        <if test='workDay1 != null'>
+       , cx_work_day1 = #{workDay1}
+        </if>
+        <if test='workDay2 != null'>
+       , cx_work_day2 = #{workDay2}
+        </if>
+        <if test='timetable1 != null'>
+       , cx_timetable1 = #{timetable1}
+        </if>
+        <if test='timetable2 != null'>
+       , cx_timetable2 = #{timetable2}
+        </if>
+        <if test='timetable3 != null'>
+       , cx_timetable3 = #{timetable3}
+        </if>
+        <if test='timetable4 != null'>
+       , cx_timetable4 = #{timetable4}
+        </if>
+        <if test='timetable5 != null'>
+       , cx_timetable5 = #{timetable5}
+        </if>
+        <if test='timetable6 != null'>
+       , cx_timetable6 = #{timetable6}
+        </if>
+        <if test='thumNail != null'>
+        , cs_thumnail = #{thumNail}
+        </if>
+        <if test='agreementSeq1 != null'>
+        , CS_AGREEMENT_SEQ1 = #{agreementSeq1}
+        </if>
+        <if test='agreementSeq2 != null'>
+        , CS_AGREEMENT_SEQ2 = #{agreementSeq2}
+        </if>
+        <if test='agreementSeq3 != null'>
+        , CS_AGREEMENT_SEQ3 = #{agreementSeq3}
+        </if>
+        <if test="expireStartDate != null">
+        , CS_EXPIRE_START_DATE = #{expireStartDate}
+        </if>
+        <if test='competitionYn != null'>
+       , CX_COMPETITION_YN = #{competitionYn}
+       </if>
+ WHERE cs_course_active_seq = #{courseActiveSeq} 
+   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveVO">
+/* UIUnivCourseActive.delete */
+UPDATE cs_course_active 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y'  
+ WHERE cs_course_active_seq = #{courseActiveSeq} 
+   AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="cs_course_master_seq"           property="courseActive.courseMasterSeq"/>
+        <result column="cs_course_active_seq"           property="courseActive.courseActiveSeq"/>
+        <result column="cs_yearterm"                    property="courseActive.yearTerm"/>
+        <result column="cs_year"                        property="courseActive.year"/>
+        <result column="term"                           property="courseActive.term"/>
+        <result column="cs_week_count"                  property="courseActive.weekCount"/>
+        <result column="cs_use_count"                   property="courseActive.useCount"/>
+        <result column="cs_study_start_date"            property="courseActive.studyStartDate"/>
+        <result column="cs_study_end_date"              property="courseActive.studyEndDate"/>
+        <result column="cs_study_day"                   property="courseActive.studyDay"/>
+        <result column="cs_sequence_yn"                 property="courseActive.sequenceYn"/>
+        <result column="cs_sample_organization_index"   property="courseActive.sampleOrganizationIndex"/>
+        <result column="cs_sample_item_index"           property="courseActive.sampleItemIndex"/>
+        <result column="cs_resume_end_date"             property="courseActive.resumeEndDate"/>
+        <result column="cs_resume_day"                  property="courseActive.resumeDay"/>
+        <result column="cs_relative_rate"               property="courseActive.relativeRate"/>
+        <result column="cs_quota"                       property="courseActive.quota"/>
+        <result column="cs_photo"                       property="courseActive.photo"/>
+        <result column="cs_period_number"               property="courseActive.periodNumber"/>
+        <result column="cs_organization_string"         property="courseActive.organizationString"/>
+        <result column="cs_open_start_date"             property="courseActive.openStartDate"/>
+        <result column="cs_open_end_date"               property="courseActive.openEndDate"/>
+        <result column="cs_memo"                        property="courseActive.memo"/>
+        <result column="cs_limit_progress_type_cd"      property="courseActive.limitProgressTypeCd"/>
+        <result column="cs_limit_progress"              property="courseActive.limitProgress"/>
+        <result column="cs_introduction"                property="courseActive.introduction"/>
+        <result column="cs_goal"                        property="courseActive.goal"/>
+        <result column="cs_evaluate_method_type_cd"     property="courseActive.evaluateMethodTypeCd"/>
+        <result column="cs_division"                    property="courseActive.division"/>
+        <result column="cs_course_type_cd"              property="courseActive.courseTypeCd"/>
+        <result column="cs_course_active_title"         property="courseActive.courseActiveTitle"/>
+        <result column="cs_course_active_status_cd"     property="courseActive.courseActiveStatusCd"/>
+        <result column="cs_complete_division_point"     property="courseActive.completeDivisionPoint"/>
+        <result column="cs_complete_division_cd"        property="courseActive.completeDivisionCd"/>
+        <result column="cs_category_organization_seq"   property="courseActive.categoryOrganizationSeq"/>
+        <result column="cs_cancel_start_date"           property="courseActive.cancelStartDate"/>
+        <result column="cs_cancel_end_date"             property="courseActive.cancelEndDate"/>
+        <result column="cs_cancel_day"                  property="courseActive.cancelDay"/>
+        <result column="cs_apply_type_cd"               property="courseActive.applyTypeCd"/>
+        <result column="cs_apply_start_date"            property="courseActive.applyStartDate"/>
+        <result column="cs_apply_end_date"              property="courseActive.applyEndDate"/>
+        <result column="cs_grade_complete_yn"           property="courseActive.gradeCompleteYn"/>
+        <result column="cs_grade_complete_dtime"        property="courseActive.gradeCompleteDtime"/>
+        <result column="cs_completion_score"        	property="courseActive.completionScore"/>
+        <result column="cs_division_count"              property="courseActive.divisionCount"/>
+        <result column="cx_work_day"              		property="courseActive.workDay"/>
+        <result column="cx_full_day"              		property="courseActive.fullDay"/>
+        <result column="cs_delete_yn"                   property="courseActive.deleteYn"/>
+        <result column="cs_reg_member_seq "             property="courseActive.regMemberSeq"/>
+        <result column="cs_reg_dtime"                   property="courseActive.regDtime"/>
+        <result column="cs_reg_ip"                      property="courseActive.regIp"/>
+        <result column="cs_upd_member_seq"              property="courseActive.updMemberSeq"/>
+        <result column="cs_upd_dtime"                   property="courseActive.updDtime"/>
+        <result column="cs_upd_ip"                      property="courseActive.updIp"/>
+        <result column="cx_work_day1"                   property="courseActive.workDay1"/>
+        <result column="cx_work_day2"                   property="courseActive.workDay2"/>
+        <result column="cx_timetable1"                  property="courseActive.timetable1"/>
+		<result column="cx_timetable2"                  property="courseActive.timetable2"/>
+		<result column="cx_timetable3"                  property="courseActive.timetable3"/>
+		<result column="cx_timetable4"                  property="courseActive.timetable4"/>
+		<result column="cx_timetable5"                  property="courseActive.timetable5"/>
+		<result column="cx_timetable6"                  property="courseActive.timetable6"/>
+		<result column="cx_competition_yn"              property="courseActive.competitionYn"/>
+        <result column="cs_category_type_cd"            property="category.categoryTypeCd"/>
+        <result column="cs_category_string"             property="category.categoryString"/>
+        <result column="cs_member_count"                property="courseActiveSummary.memberCount"/>
+        <result column="cs_course_group_title"          property="courseActive.courseGroupTitle"/>
+        <result column="cs_expire_start_date"           property="courseActive.expireStartDate"/>
+        <result column="cs_thumnail"         			property="courseActive.thumNail"/>
+        <result column="cs_agreement_seq1"         		property="courseActive.agreementSeq1"/>
+        <result column="cs_agreement_seq2"         		property="courseActive.agreementSeq2"/>
+        <result column="cs_agreement_seq3"         		property="courseActive.agreementSeq3"/>
+		<result column="cs_agreement_title1"         	property="courseActive.agreementTilte1"/>
+        <result column="cs_agreement_title2"         	property="courseActive.agreementTilte2"/>
+        <result column="cs_agreement_title3"         	property="courseActive.agreementTilte3"/>
+                
+        <collection column="{referenceSeq=cs_course_active_seq,referenceTablename=referenceTablename}" property="courseActive.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIUnivCourseActive.getDetail */
+SELECT  ca.cs_course_master_seq,
+        ca.cs_course_active_seq,
+        ca.cs_yearterm,
+        ca.cs_year,
+        SUBSTRING(ca.cs_yearterm,5,2) AS term,
+        ca.cs_week_count,
+        ca.cs_use_count,
+        ca.cs_study_start_date,
+        ca.cs_study_end_date,
+        ca.cs_study_day,
+        ca.cs_sequence_yn,
+        ca.cs_sample_organization_index,
+        ca.cs_sample_item_index,
+        ca.cs_resume_end_date,
+        ca.cs_resume_day,
+        ca.cs_relative_rate,
+        ca.cs_quota,
+        ca.cs_photo,
+        ca.cs_period_number,
+        ca.cs_organization_string,
+        ca.cs_open_start_date,
+        ca.cs_open_end_date,
+        ca.cs_memo,
+        ca.cs_limit_progress_type_cd,
+        ca.cs_limit_progress,
+        ca.cs_introduction,
+        ca.cs_goal,
+        ca.cs_evaluate_method_type_cd,
+        ca.cs_division,
+        ca.cs_course_type_cd,
+        ca.cs_course_active_title,
+		ca.cs_course_group_title,
+        ca.cs_course_active_status_cd,
+        ca.cs_complete_division_point,
+        ca.cs_complete_division_cd,
+        ca.cs_category_organization_seq,
+        ca.cs_cancel_start_date,
+        ca.cs_cancel_end_date,
+        ca.cs_cancel_day,
+        ca.cs_apply_type_cd,
+        ca.cs_apply_start_date,
+        ca.cs_apply_end_date,
+        ca.cs_grade_complete_yn,
+        ca.cs_grade_complete_dtime,
+        ca.cs_completion_score,
+        ca.cs_delete_yn,
+        ca.cs_reg_member_seq ,
+        ca.cs_reg_dtime ,
+        ca.cs_reg_ip ,
+        ca.cs_upd_member_seq ,
+        ca.cs_upd_dtime ,
+        ca.cs_upd_ip,
+        c.cs_category_type_cd,
+        c.cs_category_string,
+        ISNULL(cas.cs_member_count,0) AS cs_member_count,
+        cs_division_count,
+        'cs_course_active' AS referenceTablename,
+		ca.cx_work_day1,	    
+		ca.cx_work_day2,
+		DATEDIFF(dd, convert(varchar(8),ca.cs_study_start_date),convert(varchar(8),ca.cs_study_end_date))+1 AS cx_full_day,
+		cx_timetable1,
+		cx_timetable2,
+		cx_timetable3,
+		cx_timetable4,
+		cx_timetable5,
+		cx_timetable6,
+	    ca.cs_agreement_seq1,
+	    ca.cs_agreement_seq2,
+	    ca.cs_agreement_seq3,
+		(SELECT CS_AGREEMENT_TITLE FROM CS_AGREEMENT WHERE CS_AGREEMENT_SEQ = ca.CS_AGREEMENT_SEQ1) AS "cs_agreement_title1",
+        (SELECT CS_AGREEMENT_TITLE FROM CS_AGREEMENT WHERE CS_AGREEMENT_SEQ = ca.CS_AGREEMENT_SEQ2) AS "cs_agreement_title2",
+        (SELECT CS_AGREEMENT_TITLE FROM CS_AGREEMENT WHERE CS_AGREEMENT_SEQ = ca.CS_AGREEMENT_SEQ3) AS "cs_agreement_title3",	    
+		ca.cs_thumnail,
+		ca.cs_expire_start_date,
+		ca.cx_competition_yn
+  FROM cs_course_active ca
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   AND ca.cs_category_organization_seq = c.cs_category_seq  
+ INNER JOIN cs_course_active_summary cas
+    ON ca.cs_course_active_seq = cas.cs_course_active_seq
+   AND cas.cs_course_active_seq = #{courseActiveSeq}
+ WHERE ca.cs_course_active_seq = #{courseActiveSeq}
+   AND ca.cs_delete_yn = 'N'
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="cs_course_master_seq"           property="courseActive.courseMasterSeq"/>
+        <result column="cs_course_active_seq"           property="courseActive.courseActiveSeq"/>
+        <result column="cs_yearterm"                    property="courseActive.yearTerm"/>
+        <result column="cs_year"                        property="courseActive.year"/>
+        <result column="term"                           property="courseActive.term"/>
+        <result column="cs_course_active_title"         property="courseActive.courseActiveTitle"/>
+        <result column="cs_category_organization_seq"   property="courseActive.categoryOrganizationSeq"/>
+        <result column="cs_course_active_status_cd"     property="courseActive.courseActiveStatusCd"/>
+        <result column="cs_course_type_cd"     			property="courseActive.courseTypeCd"/>
+        <result column="cs_complete_division_cd"        property="courseActive.completeDivisionCd"/>
+        <result column="cs_complete_division_point"     property="courseActive.completeDivisionPoint"/>
+        <result column="cs_study_start_date"            property="courseActive.studyStartDate"/>
+        <result column="cs_study_end_date"              property="courseActive.studyEndDate"/>
+        <result column="cs_open_start_date"             property="courseActive.openStartDate"/>
+        <result column="cs_open_end_date"               property="courseActive.openEndDate"/>
+        <result column="cs_apply_start_date"            property="courseActive.applyStartDate"/>
+        <result column="cs_apply_end_date"              property="courseActive.applyEndDate"/>
+        <result column="cs_study_day"              		property="courseActive.studyDay"/>
+        <result column="cs_division"                    property="courseActive.division"/>
+        <result column="cs_introduction"                property="courseActive.introduction"/>
+        <result column="cs_period_number"               property="courseActive.periodNumber"/>
+        <result column="cs_active_middle_count"         property="courseActiveSummary.activeMiddleCount"/>
+        <result column="cs_active_final_count"          property="courseActiveSummary.activeFinalCount"/>
+        <result column="cs_active_quiz_count"           property="courseActiveSummary.activeQuizCount"/>
+        <result column="cs_active_discuss_count"        property="courseActiveSummary.activeDiscussCount"/>
+        <result column="cs_active_homework_count"       property="courseActiveSummary.activeHomeworkCount"/>
+        <result column="cs_active_teamproject_count"    property="courseActiveSummary.activeTeamProjectCount"/>
+        <result column="cs_member_count"                property="courseActiveSummary.memberCount"/>
+        <result column="cs_active_exam_count"           property="courseActiveSummary.activeExamCount"/>
+        <result column="cs_delete_yn"                   property="courseActive.deleteYn"/>
+        <result column="cs_reg_member_seq "             property="courseActive.regMemberSeq"/>
+        <result column="cs_reg_dtime"                   property="courseActive.regDtime"/>
+        <result column="cs_reg_ip"                      property="courseActive.regIp"/>
+        <result column="cs_upd_member_seq"              property="courseActive.updMemberSeq"/>
+        <result column="cs_upd_dtime"                   property="courseActive.updDtime"/>
+        <result column="cs_upd_ip"                      property="courseActive.updIp"/>
+        <result column="cx_timetable1"                  property="courseActive.timetable1"/>
+		<result column="cx_timetable2"                  property="courseActive.timetable2"/>
+		<result column="cx_timetable3"                  property="courseActive.timetable3"/>
+		<result column="cx_timetable4"                  property="courseActive.timetable4"/>
+		<result column="cx_timetable5"                  property="courseActive.timetable5"/>
+		<result column="cx_timetable6"                  property="courseActive.timetable6"/>
+        <result column="cs_course_group_title"          property="courseActive.courseGroupTitle"/>
+        <result column="cs_expire_start_date"           property="courseActive.expireStartDate"/>
+        <result column="cs_thumnail"         			property="courseActive.thumNail"/>
+        <result column="cs_agreement_seq1"         		property="courseActive.agreementSeq1"/>
+        <result column="cs_agreement_seq2"         		property="courseActive.agreementSeq2"/>
+        <result column="cs_agreement_seq3"         		property="courseActive.agreementSeq3"/>		
+		<result column="cx_competition_yn"              property="courseActive.competitionYn"/>
+		<result column="cs_applyType"					property="courseActive.applyType"	 />
+        <result column="cs_category_type_cd"            property="category.categoryTypeCd"/>
+        <result column="cs_category_string"             property="category.categoryString"/>
+        <result column="cs_category_name"               property="category.categoryName"/>
+        <result column="cs_parent_seq"                  property="category.parentSeq"/>
+        <result column="cs_course_title"                property="courseMaster.courseTitle"/>
+        <result column="cx_work_day1"              	    property="courseActive.workDay1"/>
+        <result column="cx_work_day2"              	    property="courseActive.workDay2"/>
+        <result column="cx_dday"              	        property="courseActive.dDay"/>
+        <result column="cx_full_day"              	    property="courseActive.fullDay"/>        
+        <result column="cx_hr_practice"              	property="lecturer.hrPractice"/>        
+        <result column="cx_externel_practice"           property="lecturer.externelPractice"/>        
+        <result column="cx_panel_discussion"            property="lecturer.panelDiscussion"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveCondition" resultMap="listResultMap">
+/* UIUnivCourseActive.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY cs_course_active_title ASC</when>
+            <when test='orderby == -1'>ORDER BY cs_course_active_title DESC</when>
+            <when test='orderby == 2'>ORDER BY cs_category_organization_seq ASC</when>
+            <when test='orderby == -2'>ORDER BY cs_category_organization_seq DESC</when>
+            <when test='orderby == 3'>ORDER BY cs_course_active_status_cd ASC</when>
+            <when test='orderby == -3'>ORDER BY cs_course_active_status_cd DESC</when>
+            <when test='orderby == 4'>ORDER BY cs_reg_dtime ASC</when>
+            <when test='orderby == -4'>ORDER BY cs_reg_dtime DESC</when>
+            <otherwise>ORDER BY cs_applyType DESC, cs_reg_dtime DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT ca.cs_course_active_seq,
+       ca.cs_course_master_seq,
+       ca.cs_year,
+       ca.cs_yearterm,
+       SUBSTRING(ca.cs_yearterm,5,2)              AS term,
+       ca.cs_course_group_title as "cs_course_active_title",
+       ca.cs_category_organization_seq,
+       ca.cs_course_active_status_cd,
+       ca.cs_course_type_cd,
+       ca.cs_complete_division_cd,
+       ca.cs_complete_division_point,
+       ca.cs_period_number,
+       ca.cs_study_start_date,
+       ca.cs_study_end_date,
+       ca.cs_apply_start_date,
+       ca.cs_apply_end_date,
+       ca.cs_open_start_date,
+       ca.cs_open_end_date,
+       ca.cs_study_day,
+       ca.cs_division,
+       ca.cs_introduction,
+       ISNULL(cas.cs_active_middle_count,0)       AS cs_active_middle_count,
+       ISNULL(cas.cs_active_final_count,0)        AS cs_active_final_count,
+       ISNULL(cas.cs_active_quiz_count,0)         AS cs_active_quiz_count,
+       ISNULL(cas.cs_active_discuss_count,0)      AS cs_active_discuss_count,
+       ISNULL(cas.cs_active_homework_count,0)     AS cs_active_homework_count,
+       ISNULL(cas.cs_active_teamproject_count,0)  AS cs_active_teamproject_count,
+       ISNULL(cas.cs_member_count,0)              AS cs_member_count,
+       ISNULL(cas.cs_active_exam_count,0)		  AS cs_active_exam_count, 
+       ca.cs_delete_yn,
+       ca.cs_reg_member_seq,
+       ca.cs_reg_dtime,
+       ca.cs_reg_ip,
+       ca.cs_upd_member_seq,
+       ca.cs_upd_dtime,
+       ca.cs_upd_ip,
+       c.cs_category_type_cd,
+       c.cs_category_string,
+       c.cs_category_name,
+       c.cs_parent_seq,
+       cm.cs_course_title,
+       ca.cx_work_Day1,
+       ca.cx_work_Day2,
+       ca.cx_timetable1,
+	   ca.cx_timetable2,
+	   ca.cx_timetable3,
+	   ca.cx_timetable4,
+	   ca.cx_timetable5,
+	   ca.cx_timetable6,
+	   ca.cs_agreement_seq1,
+	   ca.cs_agreement_seq2,
+	   ca.cs_agreement_seq3,
+	   ca.cs_thumnail,
+	   ca.cs_expire_start_date,
+	   CASE WHEN ca.cs_study_start_date <![CDATA[ <= ]]> dbo.fn_now_to_char() AND ca.cs_study_end_date   <![CDATA[ >= ]]> dbo.fn_now_to_char() THEN 'ING' 
+	   WHEN ca.cs_study_start_date <![CDATA[ > ]]> dbo.fn_now_to_char() THEN 'WAIT' 
+	   WHEN ca.cs_study_end_date  <![CDATA[ <= ]]> dbo.fn_now_to_char() THEN 'END' END AS "cs_applyType",	   
+	   <if test="srchMemberSeq != null">
+	   CASE WHEN (SELECT COUNT(*) FROM CS_AGREEMENT_APPLY agree WHERE agree.CS_COURSE_ACTIVE_SEQ = ca.cs_course_active_seq 
+	   AND agree.CS_MEMBER_SEQ = #{srchMemberSeq}) > 0 
+	   THEN 'Y' ELSE 'N' END AS "active.courseAgreementYn",
+	    ISNULL(cal.cx_hr_practice,'') AS cx_hr_practice,
+		ISNULL(cal.cx_externel_practice,'') AS cx_externel_practice,
+		ISNULL(cal.cx_panel_discussion,'') AS cx_panel_discussion,
+	   </if>
+       (DATEDIFF(dd, convert(varchar(8),dbo.fn_now_to_char()),convert(varchar(8),ca.cs_study_start_date ))) AS cx_dDay,	    
+		DATEDIFF(dd, convert(varchar(8),ca.cs_study_start_date),convert(varchar(8),ca.cs_study_end_date))+1 AS cx_full_day,
+		ca.cx_competition_yn
+  FROM cs_course_active ca
+ INNER JOIN cs_course_master cm
+  	ON ca.cs_course_master_seq = cm.cs_course_master_seq
+   AND cm.cs_delete_yn = 'N'
+       <if test="srchMemberSeq != null">
+ INNER JOIN cs_course_active_lecturer cal
+    ON cal.cs_member_seq = #{srchMemberSeq}
+   AND cal.cs_course_active_seq = ca.cs_course_active_seq
+   AND cal.cs_delete_yn = 'N'
+       </if>
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   <if test='srchCategoryTypeCd != null and !srchCategoryTypeCd.equals("")'> 
+   AND c.cs_category_type_cd = #{srchCategoryTypeCd}
+   </if>
+   AND c.cs_category_seq = ca.cs_category_organization_seq
+  LEFT OUTER JOIN cs_course_active_summary cas
+    ON ca.cs_course_active_seq = cas.cs_course_active_seq
+ WHERE ca.cs_delete_yn = 'N'
+ 		<if test="srchKey != null and !srchKey.equals('')">
+		 	<choose>
+		 		<when test="srchKey.equals('active')">
+					<if test='srchWord != null and !srchWord.equals("")'>
+						AND ca.cs_course_active_title LIKE '%' + #{srchWordDB} + '%'
+					</if>
+		 		</when>
+		 		<when test="srchKey.equals('group')">
+					<if test='srchWord != null and !srchWord.equals("")'>
+						AND ca.cs_course_group_title LIKE '%' + #{srchWordDB} + '%'
+					</if>
+		 		</when>
+		 		<when test="srchKey.equals('all')">
+		 			<if test='srchWord != null and !srchWord.equals("")'>
+						AND (ca.cs_course_group_title LIKE '%' + #{srchWordDB} + '%' OR ca.CS_COURSE_ACTIVE_TITLE LIKE '%' + #{srchWordDB} + '%')
+					</if>
+		 		</when>
+		 	</choose>
+	 	</if>
+        <if test="srchApplyType != null and !srchApplyType.equals('')">
+                	<choose>
+                		<when test="srchApplyType.equals('ING')">
+			AND ca.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+			AND ca.cs_study_start_date <![CDATA[ <= ]]> dbo.FN_NOW_TO_CHAR()
+			AND ca.cs_study_end_date <![CDATA[ >= ]]> dbo.FN_NOW_TO_CHAR()
+                		</when>
+                		<when test="srchApplyType.equals('WAIT')">
+			AND ca.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}' 
+			AND ca.cs_study_start_date <![CDATA[ > ]]> dbo.FN_NOW_TO_CHAR() 
+							<if test='"Y".equals(srchCombinedClassYn)'>
+			AND ca.cs_category_organization_seq != 11
+							</if>
+                		</when>
+                		<otherwise>
+			AND ca.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+			<!-- AND ca.cs_study_end_date <![CDATA[ <= ]]> dbo.FN_NOW_TO_CHAR() -->
+                		</otherwise>
+                	</choose>
+        </if>
+        <if test='srchYearTerm != null and !srchYearTerm.equals("")'>
+   AND ca.cs_yearterm = #{srchYearTerm}
+        </if>
+        <if test='srchCourseMasterSeq != null and !srchCourseMasterSeq.equals("")'>
+   AND ca.cs_course_master_seq = #{srchCourseMasterSeq}
+        </if>        
+        <if test='srchCourseActiveStatusCd != null and !srchCourseActiveStatusCd.equals("ALL")'>
+   AND ca.cs_course_active_status_cd = #{srchCourseActiveStatusCd}
+        </if>
+        <if test='srchCourseTypeCd != null and !srchCourseTypeCd.equals("")'>
+   AND ca.cs_course_type_cd = #{srchCourseTypeCd}
+        </if>
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   AND c.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+        </if>
+        <if test='srchCategoryOrganizationSeq != null and !srchCategoryOrganizationSeq.equals("")'>
+   AND ca.cs_category_organization_seq = #{srchCategoryOrganizationSeq}
+        </if>
+        <if test='srchDivision != null and !srchDivision.equals("")'>
+   AND ca.cs_division = #{srchDivision}
+        </if>
+        <if test="srchCompetitionYn != null and !srchCompetitionYn.equals('')">
+		AND CX_COMPETITION_YN = #{srchCompetitionYn}
+		</if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveCondition" resultType="int">
+/* UIUnivCourseActive.countList */
+SELECT COUNT(*) 
+  FROM cs_course_active ca
+ INNER JOIN cs_course_master cm 
+    ON ca.cs_course_master_seq = cm.cs_course_master_seq 
+   AND cm.cs_delete_yn = 'N' 
+       <if test="srchMemberSeq != null">
+ INNER JOIN cs_course_active_lecturer cal
+    ON cal.cs_member_seq = #{srchMemberSeq}
+   AND cal.cs_course_active_seq = ca.cs_course_active_seq
+   AND cal.cs_delete_yn = 'N'
+       </if>
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   <if test='srchCategoryTypeCd != null and !srchCategoryTypeCd.equals("")'> 
+   AND c.cs_category_type_cd = #{srchCategoryTypeCd}
+   </if>
+   AND c.cs_category_seq = ca.cs_category_organization_seq
+ WHERE ca.cs_delete_yn = 'N'
+	 	<if test="srchKey != null and !srchKey.equals('')">
+		 	<choose>
+		 		<when test="srchKey.equals('active')">
+					<if test='srchWord != null and !srchWord.equals("")'>
+						AND ca.cs_course_active_title LIKE '%' + #{srchWordDB} + '%'
+					</if>
+		 		</when>
+		 		<when test="srchKey.equals('group')">
+					<if test='srchWord != null and !srchWord.equals("")'>
+						AND ca.cs_course_group_title LIKE '%' + #{srchWordDB} + '%'
+					</if>
+		 		</when>
+		 	</choose>
+		</if>	 	
+        <if test="srchApplyType != null and !srchApplyType.equals('')">
+                	<choose>
+                		<when test="srchApplyType.equals('ING')">
+			AND ca.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+			AND ca.cs_study_start_date <![CDATA[ <= ]]> dbo.FN_NOW_TO_CHAR()
+			AND ca.cs_study_end_date <![CDATA[ >= ]]> dbo.FN_NOW_TO_CHAR()
+                		</when>
+                		<when test="srchApplyType.equals('WAIT')">
+			AND ca.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}' 
+			AND ca.cs_study_start_date <![CDATA[ > ]]> dbo.FN_NOW_TO_CHAR()
+							<if test='"Y".equals(srchCombinedClassYn)'>
+			AND ca.cs_category_organization_seq != 11
+							</if> 
+                		</when>
+                		<otherwise>
+			AND ca.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+			<!-- AND ca.cs_study_end_date <![CDATA[ <= ]]> dbo.FN_NOW_TO_CHAR() -->
+                		</otherwise>
+                	</choose>
+        </if>
+        <if test='srchYearTerm != null and !srchYearTerm.equals("")'>
+   AND ca.cs_yearterm = #{srchYearTerm}
+        </if>
+        <if test='srchCourseMasterSeq != null and !srchCourseMasterSeq.equals("")'>
+   AND ca.cs_course_master_seq = #{srchCourseMasterSeq}
+        </if>
+        <if test='srchCourseActiveStatusCd != null and !srchCourseActiveStatusCd.equals("ALL")'>
+   AND ca.cs_course_active_status_cd = #{srchCourseActiveStatusCd}
+        </if>
+        <if test='srchCourseTypeCd != null and !srchCourseTypeCd.equals("")'>
+   AND ca.cs_course_type_cd = #{srchCourseTypeCd}
+        </if>
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   AND c.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+        </if>
+        <if test='srchCategoryOrganizationSeq != null and !srchCategoryOrganizationSeq.equals("")'>
+   AND ca.cs_category_organization_seq = #{srchCategoryOrganizationSeq}
+        </if>
+        <if test='srchDivision != null and !srchDivision.equals("")'>
+   AND ca.cs_division = #{srchDivision}
+        </if>
+        <if test="srchCompetitionYn != null and !srchCompetitionYn.equals('')">
+		AND CX_COMPETITION_YN = #{srchCompetitionYn}
+		</if>
+    </select>
+
+    <resultMap id="listResultYearTermMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="cs_yearterm"        property="yearTerm.yearTerm"/>
+        <result column="cs_yearterm_name"   property="yearTerm.yearTermName"/>
+        <result column="cs_year"            property="yearTerm.year"/>
+        <result column="cs_term"            property="yearTerm.term"/>
+        <result column="cs_middle_exam_upd_start_dtime" property="yearTerm.middleExamUpdStartDtime"/>
+        <result column="cs_middle_exam_upd_end_dtime"   property="yearTerm.middleExamUpdEndDtime"/>
+        <result column="cs_final_exam_upd_start_dtime"  property="yearTerm.finalExamUpdStartDtime"/>
+        <result column="cs_final_exam_upd_end_dtime"    property="yearTerm.finalExamUpdEndDtime"/>
+        <result column="cs_plan_reg_start_dtime"        property="yearTerm.planRegStartDtime"/>
+        <result column="cs_plan_reg_end_dtime"          property="yearTerm.planRegEndDtime"/>
+        <result column="cs_grade_make_start_dtime"      property="yearTerm.gradeMakeStartDtime"/>
+        <result column="cs_grade_make_end_dtime"        property="yearTerm.gradeMakeEndDtime"/>
+        <result column="isMiddleExamDtime"              property="yearTerm.isMiddleExamDtime"/>
+        <result column="isFinalExamDtime"               property="yearTerm.isFinalExamDtime"/>
+        <result column="isPlanRegDtime"                 property="yearTerm.isPlanRegDtime"/>
+        <result column="isGradeMakeDtime"               property="yearTerm.isGradeMakeDtime"/>
+    </resultMap>
+    
+    <select id="getListChargeOfYearTerm" parameterType="map" resultMap="listResultYearTermMap">
+/* UIUnivCourseActive.getListChargeOfYearTerm */
+SELECT ct.cs_yearterm, 
+       uy.cs_yearterm_name,
+       SUBSTRING(ct.cs_yearterm, 1, 4) AS year,
+       SUBSTRING(ct.cs_yearterm, 5, 2) AS term,
+       cs_middle_exam_upd_start_dtime, 
+       cs_middle_exam_upd_end_dtime, 
+       cs_final_exam_upd_start_dtime, 
+       cs_final_exam_upd_end_dtime, 
+       cs_plan_reg_start_dtime, 
+       cs_plan_reg_end_dtime, 
+       cs_grade_make_start_dtime, 
+       cs_grade_make_end_dtime, 
+       CASE WHEN cs_middle_exam_upd_start_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() 
+             AND cs_middle_exam_upd_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() 
+            THEN 'true' 
+            ELSE 'false'
+             END AS isMiddleExamDtime, 
+       CASE WHEN cs_final_exam_upd_start_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() 
+             AND cs_final_exam_upd_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() 
+            THEN 'true' 
+            ELSE 'false' 
+             END AS isFinalExamDtime, 
+       CASE WHEN cs_plan_reg_start_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() 
+             AND cs_plan_reg_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() 
+            THEN 'true' 
+            ELSE 'false'
+             END AS isPlanRegDtime, 
+       CASE WHEN cs_grade_make_start_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() 
+             AND cs_grade_make_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() 
+            THEN 'true' 
+            ELSE 'false'
+          END AS isGradeMakeDtime
+  FROM cs_univ_yearterm uy, 
+      (
+        SELECT a.cs_yearterm
+          FROM 
+              (select ca.cs_yearterm,
+                      ca.cs_category_organization_seq
+                 FROM cs_course_active_lecturer cal, 
+                      cs_course_master cm, 
+                      cs_course_active ca 
+                WHERE cal.cs_member_seq = #{memberSeq} 
+                  AND cal.cs_use_yn = 'Y' 
+                  AND cal.cs_delete_yn = 'N' 
+                  AND cm.cs_delete_yn = 'N' 
+                  AND ca.cs_delete_yn = 'N' 
+                  AND cal.cs_course_active_seq = ca.cs_course_active_seq 
+                  AND cm.cs_course_master_seq = ca.cs_course_master_seq 
+               ) a, 
+               (SELECT cs_category_seq 
+                 FROM cs_category 
+                WHERE cs_delete_yn = 'N'
+                  AND cs_category_type_cd = #{categoryTypeCd}
+               ) c 
+         WHERE a.cs_category_organization_seq = c.cs_category_seq
+      GROUP BY a.cs_yearterm
+       ) ct 
+ WHERE uy.cs_delete_yn = 'N' 
+   AND uy.cs_yearterm = ct.cs_yearterm
+ ORDER BY ct.cs_yearterm
+    </select>
+    
+    <resultMap id="listResultYearMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="cs_year"            property="yearTerm.year"/>
+    </resultMap>
+    
+    <select id="getListChargeOfYear" parameterType="map" resultMap="listResultYearMap">
+/* UIUnivCourseActive.getListChargeOfYear */
+SELECT a.cs_year 
+  FROM 
+      (SELECT ca.cs_year, 
+              ca.cs_category_organization_seq 
+         FROM cs_course_active_lecturer cal, 
+              cs_course_master cm, 
+              cs_course_active ca 
+        WHERE cal.cs_member_seq = #{memberSeq}
+          AND cal.cs_use_yn = 'Y' 
+          AND cal.cs_delete_yn = 'N' 
+          AND cm.cs_delete_yn = 'N' 
+          AND ca.cs_delete_yn = 'N' 
+          AND cal.cs_course_active_seq = ca.cs_course_active_seq 
+          AND cm.cs_course_master_seq = ca.cs_course_master_seq 
+       ) a, 
+      (SELECT cs_category_seq 
+         FROM cs_category 
+        WHERE cs_delete_yn = 'N' 
+          AND cs_category_type_cd = #{categoryTypeCd}
+       ) c 
+ WHERE a.cs_category_organization_seq = c.cs_category_seq 
+ GROUP BY a.cs_year
+ ORDER BY a.cs_year
+    </select>
+    
+    <resultMap id="listResultChargingMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="cs_course_master_seq"           property="courseActive.courseMasterSeq"/>
+        <result column="cs_course_active_seq"           property="courseActive.courseActiveSeq"/>
+        <result column="cs_yearterm"                    property="courseActive.yearTerm"/>
+        <result column="cs_course_active_title"         property="courseActive.courseActiveTitle"/>
+        <result column="cs_division"                    property="courseActive.division"/>
+        <result column="cs_period_number"               property="courseActive.periodNumber"/>
+        <result column="cs_course_type_cd"              property="courseActive.courseTypeCd"/>
+        <result column="cs_study_day"       			property="courseActive.studyDay"/>
+        <result column="cs_resume_day"      			property="courseActive.resumeDay"/>
+        <result column="cs_cancel_day"      			property="courseActive.cancelDay"/>
+        <result column="year"                           property="yearTerm.year"/>
+        <result column="term"                           property="yearTerm.term"/>
+    </resultMap>
+    
+    <select id="getListChargeOfCourseActive" parameterType="map" resultMap="listResultChargingMap">
+/* UIUnivCourseActive.getListChargeOfCourseActive */
+SELECT a.cs_yearterm,
+       a.cs_course_master_seq,
+       a.cs_course_active_seq,
+       a.cs_course_active_title,
+       a.cs_division,
+       a.cs_period_number,
+       a.cs_course_type_cd,
+       a.cs_study_day,
+       a.cs_resume_day,
+       a.cs_cancel_day,
+       <choose>
+            <when test='categoryTypeCd.equals("${CD.CATEGORY_TYPE.DEGREE}")'>
+       SUBSTRING(a.cs_yearterm, 1, 4) AS year,
+       SUBSTRING(a.cs_yearterm, 5, 2) AS term
+            </when>
+            <otherwise>
+       a.cs_year                      AS year,
+       null                           AS term
+            </otherwise>
+          </choose>
+  FROM 
+      (select cm.cs_course_master_seq, 
+              ca.cs_course_active_seq, 
+              ca.cs_category_organization_seq, 
+              ca.cs_yearterm,
+              ca.cs_year,
+              ca.cs_course_active_title,
+              ca.cs_division,
+              ca.cs_period_number,
+              ca.cs_course_type_cd,
+              ca.cs_study_day,
+              ca.cs_resume_day,
+              ca.cs_cancel_day
+         FROM cs_course_active_lecturer cal, 
+              cs_course_master cm, 
+              cs_course_active ca 
+        WHERE cal.cs_member_seq = #{memberSeq} 
+          AND cal.cs_use_yn = 'Y' 
+          AND cal.cs_delete_yn = 'N' 
+          AND ca.cs_course_active_status_cd != '${CD.COURSE_ACTIVE_STATUS.CLOSE}' 
+          <choose>
+            <when test='categoryTypeCd.equals("${CD.CATEGORY_TYPE.DEGREE}")'>
+          AND ca.cs_yearterm = #{yearTerm}
+            </when>
+            <otherwise>
+          AND ca.cs_year = #{yearTerm}
+            </otherwise>
+          </choose>
+          AND cm.cs_delete_yn = 'N' 
+          AND ca.cs_delete_yn = 'N' 
+          AND cal.cs_course_active_seq = ca.cs_course_active_seq 
+          AND cm.cs_course_master_seq = ca.cs_course_master_seq 
+       ) a, 
+      (SELECT cs_category_seq 
+         FROM cs_category 
+        WHERE cs_category_type_cd = #{categoryTypeCd}
+          AND cs_delete_yn = 'N'
+       ) c 
+ WHERE a.cs_category_organization_seq = c.cs_category_seq
+ORDER BY a.cs_course_active_title,a.cs_division,a.cs_period_number
+    </select>
+    
+    <resultMap id="listResultUserMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="cs_course_master_seq"           property="courseActive.courseMasterSeq"/>
+        <result column="cs_course_active_seq"           property="courseActive.courseActiveSeq"/>
+        <result column="cs_yearterm"                    property="courseActive.yearTerm"/>
+        <result column="cs_year"                        property="courseActive.year"/>
+        <result column="term"                           property="courseActive.term"/>
+        <result column="cs_course_active_title"         property="courseActive.courseActiveTitle"/>
+        <result column="cs_category_organization_seq"   property="courseActive.categoryOrganizationSeq"/>
+        <result column="cs_course_active_status_cd"     property="courseActive.courseActiveStatusCd"/>
+        <result column="cs_course_type_cd"              property="courseActive.courseTypeCd"/>
+        <result column="cs_complete_division_cd"        property="courseActive.completeDivisionCd"/>
+        <result column="cs_complete_division_point"     property="courseActive.completeDivisionPoint"/>
+        <result column="cs_apply_start_date"            property="courseActive.applyStartDate"/>
+        <result column="cs_apply_end_date"              property="courseActive.applyEndDate"/>
+        <result column="cs_study_start_date"            property="courseActive.studyStartDate"/>
+        <result column="cs_study_end_date"              property="courseActive.studyEndDate"/>
+        <result column="cs_study_day"              		property="courseActive.studyDay"/>
+        <result column="cs_resume_day"              	property="courseActive.resumeDay"/>
+        <result column="cs_cancel_day"              	property="courseActive.cancelDay"/>
+        <result column="cs_period_number"               property="courseActive.periodNumber"/>
+        <result column="cs_active_middle_count"         property="courseActiveSummary.activeMiddleCount"/>
+        <result column="cs_active_final_count"          property="courseActiveSummary.activeFinalCount"/>
+        <result column="cs_active_quiz_count"           property="courseActiveSummary.activeQuizCount"/>
+        <result column="cs_active_discuss_count"        property="courseActiveSummary.activeDiscussCount"/>
+        <result column="cs_active_homework_count"       property="courseActiveSummary.activeHomeworkCount"/>
+        <result column="cs_active_teamproject_count"    property="courseActiveSummary.activeTeamProjectCount"/>
+        <result column="cs_member_count"                property="courseActiveSummary.memberCount"/>
+        <result column="cs_delete_yn"                   property="courseActive.deleteYn"/>
+        <result column="cs_reg_member_seq "             property="courseActive.regMemberSeq"/>
+        <result column="cs_reg_dtime"                   property="courseActive.regDtime"/>
+        <result column="cs_reg_ip"                      property="courseActive.regIp"/>
+        <result column="cs_upd_member_seq"              property="courseActive.updMemberSeq"/>
+        <result column="cs_upd_dtime"                   property="courseActive.updDtime"/>
+        <result column="cs_upd_ip"                      property="courseActive.updIp"/>
+        <result column="cx_work_day1"                    property="courseActive.workDay1"/>
+        <result column="cx_work_day2"                    property="courseActive.workDay2"/>
+        <result column="cx_timetable1"                  property="courseActive.timetable1"/>
+		<result column="cx_timetable2"                  property="courseActive.timetable2"/>
+		<result column="cx_timetable3"                  property="courseActive.timetable3"/>
+		<result column="cx_timetable4"                  property="courseActive.timetable4"/>
+		<result column="cx_timetable5"                  property="courseActive.timetable5"/>
+		<result column="cx_timetable6"                  property="courseActive.timetable6"/>
+        <result column="cs_category_type_cd"            property="category.categoryTypeCd"/>
+        <result column="cs_category_string"             property="category.categoryString"/>
+        <result column="profName"             			property="lecturer.profMemberName"/>
+        <result column="applyCount"             		property="courseActive.applyCount"/>
+    </resultMap>
+    <select id="getListUser" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveCondition" resultMap="listResultUserMap">
+/* UIUnivCourseActive.getListUser */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY cs_course_active_title ASC</when>
+            <when test='orderby == -1'>ORDER BY cs_course_active_title DESC</when>
+            <when test='orderby == 2'>ORDER BY cs_category_organization_seq ASC</when>
+            <when test='orderby == -2'>ORDER BY cs_category_organization_seq DESC</when>
+            <when test='orderby == 3'>ORDER BY cs_course_active_status_cd ASC</when>
+            <when test='orderby == -3'>ORDER BY cs_course_active_status_cd DESC</when>
+            <when test='orderby == 4'>ORDER BY cs_reg_dtime ASC</when>
+            <when test='orderby == -4'>ORDER BY cs_reg_dtime DESC</when>
+            <otherwise>ORDER BY cs_reg_dtime DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT ca.cs_course_active_seq,
+       ca.cs_course_master_seq,
+       ca.cs_year,
+       ca.cs_yearterm,
+       SUBSTRING(ca.cs_yearterm,5,2)              AS term,
+       ca.cs_course_active_title,
+       ca.cs_category_organization_seq,
+       ca.cs_course_active_status_cd,
+       ca.cs_course_type_cd,
+       ca.cs_complete_division_cd,
+       ca.cs_complete_division_point,
+       ca.cs_period_number,
+       ca.cs_apply_start_date,
+       ca.cs_apply_end_date,
+       ca.cs_study_start_date,
+       ca.cs_study_end_date,
+       ca.cs_study_day,
+       ca.cs_resume_day,
+       ca.cs_cancel_day,
+       ca.cs_delete_yn,
+       ca.cs_reg_member_seq,
+       ca.cs_reg_dtime,
+       ca.cs_reg_ip,
+       ca.cs_upd_member_seq,
+       ca.cs_upd_dtime,
+       ca.cs_upd_ip,
+       ca.cx_work_day1,
+       ca.cx_work_day2,
+       ca.cx_timetable1,
+	   ca.cx_timetable2,
+	   ca.cx_timetable3,
+	   ca.cx_timetable4,
+	   ca.cx_timetable5,
+	   ca.cx_timetable6,
+       c.cs_category_type_cd,
+       c.cs_category_string,
+       member.cs_member_name AS "profName",
+       ISNULL(app.cs_course_apply_seq, 0) AS "applyCount"
+  FROM cs_course_active ca
+ LEFT OUTER JOIN cs_course_active_lecturer cal
+   ON cal.cs_course_active_seq = ca.cs_course_active_seq
+   AND cal.cs_prof_president_yn = 'Y'
+   AND cal.cs_delete_yn = 'N'
+ LEFT OUTER JOIN cs_member member
+   ON member.cs_member_seq = cal.cs_member_seq
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   AND c.cs_category_type_cd = #{srchCategoryTypeCd}
+   AND c.cs_category_seq = ca.cs_category_organization_seq
+ LEFT OUTER JOIN cs_course_apply app
+ 	ON app.cs_course_active_seq = ca.cs_course_active_seq
+ 	AND app.cs_delete_yn = 'N'
+ 	AND app.cs_apply_status_cd != '${CD.APPLY_STATUS.003}'
+ 	AND app.cs_member_seq = #{srchMemberSeq}
+ WHERE ca.cs_delete_yn = 'N'
+ 	   AND ca.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+        <if test='srchWord != null and !srchWord.equals("")'>
+   AND ca.cs_course_active_title LIKE '%' + #{srchWordDB} + '%'
+        </if>
+        <if test='srchYear != null and !srchYear.equals("")'>
+   AND ca.cs_year = #{srchYear}
+        </if>
+        <if test='srchYearTerm != null and !srchYearTerm.equals("")'>
+   AND ca.cs_yearterm = #{srchYearTerm}
+        </if>
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   AND c.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+        </if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countUserList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveCondition" resultType="int">
+/* UIUnivCourseActive.countUserList */
+SELECT COUNT(*) 
+  FROM cs_course_active ca
+ LEFT OUTER JOIN cs_course_active_lecturer cal
+   ON cal.cs_course_active_seq = ca.cs_course_active_seq
+   AND cal.cs_prof_president_yn = 'Y'
+   AND cal.cs_delete_yn = 'N'
+ LEFT OUTER JOIN cs_member member
+   ON member.cs_member_seq = cal.cs_member_seq
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   AND c.cs_category_type_cd = #{srchCategoryTypeCd}
+   AND c.cs_category_seq = ca.cs_category_organization_seq
+ WHERE ca.cs_delete_yn = 'N'
+   AND ca.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+        <if test='srchWord != null and !srchWord.equals("")'>
+   AND ca.cs_course_active_title LIKE '%' + #{srchWordDB} + '%'
+        </if>
+        <if test='srchYear != null and !srchYear.equals("")'>
+   AND ca.cs_year = #{srchYear}
+        </if>
+        <if test='srchYearTerm != null and !srchYearTerm.equals("")'>
+   AND ca.cs_yearterm = #{srchYearTerm}
+        </if>
+        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   AND c.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+        </if>
+    </select>
+    
+    <select id="getDetailByUser" parameterType="Long" resultType="com._4csoft.aof.univ.vo.UnivCourseActiveVO">
+/* UIUnivCourseActive.getDetailByUser */ 
+SELECT  cs_course_master_seq       AS courseMasterSeq,
+        cs_course_active_seq       AS courseActiveSeq,
+        cs_yearterm                AS yearTerm,
+        cs_year                    AS year,
+        SUBSTRING(cs_yearterm,5,2) AS term,
+        cs_course_active_title     AS courseActiveTitle,
+        cs_division                AS division
+  FROM cs_course_active 
+ WHERE cs_delete_yn = 'N' 
+   AND cs_course_active_seq = #{courseActiveSeq} 
+    </select>
+    
+    <update id="updateUseCount" parameterType="Long">
+/* UIUnivCourseActive.updateUseCount */ 
+UPDATE A 
+   SET A.cs_use_count = B.cs_use_count 
+  FROM cs_course_active A, 
+       (SELECT COUNT(*) AS cs_use_count 
+         FROM cs_course_apply 
+        WHERE cs_delete_yn = 'N' 
+          AND cs_course_active_seq = #{courseActiveSeq}
+       ) B 
+ WHERE A.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+
+
+    <resultMap id="getListByCourseActiveUserMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="active.courseActiveSeq"          property="courseActive.courseActiveSeq"/>
+        <result column="active.courseActiveTitle"        property="courseActive.courseActiveTitle"/>
+        <result column="active.year"                     property="courseActive.year"/>
+        <result column="active.yearTerm"                 property="courseActive.yearTerm"/>
+        <result column="active.term"                 	 property="courseActive.term"/>
+        <result column="cate.categoryTypeCd"             property="category.categoryTypeCd"/>
+    </resultMap>
+	<select id="getListByCourseActiveUser" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveBbsCondition" resultMap="getListByCourseActiveUserMap"> 
+	SELECT
+	 	a.cs_course_active_seq			AS "active.courseActiveSeq",
+		a.cs_course_active_title		AS "active.courseActiveTitle",
+	 	a.cs_year						AS "active.year",
+		a.cs_yearterm					AS "active.yearTerm",
+		SUBSTRING(a.cs_yearterm,5,2)    AS "active.term",
+	 	b.cs_category_type_cd			AS "cate.categoryTypeCd"
+	FROM cs_course_active a
+	INNER JOIN cs_category b
+	   ON  b.cs_category_seq = a.cs_category_organization_seq
+	   AND b.cs_delete_yn = 'N'
+	<if test='srchTargetRolegroup != null and !srchTargetRolegroup.equals("ADM")'>		   
+	INNER JOIN cs_course_active_lecturer c
+	 	ON c.cs_course_active_seq = a.cs_course_active_seq
+		AND c.cs_use_yn = 'Y' 
+	 	AND c.cs_delete_yn = 'N'
+	 	<if test='srchTargetRolegroup.equals("PROF")'>
+		AND c.cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.PROF}'
+		</if>
+		<if test='srchTargetRolegroup.equals("ASSIST")'>
+		AND c.cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.ASSIST}'
+		</if>
+		<if test='srchTargetRolegroup.equals("TUTOR")'>
+		AND c.cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.TUTOR}'
+		</if>		
+		AND c.cs_member_seq = #{srchMemberSeq} 
+	</if>
+	WHERE a.cs_delete_yn = 'N'
+	   AND a.cs_year = SUBSTRING(dbo.FN_NOW_TO_CHAR(),0,5)
+	   AND a.cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+	</select>
+	
+	<resultMap id="getDetailByClassroomMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="active.courseMasterSeq"          property="courseActive.courseMasterSeq"/>
+        <result column="active.courseActiveSeq"          property="courseActive.courseActiveSeq"/>
+        <result column="active.courseActiveTitle"        property="courseActive.courseActiveTitle"/>
+        <result column="active.year"                     property="courseActive.year"/>
+        <result column="active.yearTerm"                 property="courseActive.yearTerm"/>
+        <result column="active.term"                 	 property="courseActive.term"/>
+        <result column="active.courseActiveTitle"        property="courseActive.courseActiveTitle"/>
+        <result column="active.courseTypeCd"        	 property="courseActive.courseTypeCd"/>
+        <result column="master.completeDivisionCd"       property="courseMaster.completeDivisionCd"/>
+        <result column="master.completeDivisionPoint"    property="courseMaster.completeDivisionPoint"/>
+        <collection column="{srchCourseActiveSeq=active.courseActiveSeq,srchActiveLecturerTypeCd=srchActiveLecturerTypeCd,currentPage=currentPage}" property="lecturerList" javaType="List" 
+            ofType="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveLecturerRS" select="com._4csoft.aof.univ.mapper.UnivCourseActiveLecturerMapper.getList"/>
+    </resultMap>
+    
+	<select id="getDetailByClassroom" parameterType="Long" resultMap="getDetailByClassroomMap">
+/* UIUnivCourseActive.getDetailByClassroom */ 
+SELECT  act.cs_course_master_seq       AS "active.courseMasterSeq" ,
+        act.cs_course_active_seq       AS "active.courseActiveSeq" ,
+        act.cs_yearterm                AS "active.yearTerm" ,
+        act.cs_year                    AS "active.year" ,
+        SUBSTRING(act.cs_yearterm,5,2) AS "active.term" ,
+        act.cs_course_active_title     AS "active.courseActiveTitle" ,
+        act.cs_division                AS "active.division" ,
+        act.cs_course_type_cd		   AS "active.courseTypeCd" ,
+		mas.cs_complete_division_cd    AS "master.completeDivisionCd" ,
+		mas.cs_complete_division_point AS "master.completeDivisionPoint" ,
+		'${CD.ACTIVE_LECTURER_TYPE.PROF}'   AS "srchActiveLecturerTypeCd" ,
+		0 							   AS "currentPage"
+  FROM cs_course_active act
+INNER JOIN cs_course_master mas
+   ON act.cs_course_master_seq = mas.cs_course_master_seq
+ WHERE act.cs_delete_yn = 'N' 
+   AND act.cs_course_active_seq = #{courseActiveSeq}
+    </select>
+
+    
+    <insert id="insertCourseMasterToCourseActive" parameterType="com._4csoft.aof.univ.vo.UnivCourseActiveVO">
+/* UIUnivCourseActive.insertCourseMasterToCourseActive */
+<selectKey resultType="Long" keyProperty="courseActiveSeq" order="AFTER">
+SELECT @@IDENTITY
+</selectKey> 
+INSERT
+  INTO dbo.cs_course_active
+       (
+       cs_yearterm,
+       cs_course_master_seq,
+       cs_course_active_title,
+       cs_introduction,
+       cs_goal,
+       cs_memo,
+       cs_course_active_status_cd,
+       cs_course_type_cd,
+       cs_year,
+       cs_period_number,
+       cs_apply_type_cd,
+       cs_apply_start_date,
+       cs_apply_end_date,
+       cs_study_start_date,
+       cs_study_end_date,
+       cs_open_start_date,
+       cs_open_end_date,
+       cs_cancel_start_date,
+       cs_cancel_end_date,
+       cs_resume_end_date,
+       cs_study_day,
+       cs_resume_day,
+       cs_cancel_day,
+       cs_limit_progress,
+       cs_limit_progress_type_cd,
+       cs_sequence_yn,
+       cs_use_count,
+       cs_evaluate_method_type_cd,
+       cs_relative_rate,
+       cs_quota,
+       cs_week_count,
+       cs_organization_string,
+       cs_category_organization_seq,
+       cs_complete_division_cd,
+       cs_complete_division_point,
+       cs_delete_yn,
+       cs_reg_member_seq ,
+       cs_reg_dtime ,
+       cs_reg_ip ,
+       cs_upd_member_seq ,
+       cs_upd_dtime ,
+       cs_upd_ip
+       <if test='competitionYn != null'>
+       ,CX_COMPETITION_YN
+       </if>
+       )
+SELECT #{yearTerm, jdbcType=VARCHAR} ,
+       #{courseMasterSeq, jdbcType=NUMERIC} ,
+       cm.cs_course_title,
+       cm.cs_introduction,
+       cm.cs_goal,
+       #{memo, jdbcType=VARCHAR} ,
+       #{courseActiveStatusCd, jdbcType=VARCHAR} ,
+       #{courseTypeCd, jdbcType=VARCHAR} ,
+       #{year, jdbcType=VARCHAR} ,
+       #{periodNumber, jdbcType=VARCHAR} ,
+       #{applyTypeCd, jdbcType=VARCHAR} ,
+       #{applyStartDate, jdbcType=VARCHAR} ,
+       #{applyEndDate, jdbcType=VARCHAR} ,
+       #{studyStartDate, jdbcType=VARCHAR} ,
+       #{studyEndDate, jdbcType=VARCHAR} ,
+       #{openStartDate, jdbcType=VARCHAR} ,
+       #{openEndDate, jdbcType=VARCHAR} ,
+       #{cancelStartDate, jdbcType=VARCHAR} ,
+       #{cancelEndDate, jdbcType=VARCHAR} ,
+       #{resumeEndDate, jdbcType=VARCHAR} ,
+       #{studyDay, jdbcType=NUMERIC} ,
+       #{resumeDay, jdbcType=NUMERIC} ,
+       #{cancelDay, jdbcType=NUMERIC} ,
+       #{limitProgress, jdbcType=NUMERIC} ,
+       #{limitProgressTypeCd, jdbcType=VARCHAR} ,
+       #{sequenceYn, jdbcType=VARCHAR} ,
+       #{useCount, jdbcType=NUMERIC} ,
+       #{evaluateMethodTypeCd, jdbcType=VARCHAR} ,
+       #{relativeRate, jdbcType=NUMERIC} ,
+       #{quota, jdbcType=NUMERIC} ,
+       #{weekCount, jdbcType=NUMERIC} ,
+       c.cs_category_string,
+       c.cs_category_seq,
+       cm.cs_complete_division_cd,
+       cm.cs_complete_division_point,
+       'N',
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR}
+       <if test='competitionYn != null'>
+       ,#{competitionYn, jdbcType=VARCHAR}
+       </if>
+  FROM cs_course_master cm
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   AND c.cs_category_seq = cm.cs_category_organization_seq
+ WHERE cm.cs_delete_yn = 'N'
+   AND cm.cs_course_master_seq = #{courseMasterSeq}
+    </insert>
+    
+    <resultMap id="detailCopyTargetMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveRS">
+        <result column="cs_course_master_seq"           property="courseActive.courseMasterSeq"/>
+        <result column="cs_course_active_seq"           property="courseActive.courseActiveSeq"/>
+        <result column="cs_year"                        property="courseActive.year"/>
+        <result column="term"                           property="courseActive.term"/>
+        <result column="cs_yearterm"                    property="courseActive.yearTerm"/>
+        <result column="cs_course_active_title"         property="courseActive.courseActiveTitle"/>
+        <result column="cs_division"                    property="courseActive.division"/>
+        <result column="cs_category_type_cd"            property="category.categoryTypeCd"/>
+        <result column="cs_parent_seq"                  property="category.parentSeq"/>
+        <result column="cs_category_organization_seq"   property="courseActive.categoryOrganizationSeq"/>
+        <result column="cs_category_string"             property="category.categoryString"/>
+    </resultMap>
+    <select id="getDetailCopyTargetCourseActive" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveCondition" resultMap="detailCopyTargetMap">
+/* UIUnivCourseActive.getDetailCopyTargetCourseActive */
+SELECT TOP 1 
+       ca.cs_course_master_seq, 
+       ca.cs_course_active_seq, 
+       ca.cs_year, 
+       SUBSTRING(ca.cs_yearterm, 5, 2) AS term, 
+       ca.cs_yearterm, 
+       ca.cs_course_active_title, 
+       ca.cs_division, 
+       c.cs_category_type_cd, 
+       c.cs_category_string, 
+       c.cs_category_name, 
+       c.cs_parent_seq, 
+       ca.cs_category_organization_seq
+  FROM cs_course_active ca
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   AND c.cs_category_type_cd = #{srchCategoryTypeCd}
+   AND c.cs_category_seq = ca.cs_category_organization_seq
+ WHERE ca.cs_delete_yn = 'N'
+   AND ca.cs_yearterm = #{srchYearTerm}
+   AND cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+   AND ca.cs_course_master_seq = #{srchCourseMasterSeq} 
+   AND ca.cs_course_active_seq != #{srchTargetCourseActiveSeq}
+   AND (ca.cs_division IS NULL OR ca.cs_division = 1)
+ ORDER BY ca.cs_course_active_seq DESC
+    </select>
+
+    <select id="countCopyTargetCourseActive" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveCondition" resultType="int">
+/* UIUnivCourseActive.countCopyTargetCourseActive */
+SELECT COUNT(*) 
+  FROM cs_course_active ca
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   AND c.cs_category_type_cd = #{srchCategoryTypeCd}
+   AND c.cs_category_seq = ca.cs_category_organization_seq
+ WHERE ca.cs_delete_yn = 'N'
+   AND ca.cs_yearterm = #{srchYearTerm}
+   AND cs_course_active_status_cd = '${CD.COURSE_ACTIVE_STATUS.OPEN}'
+   AND ca.cs_course_master_seq = #{srchCourseMasterSeq} 
+   AND ca.cs_course_active_seq != #{srchTargetCourseActiveSeq}
+   AND (ca.cs_division IS NULL OR ca.cs_division = 1)
+    </select>
+    
+    <insert id="insertCopyNondegreeCourseActive" parameterType="com._4csoft.aof.univ.vo.UnivCourseActiveVO">
+        <selectKey resultType="Long" keyProperty="courseActiveSeq" order="AFTER">
+        SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseActive.insertCopyNondegreeCourseActive */
+INSERT INTO cs_course_active
+       (
+       cs_course_master_seq,
+       cs_division,
+       cs_course_active_title,
+       cs_introduction,
+       cs_goal,
+       cs_memo,
+       cs_course_type_cd,
+       cs_course_active_status_cd,
+       cs_year,
+       cs_period_number,
+       cs_apply_type_cd,
+       cs_apply_start_date,
+       cs_apply_end_date,
+       cs_open_start_date,
+       cs_open_end_date,
+       cs_cancel_start_date,
+       cs_cancel_end_date,
+       cs_resume_end_date,
+       cs_study_start_date,
+       cs_study_end_date,
+       cs_study_day,
+       cs_resume_day,
+       cs_cancel_day,
+       cs_limit_progress,
+       cs_limit_progress_type_cd,
+       cs_sample_organization_index,
+       cs_sample_item_index,
+       cs_sequence_yn,
+       cs_use_count,
+       cs_evaluate_method_type_cd,
+       cs_relative_rate,
+       cs_quota,
+       cs_photo,
+       cs_week_count,
+       cs_organization_string,
+       cs_category_organization_seq,
+       cs_complete_division_cd,
+       cs_complete_division_point,
+       cs_grade_complete_yn,
+       cs_completion_score,
+       cs_delete_yn,
+       cs_reg_member_seq ,
+       cs_reg_dtime ,
+       cs_reg_ip ,
+       cs_upd_member_seq ,
+       cs_upd_dtime ,
+       cs_upd_ip
+       )
+SELECT a.cs_course_master_seq,
+       a.cs_division,
+       <choose>
+                <when test='courseActiveTitle != null'>
+       #{courseActiveTitle}    AS cs_course_active_title,
+                </when>
+                <otherwise>
+       a.cs_course_active_title,
+               </otherwise>
+           </choose>
+       a.cs_introduction,
+       a.cs_goal,
+       a.cs_memo,
+       a.cs_course_type_cd,
+       '${CD.COURSE_ACTIVE_STATUS.INACTIVE}' AS cs_course_active_status_cd,
+       #{year}                          AS cs_year,
+           <choose>
+                <when test='periodNumber != null'>
+       #{periodNumber}                     AS cs_period_number,
+                </when>
+                <when test='courseTypeCd.equals("${CD.COURSE_TYPE.PERIOD}")'>
+ 	   (SELECT COUNT(*)+1 
+          FROM cs_course_active b
+         WHERE b.cs_course_master_seq = a.cs_course_master_seq
+           AND b.cs_course_type_cd = '${CD.COURSE_TYPE.PERIOD}'
+           AND b.cs_year = a.cs_year
+           AND b.cs_delete_yn = 'N')       AS cs_period_number,
+        		</when>
+        		<otherwise>
+        null							   AS cs_period_number,
+        		</otherwise>
+           </choose>
+       #{applyTypeCd, jdbcType=VARCHAR} 	AS cs_apply_type_cd,
+       #{applyStartDate, jdbcType=VARCHAR}  AS cs_apply_start_date,
+       #{applyEndDate, jdbcType=VARCHAR}    AS cs_apply_end_date,
+       #{openStartDate, jdbcType=VARCHAR}   AS cs_open_start_date,
+       #{openEndDate, jdbcType=VARCHAR}     AS cs_open_end_date,
+       #{cancelStartDate, jdbcType=VARCHAR} AS cs_cancel_start_date,
+       #{cancelEndDate, jdbcType=VARCHAR}   AS cs_cancel_end_date,
+       #{resumeEndDate, jdbcType=VARCHAR}   AS cs_resume_end_date,
+	       <choose>
+	       		<when test='courseTypeCd.equals("${CD.COURSE_TYPE.PERIOD}")'>
+	   #{studyStartDate, jdbcType=VARCHAR}  AS cs_study_start_date,
+	   #{studyEndDate, jdbcType=VARCHAR}    AS cs_study_end_date,
+	   DATEDIFF(DAY, dbo.FN_TO_DATE(#{studyStartDate}), dbo.FN_TO_DATE(#{studyEndDate}))    AS cs_study_day,
+	   DATEDIFF(DAY, dbo.FN_TO_DATE(#{studyEndDate}), dbo.FN_TO_DATE(#{resumeEndDate}))     AS cs_resume_day,
+	   DATEDIFF(DAY, dbo.FN_TO_DATE(#{cancelStartDate}), dbo.FN_TO_DATE(#{cancelEndDate}))  AS cs_cancel_day,       		
+	       		</when>
+	       		<otherwise>
+       #{openStartDate, jdbcType=VARCHAR}  AS cs_study_start_date,
+	   #{openEndDate, jdbcType=VARCHAR}    AS cs_study_end_date,
+	   a.cs_study_day,
+	   a.cs_resume_day,
+	   a.cs_cancel_day,
+	       		</otherwise>
+	       </choose>
+       a.cs_limit_progress,
+       a.cs_limit_progress_type_cd,
+       a.cs_sample_organization_index,
+       a.cs_sample_item_index,
+       a.cs_sequence_yn,
+       0,
+       a.cs_evaluate_method_type_cd,
+       a.cs_relative_rate,
+       a.cs_quota,
+       a.cs_photo,
+       a.cs_week_count,
+       a.cs_organization_string,
+       a.cs_category_organization_seq,
+       a.cs_complete_division_cd,
+       a.cs_complete_division_point,
+       'N'                          AS cs_grade_complete_yn,
+       a.cs_completion_score,
+       'N',
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR}
+  FROM cs_course_active a
+ WHERE a.cs_delete_yn = 'N'
+   AND a.cs_course_active_seq = #{sourceCourseActiveSeq}
+    </insert>
+    
+     <update id="updateDivisionCount" parameterType="com._4csoft.aof.univ.vo.UnivCourseActiveVO">
+	/* UIUnivCourseActive.updateDivisionCount */ 
+	UPDATE a 
+       SET a.cs_division_count = b.cs_division_count, 
+	       a.cs_upd_member_seq = #{updMemberSeq}, 
+	       a.cs_upd_ip         = #{updIp}, 
+	       a.cs_upd_dtime      = dbo.FN_NOW_TO_CHAR() 
+  FROM cs_course_active a,
+       (SELECT cs_course_active_seq,
+               COUNT( * ) AS cs_division_count 
+         FROM cs_course_active_lecturer 
+        WHERE cs_delete_yn = 'N' 
+          AND cs_course_active_seq = #{courseActiveSeq}
+          AND cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.TUTOR}'
+     GROUP BY cs_course_active_seq 
+        ) b 
+ WHERE a.cs_course_active_seq = b.cs_course_active_seq 
+   AND a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+</mapper>

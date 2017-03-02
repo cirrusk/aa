@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseExamPaperElementMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperElementVO">
+/* UnivCourseExamPaperElementMapper.insert */
+INSERT INTO cs_course_exam_paper_element
+	(
+		cs_exam_paper_seq ,
+		cs_exam_seq ,
+		cs_sort_order ,
+		cs_paper_number ,
+		cs_reg_member_seq ,
+        cs_reg_dtime ,
+        cs_reg_ip ,
+        cs_upd_member_seq ,
+        cs_upd_dtime ,
+        cs_upd_ip
+	)
+	VALUES
+	(
+		#{examPaperSeq, jdbcType=NUMERIC} ,
+		#{examSeq, jdbcType=NUMERIC} ,
+		#{sortOrder, jdbcType=NUMERIC} ,
+		#{paperNumber, jdbcType=NUMERIC} ,
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperElementVO">
+/* UnivCourseExamPaperElementMapper.update */
+UPDATE cs_course_exam_paper_element 
+   SET cs_upd_member_seq = #{updMemberSeq} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_paper_number = #{paperNumber} ,
+       cs_sort_order = #{sortOrder} 
+ WHERE cs_exam_seq = #{examSeq} 
+       AND cs_exam_paper_seq = #{examPaperSeq} 
+       AND cs_delete_yn = 'N'	
+	</update>
+	
+	<update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperElementVO">
+/* UnivCourseExamPaperElementMapper.delete */
+UPDATE cs_course_exam_paper_element 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_exam_paper_seq = #{examPaperSeq}	
+   AND cs_exam_seq = #{examSeq} 
+   AND cs_delete_yn = 'N'	
+	</update>
+	
+	<update id="deleteAll" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperElementVO">
+/* UnivCourseExamPaperElementMapper.deleteAll */
+UPDATE cs_course_exam_paper_element 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_exam_paper_seq = #{examPaperSeq}	
+   AND cs_delete_yn = 'N'	
+	</update>
+	
+	<update id="updateUseCountExam" parameterType="Long">
+/* UnivCourseExamPaperElementMapper.updateUseCountExam */
+UPDATE ce
+   SET
+	   ce.cs_use_count = subcepe.useCount
+  FROM cs_course_exam ce,
+	  (
+		  SELECT
+		  		(SELECT COUNT(*)
+		  		   FROM cs_course_exam_paper_element
+		  		  WHERE cepe.cs_exam_seq = #{examSeq}
+		  		    AND cs_delete_yn = 'N'
+		  		) AS useCount
+		  		, cs_exam_seq
+			FROM cs_course_exam_paper_element cepe
+		   WHERE cepe.cs_exam_paper_seq = #{examPaperSeq}
+	  )	subcepe
+ WHERE ce.cs_exam_seq = subcepe.cs_exam_seq     	
+	</update>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamPaperElementRS">
+		<result column="cepe.examPaperSeq"          property="courseExamPaperElement.examPaperSeq"   />
+	    <result column="cepe.examSeq"               property="courseExamPaperElement.examSeq"        />
+	    <result column="cepe.sortOrder"             property="courseExamPaperElement.sortOrder"      />
+	    <result column="cepe.paperNumber"           property="courseExamPaperElement.paperNumber"    />
+	    <result column="ce.examSeq" 			    property="courseExam.examSeq" 		             />
+	    <result column="ce.courseMasterSeq"         property="courseExam.courseMasterSeq"            />
+	    <result column="ce.profMemberSeq"           property="courseExam.profMemberSeq"              />
+	    <result column="ce.openYn"                  property="courseExam.openYn"                     />
+	    <result column="ce.useYn"                   property="courseExam.useYn"                      />
+	    <result column="ce.useCount"                property="courseExam.useCount"                   />
+	    <result column="ce.examTitle"               property="courseExam.examTitle"                  />
+	    <result column="ce.description"             property="courseExam.description"                />
+	    <result column="ce.examFileTypeCd"          property="courseExam.examFileTypeCd"             />
+	    <result column="ce.filePath"                property="courseExam.filePath"                   />
+	    <result column="ce.filePathType"            property="courseExam.filePathType"               />
+	    <result column="ce.examCount"               property="courseExam.examCount"                  />
+	    <result column="ce.groupKey"                property="courseExam.groupKey"                   />
+	    <result column="cei.examItemSeq"            property="courseExamItem.examItemSeq"            />
+	    <result column="cei.examSeq"                property="courseExamItem.examSeq"                />
+	    <result column="cei.examItemTitle"          property="courseExamItem.examItemTitle"          />
+	    <result column="cei.description"            property="courseExamItem.description"            />
+	    <result column="cei.comment"                property="courseExamItem.comment"                />
+	    <result column="cei.examFileTypeCd"         property="courseExamItem.examFileTypeCd"         />
+	    <result column="cei.filePath"               property="courseExamItem.filePath"               />
+	    <result column="cei.filePathType"           property="courseExamItem.filePathType"           />
+	    <result column="cei.openYn"                 property="courseExamItem.openYn"                 />
+	    <result column="cei.useYn"                  property="courseExamItem.useYn"                  />
+	    <result column="cei.useCount"               property="courseExamItem.useCount"               />
+	    <result column="cei.examItemTypeCd"         property="courseExamItem.examItemTypeCd"         />
+	    <result column="cei.examItemDifficultyCd"   property="courseExamItem.examItemDifficultyCd"   />
+	    <result column="cei.examItemAlignCd"        property="courseExamItem.examItemAlignCd"        />
+	    <result column="cei.sortOrder"              property="courseExamItem.sortOrder"              />
+	    <result column="cei.correctAnswer"          property="courseExamItem.correctAnswer"          />
+	    <result column="cei.similarAnswer"          property="courseExamItem.similarAnswer"          />
+	    <result column="cei.examItemScore"          property="courseExamItem.examItemScore"          />
+        <result column="cei.profMemberSeq"          property="courseExamItem.profMemberSeq"          />
+	</resultMap>
+	
+	<select id="getList" parameterType="Long" resultMap="listResultMap">
+/* UnivCourseExamPaperElementMapper.getList */
+SELECT cepe.cs_exam_paper_seq 			AS "cepe.examPaperSeq" ,
+	   cepe.cs_exam_seq 				AS "cepe.examSeq" ,
+	   cepe.cs_sort_order 				AS "cepe.sortOrder" ,
+	   cepe.cs_paper_number 			AS "cepe.paperNumber" ,
+	   ce.cs_exam_seq				    AS "ce.examSeq" ,			
+       ce.cs_course_master_seq          AS "ce.courseMasterSeq" ,
+       ce.cs_prof_member_seq            AS "ce.profMemberSeq" ,  
+       ce.cs_open_yn                    AS "ce.openYn" ,          
+       ce.cs_use_yn                     AS "ce.useYn" ,           
+       ce.cs_use_count                  AS "ce.useCount" ,        
+       ce.cs_exam_title                 AS "ce.examTitle" ,       
+       ce.cs_description                AS "ce.description" ,      
+       ce.cs_exam_file_type_cd          AS "ce.examFileTypeCd" ,
+       ce.cs_file_path                  AS "ce.filePath" ,        
+       ce.cs_file_path_type             AS "ce.filePathType" ,   
+       ce.cs_exam_count                 AS "ce.examCount" ,       
+       ce.cs_group_key                  AS "ce.groupKey" ,
+       cei.cs_exam_item_seq				AS "cei.examItemSeq" ,
+       cei.cs_exam_seq                  AS "cei.examSeq" ,    
+       cei.cs_exam_item_title           AS "cei.examItemTitle" ,    
+       cei.cs_description               AS "cei.description" ,    
+       cei.cs_comment                   AS "cei.comment" ,    
+       cei.cs_exam_file_type_cd         AS "cei.examFileTypeCd" ,    
+       cei.cs_file_path                 AS "cei.filePath" ,    
+       cei.cs_file_path_type            AS "cei.filePathType" ,    
+       cei.cs_open_yn                   AS "cei.openYn" ,    
+       cei.cs_use_yn                    AS "cei.useYn" ,    
+       cei.cs_use_count                 AS "cei.useCount" ,    
+       cei.cs_exam_item_type_cd         AS "cei.examItemTypeCd" ,    
+       cei.cs_exam_item_difficulty_cd   AS "cei.examItemDifficultyCd" ,    
+       cei.cs_exam_item_align_cd        AS "cei.examItemAlignCd" ,    
+       cei.cs_sort_order                AS "cei.sortOrder" ,    
+       cei.cs_correct_answer            AS "cei.correctAnswer" ,    
+       cei.cs_similar_answer            AS "cei.similarAnswer" ,
+       cei.cs_exam_item_score           AS "cei.examItemScore" ,    
+       cei.cs_prof_member_seq           AS "cei.profMemberSeq"
+  FROM cs_course_exam_paper_element cepe 
+ INNER JOIN cs_course_exam ce 
+    ON ce.cs_delete_yn = 'N' 
+       AND ce.cs_exam_seq = cepe.cs_exam_seq 
+ INNER JOIN cs_course_exam_item cei 
+    ON cei.cs_delete_yn = 'N' 
+   AND cei.cs_exam_seq = ce.cs_exam_seq 
+ WHERE cepe.cs_exam_paper_seq = #{examPaperSeq} 
+   AND cepe.cs_delete_yn = 'N'
+ORDER BY cepe.cs_sort_order ASC, cei.cs_sort_order ASC        	
+	</select>
+	
+	<select id="getListWithExamItem" parameterType="Long" resultType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperElementVO">
+/* UnivCourseExamPaperElementMapper.getListWithExmaItem */
+SELECT cepe.cs_exam_paper_seq AS "examPaperSeq" ,
+       cepe.cs_exam_seq       AS "examSeq" ,
+       cepe.cs_paper_number   AS "paperNumber" ,
+       cepe.cs_sort_order     AS "sortOrder" ,
+       cei.cs_exam_item_seq   AS "examItemSeq" 
+  FROM cs_course_exam_paper_element cepe 
+ INNER JOIN cs_course_exam ce 
+    ON ce.cs_delete_yn = 'N' 
+   AND ce.cs_exam_seq = cepe.cs_exam_seq 
+ INNER JOIN cs_course_exam_item cei 
+    ON cei.cs_delete_yn = 'N' 
+   AND cei.cs_exam_seq = ce.cs_exam_seq 
+ WHERE cepe.cs_exam_paper_seq = #{examPaperSeq} 
+   AND cepe.cs_delete_yn = 'N'
+ORDER BY cepe.cs_sort_order ASC, cei.cs_sort_order ASC	
+	</select>
+	
+	<select id="countList" parameterType="map" resultType="int">
+/* UnivCourseExamPaperElementMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_course_exam_paper_element cepe 
+ WHERE cepe.cs_exam_seq = #{examSeq} 
+   AND cepe.cs_exam_paper_seq = #{examPaperSeq} 
+   AND cepe.cs_delete_yn = 'N'	
+	</select>
+
+</mapper>

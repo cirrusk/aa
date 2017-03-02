@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.reservation.scheduler.service.impl.ReservationSchedulerMapper">
+
+	<!-- 실주문번호 없는 주문내역 목록 조회(현재시간 기준 10분 이내) -->
+	<select id="selectVirtualPurchaseNumber" resultType="dataBox">
+		SELECT 
+			  RSVSEQ
+			, VIRTUALPURCHASENUMBER
+			, CONVERT(VARCHAR(8), REQUESTDATETIME, 112) AS REQUESTDATETIME
+		FROM 
+			RSVPURCHASEINFO
+		WHERE 
+			REGULARPURCHASENUMBER IS NULL
+			AND REQUESTDATETIME > DATEADD(MI, -10, GETDATE())
+	</select>
+	
+	<!-- 실주문번호 업데이트 -->
+	<update id="updateRegularPurchaseNumber" parameterType="reqBox">
+		UPDATE RSVPURCHASEINFO
+		SET 
+			  REGULARPURCHASENUMBER = #{regularpurchasenumber}
+			, REGULARDATETIME = GETDATE()
+			, UPDATEUSER = 'SYSTEM'
+			, UPDATEDATE = GETDATE()
+		WHERE 
+			RSVSEQ = #{rsvseq}
+	</update>
+	
+	<!-- 예약대기자 삭제 -->
+	<delete id="beforeWatingReservationDelete">
+		DELETE FROM RSVRESERVATIONINFO 
+		WHERE STANDBYNUMBER = 1
+	</delete>
+	
+	<!-- 핸드폰 인증 내역 삭제 : 예약대기자 삭제 와 같이 처리 -->
+	<delete id="nonMemberCertInfoDelete">
+		DELETE FROM RSVCERTINFO
+	</delete>
+	
+	<select id="reservationRemindNotificationPushRoom" resultType="egovMap">
+		SELECT
+			A.ACCOUNT AS UID,
+			'[ABO : '
+			+A.ACCOUNT+'] ['
+			+B.PPNAME+'] ['
+			+C.ROOMNAME+'] '
+			+SUBSTRING(A.RESERVATIONDATE,5,2)+' 월 '
+			+SUBSTRING(A.RESERVATIONDATE,7,2)+' 일 '
+			+' 세션 ['
+			+D.SESSIONNAME
+			+'] (['
+			+SUBSTRING(A.STARTDATETIME,1,2)+':'
+			+SUBSTRING(A.STARTDATETIME,3,2)
+			+' ~ '
+			+SUBSTRING(A.ENDDATETIME,1,2)+':'
+			+SUBSTRING(A.ENDDATETIME,3,2)
+			+']) 예약 재안내' AS PUSH_MSG
+		FROM RSVRESERVATIONINFO A
+		INNER JOIN RSVPPINFO B
+		  ON (A.PPSEQ = B.PPSEQ)
+		INNER JOIN RSVROOMINFO C
+		  ON (A.ROOMSEQ = C.ROOMSEQ)
+		INNER JOIN RSVROOMSESSIONINFO D
+		  ON (A.RSVSESSIONSEQ = D.RSVSESSIONSEQ)
+		WHERE A.CANCELCODE != 'B01'
+		  AND A.ADMINFIRSTCODE != 'R01'
+		  AND A.RESERVATIONDATE = CONVERT(VARCHAR(8), GETDATE() + 8, 112)	
+	</select>
+	
+	<select id="reservationRemindNotificationPushExpr" resultType="egovMap">
+		SELECT
+			A.ACCOUNT AS UID,
+			'[ABO : '
+			+A.ACCOUNT+'] ['
+			+B.PPNAME+'] '
+			+SUBSTRING(A.RESERVATIONDATE,5,2)+' 월 '
+			+SUBSTRING(A.RESERVATIONDATE,7,2)+' 일 '
+			+SUBSTRING(A.STARTDATETIME,1,2)+' 시 '
+			+SUBSTRING(A.STARTDATETIME,3,2)+' 분 ['
+			+C.PRODUCTNAME+'] '
+			+']) 예약 재안내' AS PUSH_MSG
+		FROM RSVRESERVATIONINFO A
+		INNER JOIN RSVPPINFO B
+		  ON (A.PPSEQ = B.PPSEQ)
+		INNER JOIN RSVEXPINFO C
+		  ON (A.EXPSEQ = C.EXPSEQ)
+		INNER JOIN RSVEXPSESSIONINFO D
+		  ON (A.EXPSESSIONSEQ = D.EXPSESSIONSEQ)
+		INNER JOIN RSVTYPEINFO E
+		  ON (A.TYPESEQ = E.TYPESEQ)
+		WHERE A.CANCELCODE != 'B01'
+		  AND A.ADMINFIRSTCODE != 'R01'
+		  AND E.TYPENAME LIKE '%체험%'
+		  AND A.RESERVATIONDATE = CONVERT(VARCHAR(8), GETDATE() + 1, 112)
+	</select>
+	
+	<select id="reservationRemindNotificationPushChck1" resultType="egovMap">
+		SELECT
+			A.ACCOUNT AS UID,
+			'[ABO : '
+			+A.ACCOUNT+'] ['
+			+B.PPNAME+'] '
+			+SUBSTRING(A.RESERVATIONDATE,5,2)+' 월 '
+			+SUBSTRING(A.RESERVATIONDATE,7,2)+' 일 '
+			+SUBSTRING(A.STARTDATETIME,1,2)+' 시 '
+			+SUBSTRING(A.STARTDATETIME,3,2)+' 분 '
+			+'체성분 측정 예약 재안내' AS PUSH_MSG
+		FROM RSVRESERVATIONINFO A
+		INNER JOIN RSVPPINFO B
+		  ON (A.PPSEQ = B.PPSEQ)
+		INNER JOIN RSVEXPINFO C
+		  ON (A.EXPSEQ = C.EXPSEQ)
+		INNER JOIN RSVEXPSESSIONINFO D
+		  ON (A.EXPSESSIONSEQ = D.EXPSESSIONSEQ)
+		INNER JOIN RSVTYPEINFO E
+		  ON (A.TYPESEQ = E.TYPESEQ)
+		WHERE A.CANCELCODE != 'B01'
+		  AND A.ADMINFIRSTCODE != 'R01'
+		  AND E.TYPENAME LIKE '%체성분%'
+		  AND E.TYPENAME LIKE '%측정%'
+		  AND A.RESERVATIONDATE = CONVERT(VARCHAR(8), GETDATE() + 1, 112)	
+	</select>
+	
+	<select id="reservationRemindNotificationPushChck2" resultType="egovMap">
+		SELECT
+			A.ACCOUNT AS UID,
+			'[ABO : '
+			+A.ACCOUNT+'] ['
+			+B.PPNAME+'] '
+			+SUBSTRING(A.RESERVATIONDATE,5,2)+' 월 '
+			+SUBSTRING(A.RESERVATIONDATE,7,2)+' 일 '
+			+SUBSTRING(A.STARTDATETIME,1,2)+' 시 '
+			+SUBSTRING(A.STARTDATETIME,3,2)+' 분 '
+			+'피부 측정 예약 재안내' AS PUSH_MSG
+		FROM RSVRESERVATIONINFO A
+		INNER JOIN RSVPPINFO B
+		  ON (A.PPSEQ = B.PPSEQ)
+		INNER JOIN RSVEXPINFO C
+		  ON (A.EXPSEQ = C.EXPSEQ)
+		INNER JOIN RSVEXPSESSIONINFO D
+		  ON (A.EXPSESSIONSEQ = D.EXPSESSIONSEQ)
+		INNER JOIN RSVTYPEINFO E
+		  ON (A.TYPESEQ = E.TYPESEQ)
+		WHERE A.CANCELCODE != 'B01'
+		  AND A.ADMINFIRSTCODE != 'R01'
+		  AND E.TYPENAME LIKE '%피부%'
+		  AND E.TYPENAME LIKE '%측정%'
+		  AND A.RESERVATIONDATE = CONVERT(VARCHAR(8), GETDATE() + 1, 112)	
+	</select>
+	
+</mapper>

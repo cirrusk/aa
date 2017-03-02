@@ -1,0 +1,1152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveElementMapper">
+	
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+		<selectKey resultType="Long" keyProperty="activeElementSeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>
+        /* UIUnivCourseActiveElement.insert */
+		INSERT INTO cs_course_active_element ( 
+			cs_course_active_seq,
+			cs_active_element_title,
+			cs_reference_seq,
+			cs_reference_type_cd,
+			cs_start_dtime,
+			cs_end_dtime,
+			cs_sort_order,
+			cs_course_week_type_cd,
+			cs_rate ,
+			cs_supplement_rate ,
+			cs_offline_lesson_count,
+			cs_start_day,
+			cs_end_day,
+			cs_reg_member_seq,
+			cs_upd_member_seq,
+			cs_reg_dtime,
+			cs_upd_dtime,
+			cs_reg_ip,
+			cs_upd_ip 
+		) VALUES ( 
+			#{courseActiveSeq, jdbcType=NUMERIC} ,
+			#{activeElementTitle, jdbcType=VARCHAR} ,
+			#{referenceSeq, jdbcType=NUMERIC} ,
+			#{referenceTypeCd, jdbcType=VARCHAR} ,
+			#{startDtime, jdbcType=VARCHAR} ,
+			#{endDtime, jdbcType=VARCHAR} ,
+			#{sortOrder, jdbcType=NUMERIC} ,
+			#{courseWeekTypeCd, jdbcType=VARCHAR} ,
+			#{rate, jdbcType=DOUBLE} ,
+			#{supplementRate, jdbcType=DOUBLE} ,
+			#{offlineLessonCount, jdbcType=VARCHAR} ,
+			#{startDay, jdbcType=NUMERIC},
+			#{endDay, jdbcType=NUMERIC},
+			#{regMemberSeq, jdbcType=NUMERIC} ,
+			#{updMemberSeq, jdbcType=NUMERIC} ,
+			dbo.FN_NOW_TO_CHAR() ,
+			dbo.FN_NOW_TO_CHAR() ,
+			#{regIp, jdbcType=VARCHAR} ,
+			#{updIp, jdbcType=VARCHAR} 
+		)
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+		/* UIUnivCourseActiveElement.update */
+		UPDATE
+			cs_course_active_element 
+		SET
+			cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} 
+			,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+			,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+		<if test='activeElementTitle != null'>	
+			,cs_active_element_title = #{activeElementTitle, jdbcType=VARCHAR}
+		</if>
+		<if test='referenceSeq != null'>
+			,cs_reference_seq = #{referenceSeq, jdbcType=NUMERIC}
+		</if>
+		<if test='referenceTypeCd != null'>
+			,cs_reference_type_cd = #{referenceTypeCd, jdbcType=VARCHAR}
+		</if>
+		<if test='startDtime != null'>
+			,cs_start_dtime = #{startDtime, jdbcType=VARCHAR}
+		</if>
+		<if test='endDtime != null'>
+			,cs_end_dtime = #{endDtime, jdbcType=VARCHAR}
+		</if>
+		<if test='startDay != null'>
+			,cs_start_day = #{startDay, jdbcType=NUMERIC}
+		</if>
+		<if test='endDay != null'>
+			,cs_end_day = #{endDay, jdbcType=NUMERIC}
+		</if>
+		<if test='sortOrder != null'>
+			,cs_sort_order = #{sortOrder, jdbcType=NUMERIC}
+		</if>
+		<if test='courseWeekTypeCd != null'>
+			,cs_course_week_type_cd = #{courseWeekTypeCd, jdbcType=VARCHAR}
+		</if>
+		<if test='offlineLessonCount != null'>
+			,cs_offline_lesson_count = #{offlineLessonCount, jdbcType=VARCHAR}
+		</if>
+		<if test='rate != null'>
+			,cs_rate = #{rate, jdbcType=DOUBLE}
+		</if>
+		<if test='supplementRate != null'>
+			,cs_supplement_rate = #{supplementRate, jdbcType=DOUBLE}
+		</if>
+		<if test='lectureName != null'>
+			,cx_lecture_name = #{lectureName, jdbcType=VARCHAR}
+		</if>
+		WHERE
+			cs_delete_yn = 'N'
+		AND cs_active_element_seq = #{activeElementSeq}
+	</update>
+	
+	<update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+		/* UIUnivCourseActiveElement.delete */
+		UPDATE
+			cs_course_active_element 
+		SET
+			cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+			cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+			cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+			cs_delete_yn = 'Y'
+		WHERE
+			cs_delete_yn = 'N'
+		AND cs_active_element_seq = #{activeElementSeq}
+	</update>
+	
+	<update id="updateElementType" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+		/* UIUnivCourseActiveElement.updateElementType */
+		UPDATE
+			cs_course_active_element 
+		SET
+			cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} 
+			,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+			,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+		<if test='activeElementTitle != null'>	
+			,cs_active_element_title = #{activeElementTitle, jdbcType=VARCHAR}
+		</if>
+		<if test='startDtime != null'>
+			,cs_start_dtime = #{startDtime, jdbcType=VARCHAR}
+		</if>
+		<if test='endDtime != null'>
+			,cs_end_dtime = #{endDtime, jdbcType=VARCHAR}
+		</if>
+		<if test='startDay != null'>
+			,cs_start_day = #{startDay, jdbcType=NUMERIC}
+		</if>
+		<if test='endDay != null'>
+			,cs_end_day = #{endDay, jdbcType=NUMERIC}
+		</if>
+		<if test='sortOrder != null'>
+			,cs_sort_order = #{sortOrder, jdbcType=NUMERIC}
+		</if>
+		<if test='courseWeekTypeCd != null'>
+			,cs_course_week_type_cd = #{courseWeekTypeCd, jdbcType=VARCHAR}
+		</if>
+		<if test='offlineLessonCount != null'>
+			,cs_offline_lesson_count = #{offlineLessonCount, jdbcType=VARCHAR}
+		</if>
+		<if test='rate != null'>
+			,cs_rate = #{rate, jdbcType=DOUBLE}
+		</if>
+		<if test='supplementRate != null'>
+			,cs_supplement_rate = #{supplementRate, jdbcType=DOUBLE}
+		</if>
+		WHERE
+			cs_delete_yn = 'N'
+		AND	cs_course_active_seq = #{courseActiveSeq, jdbcType=NUMERIC}
+		AND	cs_reference_seq = #{referenceSeq, jdbcType=NUMERIC}
+		AND	cs_reference_type_cd = #{referenceTypeCd, jdbcType=VARCHAR}
+	</update>
+	
+	<update id="deleteElementType" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+		/* UIUnivCourseActiveElement.deleteElementType */
+		UPDATE
+			cs_course_active_element 
+		SET
+			cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+			cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+			cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+			cs_delete_yn = 'Y'
+		WHERE
+			cs_delete_yn = 'N'
+		AND	cs_course_active_seq = #{courseActiveSeq, jdbcType=NUMERIC}
+		AND	cs_reference_seq = #{referenceSeq, jdbcType=NUMERIC}
+		AND	cs_reference_type_cd = #{referenceTypeCd, jdbcType=VARCHAR}
+	</update>
+    
+    <update id="deleteReferenceTypeCd" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+        /* UIUnivCourseActiveElement.deleteReferenceTypeCd */
+        UPDATE
+            cs_course_active_element 
+        SET
+            cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+            cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+            cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+            cs_delete_yn = 'Y'
+        WHERE
+            cs_delete_yn = 'N'
+        AND cs_course_active_seq = #{courseActiveSeq}
+        AND cs_reference_type_cd = #{referenceTypeCd}
+            <if test='courseWeekTypeCd !=null and !courseWeekTypeCd.equals("")'>
+        AND cs_course_week_type_cd = #{courseWeekTypeCd}
+            </if>
+    </update>
+	
+	<resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveElementRS">
+        <result column="element.activeElementSeq"		property="element.activeElementSeq"		/>
+        <result column="element.courseActiveSeq"		property="element.courseActiveSeq"		/>
+        <result column="element.activeElementTitle"		property="element.activeElementTitle"	/>
+        <result column="element.referenceSeq"			property="element.referenceSeq"			/>
+        <result column="element.referenceTypeCd"		property="element.referenceTypeCd"		/>
+        <result column="element.startDtime"				property="element.startDtime"			/>
+        <result column="element.endDtime"				property="element.endDtime"				/>
+        <result column="element.startDay"				property="element.startDay"				/>
+        <result column="element.endDay"					property="element.endDay"				/>
+        <result column="element.sortOrder"				property="element.sortOrder"			/>
+        <result column="element.courseWeekTypeCd"		property="element.courseWeekTypeCd"		/>
+        <result column="element.offlineLessonCount"		property="element.offlineLessonCount"	/>
+        <result column="element.rate"					property="element.rate"					/>
+        <result column="element.supplementRate"			property="element.supplementRate"		/>
+        <result column="element.deleteYn"				property="element.deleteYn"				/>
+        <result column="element.regMemberSeq"			property="element.regMemberSeq"			/>
+        <result column="element.updMemberSeq"			property="element.updMemberSeq"			/>
+        <result column="element.regDtime"				property="element.regDtime"				/>
+        <result column="element.updDtime"				property="element.updDtime"				/>
+        <result column="element.regIp"					property="element.regIp"				/>
+        <result column="element.regIp"					property="element.updIp"				/>
+	</resultMap>
+	<select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* UIUnivCourseActiveElement.getDetail */
+		SELECT
+			cs_active_element_seq AS "element.activeElementSeq",
+			cs_course_active_seq AS "element.courseActiveSeq",
+			cs_active_element_title AS "element.activeElementTitle",
+			cs_reference_seq AS "element.referenceSeq",
+			cs_reference_type_cd AS "element.referenceTypeCd",
+			cs_start_dtime AS "element.startDtime",
+			cs_end_dtime AS "element.endDtime",
+			cs_start_day AS "element.startDay",
+			cs_end_day AS "element.endDay",
+			cs_sort_order AS "element.sortOrder",
+			cs_course_week_type_cd AS "element.courseWeekTypeCd",
+			cs_offline_lesson_count AS "element.offlineLessonCount",
+			cs_rate AS "element.rate",
+			cs_supplement_rate AS "element.supplementRate",
+			cs_delete_yn AS "element.deleteYn",
+			cs_reg_member_seq AS "element.regMemberSeq",
+			cs_upd_member_seq AS "element.updMemberSeq",
+			cs_reg_dtime AS "element.regDtime",
+			cs_upd_dtime AS "element.updDtime",
+			cs_reg_ip AS "element.regIp",
+			cs_upd_ip AS "element.regIp"
+		FROM
+			cs_course_active_element 
+		WHERE
+			cs_delete_yn = 'N'
+		AND cs_active_element_seq = #{activeElementSeq}
+	</select>
+	
+	<resultMap id="detailElementTypetMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveElementRS">
+        <result column="element.activeElementSeq"		property="element.activeElementSeq"		/>
+        <result column="element.courseActiveSeq"		property="element.courseActiveSeq"		/>
+        <result column="element.activeElementTitle"		property="element.activeElementTitle"	/>
+        <result column="element.referenceSeq"			property="element.referenceSeq"			/>
+        <result column="element.referenceTypeCd"		property="element.referenceTypeCd"		/>
+        <result column="element.startDtime"				property="element.startDtime"			/>
+        <result column="element.endDtime"				property="element.endDtime"				/>
+        <result column="element.sortOrder"				property="element.sortOrder"			/>
+        <result column="element.courseWeekTypeCd"		property="element.courseWeekTypeCd"		/>
+        <result column="element.offlineLessonCount"		property="element.offlineLessonCount"	/>
+        <result column="element.rate"					property="element.rate"					/>
+        <result column="element.supplementRate"			property="element.supplementRate"		/>
+        <result column="element.startDay"				property="element.startDay"				/>
+        <result column="element.endDay"					property="element.endDay"				/>
+        <result column="element.deleteYn"				property="element.deleteYn"				/>
+        <result column="element.regMemberSeq"			property="element.regMemberSeq"			/>
+        <result column="element.updMemberSeq"			property="element.updMemberSeq"			/>
+        <result column="element.regDtime"				property="element.regDtime"				/>
+        <result column="element.updDtime"				property="element.updDtime"				/>
+        <result column="element.regIp"					property="element.regIp"				/>
+        <result column="element.regIp"					property="element.updIp"				/>
+	</resultMap>
+	<select id="getDetailElementType" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="detailElementTypetMap">
+		/* UIUnivCourseActiveElement.getDetailElementType */
+		SELECT
+			cs_active_element_seq AS "element.activeElementSeq",
+			cs_course_active_seq AS "element.courseActiveSeq",
+			cs_active_element_title AS "element.activeElementTitle",
+			cs_reference_seq AS "element.referenceSeq",
+			cs_reference_type_cd AS "element.referenceTypeCd",
+			cs_start_dtime AS "element.startDtime",
+			cs_end_dtime AS "element.endDtime",
+			cs_sort_order AS "element.sortOrder",
+			cs_course_week_type_cd AS "element.courseWeekTypeCd",
+			cs_offline_lesson_count AS "element.offlineLessonCount",
+			cs_rate AS "element.rate",
+			cs_supplement_rate AS "element.supplementRate",
+			cs_start_day AS "element.startDay",
+			cs_end_day AS "element.endDay",
+			cs_delete_yn AS "element.deleteYn",
+			cs_reg_member_seq AS "element.regMemberSeq",
+			cs_upd_member_seq AS "element.updMemberSeq",
+			cs_reg_dtime AS "element.regDtime",
+			cs_upd_dtime AS "element.updDtime",
+			cs_reg_ip AS "element.regIp",
+			cs_upd_ip AS "element.regIp"
+		FROM
+			cs_course_active_element 
+		WHERE
+			cs_delete_yn = 'N'
+		AND	cs_course_active_seq = #{courseActiveSeq, jdbcType=NUMERIC}
+		AND	cs_reference_seq = #{referenceSeq, jdbcType=NUMERIC}
+		AND	cs_reference_type_cd = #{referenceTypeCd, jdbcType=VARCHAR}
+		<if test='courseWeekTypeCd !=null and !courseWeekTypeCd.equals("")'>
+		AND cs_course_week_type_cd = #{courseWeekTypeCd, jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveElementRS">
+		<result column="element.activeElementSeq"		property="element.activeElementSeq"		/>
+        <result column="element.courseActiveSeq"		property="element.courseActiveSeq"		/>
+        <result column="element.activeElementTitle"		property="element.activeElementTitle"	/>
+        <result column="element.referenceSeq"			property="element.referenceSeq"			/>
+        <result column="element.referenceTypeCd"		property="element.referenceTypeCd"		/>
+        <result column="element.startDtime"				property="element.startDtime"			/>
+        <result column="element.endDtime"				property="element.endDtime"				/>
+        <result column="element.sortOrder"				property="element.sortOrder"			/>
+        <result column="element.courseWeekTypeCd"		property="element.courseWeekTypeCd"		/>
+        <result column="element.offlineLessonCount"		property="element.offlineLessonCount"	/>
+        <result column="element.rate"					property="element.rate"					/>
+        <result column="element.supplementRate"			property="element.supplementRate"		/>
+        <result column="element.startDay"				property="element.startDay"				/>
+        <result column="element.endDay"					property="element.endDay"				/>
+        <result column="element.lectureName"			property="element.lectureName"			/>
+        <result column="element.deleteYn"				property="element.deleteYn"				/>
+        <result column="element.regMemberSeq"			property="element.regMemberSeq"			/>
+        <result column="element.updMemberSeq"			property="element.updMemberSeq"			/>
+        <result column="element.regDtime"				property="element.regDtime"				/>
+        <result column="element.updDtime"				property="element.updDtime"				/>
+        <result column="element.regIp"					property="element.regIp"				/>
+        <result column="element.regIp"					property="element.updIp"				/>
+        <collection column="{organizationSeq=element.referenceSeq, courseActiveSeq=element.courseActiveSeq}" property="element.itemList" javaType="List" 
+            ofType="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveOrganizationItemRS" select="com._4csoft.aof.univ.mapper.UnivCourseActiveOrganizaionItemMapper.getListActiveItemByOrganizationSeq"/>
+	</resultMap>
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="listResultMap">
+		/* UIUnivCourseActiveElement.getList */
+		SELECT
+			cs_active_element_seq AS "element.activeElementSeq",
+			cs_course_active_seq AS "element.courseActiveSeq",
+			cs_active_element_title AS "element.activeElementTitle",
+			ISNULL(cs_reference_seq,0) AS "element.referenceSeq",
+			cs_reference_type_cd AS "element.referenceTypeCd",
+			cs_start_dtime AS "element.startDtime",
+			cs_end_dtime AS "element.endDtime",
+			cs_sort_order AS "element.sortOrder",
+			cs_course_week_type_cd AS "element.courseWeekTypeCd",
+			cs_offline_lesson_count AS "element.offlineLessonCount",
+			cs_rate AS "element.rate",
+			cs_supplement_rate AS "element.supplementRate",
+			cs_start_day AS "element.startDay",
+			cs_end_day AS "element.endDay",
+			cx_lecture_name AS "element.lectureName",
+			cs_delete_yn AS "element.deleteYn",
+			cs_reg_member_seq AS "element.regMemberSeq",
+			cs_upd_member_seq AS "element.updMemberSeq",
+			cs_reg_dtime AS "element.regDtime",
+			cs_upd_dtime AS "element.updDtime",
+			cs_reg_ip AS "element.regIp",
+			cs_upd_ip AS "element.regIp"
+		FROM
+			cs_course_active_element
+		WHERE
+			cs_delete_yn = 'N'
+		AND cs_course_active_seq = #{courseActiveSeq}
+		AND cs_reference_type_cd = #{referenceTypeCd}
+		<if test='courseWeekTypeCd !=null and !courseWeekTypeCd.equals("")'>
+		AND cs_course_week_type_cd = #{courseWeekTypeCd}
+		</if>
+		<if test='sortOrder !=null and !sortOrder.equals("")'>
+		AND cs_sort_order between #{sortOrder} - 2 AND #{sortOrder}
+		</if>
+		ORDER BY cs_sort_order
+	</select>
+	
+	<select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultType="int">
+		/* UIUnivCourseActiveElement.countList */
+		SELECT
+			COUNT(*)
+		FROM
+			cs_course_active_element
+		WHERE
+			cs_delete_yn = 'N'
+		AND cs_course_active_seq = #{courseActiveSeq}
+		AND cs_reference_type_cd = #{referenceTypeCd}
+	</select>
+	
+	
+	<select id="getMaxSortOrder" parameterType="Long" resultType="Long">
+		/* UIUnivCourseActiveElement.getMaxSortOrder */
+	    SELECT
+	    	element.sort_order + 1 
+	  	FROM
+	  		(
+	  			SELECT
+	  				ISNULL(MAX(cs_sort_order), 0) AS sort_order 
+	          	FROM
+	          		cs_course_active_element 
+				WHERE
+					cs_course_active_seq = #{courseActvieSeq}
+					AND cs_delete_yn = 'N'
+	       ) element
+	</select>
+	
+	<resultMap id="listResultGroupMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveElementRS">
+        <result column="element.activeElementSeq"		property="element.activeElementSeq"		/>
+        <result column="element.courseActiveSeq"		property="element.courseActiveSeq"		/>
+        <result column="element.activeElementTitle"		property="element.activeElementTitle"	/>
+        <result column="element.referenceSeq"			property="element.referenceSeq"			/>
+        <result column="element.referenceTypeCd"		property="element.referenceTypeCd"		/>
+        <result column="element.startDtime"				property="element.startDtime"			/>
+        <result column="element.endDtime"				property="element.endDtime"				/>
+        <result column="element.startDay"				property="element.startDay"				/>
+        <result column="element.endDay"					property="element.endDay"				/>
+        <result column="element.sortOrder"				property="element.sortOrder"			/>
+        <result column="element.courseWeekTypeCd"		property="element.courseWeekTypeCd"		/>
+        <collection column="{organizationSeq=element.referenceSeq, courseActiveSeq=element.courseActiveSeq}" property="element.itemList" javaType="List" 
+            ofType="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveOrganizationItemRS" select="com._4csoft.aof.univ.mapper.UnivCourseActiveOrganizaionItemMapper.getListActiveItemByOrganizationSeq"/>
+	</resultMap>
+	<select id="getGroupElementMappingList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="listResultGroupMap">
+		/* UIUnivCourseActiveElement.getGroupElementMappingList */
+		SELECT
+			c.cs_active_element_seq AS "element.activeElementSeq", 
+			c.cs_course_active_seq AS "element.courseActiveSeq", 
+			c.cs_active_element_title AS "element.activeElementTitle", 
+			ISNULL(c.cs_reference_seq, 0) AS "element.referenceSeq", 
+			c.cs_reference_type_cd AS "element.referenceTypeCd", 
+			c.cs_course_week_type_cd AS "element.courseWeekTypeCd", 
+			CASE 
+			    WHEN c.newsort = 0 
+			    THEN c.cs_sort_order 
+			    ELSE c.newsort 
+			END as "element.sortOrder" ,
+			CASE 
+			    WHEN c.newsort = 0 
+			    THEN c.cs_sort_order 
+			    ELSE c.newsort 
+			END as "cs_sort_order" 
+		FROM 
+			(
+				SELECT
+					a.cs_active_element_seq, 
+					a.cs_course_active_seq, 
+					a.cs_active_element_title, 
+					a.cs_reference_seq, 
+					a.cs_reference_type_cd, 
+					a.cs_sort_order, 
+					a.cs_course_week_type_cd , 
+					'' AS "newsort" 
+				FROM
+					cs_course_active_element a 
+				WHERE
+					a.cs_course_active_seq = #{courseActiveSeq} 
+				AND a.cs_delete_yn = 'N' 
+				AND a.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+				AND a.cs_course_week_type_cd != '${CD.COURSE_WEEK_TYPE.LECTURE}' 
+				UNION ALL 
+				SELECT
+					a.cs_active_element_seq, 
+					a.cs_course_active_seq, 
+					CASE 
+					    WHEN b.cs_active_element_title is not null 
+					    THEN b.cs_active_element_title 
+					    ELSE a.cs_active_element_title 
+					END AS "cs_active_element_title", 
+					CASE 
+					    WHEN b.cs_reference_seq is not null 
+					    THEN b.cs_reference_seq 
+					    ELSE a.cs_reference_seq 
+					END AS "cs_reference_seq", 
+					a.cs_reference_type_cd, 
+					a.sort, 
+					'${CD.COURSE_WEEK_TYPE.LECTURE}' AS "cs_course_week_type_cd", 
+					a.cs_sort_order AS "newsort" 
+				FROM 
+					(
+						SELECT 
+							a.cs_active_element_seq, 
+							a.cs_course_active_seq, 
+							a.cs_active_element_title, 
+							a.cs_reference_seq, 
+							a.cs_reference_type_cd, 
+							a.cs_sort_order, 
+							a.cs_course_week_type_cd , 
+							rank() over(order by a.cs_sort_order) as "sort" 
+						FROM
+							cs_course_active_element a 
+						WHERE
+							a.cs_course_active_seq = #{courseActiveSeq}  
+						AND a.cs_delete_yn = 'N' 
+						AND a.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+						AND a.cs_course_week_type_cd = '${CD.COURSE_WEEK_TYPE.LECTURE}' 
+					) a 
+					LEFT OUTER JOIN 
+					(
+						SELECT
+							'' as "cs_active_element_seq" , 
+							#{courseActiveSeq} AS "cs_course_active_seq", 
+							org.cs_title AS "cs_active_element_title" , 
+							org.cs_organization_seq AS "cs_reference_seq" , 
+							'${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}' as "cs_reference_type_cd", 
+							co.cs_sort_order AS "cs_sort_order" , 
+							'${CD.COURSE_WEEK_TYPE.LECTURE}' AS "cs_course_week_type_cd" 
+						FROM
+							cs_lcms_contents_organization co 
+							INNER JOIN cs_lcms_organization org 
+								ON co.cs_organization_seq = org.cs_organization_seq 
+                     			AND org.cs_delete_yn = 'N' 
+						WHERE co.cs_contents_seq = #{contentsSeq}  
+						AND co.cs_delete_yn = 'N' 
+              		) b 
+              			ON a.sort = b.cs_sort_order 
+       		) c 
+		ORDER BY cs_sort_order
+	</select>
+	
+	<select id="getGroupMappingList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="listResultGroupMap">
+		/* UIUnivCourseActiveElement.getGroupMappingList */
+		SELECT
+			c.cs_active_element_seq AS "element.activeElementSeq",
+			b.cs_course_active_seq AS "element.courseActiveSeq",
+			b.cs_active_element_title AS "element.activeElementTitle",
+			b.cs_reference_seq AS "element.referenceSeq",
+			b.cs_reference_type_cd AS "element.referenceTypeCd",
+			c.cs_start_dtime AS "element.startDtime",
+			c.cs_end_dtime AS "element.endDtime",
+			c.cs_start_day AS "element.startDay",
+			c.cs_end_day AS "element.endDay",
+			b.sort AS "element.sortOrder",
+			b.cs_course_week_type_cd AS "element.courseWeekTypeCd"
+		FROM
+			(	
+			SELECT
+				a.cs_active_element_seq,
+				a.cs_course_active_seq,
+				a.cs_active_element_title,
+				a.cs_reference_seq,
+				a.cs_reference_type_cd,
+				a.cs_sort_order,
+				a.cs_course_week_type_cd,
+				'A'	AS gb,
+				RANK() OVER(ORDER BY a.cs_sort_order, gb) AS sort
+			FROM
+				(
+				SELECT
+					cs_active_element_seq,
+					cs_course_active_seq,
+					cs_active_element_title,
+					cs_reference_seq,
+					cs_reference_type_cd,
+					cs_sort_order,
+					cs_course_week_type_cd,
+					'A'	AS gb
+				FROM
+					cs_course_active_element
+				WHERE
+					cs_course_active_seq = #{courseActiveSeq}
+					AND cs_delete_yn = 'N'
+					AND cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+					AND cs_course_week_type_cd IN ('${CD.COURSE_WEEK_TYPE.MIDEXAM}','${CD.COURSE_WEEK_TYPE.FINALEXAM}','${CD.COURSE_WEEK_TYPE.MIDHOMEWORK}','${CD.COURSE_WEEK_TYPE.FINALHOMEWORK}','${CD.COURSE_WEEK_TYPE.EXAM}')
+				UNION ALL
+				SELECT
+					'',
+					#{courseActiveSeq},
+					org.cs_title AS "org.title" , 
+					org.cs_organization_seq AS "org.organizationSeq" ,
+					'${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}',
+					co.cs_sort_order AS "co.sortOrder" , 
+					'${CD.COURSE_WEEK_TYPE.LECTURE}',
+					'B'	AS gb 
+				  FROM cs_lcms_contents_organization co 
+				   INNER JOIN cs_lcms_organization org 
+					   ON co.cs_organization_seq = org.cs_organization_seq 
+					   AND org.cs_delete_yn = 'N' 
+				 WHERE co.cs_contents_seq = #{contentsSeq} 
+					   AND co.cs_delete_yn = 'N' 
+				) a
+			) b
+				LEFT OUTER JOIN cs_course_active_element c
+					ON c.cs_sort_order = B.sort
+					AND c.cs_delete_yn = 'N'
+					AND c.cs_course_active_seq = #{courseActiveSeq}
+	</select>
+	
+	<resultMap id="listResultDatamodelMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveElementRS">
+		<result column="element.activeElementSeq"		property="element.activeElementSeq"		/>
+        <result column="element.courseActiveSeq"		property="element.courseActiveSeq"		/>
+        <result column="element.activeElementTitle"		property="element.activeElementTitle"	/>
+        <result column="element.referenceSeq"			property="element.referenceSeq"			/>
+        <result column="element.referenceTypeCd"		property="element.referenceTypeCd"		/>
+        <result column="element.startDtime"				property="element.startDtime"			/>
+        <result column="element.endDtime"				property="element.endDtime"				/>
+        <result column="element.sortOrder"				property="element.sortOrder"			/>
+        <result column="element.courseWeekTypeCd"		property="element.courseWeekTypeCd"		/>
+        <result column="element.offlineLessonCount"		property="element.offlineLessonCount"	/>
+        <result column="element.deleteYn"				property="element.deleteYn"				/>
+        <result column="element.regMemberSeq"			property="element.regMemberSeq"			/>
+        <result column="element.updMemberSeq"			property="element.updMemberSeq"			/>
+        <result column="element.regDtime"				property="element.regDtime"				/>
+        <result column="element.updDtime"				property="element.updDtime"				/>
+        <result column="element.regIp"					property="element.regIp"				/>
+        <result column="element.regIp"					property="element.updIp"				/>
+        <collection column="{organizationSeq=element.referenceSeq,courseApplySeq=courseApplySeq,courseActiveSeq=element.courseActiveSeq}" property="itemResultList" javaType="List" 
+            ofType="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsLearnerDatamodelRS" select="com._4csoft.aof.lcms.mapper.LcmsLearnerDatamodelMapper.getListResult"/>
+	</resultMap>
+	
+	<select id="getListResultDatamodel" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="listResultDatamodelMap">
+		/* UIUnivCourseActiveElement.getListResultDatamodel */
+		<if test='!"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+			SELECT
+				cs_active_element_seq AS "element.activeElementSeq",
+				cs_course_active_seq AS "element.courseActiveSeq",
+				cs_active_element_title AS "element.activeElementTitle",
+				cs_reference_seq AS "element.referenceSeq",
+				cs_reference_type_cd AS "element.referenceTypeCd",
+				cs_start_dtime AS "element.startDtime",
+				cs_end_dtime AS "element.endDtime",
+				cs_sort_order AS "element.sortOrder",
+				cs_course_week_type_cd AS "element.courseWeekTypeCd",
+				cs_offline_lesson_count AS "element.offlineLessonCount",
+				cs_delete_yn AS "element.deleteYn",
+				cs_reg_member_seq AS "element.regMemberSeq",
+				cs_upd_member_seq AS "element.updMemberSeq",
+				cs_reg_dtime AS "element.regDtime",
+				cs_upd_dtime AS "element.updDtime",
+				cs_reg_ip AS "element.regIp",
+				cs_upd_ip AS "element.regIp",
+				#{courseApplySeq} AS "courseApplySeq"
+			FROM
+				cs_course_active_element
+			WHERE
+				cs_delete_yn = 'N'
+			AND cs_course_active_seq = #{courseActiveSeq}
+			AND cs_reference_type_cd = #{referenceTypeCd}
+			AND cs_reference_seq IS NOT NULL
+			<if test='courseWeekTypeCd !=null and !courseWeekTypeCd.equals("")'>
+			AND cs_course_week_type_cd = #{courseWeekTypeCd}
+			</if>
+			<if test='referenceSeq !=null and !referenceSeq.equals("")'>
+			AND cs_reference_seq = #{referenceSeq}
+			</if>
+			ORDER BY cs_sort_order
+		</if>
+		<if test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+			SELECT
+				ele.cs_active_element_seq AS "element.activeElementSeq",
+				ele.cs_course_active_seq AS "element.courseActiveSeq",
+				ele.cs_active_element_title AS "element.activeElementTitle",
+				ele.cs_reference_seq AS "element.referenceSeq",
+				ele.cs_reference_type_cd AS "element.referenceTypeCd",
+				REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, ele.cs_start_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "element.startDtime" ,
+				REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, ele.cs_end_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "element.endDtime" ,
+				ele.cs_sort_order AS "element.sortOrder",
+				ele.cs_course_week_type_cd AS "element.courseWeekTypeCd",
+				ele.cs_offline_lesson_count AS "element.offlineLessonCount",
+				ele.cs_delete_yn AS "element.deleteYn",
+				ele.cs_reg_member_seq AS "element.regMemberSeq",
+				ele.cs_upd_member_seq AS "element.updMemberSeq",
+				ele.cs_reg_dtime AS "element.regDtime",
+				ele.cs_upd_dtime AS "element.updDtime",
+				ele.cs_reg_ip AS "element.regIp",
+				ele.cs_upd_ip AS "element.regIp",
+				#{courseApplySeq} AS "courseApplySeq"
+			FROM
+				cs_course_active_element ele
+				INNER JOIN cs_course_apply app
+					ON  ele.cs_course_active_seq = app.cs_course_active_seq
+					AND app.cs_course_apply_seq = #{courseApplySeq}
+			WHERE
+				ele.cs_delete_yn = 'N'
+			AND ele.cs_course_active_seq = #{courseActiveSeq}
+			AND ele.cs_reference_type_cd = #{referenceTypeCd}
+			AND ele.cs_reference_seq IS NOT NULL
+			<if test='courseWeekTypeCd !=null and !courseWeekTypeCd.equals("")'>
+			AND ele.cs_course_week_type_cd = #{courseWeekTypeCd}
+			</if>
+			<if test='referenceSeq !=null and !referenceSeq.equals("")'>
+			AND ele.cs_reference_seq = #{referenceSeq}
+			</if>
+			ORDER BY ele.cs_sort_order
+		</if>
+	</select>
+	
+	<resultMap id="listWeekResultDatamodelMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveElementRS">
+		<result column="element.activeElementSeq"		property="element.activeElementSeq"		/>
+        <result column="element.courseActiveSeq"		property="element.courseActiveSeq"		/>
+        <result column="element.activeElementTitle"		property="element.activeElementTitle"	/>
+        <result column="element.referenceSeq"			property="element.referenceSeq"			/>
+        <result column="element.referenceTypeCd"		property="element.referenceTypeCd"		/>
+        <result column="element.startDtime"				property="element.startDtime"			/>
+        <result column="element.endDtime"				property="element.endDtime"				/>
+        <result column="element.sortOrder"				property="element.sortOrder"			/>
+        <result column="element.courseWeekTypeCd"		property="element.courseWeekTypeCd"		/>
+        <result column="element.offlineLessonCount"		property="element.offlineLessonCount"	/>
+        <result column="element.startDay"				property="element.startDay"				/>
+        <result column="element.endDay"					property="element.endDay"				/>
+        <result column="element.deleteYn"				property="element.deleteYn"				/>
+        <result column="element.regMemberSeq"			property="element.regMemberSeq"			/>
+        <result column="element.updMemberSeq"			property="element.updMemberSeq"			/>
+        <result column="element.regDtime"				property="element.regDtime"				/>
+        <result column="element.updDtime"				property="element.updDtime"				/>
+        <result column="element.regIp"					property="element.regIp"				/>
+        <result column="element.regIp"					property="element.updIp"				/>
+        <collection column="{organizationSeq=element.referenceSeq, courseActiveSeq=element.courseActiveSeq}" property="itemResultList" javaType="List" 
+            ofType="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsLearnerDatamodelRS" select="com._4csoft.aof.lcms.mapper.LcmsLearnerDatamodelMapper.getListWeekGroupResult"/>
+	</resultMap>
+	
+	<select id="getListWeekResultDatamodel" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="listWeekResultDatamodelMap">
+		/* UIUnivCourseActiveElement.getListWeekResultDatamodel */
+		SELECT
+			cs_active_element_seq AS "element.activeElementSeq",
+			cs_course_active_seq AS "element.courseActiveSeq",
+			cs_active_element_title AS "element.activeElementTitle",
+			cs_reference_seq AS "element.referenceSeq",
+			cs_reference_type_cd AS "element.referenceTypeCd",
+			cs_start_dtime AS "element.startDtime",
+			cs_end_dtime AS "element.endDtime",
+			cs_sort_order AS "element.sortOrder",
+			cs_course_week_type_cd AS "element.courseWeekTypeCd",
+			cs_offline_lesson_count AS "element.offlineLessonCount",
+			cs_start_day AS "element.startDay",
+			cs_end_day AS "element.endDay",
+			cs_delete_yn AS "element.deleteYn",
+			cs_reg_member_seq AS "element.regMemberSeq",
+			cs_upd_member_seq AS "element.updMemberSeq",
+			cs_reg_dtime AS "element.regDtime",
+			cs_upd_dtime AS "element.updDtime",
+			cs_reg_ip AS "element.regIp",
+			cs_upd_ip AS "element.regIp"
+		FROM
+			cs_course_active_element
+		WHERE
+			cs_delete_yn = 'N'
+		AND cs_course_active_seq = #{courseActiveSeq}
+		AND cs_reference_type_cd = #{referenceTypeCd}
+		<if test='courseWeekTypeCd !=null and !courseWeekTypeCd.equals("")'>
+		AND cs_course_week_type_cd = #{courseWeekTypeCd}
+		</if>
+		<if test='referenceSeq !=null and !referenceSeq.equals("")'>
+		AND cs_reference_seq = #{referenceSeq}
+		</if>
+		ORDER BY cs_sort_order
+	</select>
+	
+	<resultMap id="totalResultDatamodelGroupMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveElementRS">
+		<result column="element.courseActiveSeq"				property="element.courseActiveSeq"				/>
+		<result column="element.totalProgressMeasure"			property="element.totalProgressMeasure"			/>
+		<result column="element.totalItemCnt"					property="element.totalItemCnt"					/>
+		<result column="element.totalAttendMeasure"				property="element.totalAttendMeasure"	/>
+	</resultMap>
+	
+	<select id="getTotalResultDatamodelGroup" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="totalResultDatamodelGroupMap">
+		/* UIUnivCourseActiveElement.getListResultDatamodelGroup */
+		SELECT
+			el.cs_course_active_seq     					AS "element.courseActiveSeq" ,
+			ROUND(AVG(el.cs_progress_measure) * 100, 1)		AS "element.totalProgressMeasure" ,
+			COUNT(*) 										AS "element.totalItemCnt" ,
+			ROUND((COUNT(*) * AVG(el.attend_measure)), 1)	AS "element.totalAttendMeasure"
+		FROM
+			(
+			SELECT
+				el.cs_course_active_seq ,
+				el.cs_reference_seq ,
+				el.cs_item_seq ,
+				AVG(el.cs_progress_measure) AS cs_progress_measure ,
+				AVG(CONVERT(FLOAT, el.attend_measure)) AS attend_measure
+			FROM
+			(
+				SELECT
+					el.cs_active_element_seq,
+					el.cs_course_active_seq,
+					el.cs_reference_seq,
+					el.cs_start_dtime,
+					el.cs_end_dtime,
+					item.cs_item_seq,
+					app.cs_course_apply_seq,
+					CONVERT(FLOAT,ISNULL(lm.cs_progress_measure,0)) AS cs_progress_measure,
+					CASE 
+                       WHEN attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.001}' THEN 1 
+                       ELSE 0 
+                    END AS attend_measure 
+				FROM
+					cs_course_active_element el
+					INNER JOIN cs_course_apply app
+						ON  el.cs_course_active_seq = app.cs_course_active_seq
+						AND app.cs_delete_yn = 'N'
+						AND app.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+						AND app.cs_course_active_seq = #{courseActiveSeq}
+					INNER JOIN cs_lcms_organization orga
+						ON el.cs_reference_seq = orga.cs_organization_seq
+					INNER JOIN cs_lcms_item item
+						ON item.cs_organization_seq = orga.cs_organization_seq
+					LEFT OUTER JOIN cs_lcms_learner_datamodel lm
+					   ON  item.cs_organization_seq = lm.cs_organization_seq
+					   AND item.cs_item_seq = lm.cs_item_seq
+					   AND app.cs_course_apply_seq = lm.cs_course_apply_seq
+					   AND lm.cs_delete_yn = 'N'
+					   AND el.cs_course_active_seq = #{courseActiveSeq}
+					   AND lm.cs_course_apply_seq != -1
+					LEFT OUTER JOIN cs_course_apply_attend attend
+				 	   ON  el.cs_active_element_seq = attend.cs_active_element_seq
+					   AND lm.cs_course_apply_seq = attend.cs_course_apply_seq
+					   AND lm.cs_item_seq = attend.cs_lesson_seq
+					   AND attend.cs_onoff_cd = '${CD.ONOFF_TYPE.ON}'
+					   AND attend.cs_delete_yn = 'N'
+				WHERE
+						el.cs_course_active_seq = #{courseActiveSeq}
+					AND el.cs_delete_yn = 'N'
+					AND el.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+					AND el.cs_course_week_type_cd = '${CD.COURSE_WEEK_TYPE.LECTURE}'
+			) el
+			GROUP BY
+				cs_course_active_seq,
+				cs_reference_seq,
+				cs_item_seq
+		 ) el
+		 GROUP BY
+		 	el.cs_course_active_seq
+	</select>
+	
+	<resultMap id="totalResultDatamodelGroupApplyMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveElementRS">
+		<result column="element.courseActiveSeq"				property="element.courseActiveSeq"				/>
+		<result column="element.totalProgressMeasure"			property="element.totalProgressMeasure"			/>
+		<result column="element.totalItemCnt"					property="element.totalItemCnt"					/>
+		<result column="element.totalAttendMeasure"				property="element.totalAttendMeasure"			/>
+		<result column="element.attendTypeAttendCnt"			property="element.attendTypeAttendCnt"			/>
+		<result column="element.attendTypeAbsenceCnt"			property="element.attendTypeAbsenceCnt"			/>
+		<result column="element.attendTypePerceptionCnt"		property="element.attendTypePerceptionCnt"		/>
+	</resultMap>
+	
+	<select id="getTotalResultDatamodelGroupApply" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="totalResultDatamodelGroupApplyMap">
+		/* UIUnivCourseActiveElement.getListResultDatamodelGroupApply */
+		SELECT
+			el.cs_course_active_seq								AS "element.courseActiveSeq" ,
+			ROUND(AVG(el.cs_progress_measure) * 100, 1)			AS "element.totalProgressMeasure" ,
+			COUNT(*) 											AS "element.totalItemCnt" ,
+			ROUND((COUNT(*) * AVG(el.attend_measure)), 1) 		AS "element.totalAttendMeasure" ,
+			SUM(el.attend_type_attend_cnt) 						AS "element.attendTypeAttendCnt" ,
+			SUM(el.attend_type_absence_cnt) 					AS "element.attendTypeAbsenceCnt" ,
+			SUM(el.attend_type_perception_cnt) 					AS "element.attendTypePerceptionCnt" ,
+			SUM(el.cs_attempt) 									AS "element.attemptTotal" ,
+			CASE
+				WHEN MIN(el.cs_start_dtime) <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() THEN 'Y'
+				ELSE 'N'
+			END 												AS "element.studyStartYn"
+		FROM
+		(
+		SELECT
+			el.cs_course_active_seq,
+			el.cs_course_apply_seq,
+			el.cs_progress_measure,
+			CONVERT(FLOAT, el.attend_measure) AS attend_measure ,
+			CASE
+				WHEN el.attend_type = 'ATTEND' THEN 1
+				ELSE 0
+			END attend_type_attend_cnt,
+			CASE
+				WHEN el.attend_type = 'ABSENCE' THEN 1
+				ELSE 0
+			END attend_type_absence_cnt,
+			CASE
+				WHEN el.attend_type = 'PERCEPTION' THEN 1
+				ELSE 0
+			END attend_type_perception_cnt ,
+			CONVERT(INT, el.cs_attempt) AS cs_attempt ,
+			el.cs_start_dtime ,
+			el.cs_end_dtime
+		FROM
+			(
+				SELECT
+				<if test='!"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+					el.cs_active_element_seq,
+					el.cs_course_active_seq,
+					el.cs_reference_seq,
+					el.cs_start_dtime,
+					el.cs_end_dtime,
+					item.cs_item_seq,
+					app.cs_course_apply_seq,
+					CONVERT(FLOAT,ISNULL(lm.cs_progress_measure,0)) AS cs_progress_measure,
+					CASE
+						WHEN attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.001}' THEN 'ATTEND'
+						WHEN el.cs_end_dtime <![CDATA[<]]> dbo.fn_now_to_char() AND (attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.002}' OR attend.cs_attend_type_cd IS NULL) THEN 'ABSENCE'
+						WHEN el.cs_end_dtime <![CDATA[<]]> dbo.fn_now_to_char() AND attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.003}' THEN 'PERCEPTION'
+						ELSE 'NON'
+					END AS attend_type ,
+					CASE 
+                         WHEN attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.001}' THEN 1 
+                         ELSE 0 
+                     END AS attend_measure ,
+					 ISNULL(lm.cs_attempt,0) AS cs_attempt
+				</if>
+				<if test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+					el.cs_active_element_seq,
+					el.cs_course_active_seq,
+					el.cs_reference_seq,
+					REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, el.cs_end_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS cs_start_dtime,
+					REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, el.cs_end_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS cs_end_dtime,
+					item.cs_item_seq,
+					app.cs_course_apply_seq,
+					CONVERT(FLOAT,ISNULL(lm.cs_progress_measure,0)) AS cs_progress_measure,
+					CASE
+						WHEN attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.001}' THEN 'ATTEND'
+						WHEN REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, el.cs_end_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') <![CDATA[<]]> dbo.fn_now_to_char() AND (attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.002}' OR attend.cs_attend_type_cd IS NULL) THEN 'ABSENCE'
+						WHEN REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, el.cs_end_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') <![CDATA[<]]> dbo.fn_now_to_char() AND attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.003}' THEN 'PERCEPTION'
+						ELSE 'NON'
+					END AS attend_type ,
+					CASE 
+                         WHEN attend.cs_attend_type_cd = '${CD.ATTEND_TYPE.001}' THEN 1 
+                         ELSE 0 
+                     END AS attend_measure ,
+					 ISNULL(lm.cs_attempt,0) AS cs_attempt
+				</if>
+				FROM
+					cs_course_active_element el
+					INNER JOIN cs_course_apply app
+						ON  el.cs_course_active_seq = app.cs_course_active_seq
+						AND app.cs_delete_yn = 'N'
+						AND app.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+						AND app.cs_course_apply_seq = #{courseApplySeq}
+						AND app.cs_course_active_seq = #{courseActiveSeq}
+					INNER JOIN cs_lcms_organization orga
+						ON el.cs_reference_seq = orga.cs_organization_seq
+					INNER JOIN cs_lcms_item item
+						ON item.cs_organization_seq = orga.cs_organization_seq
+					LEFT OUTER JOIN cs_lcms_learner_datamodel lm
+					   ON item.cs_organization_seq = lm.cs_organization_seq
+					   AND item.cs_item_seq = lm.cs_item_seq
+					   AND app.cs_course_apply_seq = lm.cs_course_apply_seq
+					   AND lm.cs_course_apply_seq = #{courseApplySeq}
+					   AND app.cs_course_active_seq = #{courseActiveSeq}
+					   AND lm.cs_delete_yn = 'N'
+					   AND lm.cs_course_apply_seq != -1
+					LEFT OUTER JOIN 
+							(
+								SELECT
+									attend.CS_COURSE_APPLY_ATTEND_SEQ,
+									attend.CS_COURSE_APPLY_SEQ,
+									attend.CS_LESSON_SEQ,
+									attend.CS_ACTIVE_ELEMENT_SEQ,
+									attend.CS_ATTEND_TYPE_CD,
+									attend.CS_ONOFF_CD
+								FROM
+									cs_course_apply_attend attend
+								WHERE attend.cs_onoff_cd = '${CD.ONOFF_TYPE.ON}' 
+								  AND attend.cs_delete_yn = 'N' 
+								  AND attend.cs_course_active_seq = #{courseActiveSeq}
+								  AND attend.cs_course_apply_seq = #{courseApplySeq}
+							) attend
+                       ON  el.cs_active_element_seq = attend.cs_active_element_seq
+					   AND lm.cs_course_apply_seq = attend.cs_course_apply_seq
+					   AND lm.cs_item_seq = attend.cs_lesson_seq
+				WHERE
+						el.cs_course_active_seq = #{courseActiveSeq}
+					AND el.cs_delete_yn = 'N'
+					AND el.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+					AND el.cs_course_week_type_cd = '${CD.COURSE_WEEK_TYPE.LECTURE}'
+			) el
+		)el
+		GROUP BY
+		 	el.cs_course_active_seq
+	</select>
+	
+	<update id="updateAllByStartEndDate" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+		/* UIUnivCourseActiveElement.updateAllByStartEndDate */
+		UPDATE  ele 
+		   SET  ele.cs_start_dtime = #{startDtime, jdbcType=VARCHAR}
+			   ,ele.cs_end_dtime   = #{endDtime, jdbcType=VARCHAR}
+			   ,cs_upd_member_seq  = #{updMemberSeq, jdbcType=NUMERIC} 
+			   ,cs_upd_dtime 	   = dbo.FN_NOW_TO_CHAR()
+			   ,cs_upd_ip 		   = #{updIp, jdbcType=VARCHAR}
+		FROM
+			(
+				SELECT
+					act.cs_course_active_seq
+				FROM
+					(
+						SELECT ca.cs_course_active_seq, 
+							   ca.cs_course_master_seq, 
+							   ca.cs_year, 
+							   ca.cs_yearterm,
+							   (
+								select count(*) from
+									cs_course_active_element ele
+								where
+									ele.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+								and ele.cs_delete_yn = 'N'
+								and ele.cs_course_active_seq = ca.cs_course_active_seq
+							   ) as element_count
+						  FROM cs_course_active ca  
+					INNER JOIN cs_category c 
+							   ON c.cs_delete_yn = 'N' 
+							   AND c.cs_category_type_cd = '${CD.CATEGORY_TYPE.DEGREE}' 
+							   AND c.cs_category_seq = ca.cs_category_organization_seq 
+						 WHERE ca.cs_delete_yn = 'N' 
+							   AND ca.cs_yearterm = #{yearTerm}
+					) act
+				WHERE
+					act.element_count = #{weekCount}
+			) act
+		 INNER JOIN cs_course_active_element ele
+			ON  act.cs_course_active_seq = ele.cs_course_active_seq
+			AND ele.cs_sort_order = #{sortOrder}
+	</update>
+	
+	<resultMap id="getOfflineElementListResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseApplyAttendRS">
+		<result column="element.activeElementSeq"		property="element.activeElementSeq"		/>
+        <result column="element.courseActiveSeq"		property="element.courseActiveSeq"		/>
+        <result column="element.sortOrder"				property="element.sortOrder"			/>
+        <result column="element.offlineLessonCount"		property="element.offlineLessonCount"	/>
+        <result column="attend.offlineAttendCnt"   		property="applyAttend.offlineAttendCnt" />
+	</resultMap>
+	<select id="getOfflineElementList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="getOfflineElementListResultMap">
+		/* UIUnivCourseActiveElement.getOfflineElementList */
+		SELECT
+			el.cs_active_element_seq 			AS "element.activeElementSeq",
+			el.cs_course_active_seq 			AS "element.courseActiveSeq",
+			el.cs_reference_type_cd 			AS "element.referenceTypeCd",
+			el.cs_sort_order 					AS "element.sortOrder",
+			el.cs_offline_lesson_count			AS "element.offlineLessonCount",			
+			ISNULL(applyAttend.cnt, 0) 			AS "attend.offlineAttendCnt"
+		FROM
+			cs_course_active_element el
+			LEFT OUTER JOIN (
+							SELECT 
+								att.cs_active_element_seq
+								,count(att.cs_active_element_seq) AS cnt
+							FROM cs_course_apply_attend att
+								INNER JOIN cs_course_apply apply
+								ON apply.cs_course_apply_seq = att.cs_course_apply_seq
+								AND apply.cs_delete_yn = 'N'
+								AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+							WHERE att.cs_course_active_seq = #{courseActiveSeq}
+							AND  att.cs_onoff_cd = '${CD.ONOFF_TYPE.OFF}'
+							GROUP BY att.cs_active_element_seq
+							) applyAttend
+				ON el.cs_active_element_seq = applyAttend.cs_active_element_seq			
+		WHERE
+			el.cs_delete_yn = 'N'
+		AND el.cs_course_active_seq = #{courseActiveSeq}
+		AND el.cs_reference_type_cd = #{referenceTypeCd}
+		ORDER BY el.cs_sort_order
+	</select>
+    
+    <select id="getOnlineItemCount" parameterType="Long" resultType="int">
+/* UIUnivCourseActiveElement.getOnlineItemCount */
+SELECT
+	 COUNT(*)
+FROM cs_course_active_element el 
+             INNER JOIN cs_lcms_organization orga 
+                 ON el.cs_reference_seq = orga.cs_organization_seq 
+             INNER JOIN cs_lcms_item item 
+                 ON item.cs_organization_seq = orga.cs_organization_seq 
+WHERE el.cs_course_active_seq = #{courseActiveSeq} 
+  AND el.cs_delete_yn = 'N' 
+  AND el.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}' 
+  AND el.cs_course_week_type_cd = '${CD.COURSE_WEEK_TYPE.LECTURE}' 
+    </select>
+    
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+/* UIUnivCourseActiveElement.insertCopy */
+INSERT INTO cs_course_active_element
+       (
+       cs_course_active_seq,
+       cs_active_element_title,
+       cs_reference_seq,
+       cs_reference_type_cd,
+       cs_start_dtime,
+       cs_end_dtime,
+       cs_sort_order,
+       cs_course_week_type_cd,
+       cs_offline_lesson_count,
+       cs_rate,
+       cs_supplement_rate,
+       cs_delete_yn,
+       cs_reg_member_seq,
+       cs_reg_dtime,
+       cs_reg_ip,
+       cs_upd_member_seq,
+       cs_upd_dtime,
+       cs_upd_ip
+       )
+SELECT #{targetCourseActiveSeq, jdbcType=NUMERIC},
+       cs_active_element_title,
+       <choose>
+           <when test='referenceSeq !=null and !referenceSeq.equals("")'>
+           #{referenceSeq, jdbcType=NUMERIC},
+           </when>
+           <otherwise>
+           cs_reference_seq,
+           </otherwise>
+       </choose>
+       cs_reference_type_cd,
+       cs_start_dtime,
+       cs_end_dtime,
+       cs_sort_order,
+       cs_course_week_type_cd,
+       cs_offline_lesson_count,
+       cs_rate,
+       cs_supplement_rate,
+       'N',
+       #{regMemberSeq, jdbcType=NUMERIC},
+       dbo.FN_NOW_TO_CHAR(),
+       #{regIp,jdbcType=VARCHAR},
+       #{updMemberSeq, jdbcType=NUMERIC},
+       dbo.FN_NOW_TO_CHAR(),
+       #{updIp, jdbcType=VARCHAR}
+  FROM cs_course_active_element
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{sourceCourseActiveSeq}
+   AND cs_reference_type_cd = #{referenceTypeCd}
+       <if test='courseWeekTypeCd != null and !courseWeekTypeCd.equals("")'>
+   AND cs_course_week_type_cd = #{courseWeekTypeCd}
+       </if>
+    </insert>
+    
+    <resultMap id="listResultCopyMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+        <result column="cs_active_element_seq"       property="activeElementSeq"     />
+        <result column="cs_course_active_seq"        property="courseActiveSeq"      />
+        <result column="cs_active_element_title"     property="activeElementTitle"   />
+        <result column="cs_reference_seq"            property="referenceSeq"         />
+        <result column="cs_reference_type_cd"        property="referenceTypeCd"      />
+        <result column="cs_sort_order"               property="sortOrder"            />
+        <result column="cs_course_week_type_cd"      property="courseWeekTypeCd"     />
+        <result column="cs_offline_lesson_count"     property="offlineLessonCount"   />
+        <result column="cs_rate"                     property="rate"                 />
+        <result column="cs_supplement_rate"          property="supplementRate"       />
+        <result column="cs_start_day"          		 property="startDay"       		 />
+        <result column="cs_end_day"          		 property="endDay"			     />
+    </resultMap>
+    <select id="getListCopy" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="listResultCopyMap">
+        /* UIUnivCourseActiveElement.getListCopy */
+    SELECT cs_active_element_seq,
+           cs_course_active_seq,
+           cs_active_element_title,
+           cs_reference_seq,
+           cs_reference_type_cd,
+           cs_sort_order,
+           cs_course_week_type_cd,
+           cs_offline_lesson_count,
+           cs_rate,
+           cs_supplement_rate,
+           cs_start_day,
+           cs_end_day
+      FROM cs_course_active_element
+     WHERE cs_delete_yn = 'N'
+       AND cs_course_active_seq = #{courseActiveSeq}
+       AND cs_reference_type_cd = #{referenceTypeCd}
+       AND cs_course_week_type_cd = #{courseWeekTypeCd}
+    </select>
+</mapper>

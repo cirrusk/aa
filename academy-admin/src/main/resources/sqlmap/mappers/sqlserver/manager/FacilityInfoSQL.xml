@@ -1,0 +1,2787 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.reservation.facilityInfo.service.impl.FacilityInfoMapper">
+
+    <select id="facilityInfoList" parameterType="reqBox" resultType="dataBox">
+        SELECT *
+        FROM (
+        SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+        , AI.ROOMSEQ
+        , AI.ROOMNAME
+        , AI.SEATCOUNT
+        , AI.STATUSCODE
+        , AI.FACILITY
+        , AI.STARTDATE
+        , AI.ENDDATE
+        , AI.UPDATEDATE
+        , AI.UPDATEUSER
+        , AI.PPSEQ
+        , AI.PPNAME
+        , AI.TYPENAME
+        , AI.SAMEROOMSEQ
+        FROM (
+        SELECT DISTINCT CI.ROOMSEQ
+        , CI.ROOMNAME
+        , CI.SEATCOUNT
+        , CI.STATUSCODE
+        , CI.FACILITY
+        , CONVERT(VARCHAR, CONVERT(DATETIME,CI.STARTDATE),23) AS STARTDATE
+        , CONVERT(VARCHAR, CONVERT(DATETIME,CI.ENDDATE),23) AS ENDDATE
+        , CONVERT(VARCHAR, CI.UPDATEDATE, 120) AS UPDATEDATE
+        , CI.UPDATEUSER
+        , CI.PPSEQ
+        , BI.PPNAME
+        , STUFF(( SELECT ',' + T2.TYPENAME
+                FROM RSVROOMTYPEMAP T1
+                INNER JOIN RSVTYPEINFO T2
+                ON (T1.TYPESEQ = T2.TYPESEQ)
+                WHERE T1.ROOMSEQ = CI.ROOMSEQ
+                AND T2.STATUSCODE = 'B01'
+                AND ( T1.SETTINGSEQ IS NULL AND T1.COOKMASTERCODE IS NULL )
+                FOR XML PATH ('')
+                ),1,1,'') AS TYPENAME
+        , AD.SAMEROOMSEQ
+        FROM   RSVROOMINFO CI
+        INNER JOIN RSVPPINFO BI
+        ON CI.PPSEQ = BI.PPSEQ
+        LEFT OUTER JOIN RSVROOMTYPEMAP AA
+        ON CI.ROOMSEQ = AA.ROOMSEQ
+        LEFT OUTER JOIN RSVTYPEINFO AC
+        ON AC.TYPESEQ = AA.TYPESEQ
+        LEFT OUTER JOIN (SELECT 'Y' AS SAMEROOMSEQ, ROOMSEQ
+        FROM RSVSAMEROOMINFO) AD
+        ON CI.ROOMSEQ = AD.ROOMSEQ
+        WHERE 1=1
+        <if test="roomname != null and !roomname.equals('')">
+            AND CI.ROOMNAME LIKE ('%${roomname}%')
+        </if>
+        <if test="statuscode != null and !statuscode.equals('')">
+            AND CI.STATUSCODE = #{statuscode}
+        </if>
+        <if test="ppseq != null and !ppseq.equals('')">
+            AND CI.PPSEQ = #{ppseq}
+        </if>
+        <if test="fctype != null and !fctype.equals('')">
+            AND AA.TYPESEQ IN (${fctype})
+        </if>
+        <if test="partition != null and !partition.equals('')">
+            AND ISNULL(AD.SAMEROOMSEQ,'N') = #{partition}
+        </if>
+        ) AS AI ) AA
+        WHERE AA.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="facilityInfoListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(DISTINCT CI.ROOMSEQ) AS TOTAL_CNT
+        FROM   RSVROOMINFO CI
+        INNER JOIN RSVPPINFO BI
+        ON CI.PPSEQ = BI.PPSEQ
+        LEFT OUTER JOIN RSVROOMTYPEMAP AA
+        ON CI.ROOMSEQ = AA.ROOMSEQ
+        LEFT OUTER JOIN RSVTYPEINFO AC
+        ON AC.TYPESEQ = AA.TYPESEQ
+        LEFT OUTER JOIN (SELECT 'Y' AS SAMEROOMSEQ, ROOMSEQ
+        FROM RSVSAMEROOMINFO) AD
+        ON CI.ROOMSEQ = AD.ROOMSEQ
+        WHERE 1=1
+        <if test="roomname != null and !roomname.equals('')">
+            AND CI.ROOMNAME LIKE ('%${roomname}%')
+        </if>
+        <if test="statuscode != null and !statuscode.equals('')">
+            AND CI.STATUSCODE = #{statuscode}
+        </if>
+        <if test="ppseq != null and !ppseq.equals('')">
+            AND CI.PPSEQ = #{ppseq}
+        </if>
+        <if test="fctype != null and !fctype.equals('')">
+            AND AA.TYPESEQ IN (${fctype})
+        </if>
+        <if test="partition != null and !partition.equals('')">
+            AND ISNULL(AD.SAMEROOMSEQ,'N') = #{partition}
+        </if>
+    </select>
+
+    <select id="facilityinfoExcelDownload" parameterType="reqBox" resultType="hashmap">
+        SELECT
+        ROW_NUMBER() OVER (
+        <choose>
+            <when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+                ORDER BY ${sortOrderColumn} ${sortOrderType}
+            </when>
+            <otherwise>
+                ORDER BY CI.ROOMSEQ DESC
+            </otherwise>
+        </choose>
+        ) AS NO
+        , CI.ROOMSEQ
+        , CI.ROOMNAME
+        , CI.SEATCOUNT
+        , CASE WHEN CI.STATUSCODE = 'B01' THEN '사용'
+        WHEN CI.STATUSCODE = 'B02' THEN '사용안함'
+        END AS STATUSCODE
+        , CI.FACILITY
+        , CONVERT(VARCHAR, CONVERT(DATETIME,CI.STARTDATE),23) AS STARTDATE
+        , CONVERT(VARCHAR, CONVERT(DATETIME,CI.ENDDATE),23) AS ENDDATE
+        , CI.UPDATEDATE
+        , CI.UPDATEUSER
+        , CI.PPSEQ AS COMMONCODESEQ
+        , BI.PPNAME
+        , STUFF(( SELECT ',' + T2.TYPENAME
+                  FROM RSVROOMTYPEMAP T1
+                  INNER JOIN RSVTYPEINFO T2
+                  ON (T1.TYPESEQ = T2.TYPESEQ)
+                  WHERE T1.ROOMSEQ = CI.ROOMSEQ
+                  AND T2.STATUSCODE = 'B01'
+                  AND ( T1.SETTINGSEQ IS NULL AND T1.COOKMASTERCODE IS NULL )
+                  FOR XML PATH ('')
+                  ),1,1,'') AS TYPENAME
+        , AD.SAMEROOMSEQ
+        FROM RSVROOMINFO CI
+        INNER JOIN RSVPPINFO BI
+        ON CI.PPSEQ = BI.PPSEQ
+        LEFT OUTER JOIN RSVROOMTYPEMAP AA
+        ON CI.ROOMSEQ = AA.ROOMSEQ
+        LEFT OUTER JOIN RSVTYPEINFO AC
+        ON AC.TYPESEQ = AA.TYPESEQ
+        LEFT OUTER JOIN (SELECT 'Y' AS SAMEROOMSEQ, ROOMSEQ
+        FROM RSVSAMEROOMINFO) AD
+        ON CI.ROOMSEQ = AD.ROOMSEQ
+        WHERE 1=1
+        <if test="roomname != null and !roomname.equals('')">
+            AND CI.ROOMNAME LIKE ('%${roomname}%')
+        </if>
+        <if test="statuscode != null and !statuscode.equals('')">
+            AND CI.STATUSCODE = #{statuscode}
+        </if>
+        <if test="ppseq != null and !ppseq.equals('')">
+            AND CI.PPSEQ = #{ppseq}
+        </if>
+        <if test="fctype != null and !fctype.equals('')">
+            AND AA.TYPESEQ IN (${fctype})
+        </if>
+        <if test="partition != null and !partition.equals('')">
+            AND ISNULL(AD.SAMEROOMSEQ,'N') = #{partition}
+        </if>
+        GROUP BY CI.ROOMSEQ,CI.ROOMNAME,CI.SEATCOUNT,CI.STATUSCODE,CI.FACILITY,STARTDATE,ENDDATE
+                ,CI.UPDATEDATE,CI.UPDATEUSER,CI.PPSEQ ,BI.PPNAME,TYPENAME,AD.SAMEROOMSEQ
+    </select>
+
+    <select id="codeCombo" parameterType="reqBox" resultType="dataBox">
+        SELECT COMMONCODESEQ
+        , CODENAME
+        FROM COMMONCODE
+        WHERE 1 = 1
+        <if test="codemasterseq != null and !codemasterseq.equals('')">
+            AND CODEMASTERSEQ = #{codemasterseq}
+        </if>
+    </select>
+
+    <select id="rsvType" parameterType="reqBox" resultType="dataBox">
+        SELECT AA.TYPESEQ
+             , AA.TYPENAME
+        FROM RSVTYPEINFO AA
+        WHERE 1 = 1
+        AND STATUSCODE = 'B01'
+        <if test="rsvtypecode != null and !rsvtypecode.equals('')">
+            AND RSVTYPECODE = #{rsvtypecode}
+        </if>
+    </select>
+
+    <select id="updateType" parameterType="reqBox" resultType="dataBox">
+        SELECT DISTINCT AB.TYPESEQ
+             , AA.TYPENAME
+        FROM   RSVTYPEINFO AA
+        LEFT OUTER JOIN RSVROOMTYPEMAP AB
+        ON  AA.TYPESEQ = AB.TYPESEQ
+        AND ( AB.SETTINGSEQ IS NULL AND AB.COOKMASTERCODE IS NULL )
+        WHERE  1 = 1
+        AND  STATUSCODE = 'B01'
+        AND ROOMSEQ = #{facilityseq}
+    </select>
+
+    <select id="ptype" parameterType="reqBox" resultType="dataBox">
+        SELECT COUNT(ROOMSEQ) AS ROOMSEQ
+        FROM RSVSAMEROOMINFO
+        WHERE PARENTROOMSEQ = ROOMSEQ
+		AND   ROOMSEQ = #{roomseq}
+    </select>
+
+    <insert id="facilityInfoDetailOneInsert" parameterType="reqBox">
+           INSERT INTO RSVROOMINFO (
+                  ROOMNAME
+                , PPSEQ
+                , STATUSCODE
+                , SEATCOUNT
+                , USETIME
+                , ROLE
+                , ROLENOTE
+                , FACILITY
+                , KEYWORD
+                , INTRO
+                , FACILITYSTATUSCODE
+                , STARTDATE
+                , ENDDATE
+                <if test="filekey1 != null and !filekey1.equals('')">
+                    , FILEKEY1
+                </if>
+                <if test="filekey2 != null and !filekey2.equals('')">
+                    , FILEKEY2
+                </if>
+                <if test="filekey3 != null and !filekey3.equals('')">
+                    , FILEKEY3
+                </if>
+                <if test="filekey4 != null and !filekey4.equals('')">
+                    , FILEKEY4
+                </if>
+                <if test="filekey5 != null and !filekey5.equals('')">
+                    , FILEKEY5
+                </if>
+                <if test="filekey6 != null and !filekey6.equals('')">
+                    , FILEKEY6
+                </if>
+                <if test="filekey7 != null and !filekey7.equals('')">
+                    , FILEKEY7
+                </if>
+                <if test="filekey8 != null and !filekey8.equals('')">
+                    , FILEKEY8
+                </if>
+                <if test="filekey9 != null and !filekey9.equals('')">
+                    , FILEKEY9
+                </if>
+                <if test="filekey10 != null and !filekey10.equals('')">
+                    , FILEKEY10
+                </if>
+                , INSERTUSER
+                , INSERTDATE
+                , UPDATEUSER
+                , UPDATEDATE
+                ) VALUES (
+                #{roomname}
+                , #{ppseq}
+                , #{statuscode}
+                , #{seatcount}
+                , #{usetime}
+                , #{role}
+                , #{rolenote}
+                , #{facility}
+                , #{keyword}
+                , #{intro}
+                , #{facilitystatuscode}
+                , replace(#{startdate},'-','')
+                , replace(#{enddate},'-','')
+                <if test="filekey1 != null and !filekey1.equals('')">
+                    , ISNULL(#{filekey1},0)
+                </if>
+                <if test="filekey2 != null and !filekey2.equals('')">
+                    , ISNULL(#{filekey2},0)
+                </if>
+                <if test="filekey3 != null and !filekey3.equals('')">
+                    , ISNULL(#{filekey3},0)
+                </if>
+                <if test="filekey4 != null and !filekey4.equals('')">
+                    , ISNULL(#{filekey4},0)
+                </if>
+                <if test="filekey5 != null and !filekey5.equals('')">
+                    , ISNULL(#{filekey5},0)
+                </if>
+                <if test="filekey6 != null and !filekey6.equals('')">
+                    , ISNULL(#{filekey6},0)
+                </if>
+                <if test="filekey7 != null and !filekey7.equals('')">
+                    , ISNULL(#{filekey7},0)
+                </if>
+                <if test="filekey8 != null and !filekey8.equals('')">
+                    , ISNULL(#{filekey8},0)
+                </if>
+                <if test="filekey9 != null and !filekey9.equals('')">
+                    , ISNULL(#{filekey9},0)
+                </if>
+                <if test="filekey10 != null and !filekey10.equals('')">
+                    , ISNULL(#{filekey10},0)
+                </if>
+                , #{sysId}
+                , Getdate()
+                , #{sysId}
+                , Getdate()
+           )
+    </insert>
+
+    <insert id="facilityInfoDetailOneInsertTypeSeq" parameterType="reqBox">
+    	INSERT INTO   dbo.RSVROOMTYPEMAP
+    	            ( TYPESEQ
+					, ROOMSEQ )
+			 VALUES ( #{typeseq}
+					, #{roomseq}
+			        )
+    </insert>
+
+    <select id="typesearch" parameterType="reqBox" resultType="dataBox">
+        SELECT MAX(A.COOKMASTERCODE) AS COOKMASTERCODE
+            FROM RSVROOMTYPEMAP A
+              INNER JOIN RSVTYPEINFO B
+                ON A.TYPESEQ = B.TYPESEQ
+    </select>
+
+    <select id="facilityInfoDetailOneSeq" parameterType="reqBox" resultType="int">
+            SELECT IDENT_CURRENT('RSVROOMINFO') AS ROOMSEQ
+    </select>
+
+    <update id="facilityInfoDetailOneUpdate" parameterType="reqBox">
+                UPDATE RSVROOMINFO SET
+                       ROOMNAME = #{roomname}
+                     , PPSEQ = #{ppseq}
+                     , STATUSCODE = #{statuscode}
+                     , SEATCOUNT = #{seatcount}
+                     , USETIME = #{usetime}
+                     , ROLE = #{role}
+                     , ROLENOTE = #{rolenote}
+                     , FACILITY = #{facility}
+                     , KEYWORD = #{keyword}
+                     , INTRO = #{intro}
+                     , STARTDATE = replace(#{startdate},'-','')
+                     , ENDDATE = replace(#{enddate},'-','')
+                     , FILEKEY1 = ISNULL(#{filekey1},0)
+                     , FILEKEY2 = ISNULL(#{filekey2},0)
+                     , FILEKEY3 = ISNULL(#{filekey3},0)
+                     , FILEKEY4 = ISNULL(#{filekey4},0)
+                     , FILEKEY5 = ISNULL(#{filekey5},0)
+                     , FILEKEY6 = ISNULL(#{filekey6},0)
+                     , FILEKEY7 = ISNULL(#{filekey7},0)
+                     , FILEKEY8 = ISNULL(#{filekey8},0)
+                     , FILEKEY9 = ISNULL(#{filekey9},0)
+                     , FILEKEY10 = ISNULL(#{filekey10},0)
+                     , UPDATEUSER = #{sysId}
+                     , UPDATEDATE = Getdate()
+                WHERE ROOMSEQ = #{roomseq}
+    </update>
+
+    <update id="fileUpdate" parameterType="java.util.Map">
+        UPDATE FILEMANAGEMENT SET
+          ALTDESC = #{altText}
+        WHERE WORK = 'RESERVATION'
+        AND   FILEKEY = #{fileKey}
+        AND   UPLOADSEQ = 0
+    </update>
+
+    <delete id="facilityInfoDelete" parameterType="reqBox">
+        DELETE FROM RSVROOMSESSIONINFO
+        WHERE ROOMSEQ = #{roomseq}
+        AND   SETWEEK = #{setweek}
+        <if test="hiddenseq != null and !hiddenseq.equals('')">
+             AND   RSVSESSIONSEQ NOT IN (${hiddenseq})
+        </if>
+        AND   SETTYPECODE = 'S01'
+    </delete>
+
+    <delete id="facilityInfoDeleteAll" parameterType="reqBox">
+        DELETE FROM RSVROOMSESSIONINFO
+        WHERE ROOMSEQ = #{roomseq}
+        AND   SETTYPECODE = 'S01'
+    </delete>
+
+    <insert id="facilityInfoInsert" parameterType="reqBox">
+        SET IDENTITY_INSERT RSVROOMSESSIONINFO ON
+        <selectKey resultType="integer" keyProperty="rsvsessionseq" order="BEFORE">
+            SELECT ISNULL(MAX(rsvsessionseq),0)+1 FROM RSVROOMSESSIONINFO
+        </selectKey>
+        INSERT INTO RSVROOMSESSIONINFO (
+               RSVSESSIONSEQ
+             , SETTYPECODE
+             , SETWEEK
+             , SESSIONNAME
+             , ROOMSEQ
+             , STARTDATETIME
+             , ENDDATETIME
+             , PRICE
+             , DISCOUNTPRICE
+             , QUEENPRICE
+             , QUEENDISCOUNTPRICE
+             , STATUSCODE
+             , INSERTUSER
+             , INSERTDATE
+        ) VALUES (
+               #{rsvsessionseq}
+             , 'S01'
+             , #{setweek}
+             , #{sessionname}
+             , #{roomseq}
+             , #{startdatetime}
+             , #{enddatetime}
+             , ISNULL(${price},0)*10000
+             , ISNULL(${discountprice},0)*10000
+             , ISNULL(${queenprice},0)*10000
+             , ISNULL(${queendiscountprice},0)*10000
+             , 'B01'
+             , #{sysId}
+             , Getdate()
+        )
+        SET IDENTITY_INSERT RSVROOMSESSIONINFO OFF
+    </insert>
+
+	<update id="rsvroominfoUpdate" parameterType="reqBox">
+		 UPDATE   RSVROOMINFO
+		    SET   UPDATEUSER = #{sysId}
+                , UPDATEDATE = Getdate()
+          WHERE   ROOMSEQ    = #{roomseq}
+	</update>
+
+    <update id="facilityInfoUpdate" parameterType="reqBox">
+        UPDATE RSVROOMSESSIONINFO SET
+              SETTYPECODE = 'S01'
+            , SETWEEK = #{setweek}
+            , SESSIONNAME = #{sessionname}
+            , ROOMSEQ = #{roomseq}
+            , STARTDATETIME = #{startdatetime}
+            , ENDDATETIME = #{enddatetime}
+            , PRICE = ISNULL(${price},0)*10000
+            , DISCOUNTPRICE = ISNULL(${discountprice},0)*10000
+            , QUEENPRICE = ISNULL(${queenprice},0)*10000
+            , QUEENDISCOUNTPRICE = ISNULL(${queendiscountprice},0)*10000
+            , STATUSCODE = 'B01'
+            , UPDATEUSER = #{sysId}
+            , UPDATEDATE = Getdate()
+        WHERE RSVSESSIONSEQ = #{rsvsessionseq}
+    </update>
+
+    <select id="facilityInfoSelectWeek" parameterType="reqBox" resultType="dataBox">
+            SELECT RSVSESSIONSEQ
+                 , SESSIONNAME
+                 , SETTYPECODE
+                 , ROOMSEQ
+                 , SUBSTRING (STARTDATETIME, 1,2) AS STARTHOUR
+                 , SUBSTRING (STARTDATETIME, 3,2) AS STARTMIN
+                 , SUBSTRING (ENDDATETIME, 1,2) AS ENDHOUR
+                 , SUBSTRING (ENDDATETIME, 3,2) AS ENDMIN
+                 , PRICE
+                 , DISCOUNTPRICE
+                 , QUEENPRICE
+                 , QUEENDISCOUNTPRICE
+            FROM  RSVROOMSESSIONINFO
+            WHERE ROOMSEQ = #{roomseq}
+			AND   SETWEEK = #{setweek}
+    </select>
+
+    <insert id="facilityInfoInsertEarly" parameterType="reqBox">
+        SET IDENTITY_INSERT RSVROOMSESSIONINFO ON
+        <selectKey resultType="integer" keyProperty="rsvsessionseq" order="BEFORE">
+            SELECT ISNULL(MAX(rsvsessionseq),0)+1 FROM RSVROOMSESSIONINFO
+        </selectKey>
+        INSERT INTO RSVROOMSESSIONINFO (
+        RSVSESSIONSEQ
+        ,WORKTYPECODE
+        , SETTYPECODE
+        , SESSIONNAME
+        , ROOMSEQ
+        , SETDATE
+        <if test="worktypecode.equals('S01')">
+            , PRICE
+            , DISCOUNTPRICE
+            , QUEENPRICE
+            , QUEENDISCOUNTPRICE
+            , STARTDATETIME
+            , ENDDATETIME
+        </if>
+        , STATUSCODE
+        , INSERTUSER
+        , INSERTDATE
+        , UPDATEUSER
+        , UPDATEDATE
+        ) VALUES (
+        #{rsvsessionseq}
+        , #{worktypecode}
+        , 'S02'
+        , #{sessionname}
+        , #{roomseq}
+        , replace(#{setdate},'-','')
+        <if test="worktypecode.equals('S01')">
+            , ISNULL(${price},0)*10000
+            , ISNULL(${discountprice},0)*10000
+            , ISNULL(${queenprice},0)*10000
+            , ISNULL(${queendiscountprice},0)*10000
+            , #{startdatetime}
+            , #{enddatetime}
+        </if>
+        , 'B01'
+        , #{sysId}
+        , Getdate()
+        , #{sysId}
+        , Getdate()
+        )
+        SET IDENTITY_INSERT RSVROOMSESSIONINFO OFF
+    </insert>
+
+	<insert id="facilityInfoInsertHoliday" parameterType="reqBox">
+        INSERT INTO RSVROOMSESSIONINFO (ROOMSEQ, SETTYPECODE, WORKTYPECODE, SETDATE, VISIBILITY, STATUSCODE, INSERTUSER, INSERTDATE)
+        SELECT
+            ROOMSEQ, SETTYPECODE, WORKTYPECODE, SETDATE, VISIBILITY, STATUSCODE, INSERTUSER, INSERTDATE
+        FROM (
+            /* 양력일 */
+            SELECT 
+                #{roomseq} AS ROOMSEQ 
+                , 'S02' AS SETTYPECODE /* 설정단위(주/일) */
+                , 'S02' AS WORKTYPECODE /* 운영형태(영업일/휴일) */
+                , B.HYEAR + A.HDATE AS SETDATE    
+                , 'B01' AS VISIBILITY
+                , 'B01' AS STATUSCODE
+                , 'SYSTEM' AS INSERTUSER
+                , GETDATE() AS INSERTDATE
+            FROM RSVHOLIDAYINFO A
+            INNER JOIN (
+                SELECT
+                    DISTINCT HYEAR
+                FROM RSVHOLIDAYINFO
+                WHERE REPEATCODE = 'B02'
+            ) B
+            ON (1=1)
+            WHERE A.REPEATCODE = 'B01'
+            UNION ALL
+            /* 음력일 */
+            SELECT 
+                #{roomseq} AS ROOMSEQ 
+                , 'S02' AS SETTYPECODE /* 설정단위(주/일) */
+                , 'S02' AS WORKTYPECODE /* 운영형태(영업일/휴일) */
+                , HYEAR + HDATE AS SETDATE    
+                , 'B01' AS VISIBILITY
+                , 'B01' AS STATUSCODE
+                , 'SYSTEM' AS INSERTUSER
+                , GETDATE() AS INSERTDATE
+            FROM RSVHOLIDAYINFO
+            WHERE REPEATCODE = 'B02'
+        ) T	
+	</insert>
+
+    <insert id="facilityinfoInsertRoomrole" parameterType="reqBox">
+    INSERT INTO RSVROOMROLE (
+                RSVROLESEQ
+              , GROUPSEQ
+              , TARGETTYPECODE
+              , PINTREATRANGE
+              , CITYTREATCODE
+              , AGETREATCODE
+              , STARTDAY
+              , ENDDAY
+              , STARTMONTH
+              , ENDMONTH
+              , RSVSESSIONSEQ
+              , PERIODTYPECODE
+              , STATUSCODE
+              , APPLYSESSIONTYPECODE
+              , UPDATEUSER
+              , UPDATEDATE
+              , INSERTUSER
+              , INSERTDATE
+              )
+       SELECT AI.RSVROLESEQ + ROW_NUMBER() OVER(ORDER BY AI.RSVROLESEQ) AS RSVROLESEQ
+            , AI.GROUPSEQ
+            , AI.TARGETTYPECODE
+            , AI.PINTREATRANGE
+            , AI.CITYTREATCODE
+            , AI.AGETREATCODE
+            , AI.STARTDAY
+            , AI.ENDDAY
+            , AI.STARTMONTH
+            , AI.ENDMONTH
+            , AI.RSVSESSIONSEQ
+            , AI.PERIODTYPECODE
+            , AI.STATUSCODE
+            , AI.APPLYSESSIONTYPECODE
+            , AI.MODIFYID
+            , AI.MODIFYDATE
+            , AI.REGISTID
+            , AI.REGISTDATE
+       FROM (
+          SELECT DISTINCT (SELECT ISNULL(MAX(rsvroleseq),0) FROM RSVROOMROLE) AS RSVROLESEQ
+            , AA.GROUPSEQ
+            , AA.TARGETTYPECODE
+            , AA.PINTREATRANGE
+            , AA.CITYTREATCODE
+            , AA.AGETREATCODE
+            , AA.STARTDAY
+            , AA.ENDDAY
+            , AA.STARTMONTH
+            , AA.ENDMONTH
+            , #{rsvsessionseq} AS RSVSESSIONSEQ
+            , AA.PERIODTYPECODE
+            , 'B01' AS STATUSCODE
+            , AA.APPLYSESSIONTYPECODE
+            , #{sysId} AS MODIFYID
+            , getdate() AS MODIFYDATE
+            , #{sysId} AS REGISTID
+            , getdate() AS REGISTDATE
+       FROM RSVROOMROLE AA
+          INNER JOIN RSVROOMSESSIONINFO AB
+            ON AA.RSVSESSIONSEQ = AB.RSVSESSIONSEQ
+       WHERE AB.ROOMSEQ = #{roomseq}
+          AND  AA.APPLYSESSIONTYPECODE = 'P01'
+       ) AI
+    </insert>
+
+    <select id="allSessionTypeSearch" parameterType="reqBox" resultType="int">
+        SELECT COUNT(AA.APPLYSESSIONTYPECODE) AS APPLYSESSIONTYPECODE
+        FROM RSVROOMROLE AA
+        INNER JOIN RSVROOMSESSIONINFO AB
+        ON AA.RSVSESSIONSEQ = AB.RSVSESSIONSEQ
+        WHERE AB.ROOMSEQ = #{roomseq}
+    </select>
+
+    <delete id="facilityInfoEarlyDel" parameterType="reqBox">
+           DELETE FROM RSVROOMSESSIONINFO
+           WHERE ROOMSEQ = #{roomseq}
+             AND SETDATE = replace(#{setdate},'-','')
+    </delete>
+
+    <select id="facilityInfoDetailSessionPop" parameterType="reqBox" resultType="dataBox">
+          SELECT DISTINCT
+                 CONVERT(VARCHAR, CONVERT(DATETIME, SETDATE), 23) AS SETDATE
+                ,CASE
+                    WHEN (DATEPART(DW,SETDATE)) = '1' THEN '일'
+                    WHEN (DATEPART(DW,SETDATE)) = '2' THEN '월'
+                    WHEN (DATEPART(DW,SETDATE)) = '3' THEN '화'
+                    WHEN (DATEPART(DW,SETDATE)) = '4' THEN '수'
+                    WHEN (DATEPART(DW,SETDATE)) = '5' THEN '목'
+                    WHEN (DATEPART(DW,SETDATE)) = '6' THEN '금'
+                    WHEN (DATEPART(DW,SETDATE)) = '7' THEN '토'
+                 END  AS DATENAME
+                ,ROOMSEQ
+          FROM  RSVROOMSESSIONINFO
+          WHERE ROOMSEQ = #{roomseq}
+            AND SETDATE = replace(#{setdate},'-','')
+    </select>
+
+    <select id="facilityInfoDetailTwoDateCheck" parameterType="reqBox" resultType="dataBox">
+        SELECT SETDATE
+          FROM RSVROOMSESSIONINFO
+        WHERE  ROOMSEQ = #{roomseq}
+    </select>
+
+    <select id="facilityInfoDetailTwoList" parameterType="reqBox" resultType="dataBox">
+        SELECT ROW_NUMBER() OVER( ORDER BY SETDATE DESC ) AS ROW_NUM
+             , ROOMSEQ
+             , WORKTYPECODE
+             , CONVERT(VARCHAR, CONVERT(DATETIME, SETDATE), 23) AS SETDATE
+             , CONCAT(SESSIONCOUNT,' 포함 총',CNT,'건') AS SESSIONCOUNT
+        FROM (
+              SELECT ROOMSEQ
+                   , WORKTYPECODE
+                   , SETDATE
+                   , '-' AS SESSIONCOUNT
+                   , '' AS CNT
+              FROM   RSVROOMSESSIONINFO
+              WHERE  ROOMSEQ = #{roomseq}
+              AND    SETTYPECODE = 'S02'
+              AND    WORKTYPECODE = 'S02'
+              AND    VISIBILITY IS NULL
+              UNION ALL
+              SELECT AI.ROOMSEQ
+                   , AI.WORKTYPECODE
+                   , AI.SETDATE
+                   , (SELECT TOP 1 CONCAT('[',SESSIONNAME,'] ',SUBSTRING(STARTDATETIME,1,2),'시 ',SUBSTRING(STARTDATETIME,3,2),'분~'
+                                          ,SUBSTRING(ENDDATETIME,1,2),'시 ',SUBSTRING(ENDDATETIME,3,2),'분') AS SESSIONCOUNT
+                      FROM   RSVROOMSESSIONINFO
+                      WHERE  ROOMSEQ = #{roomseq}
+                      AND    SETTYPECODE = 'S02'
+                      AND    WORKTYPECODE = 'S01'
+                      AND    VISIBILITY IS NULL
+                      AND    SETDATE = AI.SETDATE) AS SESSIONCOUNT
+                   , COUNT(AI.RSVSESSIONSEQ) AS CNT
+              FROM   RSVROOMSESSIONINFO AI
+              WHERE  AI.ROOMSEQ = #{roomseq}
+              AND    AI.SETTYPECODE = 'S02'
+              AND    AI.WORKTYPECODE = 'S01'
+              AND    AI.VISIBILITY IS NULL
+              GROUP BY AI.ROOMSEQ, AI.WORKTYPECODE, AI.SETDATE
+              ) AAI
+    </select>
+
+    <select id="facilityInfoDetailTwoPreview" parameterType="reqBox" resultType="dataBox">
+             SELECT   SESSIONNAME
+                    , CONCAT(SUBSTRING(STARTDATETIME,1,2),':',SUBSTRING(STARTDATETIME,3,2),'~',SUBSTRING(ENDDATETIME,1,2),':',SUBSTRING(ENDDATETIME,3,2)) AS WEEKTIME
+                    , CONCAT(CONVERT(FLOAT,PRICE/10000),'만원') AS PRICE
+                    , CONCAT(CONVERT(FLOAT,DISCOUNTPRICE/10000),'만원') AS DISCOUNTPRICE
+                    , CONCAT(CONVERT(FLOAT,QUEENPRICE/10000),'만원') AS QUEENPRICE
+                    , CONCAT(CONVERT(FLOAT,QUEENDISCOUNTPRICE/10000),'만원') AS QUEENDISCOUNTPRICE
+                    , CONVERT(VARCHAR, CONVERT(DATETIME, SETDATE), 23) AS SETDATE
+                    , CASE
+                        WHEN SETWEEK = 'W01' THEN '일'
+                        WHEN SETWEEK = 'W02' THEN '월'
+                        WHEN SETWEEK = 'W03' THEN '화'
+                        WHEN SETWEEK = 'W04' THEN '수'
+                        WHEN SETWEEK = 'W05' THEN '목'
+                        WHEN SETWEEK = 'W06' THEN '금'
+                        WHEN SETWEEK = 'W07' THEN '토'
+                        WHEN SETWEEK = 'W08' THEN '마지막주일요일'
+                        END AS SETWEEK
+             FROM RSVROOMSESSIONINFO
+             WHERE ROOMSEQ = #{roomseq}
+               AND WORKTYPECODE = 'S01'
+               AND SETDATE = replace(#{setdate},'-','')
+    </select>
+
+    <select id="cookType" parameterType="reqBox" resultType="dataBox">
+            SELECT TYPESEQ
+                 , TYPENAME
+                 , COOKMASTERCODE
+            FROM   RSVTYPEINFO
+            WHERE  TYPESEQ = #{sTypeseq}
+    </select>
+
+    <select id="checkList" parameterType="reqBox" resultType="dataBox">
+        SELECT SETDATE
+        FROM   RSVROOMSESSIONINFO
+        WHERE  ROOMSEQ = #{roomseq}
+        AND    SETTYPECODE = 'S02'
+    </select>
+
+    <select id="rsvCheckList" parameterType="reqBox" resultType="dataBox">
+        SELECT RESERVATIONDATE
+        FROM   RSVRESERVATIONINFO
+        WHERE  ROOMSEQ = #{roomseq}
+     	AND    CANCELCODE = 'B02'
+        GROUP BY RESERVATIONDATE
+    </select>
+
+    <select id="facilityType"  parameterType="reqBox" resultType="dataBox">
+            SELECT DISTINCT TYPENAME
+             FROM RSVTYPEINFO
+             WHERE RSVTYPECODE = 'R01'
+               AND TYPESEQ = #{sTypeseq}
+    </select>
+
+    <select id="facilityInfoDetailThreeAreaInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT CITYGROUPCODE AS CODE
+              ,CITYGROUPNAME AS NAME
+          FROM RSVCITYGROUPMASTER
+    </select>
+
+    <select id="facilityInfoDetailThreePinInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETCODESEQ AS CODE
+			 , TARGETCODENAME + '(이상)' AS NAME
+		FROM   V_TARGETCODE_NONMEM
+		WHERE  TARGETMASTERSEQ = 'PINCODE'
+		  AND  USEYN = 'Y'
+	  	ORDER BY TARGETCODEORDER
+    </select>
+
+    <select id="facilityInfoDetailThreeAgeInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETCODESEQ AS SEQ
+              ,TARGETCODENAME AS NAME
+         FROM  TARGETCODE
+        WHERE TARGETMASTERSEQ = 'AGECODE'
+          AND USEYN = 'Y'
+    </select>
+
+    <select id="facilityInfoDetailThreeSpecialInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT GROUPSEQ AS SEQ
+              ,TARGETGROUPNAME AS NAME
+          FROM RSVROLEGROUP
+          WHERE COOKMASTERCODE = 'C02'
+    </select>
+
+    <select id="facilityInfoDetailThreeSpecialCookInfo" parameterType="reqBox" resultType="dataBox">
+        SELECT GROUPSEQ AS SEQ
+        ,TARGETGROUPNAME AS NAME
+        FROM RSVROLEGROUP
+        WHERE COOKMASTERCODE = 'C01'
+    </select>
+
+
+    <select id="facilityInfoDetailThreeSession" parameterType="reqBox" resultType="dataBox">
+        SELECT RSVSESSIONSEQ
+             , SESSIONNAME
+        FROM   RSVROOMSESSIONINFO
+        WHERE  ROOMSEQ = #{roomseq}
+        AND    SETWEEK = #{setweek}
+    </select>
+
+    <select id="facilityInfoAllSession" parameterType="reqBox" resultType="dataBox">
+        SELECT RSVSESSIONSEQ FROM RSVROOMSESSIONINFO
+        WHERE ROOMSEQ = #{roomseq}
+    </select>
+
+    <insert id="facilityInfoDetailThreeTermInsert" parameterType="reqBox">
+        <selectKey resultType="integer" keyProperty="rsvroleseq" order="BEFORE">
+            SELECT ISNULL(MAX(rsvroleseq),0)+1 FROM RSVROOMROLE
+        </selectKey>
+        INSERT INTO RSVROOMROLE (
+        RSVROLESEQ
+        , GROUPSEQ
+        , TARGETTYPECODE
+        , PINTREATRANGE
+        , CITYTREATCODE
+        , AGETREATCODE
+        , STARTDAY
+        , STARTMONTH
+        , ENDDAY
+        , ENDMONTH
+        , RSVSESSIONSEQ
+        , PERIODTYPECODE
+        , STATUSCODE
+        , APPLYSESSIONTYPECODE
+        , INSERTUSER
+        , INSERTDATE
+        , UPDATEUSER
+        , UPDATEDATE
+        ) VALUES (
+        #{rsvroleseq}
+        , #{groupseq}
+        , #{targettypecode}
+        , #{pintreatrange}
+        , #{citytreatcode}
+        , #{agetreatcode}
+        , #{startday}
+        , #{startmonth}
+        , #{endday}
+        , #{endmonth}
+        , #{rsvsessionseq}
+        , #{periodtypecode}
+        , 'B01'
+        , #{applysessiontypecode}
+        , #{sysId}
+        , Getdate()
+        , #{sysId}
+        , Getdate()
+        )
+    </insert>
+
+    <insert id="facilityInfoAllSessionInsert" parameterType="reqBox">
+        <selectKey resultType="integer" keyProperty="rsvroleseq" order="BEFORE">
+            SELECT ISNULL(MAX(rsvroleseq),0)+1 FROM RSVROOMROLE
+        </selectKey>
+        INSERT INTO RSVROOMROLE (
+        RSVROLESEQ
+        , TARGETTYPECODE
+        , GROUPSEQ
+        , PINTREATRANGE
+        , CITYTREATCODE
+        , PERIODTYPECODE
+        , AGETREATCODE
+        , STARTDAY
+        , STARTMONTH
+        , ENDDAY
+        , ENDMONTH
+        , RSVSESSIONSEQ
+        , STATUSCODE
+        , APPLYSESSIONTYPECODE
+        , INSERTUSER
+        , INSERTDATE
+        , UPDATEUSER
+        , UPDATEDATE
+        )
+        SELECT (SELECT ISNULL(MAX(RSVROLESEQ),0)+1 FROM RSVROOMROLE) +
+        ROW_NUMBER() OVER (ORDER BY RSVSESSIONSEQ)
+        , #{targettypecode}
+        , #{groupseq}
+        , #{pintreatrange}
+        , #{citytreatcode}
+        , #{periodtypecode}
+        , #{agetreatcode}
+        , #{startday}
+        , #{startmonth}
+        , #{endday}
+        , #{endmonth}
+        , RSVSESSIONSEQ
+        , 'B01'
+        , #{applysessiontypecode}
+        , #{sysId}
+        , Getdate()
+        , #{sysId}
+        , Getdate()
+        FROM DBO.RSVROOMSESSIONINFO
+        WHERE ROOMSEQ = #{roomseq}
+    </insert>
+
+
+    <select id="facilityInfoDetailThreeTermList" parameterType="reqBox" resultType="dataBox">
+    	/* facilityInfoDetailThreeTermList 예약자격/기간 */
+        SELECT ROW_NUMBER() OVER( ORDER BY AAI.RSVROLESEQ DESC  ) AS ROW_NUM
+             , CONCAT(AAI.PINTREATRANGENAME
+                     ,','
+				     ,(SELECT CITYGROUPNAME
+					   FROM RSVCITYGROUPMASTER
+					   WHERE CITYGROUPCODE = AAI.CITYTREATCODE)
+					 ,','
+					 ,(SELECT TARGETCODENAME
+					   FROM TARGETCODE
+					   WHERE TARGETCODESEQ = AAI.AGETREATCODE)
+					 ,' '
+					 ,AAI.TARGETGROUPNAME) AS RSVROLE
+             , AAI.PINTREATRANGE
+             , AAI.CITYTREATCODE
+             , AAI.AGETREATCODE
+             , CASE WHEN AAI.PERIODTYPECODE ='P01' THEN CONCAT('당일부터 ',AAI.STARTDAY,' 일 후')
+                    WHEN AAI.PERIODTYPECODE ='P03' THEN CONCAT('매월 ',AAI.STARTDAY,' 일')
+               END AS STARTDATE
+             , CASE WHEN AAI.PERIODTYPECODE ='P01' THEN CONCAT('당일부터 ',AAI.ENDDAY,' 일 후')
+                    WHEN AAI.PERIODTYPECODE ='P03' THEN CONCAT(AAI.ENDMONTH,' 개월 후 해당월 ',AAI.ENDDAY,' 일')
+               END AS ENDDATE
+             , CASE WHEN AAI.APPLYSESSIONTYPECODE = 'P01' THEN '모든세션'
+        			ELSE CONCAT(DBO.F_CMM_CODENAME('WK1', AAI.SETWEEK),'(',AAI.SESSIONNAME,') '
+                        ,SUBSTRING(AAI.STARTDATETIME,1,2),':',SUBSTRING(AAI.STARTDATETIME,3,3),'~',SUBSTRING(AAI.ENDDATETIME,1,2),':',SUBSTRING(AAI.ENDDATETIME,3,3))
+					END AS SETWEEK
+             , AAI.ROOMSEQ
+             , AAI.APPLYSESSIONTYPECODE
+             , AAI.RSVROLESEQ
+             , AAI.TARGETGROUPNAME
+             , AAI.GROUPSEQ
+        FROM (
+             SELECT AI.RSVROLESEQ
+		          ,( SELECT TARGETCODENAME
+          	        FROM dbo.V_TARGETCODE_NONMEM
+	                WHERE TARGETMASTERSEQ = 'PINCODE'
+                      AND TARGETCODESEQ = PINTREATRANGE
+	                  AND USEYN = 'Y') AS PINTREATRANGENAME
+		          , AI.PINTREATRANGE
+		          , AI.CITYTREATCODE
+		          , AI.AGETREATCODE
+                  , AI.PERIODTYPECODE
+                  , AI.STARTDAY
+                  , AI.STARTMONTH
+                  , AI.ENDDAY
+                  , AI.ENDMONTH
+                  , BI.SETWEEK
+                  , BI.SESSIONNAME
+                  , BI.STARTDATETIME
+                  , BI.ENDDATETIME
+                  , CI.ROOMSEQ
+                  , AI.APPLYSESSIONTYPECODE
+                  , AD.TARGETGROUPNAME
+                  , AI.GROUPSEQ
+             FROM   RSVROOMROLE AI
+                    INNER JOIN RSVROOMSESSIONINFO BI
+                    ON AI.RSVSESSIONSEQ = BI.RSVSESSIONSEQ
+                    INNER JOIN RSVROOMINFO CI
+                    ON BI.ROOMSEQ = CI.ROOMSEQ
+                    LEFT OUTER JOIN RSVROLEGROUP AD
+                    ON AI.GROUPSEQ = AD.GROUPSEQ
+                    AND AD.COOKMASTERCODE = 'C02'
+             WHERE  CI.ROOMSEQ = #{roomseq}
+               AND  AI.APPLYSESSIONTYPECODE = 'P02'
+               AND  AI.GROUPSEQ NOT IN ( SELECT GROUPSEQ FROM RSVROLEGROUP WHERE COOKMASTERCODE = 'C01')
+             UNION ALL
+             SELECT  max(AI.RSVROLESEQ) as rsvroleseq
+		          , ( SELECT TARGETCODENAME
+          	          FROM dbo.V_TARGETCODE_NONMEM
+	                  WHERE TARGETMASTERSEQ = 'PINCODE'
+                        AND TARGETCODESEQ = PINTREATRANGE
+	                    AND USEYN = 'Y') AS PINTREATRANGENAME
+		          , AI.PINTREATRANGE
+		          , AI.CITYTREATCODE
+		          , AI.AGETREATCODE
+                  , AI.PERIODTYPECODE
+                  , AI.STARTDAY
+                  , AI.STARTMONTH
+                  , AI.ENDDAY
+                  , AI.ENDMONTH
+                  , '' as SETWEEK
+                  , '' as SESSIONNAME
+                  , '' as STARTDATETIME
+                  , '' as ENDDATETIME
+                  , '' as ROOMSEQ
+                  , AI.APPLYSESSIONTYPECODE
+                  , AD.TARGETGROUPNAME
+                  , AI.GROUPSEQ
+             FROM   RSVROOMROLE AI
+                    INNER JOIN RSVROOMSESSIONINFO BI
+                    ON AI.RSVSESSIONSEQ = BI.RSVSESSIONSEQ
+                    INNER JOIN RSVROOMINFO CI
+                    ON BI.ROOMSEQ = CI.ROOMSEQ
+                    LEFT OUTER JOIN RSVROLEGROUP AD
+                    ON AI.GROUPSEQ = AD.GROUPSEQ
+                    AND AD.COOKMASTERCODE = 'C02'
+             WHERE  CI.ROOMSEQ = #{roomseq}
+             AND    AI.APPLYSESSIONTYPECODE = 'P01'
+             AND  AI.GROUPSEQ NOT IN ( SELECT GROUPSEQ FROM RSVROLEGROUP WHERE COOKMASTERCODE = 'C01')
+           GROUP BY AI.PINTREATRANGE, AI.CITYTREATCODE, AI.AGETREATCODE
+                      , AI.PERIODTYPECODE, AI.STARTDAY, AI.STARTMONTH, AI.ENDDAY, AI.ENDMONTH
+                      , AI.APPLYSESSIONTYPECODE, AD.TARGETGROUPNAME,AI.GROUPSEQ
+             ) AS AAI
+    </select>
+
+    <delete id="termListDelete" parameterType="reqBox">
+        DELETE FROM RSVROOMROLE
+        WHERE RSVROLESEQ = #{rsvroleseq}
+    </delete>
+
+    <select id="facilityInfoDetailThreeDisPopList" parameterType="reqBox" resultType="dataBox">
+    	/* facilityInfoDetailThreeDisPopList - 누적예약 팝업 */
+        SELECT ROW_NUMBER() OVER (ORDER BY AA.SETTINGSEQ  desc) AS ROW_NUM
+			 , CASE AA.CONSTRAINTTYPE
+			      WHEN 'C01' THEN CONCAT(AA.PINTREATRANGENAME,', ',AA.CITYGROUPNAME,', ',AA.AGETREATNAME)
+				  WHEN 'C02' THEN AA.TARGETGROUPNAME
+			   ELSE AA.PPNAME +' ['+ AA.TYPENAME + ']'
+			   END AS ROLE
+			 , AA.GLOBALDAILYCOUNT
+			 , AA.GLOBALWEEKLYCOUNT
+			 , AA.GLOBALMONTHLYCOUNT
+			 , AA.PPDAILYCOUNT
+			 , AA.PPWEEKLYCOUNT
+			 , AA.PPMONTHLYCOUNT
+			 , AA.SETTINGSEQ
+		FROM (
+				SELECT 
+				       A.SETTINGSEQ
+					 , B.PPNAME
+					 , C.TARGETGROUPNAME
+					 , D.TARGETCODENAME AS AGETREATNAME
+					 , E.TARGETCODENAME + ' (이상)'AS PINTREATRANGENAME
+					 , F.CITYGROUPNAME
+					 , A.GLOBALDAILYCOUNT
+					 , A.GLOBALWEEKLYCOUNT
+					 , A.GLOBALMONTHLYCOUNT
+					 , A.PPDAILYCOUNT
+					 , A.PPWEEKLYCOUNT
+					 , A.PPMONTHLYCOUNT
+					 , A.CONSTRAINTTYPE
+					 , STUFF(( SELECT '/' + C.TYPENAME
+						         FROM RSVSPECIALPPMAP B
+						              LEFT OUTER JOIN RSVTYPEINFO C
+							          ON(B.TYPESEQ = C.TYPESEQ)
+						        WHERE (A.SETTINGSEQ = B.SETTINGSEQ)
+						        GROUP BY B.SETTINGSEQ, C.TYPENAME
+						        FOR XML PATH ('')),1,1,''
+						) AS TYPENAME
+				FROM   RSVCONSTRAINT A
+					   LEFT OUTER JOIN RSVPPINFO B
+					    ON(A.PPSEQ = B.PPSEQ)
+					   LEFT OUTER JOIN RSVROLEGROUP C
+					    ON(A.GROUPSEQ = C.GROUPSEQ)
+					   LEFT OUTER JOIN TARGETCODE D
+					    ON(A.AGETREATCODE = D.TARGETCODESEQ AND D.TARGETMASTERSEQ= 'AGECODE')
+					   LEFT OUTER JOIN V_TARGETCODE_NONMEM E
+					    ON(A.PINTREATRANGE = E.TARGETCODESEQ AND E.TARGETMASTERSEQ = 'PINCODE')
+					   LEFT OUTER JOIN RSVCITYGROUPMASTER F
+					    ON(A.CITYTREATCODE = F.CITYGROUPCODE)
+					   INNER JOIN COMMONCODE G
+					    ON(A.STATUSCODE = G.COMMONCODESEQ AND G.CODEMASTERSEQ = 'YN3')
+					   WHERE A.STATUSCODE = 'B01'
+			) AS AA
+    </select>
+
+    <insert id="facilityInfoDetailThreeDisDelete" parameterType="reqBox">
+        DELETE FROM RSVROOMTYPEMAP
+        WHERE ROOMSEQ= #{roomseq}
+        <if test="cookType != null and cookType.equalsIgnoreCase('N')">
+            AND COOKMASTERCODE = 'C02'
+        </if>
+        <if test="cookType != null and cookType.equalsIgnoreCase('Y')">
+            AND COOKMASTERCODE = 'C01'
+        </if>
+    </insert>
+
+    <insert id="facilityInfoDetailThreeDisInsert" parameterType="reqBox">
+        INSERT INTO RSVROOMTYPEMAP (
+        SETTINGSEQ
+        , ROOMSEQ
+        , TYPESEQ
+        , COOKMASTERCODE
+        ) VALUES (
+        #{settingseq}
+        , #{roomseq}
+        , #{typeseq}
+        <if test="cookType != null and cookType.equalsIgnoreCase('Y')">
+            , 'C01'
+        </if>
+        <if test="cookType != null and cookType.equalsIgnoreCase('N')">
+            , 'C02'
+        </if>
+        )
+    </insert>
+
+    <select id="facilityInfoDetailThreeDisList" parameterType="reqBox" resultType="dataBox">
+        /* facilityInfoDetailThreeDisList 누적예약 리스트(메인) */
+        SELECT ROW_NUMBER() OVER (ORDER BY AA.SETTINGSEQ desc) AS ROW_NUM
+             , CASE
+                   AA.CONSTRAINTTYPE WHEN 'C01' THEN CONCAT(AA.PINTREATRANGENAME,', ',AA.CITYGROUPNAME,', ',AA.AGETREATNAME)
+                   WHEN 'C02' THEN AA.TARGETGROUPNAME
+                   ELSE AA.PPNAME +' ['+ AA.TYPENAME + ']'
+               END AS ROLE
+             , AA.GLOBALDAILYCOUNT
+             , AA.GLOBALWEEKLYCOUNT
+             , AA.GLOBALMONTHLYCOUNT
+             , AA.PPDAILYCOUNT
+             , AA.PPWEEKLYCOUNT
+             , AA.PPMONTHLYCOUNT
+             , AA.SETTINGSEQ
+             , AA.ROOMSEQ
+             , AA.TYPESEQ
+        FROM(
+        SELECT DISTINCT A.SETTINGSEQ
+             , CI.ROOMSEQ
+             , BI.TYPESEQ
+             , B.PPNAME
+             , C.TARGETGROUPNAME
+             , D.TARGETCODENAME AS AGETREATNAME
+             , E.TARGETCODENAME + ' (이상)'AS PINTREATRANGENAME
+             , F.CITYGROUPNAME
+             , A.GLOBALDAILYCOUNT
+             , A.GLOBALWEEKLYCOUNT
+             , A.GLOBALMONTHLYCOUNT
+             , A.PPDAILYCOUNT
+             , A.PPWEEKLYCOUNT
+             , A.PPMONTHLYCOUNT
+             , A.CONSTRAINTTYPE
+             , STUFF(( SELECT '/' + C.TYPENAME
+                       FROM RSVSPECIALPPMAP B
+                        LEFT OUTER JOIN RSVTYPEINFO C
+                          ON(B.TYPESEQ = C.TYPESEQ)
+                       WHERE (A.SETTINGSEQ = B.SETTINGSEQ)
+                       GROUP BY B.SETTINGSEQ, C.TYPENAME
+                       FOR XML PATH ('')),1,1,''
+                     ) AS TYPENAME
+        FROM RSVCONSTRAINT A
+            LEFT OUTER JOIN RSVPPINFO B
+              ON(A.PPSEQ = B.PPSEQ)
+            LEFT OUTER JOIN RSVROLEGROUP C
+              ON(A.GROUPSEQ = C.GROUPSEQ)
+            LEFT OUTER JOIN TARGETCODE D
+              ON(A.AGETREATCODE = D.TARGETCODESEQ AND D.TARGETMASTERSEQ= 'AGECODE')
+            LEFT OUTER JOIN V_TARGETCODE_NONMEM E
+              ON(A.PINTREATRANGE = E.TARGETCODESEQ AND E.TARGETMASTERSEQ = 'PINCODE')
+            LEFT OUTER JOIN RSVCITYGROUPMASTER F
+              ON(A.CITYTREATCODE = F.CITYGROUPCODE)
+            INNER JOIN COMMONCODE G
+              ON(A.STATUSCODE = G.COMMONCODESEQ AND G.CODEMASTERSEQ = 'YN3')
+            INNER JOIN RSVROOMTYPEMAP BI
+              ON (A.SETTINGSEQ = BI.SETTINGSEQ)
+            INNER JOIN RSVROOMINFO CI
+              ON (BI.ROOMSEQ = CI.ROOMSEQ)
+        <if test="cookType != null and cookType.equalsIgnoreCase('Y')">
+            inner join RSVROOMTYPEMAP map on A.SETTINGSEQ = map.SETTINGSEQ
+            and map.ROOMSEQ = #{roomseq}
+            and map.COOKMASTERCODE = 'C01'
+        </if>
+        <if test="cookType != null and cookType.equalsIgnoreCase('N')">
+            inner join RSVROOMTYPEMAP map on A.SETTINGSEQ = map.SETTINGSEQ
+            and map.ROOMSEQ = #{roomseq}
+            and map.COOKMASTERCODE = 'C02'
+        </if>
+        AND CI.ROOMSEQ = #{roomseq}
+        ) AS AA
+    </select>
+
+    <delete id="disListDelete" parameterType="reqBox">
+        DELETE FROM RSVROOMTYPEMAP
+        WHERE SETTINGSEQ = #{settingseq}
+        AND ROOMSEQ = #{roomseq}
+        AND TYPESEQ = #{typeseq}
+        <if test="cookType != null and cookType.equalsIgnoreCase('Y')">
+            and COOKMASTERCODE = 'C01'
+        </if>
+        <if test="cookType != null and cookType.equalsIgnoreCase('N')">
+            and COOKMASTERCODE = 'C02'
+        </if>
+    </delete>
+
+    <select id="facilityInfoDetailThreeCancelPopList" parameterType="reqBox" resultType="dataBox">
+        /* facilityInfoDetailThreeCancelPopList - 팝업 조회 (패널티) */
+        SELECT ROW_NUMBER() OVER (ORDER BY A.PENALTYSEQ ASC) AS ROW_NUM
+        , A.PENALTYSEQ
+        , B.CODENAME AS TYPECODE
+        , REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+        , CONCAT(
+        CASE
+        WHEN A.PERIODVALUE = 0 THEN '당월 '
+        WHEN A.PERIODVALUE = 1 THEN '명월 '
+        ELSE ''
+        END
+        , E.CODENAME, ' '
+        , A.APPLYTYPEVALUE
+        , CASE
+        WHEN A.APPLYTYPECODE = 'P01' THEN '%'
+        WHEN A.APPLYTYPECODE = 'P02' THEN '일'
+        ELSE '회'
+        END
+        ) AS APPLYTYPECODE
+        FROM RSVPENALTYSETTING A
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+        LEFT OUTER JOIN COMMONCODE C
+        ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+        LEFT OUTER JOIN COMMONCODE E
+        ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+        WHERE 1=1
+        AND A.TYPECODE != 'P05'
+        AND A.STATUSCODE = 'B01'
+        <if test="cookType != null and cookType.equalsIgnoreCase('N')">
+            AND A.TYPECODE NOT IN ('P03','P04')
+        </if>
+        <if test="cookType != null and cookType.equalsIgnoreCase('Y')">
+            AND A.TYPECODE IN ('P03','P04')
+        </if>
+        AND A.PENALTYSEQ NOT IN (SELECT PENALTYSEQ
+        FROM RSVROOMPENALTYMAP
+        WHERE ROOMSEQ = #{roomseq}
+        <if test="cookType != null and cookType.equalsIgnoreCase('N')">
+            AND COOKMASTERCODE = 'C02'
+        </if>
+        <if test="cookType != null and cookType.equalsIgnoreCase('Y')">
+            AND COOKMASTERCODE = 'C01'
+        </if>)
+    </select>
+
+    <select id="facilityInfoDetailThreeCookCancelPopList" parameterType="reqBox" resultType="dataBox">
+       SELECT ROW_NUMBER() OVER (ORDER BY A.PENALTYSEQ ASC) AS ROW_NUM
+            , A.PENALTYSEQ
+            , B.CODENAME AS TYPECODE
+            , REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+            , CONCAT(
+            CASE
+            WHEN A.PERIODVALUE = 0 THEN '당월 '
+            WHEN A.PERIODVALUE = 1 THEN '명월 '
+            ELSE ''
+            END
+            , E.CODENAME, ' '
+            , A.APPLYTYPEVALUE
+            , CASE
+            WHEN A.APPLYTYPECODE = 'P01' THEN '%'
+            WHEN A.APPLYTYPECODE = 'P02' THEN '일'
+            ELSE '회'
+            END
+            ) AS APPLYTYPECODE
+       FROM RSVPENALTYSETTING A
+        LEFT OUTER JOIN COMMONCODE B
+          ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+        LEFT OUTER JOIN COMMONCODE C
+          ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+        LEFT OUTER JOIN COMMONCODE D
+          ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+        LEFT OUTER JOIN COMMONCODE E
+          ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+       WHERE 1=1
+        AND A.TYPECODE != 'P05'
+        AND A.STATUSCODE = 'B01'
+        AND A.TYPECODE IN ('P03','P04')
+    </select>
+
+
+    <insert id="facilityInfoDetailThreeCancelInsert" parameterType="reqBox">
+        INSERT INTO RSVROOMPENALTYMAP (
+        PENALTYSEQ
+        , ROOMSEQ
+        , COOKMASTERCODE
+        ) VALUES (
+        #{penaltyseq}
+        , #{roomseq}
+        <if test="cookType.equalsIgnoreCase('Y') ">
+            , 'C01'
+        </if>
+        <if test="cookType.equalsIgnoreCase('N') ">
+            , 'C02'
+        </if>
+        )
+    </insert>
+
+    <select id="facilityInfoDetailThreeCancelList" parameterType="reqBox" resultType="dataBox">
+        /* facilityInfoDetailThreeCancelList - 패널티 등록 리스트 */
+        SELECT ROW_NUMBER() OVER (ORDER BY A.PENALTYSEQ ASC) AS ROW_NUM
+        , A.PENALTYSEQ
+        , B.CODENAME AS TYPECODE
+        , REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+        , CONCAT(
+        CASE
+        WHEN A.PERIODVALUE = 0 THEN '당월 '
+        WHEN A.PERIODVALUE = 1 THEN '명월 '
+        ELSE ''
+        END
+        , E.CODENAME, ' '
+        , A.APPLYTYPEVALUE
+        , CASE
+        WHEN A.APPLYTYPECODE = 'P01' THEN '%'
+        WHEN A.APPLYTYPECODE = 'P02' THEN '일'
+        ELSE '회'
+        END
+        ) AS APPLYTYPECODE
+        , BI.ROOMSEQ
+        FROM RSVPENALTYSETTING A
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1')
+        LEFT OUTER JOIN COMMONCODE C
+        ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+        LEFT OUTER JOIN COMMONCODE E
+        ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+        INNER JOIN RSVROOMPENALTYMAP BI
+        ON (A.PENALTYSEQ = BI.PENALTYSEQ)
+        INNER JOIN RSVROOMINFO CI
+        ON (BI.ROOMSEQ = CI.ROOMSEQ)
+        WHERE 1=1
+        AND A.TYPECODE != 'P05'
+        AND A.STATUSCODE = 'B01'
+        AND CI.ROOMSEQ = #{roomseq}
+        <if test="cookType.equalsIgnoreCase('Y') ">
+            AND A.TYPECODE IN ('P03','P04')
+            AND BI.COOKMASTERCODE = 'C01'
+        </if>
+        <if test="cookType.equalsIgnoreCase('N') ">
+            AND A.TYPECODE NOT IN ('P03','P04')
+            AND BI.COOKMASTERCODE = 'C02'
+        </if>
+    </select>
+
+    <delete id="cancelListDelete" parameterType="reqBox">
+        DELETE FROM RSVROOMPENALTYMAP
+        WHERE PENALTYSEQ = #{penaltyseq}
+        AND ROOMSEQ = #{roomseq}
+        <if test="cookType.equalsIgnoreCase('Y') ">
+            AND COOKMASTERCODE = 'C01'
+        </if>
+        <if test="cookType.equalsIgnoreCase('N') ">
+            AND COOKMASTERCODE = 'C02'
+        </if>
+    </delete>
+
+
+    <select id="facilityInfoDetailThreeCookTermList" parameterType="reqBox" resultType="dataBox">
+         SELECT ROW_NUMBER() OVER( ORDER BY AAI.RSVROLESEQ DESC  ) AS ROW_NUM
+             , CONCAT(AAI.PINTREATRANGENAME,',',DBO.F_CMM_CODENAME('YN5', AAI.CITYTREATCODE),',',DBO.F_CMM_CODENAME('YN5', AAI.AGETREATCODE),' ',AAI.TARGETGROUPNAME  ) AS RSVROLE
+             , AAI.PINTREATRANGE
+             , AAI.CITYTREATCODE
+             , AAI.AGETREATCODE
+             , CASE WHEN AAI.PERIODTYPECODE ='P01' THEN CONCAT('당일부터 ',AAI.STARTDAY,' 일 후')
+                    WHEN AAI.PERIODTYPECODE ='P03' THEN CONCAT('매월 ',AAI.STARTDAY,' 일')
+               END AS STARTDATE
+             , CASE WHEN AAI.PERIODTYPECODE ='P01' THEN CONCAT('당일부터 ',AAI.ENDDAY,' 일 후')
+                    WHEN AAI.PERIODTYPECODE ='P03' THEN CONCAT(AAI.ENDMONTH,' 개월 후 해당월 ',AAI.ENDDAY,' 일')
+               END AS ENDDATE
+             , CASE WHEN AAI.APPLYSESSIONTYPECODE = 'P01' THEN '모든세션'
+        			ELSE CONCAT(DBO.F_CMM_CODENAME('WK1', AAI.SETWEEK),'(',AAI.SESSIONNAME,') '
+                        ,SUBSTRING(AAI.STARTDATETIME,1,2),':',SUBSTRING(AAI.STARTDATETIME,2,2),'~',SUBSTRING(AAI.ENDDATETIME,1,2),':',SUBSTRING(AAI.ENDDATETIME,2,2))
+					END AS SETWEEK
+             , AAI.ROOMSEQ
+             , AAI.APPLYSESSIONTYPECODE
+             , AAI.RSVROLESEQ
+             , AAI.TARGETGROUPNAME
+             , AAI.GROUPSEQ
+        FROM (
+             SELECT AI.RSVROLESEQ
+		          , DBO.F_TARGET_CODENAME('PINCODE',AI.PINTREATRANGE) AS PINTREATRANGENAME
+		          , AI.PINTREATRANGE
+		          , AI.CITYTREATCODE
+		          , AI.AGETREATCODE
+                  , AI.PERIODTYPECODE
+                  , AI.STARTDAY
+                  , AI.STARTMONTH
+                  , AI.ENDDAY
+                  , AI.ENDMONTH
+                  , BI.SETWEEK
+                  , BI.SESSIONNAME
+                  , BI.STARTDATETIME
+                  , BI.ENDDATETIME
+                  , CI.ROOMSEQ
+                  , AI.APPLYSESSIONTYPECODE
+                  , AD.TARGETGROUPNAME
+                  , AI.GROUPSEQ
+             FROM   RSVROOMROLE AI
+                    INNER JOIN RSVROOMSESSIONINFO BI
+                    ON AI.RSVSESSIONSEQ = BI.RSVSESSIONSEQ
+                    INNER JOIN RSVROOMINFO CI
+                    ON BI.ROOMSEQ = CI.ROOMSEQ
+                    INNER JOIN RSVROLEGROUP AD
+                    ON AI.GROUPSEQ = AD.GROUPSEQ
+                    AND AD.COOKMASTERCODE = 'C01'
+             WHERE  CI.ROOMSEQ = #{roomseq}
+             AND    AI.APPLYSESSIONTYPECODE = 'P02'
+             UNION ALL
+             SELECT  max(AI.RSVROLESEQ) as rsvroleseq
+		          , DBO.F_TARGET_CODENAME('PINCODE',AI.PINTREATRANGE) AS PINTREATRANGENAME
+		          , AI.PINTREATRANGE
+		          , AI.CITYTREATCODE
+		          , AI.AGETREATCODE
+                  , AI.PERIODTYPECODE
+                  , AI.STARTDAY
+                  , AI.STARTMONTH
+                  , AI.ENDDAY
+                  , AI.ENDMONTH
+                  , '' as SETWEEK
+                  , '' as SESSIONNAME
+                  , '' as STARTDATETIME
+                  , '' as ENDDATETIME
+                  , '' as ROOMSEQ
+                  , AI.APPLYSESSIONTYPECODE
+                  , AD.TARGETGROUPNAME
+                  , AI.GROUPSEQ
+             FROM   RSVROOMROLE AI
+                    INNER JOIN RSVROOMSESSIONINFO BI
+                    ON AI.RSVSESSIONSEQ = BI.RSVSESSIONSEQ
+                    INNER JOIN RSVROOMINFO CI
+                    ON BI.ROOMSEQ = CI.ROOMSEQ
+                    INNER JOIN RSVROLEGROUP AD
+                    ON AI.GROUPSEQ = AD.GROUPSEQ
+                    AND AD.COOKMASTERCODE = 'C01'
+             WHERE  CI.ROOMSEQ = #{roomseq}
+             AND    AI.APPLYSESSIONTYPECODE = 'P01'
+           GROUP BY AI.PINTREATRANGE, AI.CITYTREATCODE, AI.AGETREATCODE
+                      , AI.PERIODTYPECODE, AI.STARTDAY, AI.STARTMONTH, AI.ENDDAY, AI.ENDMONTH
+                      , AI.APPLYSESSIONTYPECODE, AD.TARGETGROUPNAME,AI.GROUPSEQ
+             ) AS AAI
+    </select>
+
+    <select id="facilityInfoDetailOne" parameterType="reqBox" resultType="dataBox">
+        SELECT DISTINCT CI.ROOMSEQ
+            , CI.ROOMNAME
+            , CI.SEATCOUNT
+            , CI.STATUSCODE
+            , CASE WHEN CI.STATUSCODE = 'B01' THEN '사용중'
+                            ELSE '사용안함' END AS USEYN
+            , CI.FACILITY
+            , CONVERT(VARCHAR, CONVERT(DATETIME,CI.STARTDATE),23) AS STARTDATE
+            , CONVERT(VARCHAR, CONVERT(DATETIME,CI.ENDDATE),23) AS ENDDATE
+            , CI.UPDATEDATE
+            , CI.UPDATEUSER
+            , CI.PPSEQ
+            , BI.PPNAME
+            , CI.STATUSCODE AS STATUSCODENM
+            , CI.INTRO
+            , CI.SEATCOUNT
+            , CI.USETIME
+            , CI.ROLE
+            , CI.ROLENOTE
+            , CI.FACILITY
+            , CI.KEYWORD
+            , CI.FACILITYSTATUSCODE
+            , STUFF(( SELECT ',' + T2.TYPENAME
+                    FROM RSVROOMTYPEMAP T1
+                    INNER JOIN RSVTYPEINFO T2
+                    ON (T1.TYPESEQ = T2.TYPESEQ)
+                    WHERE T1.ROOMSEQ = CI.ROOMSEQ
+                    AND T2.STATUSCODE = 'B01'
+                    AND ( T1.SETTINGSEQ IS NULL AND T1.COOKMASTERCODE IS NULL )
+                    FOR XML PATH ('')
+                    ),1,1,'') AS TYPENAME
+             , AD.SAMEROOMSEQ
+             , CI.FILEKEY
+             , CI.FILEKEY1
+             , CI.FILEKEY2
+             , CI.FILEKEY3
+             , CI.FILEKEY4
+             , CI.FILEKEY5
+             , CI.FILEKEY6
+             , CI.FILEKEY7
+             , CI.FILEKEY8
+             , CI.FILEKEY9
+             , CI.FILEKEY10
+        FROM   RSVROOMINFO CI
+        INNER JOIN RSVPPINFO BI
+        ON CI.PPSEQ = BI.PPSEQ
+        LEFT OUTER JOIN RSVROOMTYPEMAP AA
+        ON CI.ROOMSEQ = AA.ROOMSEQ
+        LEFT OUTER JOIN RSVTYPEINFO AC
+        ON AC.TYPESEQ = AA.TYPESEQ
+        LEFT OUTER JOIN (SELECT 'Y' AS SAMEROOMSEQ, ROOMSEQ
+        FROM RSVSAMEROOMINFO) AD
+        ON CI.ROOMSEQ = AD.ROOMSEQ
+		WHERE CI.ROOMSEQ = #{roomseq}
+    </select>
+
+    <select id="facilityInfoCheckType" parameterType="reqBox" resultType="dataBox">
+               SELECT COUNT(DISTINCT AA.TYPESEQ) AS TYPECOUNT
+					 FROM RSVTYPEINFO AA
+               INNER JOIN RSVROOMTYPEMAP AB
+               ON AA.TYPESEQ = AB.TYPESEQ
+               INNER JOIN RSVROOMINFO AC
+               ON AB.ROOMSEQ = AC.ROOMSEQ
+               WHERE AC.ROOMSEQ = #{roomseq}
+    </select>
+
+    <select id="facilityInfoDetailOneFile" parameterType="reqBox" resultType="dataBox">
+        SELECT AI.FILEKEY
+  			 , AI.REALFILENAME
+             , AI.STOREFILENAME
+             , AI.FILEFULLURL
+             , AI.ALTDESC
+             , AI.UPLOADSEQ
+             , AI.WORK
+             , BI.FILEKEY1
+             , BI.FILEKEY2
+             , BI.FILEKEY3
+             , BI.FILEKEY4
+             , BI.FILEKEY5
+             , BI.FILEKEY6
+             , BI.FILEKEY7
+             , BI.FILEKEY8
+             , BI.FILEKEY9
+             , BI.FILEKEY10
+		  FROM FILEMANAGEMENT AI
+               INNER JOIN RSVROOMINFO BI
+               ON (AI.FILEKEY = BI.FILEKEY1
+                   OR AI.FILEKEY = BI.FILEKEY2
+                   OR AI.FILEKEY = BI.FILEKEY3
+                   OR AI.FILEKEY = BI.FILEKEY4
+                   OR AI.FILEKEY = BI.FILEKEY5
+                   OR AI.FILEKEY = BI.FILEKEY6
+                   OR AI.FILEKEY = BI.FILEKEY7
+                   OR AI.FILEKEY = BI.FILEKEY8
+                   OR AI.FILEKEY = BI.FILEKEY9
+                   OR AI.FILEKEY = BI.FILEKEY10
+                   )
+               AND AI.WORK = 'RESERVATION'
+  	    WHERE  BI.ROOMSEQ = #{roomseq}
+    </select>
+
+    <select id="facilityInfoDetailDate" parameterType="reqBox" resultType="dataBox">
+      SELECT ROW_NUMBER() OVER (ORDER BY AI.SETWEEK ASC) AS ROW_NUM
+		   , CASE WHEN  AI.SETWEEK = 'W02' THEN '월요일'
+			  	  WHEN  AI.SETWEEK = 'W03' THEN '화요일'
+		 		  WHEN  AI.SETWEEK = 'W04' THEN '수요일'
+				  WHEN  AI.SETWEEK = 'W05' THEN '목요일'
+ 				  WHEN  AI.SETWEEK = 'W06' THEN '금요일'
+				  WHEN  AI.SETWEEK = 'W07' THEN '토요일'
+				  WHEN  AI.SETWEEK = 'W01' THEN '일요일'
+				  WHEN  AI.SETWEEK = 'W08' THEN '마지막일요일'
+			 END AS WEEKDATE
+		   , SESSIONNAME
+           , CONCAT(SUBSTRING(STARTDATETIME,1,2),':',SUBSTRING(STARTDATETIME,3,2),'~',SUBSTRING(ENDDATETIME,1,2),':',SUBSTRING(ENDDATETIME,3,2)) AS WEEKTIME
+  		   , CONCAT(CONVERT(FLOAT,PRICE/10000),'만원') AS PRICE
+           , CONCAT(CONVERT(FLOAT,DISCOUNTPRICE/10000),'만원') AS DISCOUNTPRICE
+           , CONCAT(CONVERT(FLOAT,QUEENPRICE/10000),'만원') AS QUEENPRICE
+           , CONCAT(CONVERT(FLOAT,QUEENDISCOUNTPRICE/10000),'만원') AS QUEENDISCOUNTPRICE
+      FROM   RSVROOMSESSIONINFO AI
+	  WHERE  AI.ROOMSEQ = #{roomseq}
+	    AND  AI.SETTYPECODE = 'S01'
+    </select>
+
+    <select id="facilityInfoDetailPageResList" parameterType="reqBox" resultType="dataBox">
+        SELECT AI. ROW_NUM
+        , AI.PINTREATRANGE
+        , AI.STARTDAY
+        , AI.ENDDAY
+        , AI.RSVROLESEQ
+        , AI.APPLYSESSION
+        FROM (
+        SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType} ) AS ROW_NUM
+        , AA.PINTREATRANGE
+        , AA.STARTDAY
+        , AA.ENDDAY
+        , AA.RSVROLESEQ
+        , CONCAT(
+        CASE
+        WHEN AB.SETWEEK = 'W01' THEN '일'
+        WHEN AB.SETWEEK = 'W02' THEN '월'
+        WHEN AB.SETWEEK = 'W03' THEN '화'
+        WHEN AB.SETWEEK = 'W04' THEN '수'
+        WHEN AB.SETWEEK = 'W05' THEN '목'
+        WHEN AB.SETWEEK = 'W06' THEN '금'
+        WHEN AB.SETWEEK = 'W07' THEN '토'
+        WHEN AB.SETWEEK = 'W08' THEN '마지막주 일요일'
+        ELSE ''
+        END
+        ,'('
+        ,AB.SESSIONNAME
+        ,')'
+        ,SUBSTRING (AB.STARTDATETIME, 1,2)
+        ,':'
+        ,SUBSTRING (AB.STARTDATETIME, 3,2)
+        ,'~'
+        ,SUBSTRING (AB.ENDDATETIME, 1,2)
+        ,':'
+        ,SUBSTRING (AB.ENDDATETIME, 3,2)
+        ) AS APPLYSESSION
+        FROM RSVROOMROLE AA
+        LEFT OUTER JOIN RSVROOMSESSIONINFO AB
+        ON AA.RSVSESSIONSEQ = AB.RSVSESSIONSEQ
+        LEFT OUTER JOIN RSVROOMINFO AC
+        ON AC.ROOMSEQ = AB.ROOMSEQ
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND AC.ROOMSEQ = #{roomseq}
+        </if>
+        ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="facilityInfoDetailPageResListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(RSVROLESEQ) AS TOTAL_CNT
+        FROM RSVROOMROLE AA
+        LEFT OUTER JOIN RSVROOMSESSIONINFO AB
+        ON AA.RSVSESSIONSEQ = AB.RSVSESSIONSEQ
+        LEFT OUTER JOIN RSVROOMINFO AC
+        ON AC.ROOMSEQ = AB.ROOMSEQ
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND AC.ROOMSEQ = #{roomseq}
+        </if>
+    </select>
+
+    <select id="facilityInfoDetailPageLimitList" parameterType="reqBox" resultType="dataBox">
+        SELECT * FROM(
+        SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM, AA.* FROM(
+        SELECT CONCAT(PINTREATRANGE,',',D.CODENAME,',',C.CODENAME) AS ROLE
+        , A.GLOBALDAILYCOUNT
+        , A.GLOBALWEEKLYCOUNT
+        , A.GLOBALMONTHLYCOUNT
+        , A.PPDAILYCOUNT
+        , A.PPWEEKLYCOUNT
+        , A.PPMONTHLYCOUNT
+        , AI.SETTINGSEQ
+        FROM RSVCONSTRAINT A
+        INNER JOIN RSVROOMTYPEMAP AI
+        ON(A.SETTINGSEQ = AI.SETTINGSEQ)
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.STATUSCODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ ='YN3')
+        LEFT OUTER JOIN COMMONCODE C
+        ON(A.CITYTREATCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN5')
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.AGETREATCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'RU1')
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND ROOMSEQ = #{roomseq}
+        </if>
+        ) AS AA
+        ) AS BB
+        WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="facilityInfoDetailPageLimitListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(*)
+        FROM(
+        SELECT CONCAT(PINTREATRANGE,',',D.CODENAME,',',C.CODENAME) AS ROLE
+        , A.GLOBALDAILYCOUNT
+        , A.GLOBALWEEKLYCOUNT
+        , A.GLOBALMONTHLYCOUNT
+        , A.PPDAILYCOUNT
+        , A.PPWEEKLYCOUNT
+        , A.PPMONTHLYCOUNT
+        , AI.SETTINGSEQ
+        FROM RSVCONSTRAINT A
+        INNER JOIN RSVROOMTYPEMAP AI
+        ON(A.SETTINGSEQ = AI.SETTINGSEQ)
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.STATUSCODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ ='YN3')
+        LEFT OUTER JOIN COMMONCODE C
+        ON(A.CITYTREATCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN5')
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.AGETREATCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'RU1')
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND AI.ROOMSEQ = #{roomseq}
+        </if>
+        ) AS BB
+    </select>
+
+    <select id="facilityInfoDetailPageCancelList" parameterType="reqBox" resultType="dataBox">
+        SELECT * FROM(
+        SELECT ROW_NUMBER() OVER (ORDER BY PENALTYSEQ ASC) AS ROW_NUM, AA.* FROM(
+        SELECT A.PENALTYSEQ
+        , B.CODENAME AS TYPECODE
+        , REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+        , CONCAT(
+        case
+        when A.PERIODVALUE = 0 then '당월 '
+        when A.PERIODVALUE = 1 then '명월 '
+        else ''
+        end
+        , E.CODENAME, ' '
+        , A.APPLYTYPEVALUE
+        , case
+        when A.APPLYTYPECODE = 'P01' then '%'
+        when A.APPLYTYPECODE = 'P02' then '일'
+        else '회'
+        end
+        ) AS APPLYTYPECODE
+        FROM RSVPENALTYSETTING A
+        INNER JOIN RSVROOMPENALTYMAP BI
+        ON(A.PENALTYSEQ = BI.PENALTYSEQ)
+        LEFT OUTER JOIN RSVROOMSESSIONINFO CI
+        ON BI.RSVSESSIONSEQ = CI.RSVSESSIONSEQ
+        LEFT OUTER JOIN RSVROOMINFO DI
+        ON DI.ROOMSEQ = CI.ROOMSEQ
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1'AND (COMMONCODESEQ = 'P01' OR COMMONCODESEQ ='P02'))
+        LEFT OUTER JOIN COMMONCODE C
+        ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+        LEFT OUTER JOIN COMMONCODE E
+        ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+        AND A.TYPECODE != 'P05'
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND DI.ROOMSEQ = #{roomseq}
+        </if>
+        ) AS AA
+        ) AS BB
+        WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="facilityInfoDetailPageCancelListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(*) AS TOTAL_CNT FROM(
+        SELECT ROW_NUMBER() OVER (ORDER BY PENALTYSEQ ASC) AS ROW_NUM, AA.* FROM(
+        SELECT A.PENALTYSEQ
+        , B.CODENAME AS TYPECODE
+        , REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+        , CONCAT(
+        CASE
+        WHEN A.PERIODVALUE = 0 THEN '당월 '
+        WHEN A.PERIODVALUE = 1 THEN '명월 '
+        ELSE ''
+        END
+        , E.CODENAME, ' '
+        , A.APPLYTYPEVALUE
+        , CASE
+        WHEN A.APPLYTYPECODE = 'P01' THEN '%'
+        WHEN A.APPLYTYPECODE = 'P02' THEN '일'
+        ELSE '회'
+        END
+        ) AS APPLYTYPECODE
+        FROM RSVPENALTYSETTING A
+        INNER JOIN RSVROOMPENALTYMAP BI
+        ON(A.PENALTYSEQ = BI.PENALTYSEQ)
+        LEFT OUTER JOIN RSVROOMSESSIONINFO CI
+        ON BI.RSVSESSIONSEQ = CI.RSVSESSIONSEQ
+        LEFT OUTER JOIN RSVROOMINFO DI
+        ON DI.ROOMSEQ = CI.ROOMSEQ
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1' AND (COMMONCODESEQ = 'P01' OR COMMONCODESEQ ='P02'))
+        LEFT OUTER JOIN COMMONCODE C
+        ON(A.STATUSCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN3')
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+        LEFT OUTER JOIN COMMONCODE E
+        ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+        AND A.TYPECODE != 'P05'
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND DI.ROOMSEQ = #{roomseq}
+        </if>
+        ) AS AA
+        ) AS BB
+    </select>
+
+    <select id="facilityInfoDetailPageCookResList" parameterType="reqBox" resultType="dataBox">
+        SELECT AI. ROW_NUM
+        , AI.PINTREATRANGE
+        , AI.STARTDAY
+        , AI.ENDDAY
+        , AI.RSVROLESEQ
+        , AI.APPLYSESSION
+        FROM (
+        SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType} ) AS ROW_NUM
+        , AA.PINTREATRANGE
+        , AA.STARTDAY
+        , AA.ENDDAY
+        , AA.RSVROLESEQ
+        , CONCAT(
+        CASE
+        WHEN AB.SETWEEK = 'W01' THEN '일'
+        WHEN AB.SETWEEK = 'W02' THEN '월'
+        WHEN AB.SETWEEK = 'W03' THEN '화'
+        WHEN AB.SETWEEK = 'W04' THEN '수'
+        WHEN AB.SETWEEK = 'W05' THEN '목'
+        WHEN AB.SETWEEK = 'W06' THEN '금'
+        WHEN AB.SETWEEK = 'W07' THEN '토'
+        WHEN AB.SETWEEK = 'W08' THEN '마지막주 일요일'
+        ELSE ''
+        END
+        ,''
+        ) AS SETTING
+        ,AB.SESSIONNAME
+        ,SUBSTRING (AB.STARTDATETIME, 1,2) AS STARTHOUR
+        ,SUBSTRING (AB.STARTDATETIME, 3,2) AS STARTMIN
+        ,SUBSTRING (AB.ENDDATETIME, 1,2) AS ENDHOUR
+        ,SUBSTRING (AB.ENDDATETIME, 3,2) AS ENDMIN
+        FROM RSVROOMROLE AA
+        LEFT OUTER JOIN RSVROOMSESSIONINFO AB
+        ON AA.RSVSESSIONSEQ = AB.RSVSESSIONSEQ
+        LEFT OUTER JOIN RSVROOMINFO AC
+        ON AC.ROOMSEQ = AB.ROOMSEQ
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND AC.ROOMSEQ = #{roomseq}
+        </if>
+        ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="facilityInfoDetailPageCookResListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(RSVROLESEQ) AS TOTAL_CNT
+        FROM RSVROOMROLE AA
+        LEFT OUTER JOIN RSVROOMSESSIONINFO AB
+        ON AA.RSVSESSIONSEQ = AB.RSVSESSIONSEQ
+        LEFT OUTER JOIN RSVROOMINFO AC
+        ON AC.ROOMSEQ = AB.ROOMSEQ
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND AC.ROOMSEQ = #{roomseq}
+        </if>
+    </select>
+
+    <select id="facilityInfoDetailPageCookLimitList" parameterType="reqBox" resultType="dataBox">
+        SELECT * FROM(
+        SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM, AA.* FROM(
+        SELECT CONCAT(PINTREATRANGE,',',D.CODENAME,',',C.CODENAME) AS ROLE
+        , A.GLOBALDAILYCOUNT
+        , A.GLOBALWEEKLYCOUNT
+        , A.GLOBALMONTHLYCOUNT
+        , A.PPDAILYCOUNT
+        , A.PPWEEKLYCOUNT
+        , A.PPMONTHLYCOUNT
+        , AI.SETTINGSEQ
+        FROM RSVCONSTRAINT A
+        INNER JOIN RSVROOMTYPEMAP AI
+        ON(A.SETTINGSEQ = AI.SETTINGSEQ)
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.STATUSCODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ ='YN3')
+        LEFT OUTER JOIN COMMONCODE C
+        ON(A.CITYTREATCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN5')
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.AGETREATCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'RU1')
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND ROOMSEQ = #{roomseq}
+        </if>
+        ) AS AA
+        ) AS BB
+        WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="facilityInfoDetailPageCookLimitListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(*)
+        FROM(
+        SELECT CONCAT(PINTREATRANGE,',',D.CODENAME,',',C.CODENAME) AS ROLE
+        , A.GLOBALDAILYCOUNT
+        , A.GLOBALWEEKLYCOUNT
+        , A.GLOBALMONTHLYCOUNT
+        , A.PPDAILYCOUNT
+        , A.PPWEEKLYCOUNT
+        , A.PPMONTHLYCOUNT
+        , AI.SETTINGSEQ
+        FROM RSVCONSTRAINT A
+        INNER JOIN RSVROOMTYPEMAP AI
+        ON(A.SETTINGSEQ = AI.SETTINGSEQ)
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.STATUSCODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ ='YN3')
+        LEFT OUTER JOIN COMMONCODE C
+        ON(A.CITYTREATCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'YN5')
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.AGETREATCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'RU1')
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND AI.ROOMSEQ = #{roomseq}
+        </if>
+        ) AS BB
+    </select>
+
+    <select id="facilityInfoDetailPageCookCancelList" parameterType="reqBox" resultType="dataBox">
+        SELECT * FROM(
+        SELECT ROW_NUMBER() OVER (ORDER BY PENALTYSEQ ASC) AS ROW_NUM, AA.* FROM(
+        SELECT A.PENALTYSEQ
+        , B.CODENAME AS TYPECODE
+        , REPLACE(D.CODENAME, 'x', A.TYPEVALUE) AS TYPEDETAILCODE
+        , CONCAT(
+        CASE
+        WHEN A.PERIODVALUE = 0 THEN '당월 '
+        WHEN A.PERIODVALUE = 1 THEN '명월 '
+        ELSE ''
+        END
+        , E.CODENAME, ' '
+        , A.APPLYTYPEVALUE
+        , CASE
+        WHEN A.APPLYTYPECODE = 'P01' THEN '%'
+        WHEN A.APPLYTYPECODE = 'P02' THEN '일'
+        ELSE '회'
+        END
+        ) AS APPLYTYPECODE
+        FROM RSVPENALTYSETTING A
+        INNER JOIN RSVROOMPENALTYMAP BI
+        ON(A.PENALTYSEQ = BI.PENALTYSEQ)
+        LEFT OUTER JOIN RSVROOMSESSIONINFO CI
+        ON BI.RSVSESSIONSEQ = CI.RSVSESSIONSEQ
+        LEFT OUTER JOIN RSVROOMINFO DI
+        ON DI.ROOMSEQ = CI.ROOMSEQ
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1'AND (COMMONCODESEQ = 'P03' OR COMMONCODESEQ ='P04'))
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+        LEFT OUTER JOIN COMMONCODE E
+        ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+        AND A.TYPECODE != 'P05'
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND DI.ROOMSEQ = #{roomseq}
+        </if>
+        ) AS AA
+        ) AS BB
+        WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="facilityInfoDetailPageCookCancelListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(*) AS TOTAL_CNT FROM(
+        SELECT ROW_NUMBER() OVER (ORDER BY PENALTYSEQ ASC) AS ROW_NUM, AA.* FROM(
+        SELECT A.PENALTYSEQ
+        , B.CODENAME AS TYPECODE
+        , REPLACE(D.CODENAME, 'X', A.TYPEVALUE) AS TYPEDETAILCODE
+        , CONCAT(
+        CASE
+        WHEN A.PERIODVALUE = 0 THEN '당월 '
+        WHEN A.PERIODVALUE = 1 THEN '명월 '
+        ELSE ''
+        END
+        , E.CODENAME, ' '
+        , A.APPLYTYPEVALUE
+        , CASE
+        WHEN A.APPLYTYPECODE = 'P01' THEN '%'
+        WHEN A.APPLYTYPECODE = 'P02' THEN '일'
+        ELSE '회'
+        END
+        ) AS APPLYTYPECODE
+        FROM RSVPENALTYSETTING A
+        INNER JOIN RSVROOMPENALTYMAP BI
+        ON(A.PENALTYSEQ = BI.PENALTYSEQ)
+        LEFT OUTER JOIN RSVROOMSESSIONINFO CI
+        ON BI.RSVSESSIONSEQ = CI.RSVSESSIONSEQ
+        LEFT OUTER JOIN RSVROOMINFO DI
+        ON DI.ROOMSEQ = CI.ROOMSEQ
+        LEFT OUTER JOIN COMMONCODE B
+        ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'PN1' AND (COMMONCODESEQ = 'P03' OR COMMONCODESEQ ='P04'))
+        LEFT OUTER JOIN COMMONCODE D
+        ON(A.TYPEDETAILCODE = D.COMMONCODESEQ AND D.CODEMASTERSEQ = 'PN2')
+        LEFT OUTER JOIN COMMONCODE E
+        ON(A.APPLYTYPECODE = E.COMMONCODESEQ AND E.CODEMASTERSEQ = 'PN3')
+        AND A.TYPECODE != 'P05'
+        WHERE 1=1
+        <if test="roomseq != null and !roomseq.equals('')">
+            AND DI.ROOMSEQ = #{roomseq}
+        </if>
+        ) AS AA
+        ) AS BB
+    </select>
+
+    <select id="facilityInfoDetailPageList" parameterType="reqBox" resultType="dataBox">
+       SELECT AI.ROW_NUM
+            , AI.ROOMSEQ
+            , AI.WORKTYPECODE
+            , AI.SETDATE
+            , AI.SESSIONCOUNT
+       FROM (
+       SELECT ROW_NUMBER() OVER( ORDER BY worktypecode DESC ) AS ROW_NUM
+            , ROOMSEQ
+            , WORKTYPECODE
+            , SETDATE
+            , CONCAT(SESSIONCOUNT,' ',CNT,'건') AS SESSIONCOUNT
+       FROM (
+       SELECT ROOMSEQ
+            , WORKTYPECODE
+            , SETDATE
+            , '-' AS SESSIONCOUNT
+            , '' AS CNT
+            FROM   RSVROOMSESSIONINFO
+       WHERE  ROOMSEQ = #{roomseq}
+       AND    SETTYPECODE = 'S02'
+       AND    WORKTYPECODE = 'S02'
+       UNION ALL
+       SELECT ROOMSEQ
+            , WORKTYPECODE
+            , SETDATE
+            , (SELECT TOP 1 CONCAT('[',SESSIONNAME,'] ',SUBSTRING(STARTDATETIME,1,2),'시 ',SUBSTRING(STARTDATETIME,3,2),'분~'
+            ,SUBSTRING(ENDDATETIME,1,2),'시 ',SUBSTRING(ENDDATETIME,3,2),'분, ',CONVERT(FLOAT,PRICE/10000),'원, ',CONVERT(FLOAT,DISCOUNTPRICE/10000),'원') AS SESSIONCOUNT
+       FROM   RSVROOMSESSIONINFO
+       WHERE  ROOMSEQ = #{roomseq}
+       AND    SETTYPECODE = 'S02'
+       AND    WORKTYPECODE = 'S01' ) AS SESSIONCOUNT
+     , COUNT(RSVSESSIONSEQ) AS CNT
+       FROM   RSVROOMSESSIONINFO
+       WHERE  ROOMSEQ = #{roomseq}
+       AND    SETTYPECODE = 'S02'
+       AND    WORKTYPECODE = 'S01'
+       GROUP BY ROOMSEQ, WORKTYPECODE, SETDATE
+       ) AAI
+       ) AS AI
+       WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="facilityInfoDetailPageListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(RSVSESSIONSEQ) AS TOTAL_CNT
+        FROM RSVROOMSESSIONINFO
+        WHERE ROOMSEQ = #{roomseq}
+        AND   SETTYPECODE = 'S02'
+    </select>
+
+    <insert id="facilityInfoSearchRsvInsert" parameterType="reqBox">
+      INSERT INTO SEARCHRSV (
+             RSVSEQ
+            ,GUBUN
+            ,PPNAME
+            ,NAME
+            ,TYPE
+            ,CONTENT
+            ,CREATEDATE
+            ,MODIFYDATE
+            ,ACADEMYURL
+            ,HYBRISURL
+            ,KEYWORD
+            ,DELETEYN
+            )
+            SELECT (SELECT ISNULL(MAX(RSVSEQ),0) FROM SEARCHRSV)
+            + row_number() over (order by DI.TYPENAME )
+            , 'ROOM'
+            , BI.PPNAME
+            , AI.ROOMNAME
+            , DI.TYPENAME
+            , AI.INTRO
+            , GETDATE()
+            , GETDATE()
+            , '/reservation/roomEduForm.do'
+            , '/reservation/roomEduForm'
+            , AI.KEYWORD
+            , 'N'
+            FROM RSVROOMINFO AI
+            INNER JOIN RSVPPINFO BI
+            ON AI.PPSEQ = BI.PPSEQ
+            LEFT OUTER JOIN RSVROOMTYPEMAP CI
+            ON AI.ROOMSEQ = CI.ROOMSEQ
+            LEFT OUTER JOIN RSVTYPEINFO DI
+            ON CI.TYPESEQ = DI.TYPESEQ
+            WHERE AI.ROOMSEQ = #{roomseq}
+    </insert>
+
+    <delete id="facilityInfoPartitionDetailDelete" parameterType="reqBox">
+       WITH ROLECHECK AS
+            (
+              SELECT AI.RSVROLESEQ
+                FROM (
+                    SELECT RSVROLESEQ
+                         , PINTREATRANGE, CITYTREATCODE, AGETREATCODE
+                         , PERIODTYPECODE, STARTDAY, STARTMONTH, ENDDAY, ENDMONTH
+                         , APPLYSESSIONTYPECODE, GROUPSEQ
+                      FROM RSVROOMROLE
+                     WHERE APPLYSESSIONTYPECODE = #{applysessiontypecode}
+                    <if test="applysessiontypecode.equals('P01')">
+                        AND RSVSESSIONSEQ IN (
+                                            SELECT RSVSESSIONSEQ FROM RSVROOMSESSIONINFO
+                                            WHERE ROOMSEQ = (
+                                                            SELECT ROOMSEQ FROM RSVROOMSESSIONINFO
+                                                            WHERE RSVSESSIONSEQ = (
+                                                                                    SELECT RSVSESSIONSEQ FROM RSVROOMROLE
+                                                                                    WHERE RSVROLESEQ = #{rsvroleseq}
+                                                                                    )
+                                                            )
+                                            )
+                    </if>
+                    <if test="applysessiontypecode.equals('P02')">
+                        AND RSVROLESEQ = #{rsvroleseq}
+                    </if>
+                    ) AI
+                    INNER JOIN (SELECT PINTREATRANGE, CITYTREATCODE, AGETREATCODE
+                                     , PERIODTYPECODE, STARTDAY, STARTMONTH, ENDDAY, ENDMONTH
+                                     , APPLYSESSIONTYPECODE, GROUPSEQ
+                                  FROM RSVROOMROLE
+                                 WHERE RSVROLESEQ = #{rsvroleseq}
+                    ) BI
+                    ON (AI.PINTREATRANGE = BI.PINTREATRANGE
+                    AND AI.CITYTREATCODE = BI.CITYTREATCODE
+                    AND AI.AGETREATCODE = BI.AGETREATCODE
+                    AND AI.PERIODTYPECODE = BI.PERIODTYPECODE
+                    AND AI.STARTDAY = BI.STARTDAY
+                    AND AI.STARTMONTH = BI.STARTMONTH
+                    AND AI.ENDDAY = BI.ENDDAY
+                    AND AI.ENDMONTH = BI.ENDMONTH
+                    AND AI.APPLYSESSIONTYPECODE = BI.APPLYSESSIONTYPECODE
+                    AND AI.GROUPSEQ = BI.GROUPSEQ)
+        )
+       DELETE FROM RSVROOMROLE
+       WHERE RSVROLESEQ IN (SELECT RSVROLESEQ FROM ROLECHECK)
+    </delete>
+
+    <select id="facilityInfoPartitionCheck" parameterType="reqBox" resultType="string">
+        WITH WEEKCODE AS (
+                        SELECT 1 NUM
+                        UNION ALL
+                        SELECT NUM + 1 AS NUM
+                          FROM WEEKCODE
+                         WHERE NUM  <![CDATA[ < ]]> 8)
+           , WEEKBASE AS (
+                        SELECT 'W0' + CONVERT(VARCHAR,NUM) AS WEEKCD
+                        FROM  WEEKCODE )
+           , ROOMSEQ1LIST AS (
+                        SELECT ROW_NUMBER() OVER(ORDER BY WEEKCD, B.STARTDATETIME) ROWNUM
+                             , A.WEEKCD
+                             , B.ROOMSEQ
+                             , B.PRICE
+                             , B.DISCOUNTPRICE
+                             , B.QUEENPRICE
+                             , B.QUEENDISCOUNTPRICE
+                             , B.STARTDATETIME
+                             , B.ENDDATETIME
+                             , COUNT(*) AS CNT
+                          FROM WEEKBASE A
+                               INNER JOIN RSVROOMSESSIONINFO B
+                               ON A.WEEKCD = B.SETWEEK
+                         WHERE B.ROOMSEQ = #{roomseq1}
+                        GROUP BY  A.WEEKCD
+                                , B.ROOMSEQ
+                                , B.PRICE
+                                , B.DISCOUNTPRICE
+                                , B.QUEENPRICE
+                                , B.QUEENDISCOUNTPRICE
+                                , B.STARTDATETIME
+                                , B.ENDDATETIME )
+           , ROOMSEQ2LIST AS (
+                        SELECT ROW_NUMBER() OVER(ORDER BY WEEKCD, B.STARTDATETIME) ROWNUM
+                             , A.WEEKCD
+                             , B.ROOMSEQ
+                             , B.PRICE
+                             , B.DISCOUNTPRICE
+                             , B.QUEENPRICE
+                             , B.QUEENDISCOUNTPRICE
+                             , B.STARTDATETIME
+                             , B.ENDDATETIME
+                             , COUNT(*) AS CNT
+                          FROM WEEKBASE A
+                               INNER JOIN RSVROOMSESSIONINFO B
+                               ON A.WEEKCD = B.SETWEEK
+                         WHERE B.ROOMSEQ = #{roomseq2}
+                        GROUP BY  A.WEEKCD
+                                , B.ROOMSEQ
+                                , B.PRICE
+                                , B.DISCOUNTPRICE
+                                , B.QUEENPRICE
+                                , B.QUEENDISCOUNTPRICE
+                                , B.STARTDATETIME
+                                , B.ENDDATETIME )
+        SELECT ISNULL(MIN(RESULTFLAG),'Y') AS RESULTFLAG
+        FROM (
+            SELECT  B.WEEKCD
+                    , ISNULL(B.CNT, 0) AS ROOM1CNT
+                    , ISNULL(C.CNT, 0) AS ROOM2CNT
+                    , CASE WHEN (B.WEEKCD = C.WEEKCD)
+                            AND (B.CNT = C.CNT)
+                            AND (B.STARTDATETIME = C.STARTDATETIME)
+                            AND (B.ENDDATETIME = C.ENDDATETIME)
+                           THEN 'Y' ELSE 'N' END AS RESULTFLAG
+              FROM ROOMSEQ1LIST B
+                   INNER JOIN ROOMSEQ2LIST C
+                   ON B.ROWNUM = C.ROWNUM
+              ) A
+    </select>
+
+    <select id="facilitySessionPartitionCheck" parameterType="reqBox" resultType="string">
+        WITH ROOMSEQ1LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETWEEK, B.STARTDATETIME) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETWEEK
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETWEEK = B.SETWEEK) AS CNT
+                            FROM  RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = (SELECT TOP 1 ROOMSEQ FROM RSVSAMEROOMINFO WHERE PARENTROOMSEQ = #{roomseq} AND ROOMSEQ != PARENTROOMSEQ ORDER BY SAMEROOMSEQ ASC)
+                            AND   B.SETWEEK = #{setweek}
+                            )
+        , ROOMSEQ2LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETWEEK, B.STARTDATETIME) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETWEEK
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETWEEK = B.SETWEEK) AS CNT
+                            FROM RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = (SELECT TOP 1 ROOMSEQ FROM RSVSAMEROOMINFO WHERE PARENTROOMSEQ = #{roomseq} AND ROOMSEQ != PARENTROOMSEQ ORDER BY SAMEROOMSEQ DESC)
+                            AND   B.SETWEEK = #{setweek}
+                           )
+        SELECT ISNULL(MIN(RESULTFLAG),'Y') AS RESULTFLAG
+          FROM (
+                SELECT  ISNULL(B.CNT, 0) AS ROOM1CNT
+                      , ISNULL(C.CNT, 0) AS ROOM2CNT
+                      , CASE WHEN (B.CNT = C.CNT)
+                             AND (B.STARTDATETIME = C.STARTDATETIME)
+                             AND (B.ENDDATETIME = C.ENDDATETIME)
+                             THEN 'Y' ELSE 'N' END AS RESULTFLAG
+                  FROM ROOMSEQ1LIST B
+                       LEFT OUTER JOIN ROOMSEQ2LIST C
+                       ON B.ROWNUM = C.ROWNUM
+               ) A
+    </select>
+
+    <select id="facilitySessionTypeCheck" parameterType="reqBox" resultType="string">
+        WITH ROOMSEQ1LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETDATE) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETDATE
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S02') AS CNTHU
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S01') AS CNT
+                            FROM  RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = #{roomseq1}
+                            AND B.SETTYPECODE = 'S02'
+                            )
+        , ROOMSEQ2LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETDATE) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETDATE
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S02') AS CNTHU
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S01') AS CNT
+                            FROM RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = #{roomseq2}
+                            AND B.SETTYPECODE = 'S02'
+                            )
+        SELECT ISNULL(MIN(RESULTFLAG),'Y') AS RESULTFLAG
+        FROM (
+            SELECT ISNULL(B.CNTHU, 0) AS ROOM1CNTHU
+                 , ISNULL(C.CNTHU, 0) AS ROOM2CNTHU
+                 , ISNULL(B.CNT, 0) AS ROOM1CNT
+                 , ISNULL(C.CNT, 0) AS ROOM2CNT
+                 , ISNULL(B.SETDATE, 0) AS ROOM1SET
+                 , ISNULL(C.SETDATE, 0) AS ROOM2SET
+                 , ISNULL(B.STARTDATETIME, 0) AS ROOM1START
+                 , ISNULL(C.STARTDATETIME, 0) AS ROOM2START
+                 , ISNULL(B.ENDDATETIME, 0) AS ROOM1END
+                 , ISNULL(C.ENDDATETIME, 0) AS ROOM2END
+                 , CASE WHEN (B.CNTHU = C.CNTHU)
+                        AND (B.CNT = C.CNT)
+                        AND (B.SETDATE = C.SETDATE)
+                        AND (ISNULL(B.STARTDATETIME,'') = ISNULL(C.STARTDATETIME,''))
+                        AND (ISNULL(B.ENDDATETIME,'') = ISNULL(C.ENDDATETIME,''))
+                        THEN 'Y' ELSE 'N' END AS RESULTFLAG
+            FROM ROOMSEQ1LIST B
+                 LEFT OUTER JOIN ROOMSEQ2LIST C
+                 ON B.ROWNUM = C.ROWNUM
+        ) A
+    </select>
+
+    <select id="facilityPartyCheck" parameterType="reqBox" resultType="string">
+        WITH ROOMSEQ1LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETWEEK, B.STARTDATETIME) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETWEEK
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S01') AS CNT
+                            FROM  RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = (SELECT TOP 1 ROOMSEQ FROM RSVSAMEROOMINFO WHERE PARENTROOMSEQ = #{roomseq} AND ROOMSEQ != PARENTROOMSEQ ORDER BY SAMEROOMSEQ ASC)
+                            AND   B.SETTYPECODE = 'S01'
+                            )
+        , ROOMSEQ2LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETWEEK, B.STARTDATETIME) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETWEEK
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S01') AS CNT
+                            FROM RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = #{roomseq}
+                            AND   B.SETTYPECODE = 'S01'
+                            )
+        SELECT ISNULL(MIN(RESULTFLAG),'Y') AS RESULTFLAG
+        FROM (
+            SELECT ISNULL(B.CNT, 0) AS ROOM1CNT
+                 , ISNULL(C.CNT, 0) AS ROOM2CNT
+				 , ISNULL(B.SETWEEK, 0) AS ROOM1WEEK
+                 , ISNULL(C.SETWEEK, 0) AS ROOM2WEEK
+				 , ISNULL(B.STARTDATETIME, 0) AS ROOM1START
+                 , ISNULL(C.STARTDATETIME, 0) AS ROOM2START
+				 , ISNULL(B.ENDDATETIME, 0) AS ROOM1END
+                 , ISNULL(C.ENDDATETIME, 0) AS ROOM2END
+                 , CASE WHEN (B.CNT = C.CNT)
+			             AND (B.SETWEEK = C.SETWEEK)
+                         AND (B.STARTDATETIME = C.STARTDATETIME)
+                         AND (B.ENDDATETIME = C.ENDDATETIME)
+                        THEN 'Y' ELSE 'N' END AS RESULTFLAG
+            FROM ROOMSEQ1LIST B
+                 LEFT OUTER JOIN ROOMSEQ2LIST C
+                 ON B.ROWNUM = C.ROWNUM
+            ) A
+    </select>
+
+    <select id="facilityPartyTypeCheck" parameterType="reqBox" resultType="string">
+        WITH ROOMSEQ1LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETDATE) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETDATE
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S02') AS CNTHU
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S01') AS CNT
+                            FROM  RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = (SELECT TOP 1 ROOMSEQ FROM RSVSAMEROOMINFO WHERE PARENTROOMSEQ = #{roomseq} AND ROOMSEQ != PARENTROOMSEQ ORDER BY SAMEROOMSEQ ASC)
+                            AND B.SETTYPECODE = 'S02'
+                            )
+        , ROOMSEQ3LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETDATE) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETDATE
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S02') AS CNTHU
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S01') AS CNT
+                            FROM  RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = (SELECT TOP 1 ROOMSEQ FROM RSVSAMEROOMINFO WHERE PARENTROOMSEQ = #{roomseq} AND ROOMSEQ != PARENTROOMSEQ ORDER BY SAMEROOMSEQ DESC)
+                            AND B.SETTYPECODE = 'S02'
+                            )
+        , ROOMSEQ2LIST AS (
+                            SELECT ROW_NUMBER() OVER(ORDER BY ROOMSEQ, B.SETDATE) ROWNUM
+                                 , B.ROOMSEQ
+                                 , B.SETDATE
+                                 , B.STARTDATETIME
+                                 , B.ENDDATETIME
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S02') AS CNTHU
+                                 , (SELECT COUNT(*) FROM RSVROOMSESSIONINFO WHERE ROOMSEQ = B.ROOMSEQ AND SETTYPECODE = 'S02' AND WORKTYPECODE = 'S01') AS CNT
+                            FROM RSVROOMSESSIONINFO B
+                            WHERE B.ROOMSEQ = #{roomseq}
+                            AND B.SETTYPECODE = 'S02'
+                            )
+        SELECT ISNULL(MIN(RESULTFLAG),'Y') AS RESULTFLAG
+        FROM (
+            SELECT ISNULL(B.CNTHU, 0) AS ROOM1CNTHU
+                 , ISNULL(C.CNTHU, 0) AS ROOM2CNTHU
+                 , ISNULL(D.CNTHU, 0) AS ROOM3CNTHU
+                 , ISNULL(B.CNT, 0) AS ROOM1CNT
+                 , ISNULL(C.CNT, 0) AS ROOM2CNT
+                 , ISNULL(D.CNT, 0) AS ROOM3CNT
+                 , ISNULL(B.SETDATE, 0) AS ROOM1SET
+                 , ISNULL(C.SETDATE, 0) AS ROOM2SET
+                 , ISNULL(D.SETDATE, 0) AS ROOM3SET
+                 , ISNULL(B.STARTDATETIME, 0) AS ROOM1START
+                 , ISNULL(C.STARTDATETIME, 0) AS ROOM2START
+                 , ISNULL(D.STARTDATETIME, 0) AS ROOM3START
+                 , ISNULL(B.ENDDATETIME, 0) AS ROOM1END
+                 , ISNULL(C.ENDDATETIME, 0) AS ROOM2END
+                 , ISNULL(D.ENDDATETIME, 0) AS ROOM3END
+                 , CASE WHEN (B.CNTHU = C.CNTHU)
+                        AND (B.CNTHU = D.CNTHU)
+                        AND (B.CNT = C.CNT)
+                        AND (B.CNT = D.CNT)
+                        AND (B.SETDATE = C.SETDATE)
+                        AND (B.SETDATE = D.SETDATE)
+                        AND (ISNULL(B.STARTDATETIME,'') = ISNULL(C.STARTDATETIME,''))
+                        AND (ISNULL(B.STARTDATETIME,'') = ISNULL(D.STARTDATETIME,''))
+                        AND (ISNULL(B.ENDDATETIME,'') = ISNULL(C.ENDDATETIME,''))
+                        AND (ISNULL(B.ENDDATETIME,'') = ISNULL(D.ENDDATETIME,''))
+                        THEN 'Y' ELSE 'N' END AS RESULTFLAG
+            FROM ROOMSEQ1LIST B
+                 LEFT OUTER JOIN ROOMSEQ2LIST C
+                 ON B.ROWNUM = C.ROWNUM
+                 LEFT OUTER JOIN ROOMSEQ3LIST D
+                 ON B.ROWNUM = D.ROWNUM
+            ) A
+    </select>
+
+    <select id="facilityInfoPartitionOne" parameterType="reqBox" resultType="dataBox">
+        SELECT DI.PPSEQ
+             , DI.PPNAME
+             , (SELECT TYPESEQ
+				  FROM RSVTYPEINFO
+				 WHERE RSVTYPECODE = 'R01'
+				   AND TYPENAME = '교육장') AS TYPESEQ
+        FROM   RSVROOMINFO AI
+               LEFT OUTER JOIN RSVPPINFO DI
+               ON DI.PPSEQ = AI.PPSEQ
+        WHERE  AI.ROOMSEQ = ${roomseq1}
+    </select>
+
+    <select id="facilityInfoSameCheck" parameterType="reqBox" resultType="string">
+        SELECT CASE WHEN COUNT(sameroomseq) > 0 THEN 'N'
+               ELSE 'Y' END AS CONT
+          FROM RSVSAMEROOMINFO
+         WHERE ROOMSEQ IN (${roomseq1}, ${roomseq2})
+    </select>
+
+    <select id="facilityInfoRtnType" parameterType="reqBox" resultType="string">
+        SELECT CASE WHEN COUNT(AAI.TYPESEQ) > 0 THEN 'N'
+                    ELSE 'Y' END AS CONT
+          FROM (
+                SELECT CASE WHEN CI.TYPENAME LIKE ('교육장') THEN 'Y'
+                            WHEN CI.TYPENAME LIKE ('퀸룸%') THEN 'Y'
+                            ELSE 'N' END AS TYPESEQ
+                  FROM RSVROOMINFO AI
+                       INNER JOIN RSVROOMTYPEMAP BI
+                       ON AI.ROOMSEQ = BI.ROOMSEQ
+                       INNER JOIN RSVTYPEINFO CI
+                       ON BI.TYPESEQ = CI.TYPESEQ
+                 WHERE AI.PPSEQ = #{ppseq}
+                   AND AI.ROOMSEQ IN (#{roomseq1},#{roomseq2})
+                ) AAI
+         WHERE TYPESEQ = 'N'
+    </select>
+
+    <insert id="facilityInfoPartitionInsert" parameterType="reqBox">
+       INSERT INTO RSVROOMINFO (
+                   ROOMNAME
+                 , PPSEQ
+                 , STATUSCODE
+                 , SEATCOUNT
+                 , USETIME
+                 , ROLE
+                 , ROLENOTE
+                 , FACILITY
+                 , KEYWORD
+                 , INTRO
+                 , FACILITYSTATUSCODE
+                 , STARTDATE
+                 , ENDDATE
+                 , FILEKEY
+                 , FILEKEY1
+                 , FILEKEY2
+                 , FILEKEY3
+                 , FILEKEY4
+                 , FILEKEY5
+                 , FILEKEY6
+                 , FILEKEY7
+                 , FILEKEY8
+                 , FILEKEY9
+                 , FILEKEY10
+                 , INSERTUSER
+                 , INSERTDATE
+                 , UPDATEUSER
+                 , UPDATEDATE
+            ) VALUES (
+                 #{roomname}
+               , #{ppseq}
+               , #{statuscode}
+               , #{seatcount}
+               , #{usetime}
+               , #{role}
+               , #{rolenote}
+               , #{facility}
+               , #{keyword}
+               , #{intro}
+               , #{facilitystatuscode}
+               , replace(#{startdate},'-','')
+               , replace(#{enddate},'-','')
+               , #{filekey}
+               , #{filekey1}
+               , #{filekey2}
+               , #{filekey3}
+               , #{filekey4}
+               , #{filekey5}
+               , #{filekey6}
+               , #{filekey7}
+               , #{filekey8}
+               , #{filekey9}
+               , #{filekey10}
+               , #{sysId}
+               , Getdate()
+               , #{sysId}
+               , Getdate()
+                )
+    </insert>
+
+    <select id="facilityinfoSearchSeq" parameterType="reqBox" resultType="int">
+        SELECT ROOMSEQ
+          FROM RSVROOMINFO
+        WHERE ROOMSEQ =  #{roomseqa}
+    </select>
+
+    <select id="facilityinfoSearchSeqTwo" parameterType="reqBox" resultType="int">
+        SELECT ROOMSEQ
+        FROM RSVROOMINFO
+        WHERE ROOMSEQ =  #{roomseqb}
+    </select>
+
+    <select id="facilityInfoRoleComparison" parameterType="reqBox" resultType="string">
+  WITH ROOMSEQ1LIST AS (
+    SELECT ROW_NUMBER() OVER(ORDER BY AI.RSVSESSIONSEQ) ROWNUM
+         , AI.TARGETTYPECODE
+         , AI.GROUPSEQ
+         , AI.PINTREATRANGE
+         , AI.CITYTREATCODE
+         , AI.AGETREATCODE
+         , AI.PERIODTYPECODE
+         , AI.STARTMONTH
+         , AI.STARTDAY
+         , AI.ENDMONTH
+         , AI.ENDDAY
+         , AI.APPLYSESSIONTYPECODE
+         , AI.STATUSCODE
+         , COUNT(*) AS CNT
+                           FROM RSVROOMROLE AI
+                                INNER JOIN RSVROOMSESSIONINFO BI
+                                ON AI.RSVSESSIONSEQ = BI.RSVSESSIONSEQ
+                           WHERE BI.ROOMSEQ = #{roomseq1}
+                           GROUP BY  AI.TARGETTYPECODE
+         , AI.GROUPSEQ
+         , AI.PINTREATRANGE
+         , AI.CITYTREATCODE
+         , AI.AGETREATCODE
+         , AI.PERIODTYPECODE
+         , AI.STARTMONTH
+         , AI.STARTDAY
+         , AI.ENDMONTH
+         , AI.ENDDAY
+         , AI.APPLYSESSIONTYPECODE
+         , AI.STATUSCODE
+         , AI.RSVSESSIONSEQ )
+        , ROOMSEQ2LIST AS (
+    SELECT ROW_NUMBER() OVER(ORDER BY AI.RSVSESSIONSEQ) ROWNUM
+         , AI.TARGETTYPECODE
+         , AI.GROUPSEQ
+         , AI.PINTREATRANGE
+         , AI.CITYTREATCODE
+         , AI.AGETREATCODE
+         , AI.PERIODTYPECODE
+         , AI.STARTMONTH
+         , AI.STARTDAY
+         , AI.ENDMONTH
+         , AI.ENDDAY
+         , AI.APPLYSESSIONTYPECODE
+         , AI.STATUSCODE
+         , COUNT(*) AS CNT
+                           FROM RSVROOMROLE AI
+                                INNER JOIN RSVROOMSESSIONINFO BI
+                                ON AI.RSVSESSIONSEQ = BI.RSVSESSIONSEQ
+                           WHERE BI.ROOMSEQ = #{roomseq2}
+          GROUP BY  AI.TARGETTYPECODE
+         , AI.GROUPSEQ
+         , AI.PINTREATRANGE
+         , AI.CITYTREATCODE
+         , AI.AGETREATCODE
+         , AI.PERIODTYPECODE
+         , AI.STARTMONTH
+         , AI.STARTDAY
+         , AI.ENDMONTH
+         , AI.ENDDAY
+         , AI.APPLYSESSIONTYPECODE
+         , AI.STATUSCODE
+         , AI.RSVSESSIONSEQ )
+        SELECT ISNULL(MIN(RESULTFLAG),'N') AS RESULTFLAG
+        FROM (
+        SELECT ISNULL(B.CNT, 0) AS ROOM1CNT
+             , ISNULL(C.CNT, 0) AS ROOM2CNT
+             , CASE WHEN (B.CNT = C.CNT)
+                    AND (B.TARGETTYPECODE = C.TARGETTYPECODE)
+                    AND (B.GROUPSEQ = C.GROUPSEQ)
+                    AND (B.PINTREATRANGE = C.PINTREATRANGE)
+                    AND (B.CITYTREATCODE = C.CITYTREATCODE)
+                    AND (B.AGETREATCODE = C.AGETREATCODE)
+                    AND (B.PERIODTYPECODE = C.PERIODTYPECODE)
+                    AND (B.STARTMONTH = C.STARTMONTH)
+                    AND (B.STARTDAY = C.STARTDAY)
+                    AND (B.ENDMONTH = C.ENDMONTH)
+                    AND (B.ENDDAY = C.ENDDAY)
+                    AND (B.APPLYSESSIONTYPECODE = C.APPLYSESSIONTYPECODE)
+                    AND (B.STATUSCODE = C.STATUSCODE)
+                   THEN 'Y' ELSE 'N' END AS RESULTFLAG
+        FROM ROOMSEQ1LIST B
+        INNER JOIN ROOMSEQ2LIST C
+        ON B.ROWNUM = C.ROWNUM ) A
+    </select>
+
+    <select id="facilityInfoDisComparison" parameterType="reqBox" resultType="string">
+     WITH ROOMSEQ1LIST AS (SELECT ROW_NUMBER() OVER(ORDER BY SETTINGSEQ) ROWNUM
+                                 , SETTINGSEQ
+                                 , cookmastercode
+                                 , COUNT(*) AS CNT
+                                   FROM RSVROOMTYPEMAP
+                                    WHERE ROOMSEQ =  #{roomseq1}
+                                      AND SETTINGSEQ IS NOT NULL
+                                      GROUP BY SETTINGSEQ, cookmastercode )
+        , ROOMSEQ2LIST AS (SELECT ROW_NUMBER() OVER(ORDER BY SETTINGSEQ) ROWNUM
+                                 , SETTINGSEQ
+                                 , cookmastercode
+                                 , COUNT(*) AS CNT
+                                   FROM RSVROOMTYPEMAP
+                                    WHERE ROOMSEQ = #{roomseq2}
+                                      AND SETTINGSEQ IS NOT NULL
+                                      GROUP BY SETTINGSEQ, cookmastercode )
+        SELECT ISNULL(MIN(RESULTFLAG),'N') AS RESULTFLAG
+        FROM (
+            SELECT ISNULL(B.CNT, 0) AS ROOM1CNT
+            , ISNULL(C.CNT, 0) AS ROOM2CNT
+            , CASE WHEN (B.CNT = C.CNT)
+                   AND (ISNULL(B.SETTINGSEQ,-1) = ISNULL(C.SETTINGSEQ,0))
+                   AND (ISNULL(B.cookmastercode,'P') = ISNULL(C.cookmastercode,'P'))
+              THEN 'Y' ELSE 'N' END AS RESULTFLAG
+            FROM ROOMSEQ1LIST B
+              INNER JOIN ROOMSEQ2LIST C ON B.ROWNUM = C.ROWNUM ) A
+    </select>
+
+    <select id="facilityInfoCancelComparison" parameterType="reqBox" resultType="string">
+        WITH ROOMSEQ1LIST AS (SELECT ROW_NUMBER() OVER(ORDER BY penaltyseq) ROWNUM
+         , penaltyseq
+         , cookmastercode
+         , COUNT(*) AS CNT
+                           FROM rsvroompenaltymap
+                           WHERE ROOMSEQ = #{roomseq1}
+          GROUP BY penaltyseq
+                                  , cookmastercode )
+        , ROOMSEQ2LIST AS (SELECT  ROW_NUMBER() OVER(ORDER BY penaltyseq) ROWNUM
+         , penaltyseq
+         , cookmastercode
+         , COUNT(*) AS CNT
+                           FROM rsvroompenaltymap
+                           WHERE ROOMSEQ = #{roomseq2}
+         GROUP BY penaltyseq
+                                  , cookmastercode )
+        SELECT ISNULL(MIN(RESULTFLAG),'Y') AS RESULTFLAG
+        FROM (
+        SELECT ISNULL(B.CNT, 0) AS ROOM1CNT
+        , ISNULL(C.CNT, 0) AS ROOM2CNT
+        , CASE WHEN (B.CNT = C.CNT)
+        AND (B.penaltyseq = C.penaltyseq)
+                AND (B.cookmastercode = C.cookmastercode)
+               THEN 'Y' ELSE 'N' END AS RESULTFLAG
+        FROM ROOMSEQ1LIST B
+        INNER JOIN ROOMSEQ2LIST C ON B.ROWNUM = C.ROWNUM ) A
+    </select>
+
+    <insert id="facilityInfoSessionInsert" parameterType="reqBox">
+        INSERT INTO RSVROOMSESSIONINFO (
+               SETTYPECODE
+	         , WORKTYPECODE
+             , SETWEEK
+             , SESSIONNAME
+             , ROOMSEQ
+             , SETDATE
+             , STARTDATETIME
+             , ENDDATETIME
+             , PRICE
+             , DISCOUNTPRICE
+             , QUEENPRICE
+             , QUEENDISCOUNTPRICE
+             , STATUSCODE
+             , INSERTUSER
+             , INSERTDATE
+             , UPDATEUSER
+             , UPDATEDATE
+             )
+        SELECT
+               SETTYPECODE
+	         , WORKTYPECODE
+             , SETWEEK
+             , SESSIONNAME
+             , #{infoseq}
+             , SETDATE
+             , STARTDATETIME
+             , ENDDATETIME
+             , PRICE
+             , DISCOUNTPRICE
+             , QUEENPRICE
+             , QUEENDISCOUNTPRICE
+             , STATUSCODE
+             , #{sysId}
+             , getdate()
+             , #{sysId}
+             , getdate()
+               FROM RSVROOMSESSIONINFO
+               WHERE ROOMSEQ = #{seqa}
+    </insert>
+
+    <insert id="facilityInfoRoomroleInsert" parameterType="reqBox">
+         INSERT INTO RSVROOMROLE (
+                RSVROLESEQ
+              , GROUPSEQ
+              , TARGETTYPECODE
+              , PINTREATRANGE
+              , CITYTREATCODE
+              , AGETREATCODE
+              , STARTDAY
+              , ENDDAY
+              , STARTMONTH
+              , ENDMONTH
+              , RSVSESSIONSEQ
+              , PERIODTYPECODE
+              , STATUSCODE
+              , APPLYSESSIONTYPECODE
+              , INSERTUSER
+              , INSERTDATE
+              , UPDATEUSER
+              , UPDATEDATE
+              )
+              SELECT
+                    (SELECT ISNULL(MAX(RSVROLESEQ),0)+1 FROM RSVROOMROLE) + ROW_NUMBER() OVER (ORDER BY BI.RSVSESSIONSEQ)
+                   , AA.GROUPSEQ
+                   , AA.TARGETTYPECODE
+                   , AA.PINTREATRANGE
+                   , AA.CITYTREATCODE
+                   , AA.AGETREATCODE
+                   , AA.STARTDAY
+                   , AA.ENDDAY
+                   , AA.STARTMONTH
+                   , AA.ENDMONTH
+                   , BI.RSVSESSIONSEQ
+                   , AA.PERIODTYPECODE
+                   , 'B01' AS STATUSCODE
+                   , AA.APPLYSESSIONTYPECODE
+                   , #{sysId} AS INSERTUSER
+                   , getdate() AS INSERTDATE
+                   , #{sysId} AS UPDATEUSER
+                   , getdate() AS UPDATEDATE
+              FROM  RSVROOMROLE AA
+                    INNER JOIN RSVROOMSESSIONINFO AB
+                    ON AA.RSVSESSIONSEQ = AB.RSVSESSIONSEQ
+                    AND AB.ROOMSEQ = #{seqa}
+                    INNER JOIN (
+                                SELECT ROW_NUMBER() OVER(ORDER BY RSVSESSIONSEQ) AS ROWNUM
+                                     , RSVSESSIONSEQ
+                                FROM RSVROOMSESSIONINFO
+                                WHERE ROOMSEQ = #{seqa}
+                                ) AC
+                    ON AB.RSVSESSIONSEQ = AC.RSVSESSIONSEQ
+                    INNER JOIN (
+                               SELECT ROW_NUMBER() OVER(ORDER BY RSVSESSIONSEQ) AS ROWNUM
+                                    , RSVSESSIONSEQ
+                               FROM RSVROOMSESSIONINFO
+                               WHERE ROOMSEQ = #{infoseq}) BI
+                     ON AC.ROWNUM = BI.ROWNUM
+    </insert>
+
+    <insert id="facilityInfotypemapInsert" parameterType="reqBox">
+        INSERT INTO RSVROOMTYPEMAP (
+               TYPESEQ
+             , ROOMSEQ
+             , SETTINGSEQ
+             , COOKMASTERCODE
+             )
+        SELECT TYPESEQ
+             , #{infoseq}
+             , SETTINGSEQ
+             , COOKMASTERCODE
+        FROM RSVROOMTYPEMAP
+        WHERE ROOMSEQ = #{seqa}
+    </insert>
+
+    <insert id="facilityInfopenaltymapInsert" parameterType="reqBox">
+        INSERT INTO RSVROOMPENALTYMAP (
+               PENALTYSEQ
+             , ROOMSEQ
+             , COOKMASTERCODE
+             )
+        SELECT PENALTYSEQ
+             , #{infoseq}
+             , COOKMASTERCODE
+        FROM RSVROOMPENALTYMAP
+        WHERE ROOMSEQ = #{seqa}
+    </insert>
+
+    <insert id="facilityInfoSeqaInsert" parameterType="reqBox">
+    INSERT INTO RSVSAMEROOMINFO(
+          IDENTIFY
+         ,ROOMSEQ
+         ,PARENTROOMSEQ
+       )  VALUES (
+          CONVERT(VARCHAR(10),GETDATE(),112) + REPLACE(CONVERT(VARCHAR(8),GETDATE(),108),':','')
+         ,#{seqa}
+         ,#{infoseq}
+       )
+    </insert>
+
+    <insert id="facilityInfoSeqbInsert" parameterType="reqBox">
+        INSERT INTO RSVSAMEROOMINFO(
+          IDENTIFY
+         ,ROOMSEQ
+         ,PARENTROOMSEQ
+       )  VALUES (
+          CONVERT(VARCHAR(10),GETDATE(),112) + REPLACE(CONVERT(VARCHAR(8),GETDATE(),108),':','')
+         ,#{seqb}
+         ,#{infoseq}
+       )
+    </insert>
+
+    <insert id="facilityInfoSeqInsert" parameterType="reqBox">
+       INSERT INTO RSVSAMEROOMINFO(
+          IDENTIFY
+         ,ROOMSEQ
+         ,PARENTROOMSEQ
+       )  VALUES (
+          CONVERT(VARCHAR(10),GETDATE(),112) + REPLACE(CONVERT(VARCHAR(8),GETDATE(),108),':','')
+         ,#{infoseq}
+         ,#{infoseq}
+       )
+    </insert>
+
+
+</mapper>

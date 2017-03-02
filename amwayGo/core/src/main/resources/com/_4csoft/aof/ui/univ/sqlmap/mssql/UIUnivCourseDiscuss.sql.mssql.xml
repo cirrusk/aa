@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseDiscussMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO">
+        <selectKey resultType="Long" keyProperty="discussSeq" order="AFTER">
+    SELECT @@IDENTITY
+        </selectKey>
+	/* UIUnivCourseDiscuss.insert */
+	INSERT INTO cs_course_discuss 
+	       ( 
+			cs_course_active_seq ,
+			cs_reference_seq,
+			cs_discuss_title ,
+			cs_description ,
+			cs_prof_member_seq ,
+			cs_start_dtime ,
+			cs_start_day ,
+			cs_end_dtime ,
+			cs_end_day ,
+			cs_rate ,
+			cs_reg_member_seq ,
+			cs_upd_member_seq ,
+			cs_reg_dtime ,
+			cs_upd_dtime ,
+			cs_reg_ip ,
+			cs_upd_ip
+	       ) 
+	       VALUES 
+	       ( 
+	           #{courseActiveSeq, jdbcType=NUMERIC} ,
+	           #{referenceSeq, jdbcType=NUMERIC} ,
+	           #{discussTitle, jdbcType=VARCHAR} ,
+	           #{description, jdbcType=VARCHAR} ,
+	           #{profMemberSeq, jdbcType=NUMERIC} ,
+	           #{startDtime, jdbcType=VARCHAR} ,
+	           #{startDay, jdbcType=NUMERIC} ,
+	           #{endDtime, jdbcType=VARCHAR} ,
+	           #{endDay, jdbcType=NUMERIC} ,
+			   <choose>
+                   <when test="rate != null">
+               #{rate, jdbcType=NUMERIC} ,
+                   </when>
+                   <otherwise>
+               0,    
+                   </otherwise>
+               </choose>
+	           #{regMemberSeq, jdbcType=NUMERIC} ,
+			   #{updMemberSeq, jdbcType=NUMERIC} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+			   dbo.FN_NOW_TO_CHAR() ,
+	           #{regIp, jdbcType=VARCHAR} ,
+	           #{updIp, jdbcType=VARCHAR}
+	       )
+    </insert>
+	
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO">
+		/* UIUnivCourseDiscuss.update */
+		UPDATE cs_course_discuss 
+		   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+		       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+		       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+		        <if test='discussTitle != null'>
+		       ,cs_discuss_title = #{discussTitle, jdbcType=VARCHAR} 
+		        </if>
+		         <if test='description != null'>
+		       ,cs_description = #{description, jdbcType=VARCHAR} 
+		        </if>
+		        <if test='startDtime != null'>
+		       ,cs_start_dtime = #{startDtime, jdbcType=VARCHAR}
+		        </if>
+		        <if test='startDay != null'>
+		       ,cs_start_day = #{startDay, jdbcType=NUMERIC}
+		        </if>
+		        <if test='endDtime != null'>
+		       ,cs_end_dtime = #{endDtime, jdbcType=VARCHAR}
+		        </if>
+		        <if test='endDay != null'>
+		       ,cs_end_day = #{endDay, jdbcType=NUMERIC}
+		        </if>
+		      	<if test='rate != null'>
+		       ,cs_rate = #{rate, jdbcType=DOUBLE}
+		        </if>
+		 WHERE cs_discuss_seq = #{discussSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+	
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO">
+	/* UIUnivCourseDiscuss.delete */
+	UPDATE cs_course_discuss 
+	   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+	       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+	       cs_delete_yn = 'Y'  
+	 WHERE cs_discuss_seq = #{discussSeq} 
+	   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="deleteCourseActiveSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO">
+    /* UIUnivCourseDiscuss.deleteCourseActiveSeq */
+    UPDATE cs_course_discuss 
+       SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+           cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+           cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+           cs_delete_yn = 'Y'  
+     WHERE cs_course_active_seq = #{courseActiveSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+		
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseDiscussRS">
+        <result column="cs_discuss_seq"        	   property="discuss.discussSeq"/>
+        <result column="cs_course_active_seq"      property="discuss.courseActiveSeq"/>
+        <result column="cs_reference_seq"          property="discuss.referenceSeq"/>
+        <result column="cs_discuss_title"          property="discuss.discussTitle"/>
+        <result column="cs_description"            property="discuss.description" />
+        <result column="cs_basic_supplement_cd"    property="discuss.basicSupplementCd"/>
+        <result column="cs_prof_member_seq"        property="discuss.profMemberSeq"/>
+        <result column="cs_start_dtime"            property="discuss.startDtime"/>
+        <result column="cs_start_day"              property="discuss.startDay"/>
+        <result column="cs_end_dtime"              property="discuss.endDtime"/>
+        <result column="cs_end_day"                property="discuss.endDay"/>
+        <result column="cs_rate"                   property="discuss.rate"/>
+        <result column="cs_delete_yn"              property="discuss.deleteYn"/>
+        <result column="cs_reg_member_seq"         property="discuss.regMemberSeq"/>
+        <result column="cs_upd_member_seq"         property="discuss.updMemberSeq"/>
+        <result column="cs_reg_dtime"              property="discuss.regDtime"/>
+        <result column="cs_upd_dtime"              property="discuss.updDtime"/>
+        <result column="cs_reg_ip"                 property="discuss.regIp"/>
+        <result column="cs_upd_ip"			       property="discuss.updIp"/>
+        <result column="cs_active_element_seq"	   property="discuss.activeElementSeq"/>
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=cs_discuss_seq,referenceTablename=referenceTablename}" property="discuss.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+	/* UIUnivCourseDiscuss.getDetail */
+	SELECT 
+			dis.cs_discuss_seq ,
+			dis.cs_course_active_seq ,
+			dis.cs_reference_seq ,
+			dis.cs_discuss_title ,
+			dis.cs_description ,
+			dis.cs_basic_supplement_cd ,
+			dis.cs_prof_member_seq ,
+			dis.cs_start_dtime ,
+			dis.cs_start_day ,
+			dis.cs_end_dtime ,
+			dis.cs_end_day ,
+			dis.cs_rate ,
+			dis.cs_delete_yn ,
+			dis.cs_reg_member_seq ,
+			dis.cs_upd_member_seq ,
+			dis.cs_reg_dtime ,
+			dis.cs_upd_dtime ,
+			dis.cs_reg_ip ,
+			dis.cs_upd_ip ,			
+			ele.cs_active_element_seq ,
+	       'cs_course_discuss' AS "referenceTablename"
+	  FROM cs_course_discuss dis
+INNER JOIN cs_course_active_element ele
+        ON dis.cs_course_active_seq = ele.cs_course_active_seq
+       AND dis.cs_discuss_seq = ele.cs_reference_seq
+       AND ele.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.DISCUSS}'
+	 WHERE dis.cs_discuss_seq = #{discussSeq}
+	   AND dis.cs_delete_yn = 'N'
+    </select>
+
+
+    <resultMap id="listAllResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseDiscussRS">
+        <result column="cs_discuss_seq"        	   property="discuss.discussSeq"/>
+        <result column="cs_course_active_seq"      property="discuss.courseActiveSeq"/>
+        <result column="cs_reference_seq"          property="discuss.referenceSeq"/>
+        <result column="cs_discuss_title"          property="discuss.discussTitle"/>
+        <result column="cs_description"            property="discuss.description" />
+        <result column="cs_basic_supplement_cd"    property="discuss.basicSupplementCd"/>
+        <result column="cs_prof_member_seq"        property="discuss.profMemberSeq"/>
+        <result column="cs_start_dtime"            property="discuss.startDtime"/>
+        <result column="cs_start_day"              property="discuss.startDay"/>
+        <result column="cs_end_dtime"              property="discuss.endDtime"/>
+        <result column="cs_end_day"                property="discuss.endDay"/>
+        <result column="cs_rate"                   property="discuss.rate"/>
+        <result column="cs_delete_yn"              property="discuss.deleteYn"/>
+        <result column="cs_reg_member_seq"         property="discuss.regMemberSeq"/>
+        <result column="cs_upd_member_seq"         property="discuss.updMemberSeq"/>
+        <result column="cs_reg_dtime"              property="discuss.regDtime"/>
+        <result column="cs_upd_dtime"              property="discuss.updDtime"/>
+        <result column="cs_reg_ip"                 property="discuss.regIp"/>
+        <result column="cs_upd_ip"			       property="discuss.updIp"/>
+    </resultMap>
+    <select id="getListAll" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO" resultMap="listAllResultMap">
+	/* UIUnivCourseDiscuss.getListAll */
+	SELECT 
+			cs_discuss_seq ,
+			cs_course_active_seq ,
+			cs_reference_seq ,
+			cs_discuss_title ,
+			cs_description ,
+			cs_basic_supplement_cd ,
+			cs_prof_member_seq ,
+			cs_start_dtime ,
+			cs_start_day ,
+			cs_end_dtime ,
+			cs_end_day ,
+			cs_rate ,
+			cs_delete_yn ,
+			cs_reg_member_seq ,
+			cs_upd_member_seq ,
+			cs_reg_dtime ,
+			cs_upd_dtime ,
+			cs_reg_ip ,
+			cs_upd_ip
+	  FROM cs_course_discuss 
+	 WHERE cs_course_active_seq = #{courseActiveSeq} 
+	   AND cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listAllByUserResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseDiscussRS">
+        <result column="dis.discussSeq"        	  property="discuss.discussSeq"/>
+        <result column="dis.courseActiveSeq"      property="discuss.courseActiveSeq"/>
+        <result column="dis.referenceSeq"         property="discuss.referenceSeq"/>
+        <result column="dis.discussTitle"         property="discuss.discussTitle"/>
+        <result column="dis.description"          property="discuss.description" />
+        <result column="dis.basicSupplementCd"    property="discuss.basicSupplementCd"/>
+        <result column="dis.profMemberSeq"        property="discuss.profMemberSeq"/>
+        <result column="dis.startDtime"           property="discuss.startDtime"/>
+        <result column="dis.endDtime"             property="discuss.endDtime"/>
+        <result column="dis.rate"                 property="discuss.rate"/>
+        <result column="dis.deleteYn"             property="discuss.deleteYn"/>
+        <result column="dis.regMemberSeq"         property="discuss.regMemberSeq"/>
+        <result column="dis.updMemberSeq"         property="discuss.updMemberSeq"/>
+        <result column="dis.regDtime"             property="discuss.regDtime"/>
+        <result column="dis.updDtime"             property="discuss.updDtime"/>
+        <result column="dis.regIp"                property="discuss.regIp"/>
+        <result column="dis.updIp"			      property="discuss.updIp"/>
+        <result column="bbsMemberCount"			  property="discuss.bbsMemberCount"/>
+        <result column="bbsCount"			      property="discuss.bbsCount"/>
+        <result column="dis.discussStatus"		  property="discuss.discussStatus"/>
+        <result column="dis.dDayCount"			  property="discuss.dDayCount"/>
+    </resultMap>
+    
+    <select id="getListAllByUser" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO" resultMap="listAllByUserResultMap">
+	/* UIUnivCourseDiscuss.getListAllByUser */
+	<if test='!"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+	SELECT
+		*
+	FROM
+	(
+	SELECT 
+			dis.cs_discuss_seq 			AS "dis.discussSeq" ,
+			dis.cs_course_active_seq 	AS "dis.courseActiveSeq" ,
+			dis.cs_reference_seq 		AS "dis.referenceSeq" ,
+			dis.cs_discuss_title 		AS "dis.discussTitle" ,
+			dis.cs_description 			AS "dis.description" ,
+			dis.cs_basic_supplement_cd 	AS "dis.basicSupplementCd" ,
+			dis.cs_prof_member_seq 		AS "dis.profMemberSeq" ,
+			dis.cs_start_dtime 			AS "dis.startDtime" ,
+			dis.cs_end_dtime 			AS "dis.endDtime" ,
+			dis.cs_rate 				AS "dis.rate" ,
+			dis.cs_delete_yn 			AS "dis.deleteYn" ,
+			dis.cs_reg_member_seq 		AS "dis.regMemberSeq" ,
+			dis.cs_upd_member_seq 		AS "dis.updMemberSeq" ,
+			dis.cs_reg_dtime 			AS "dis.regDtime" ,
+			dis.cs_upd_dtime 			AS "dis.updDtime" ,
+			dis.cs_reg_ip 				AS "dis.regIp" ,
+			dis.cs_upd_ip 				AS "dis.updIp" ,
+			(SELECT ISNULL(COUNT(*), 0) FROM cs_course_discuss_bbs sub1 
+			  WHERE sub1.cs_delete_yn = 'N' 
+			    AND sub1.cs_discuss_seq = dis.cs_discuss_seq
+				AND sub1.cs_course_apply_seq = #{courseApplySeq} ) AS bbsMemberCount,
+		    (SELECT ISNULL(COUNT(*), 0) FROM cs_course_discuss_bbs sub2 
+			  WHERE sub2.cs_delete_yn = 'N' 
+			    AND sub2.cs_discuss_seq = dis.cs_discuss_seq ) AS bbsCount ,
+			CASE
+				WHEN dis.cs_start_dtime <![CDATA[<=]]> DBO.FN_NOW_TO_CHAR() AND dis.cs_end_dtime <![CDATA[>=]]> DBO.FN_NOW_TO_CHAR() THEN '1'
+				WHEN dis.cs_start_dtime <![CDATA[>]]> DBO.FN_NOW_TO_CHAR() THEN '2'
+				WHEN dis.cs_end_dtime <![CDATA[<]]> DBO.FN_NOW_TO_CHAR() THEN '3'
+			END AS "dis.discussStatus" , 
+			DATEDIFF(DAY, GETDATE(), DBO.FN_TO_DATE(dis.cs_end_dtime)) AS "dis.dDayCount"
+	  FROM cs_course_discuss dis
+	 WHERE dis.cs_course_active_seq = #{courseActiveSeq} 
+	   AND dis.cs_delete_yn = 'N'
+	   AND dis.cs_start_dtime IS NOT NULL
+	) dis
+  ORDER BY dis."dis.discussStatus" ASC, 
+          dis."dis.dDayCount" ASC
+  </if>
+  <if test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+  	SELECT
+		*
+	FROM
+	(
+  	SELECT dis.* , 
+	       CASE 
+	           WHEN "dis.startDtime" <![CDATA[<=]]> DBO.FN_NOW_TO_CHAR() 
+	               AND "dis.endDtime" <![CDATA[>=]]> DBO.FN_NOW_TO_CHAR() 
+	           THEN '1' 
+	           WHEN "dis.startDtime" <![CDATA[>]]> DBO.FN_NOW_TO_CHAR() 
+	           THEN '2' 
+	           WHEN "dis.endDtime" <![CDATA[<]]> DBO.FN_NOW_TO_CHAR() 
+	           THEN '3' 
+	       END AS "dis.discussStatus" , 
+	       DATEDIFF(DAY, GETDATE(), DBO.FN_TO_DATE("dis.endDtime")) AS "dis.dDayCount" 
+	  FROM 
+	       (SELECT dis.cs_discuss_seq AS "dis.discussSeq" , 
+	              dis.cs_course_active_seq AS "dis.courseActiveSeq" , 
+	              dis.cs_reference_seq AS "dis.referenceSeq" , 
+	              dis.cs_discuss_title AS "dis.discussTitle" , 
+	              dis.cs_description AS "dis.description" , 
+	              dis.cs_basic_supplement_cd AS "dis.basicSupplementCd" , 
+	              dis.cs_prof_member_seq AS "dis.profMemberSeq" , 
+	              REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, dis.cs_start_day, dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "dis.startDtime" , 
+	              REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, dis.cs_end_day, dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "dis.endDtime" , 
+	              dis.cs_rate AS "dis.rate" , 
+	              dis.cs_delete_yn AS "dis.deleteYn" , 
+	              dis.cs_reg_member_seq AS "dis.regMemberSeq" , 
+	              dis.cs_upd_member_seq AS "dis.updMemberSeq" , 
+	              dis.cs_reg_dtime AS "dis.regDtime" , 
+	              dis.cs_upd_dtime AS "dis.updDtime" , 
+	              dis.cs_reg_ip AS "dis.regIp" , 
+	              dis.cs_upd_ip AS "dis.updIp" , 
+	              (SELECT COUNT(*) 
+	                FROM cs_course_discuss_bbs sub1 
+	               WHERE sub1.cs_delete_yn = 'N' 
+	                     AND sub1.cs_discuss_seq = dis.cs_discuss_seq 
+	                     AND sub1.cs_course_apply_seq = #{courseApplySeq} 
+	              ) AS bbsMemberCount, 
+	              (SELECT COUNT(*) 
+	                FROM cs_course_discuss_bbs sub2 
+	               WHERE sub2.cs_delete_yn = 'N' 
+	                     AND sub2.cs_discuss_seq = dis.cs_discuss_seq 
+	              ) AS bbsCount 
+	         FROM cs_course_discuss dis 
+	          INNER JOIN cs_course_apply app 
+	              ON dis.cs_course_active_seq = app.cs_course_active_seq 
+	              AND app.cs_course_apply_seq = #{courseApplySeq} 
+	        WHERE dis.cs_course_active_seq = #{courseActiveSeq}  
+	              AND dis.cs_delete_yn = 'N' 
+	              AND dis.cs_start_dtime IS NOT NULL 
+	       ) dis 
+	   ) dis
+  ORDER BY dis."dis.discussStatus" ASC, 
+          dis."dis.dDayCount" ASC
+  </if>
+    </select>
+
+    <resultMap id="DetailByUserResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseDiscussRS">
+        <result column="dis.discussSeq"        	  property="discuss.discussSeq"/>
+        <result column="dis.courseActiveSeq"      property="discuss.courseActiveSeq"/>
+        <result column="dis.referenceSeq"         property="discuss.referenceSeq"/>
+        <result column="dis.discussTitle"         property="discuss.discussTitle"/>
+        <result column="dis.description"          property="discuss.description" />
+        <result column="dis.basicSupplementCd"    property="discuss.basicSupplementCd"/>
+        <result column="dis.profMemberSeq"        property="discuss.profMemberSeq"/>
+        <result column="dis.startDtime"           property="discuss.startDtime"/>
+        <result column="dis.endDtime"             property="discuss.endDtime"/>
+        <result column="dis.rate"                 property="discuss.rate"/>
+        <result column="dis.deleteYn"             property="discuss.deleteYn"/>
+        <result column="dis.regMemberSeq"         property="discuss.regMemberSeq"/>
+        <result column="dis.updMemberSeq"         property="discuss.updMemberSeq"/>
+        <result column="dis.regDtime"             property="discuss.regDtime"/>
+        <result column="dis.updDtime"             property="discuss.updDtime"/>
+        <result column="dis.regIp"                property="discuss.regIp"/>
+        <result column="dis.updIp"			      property="discuss.updIp"/>
+        <result column="bbsMemberCount"			  property="discuss.bbsMemberCount"/>
+        <result column="bbsCount"			      property="discuss.bbsCount"/>
+        <result column="dis.discussStatus"		  property="discuss.discussStatus"/>
+        <result column="dis.dDayCount"			  property="discuss.dDayCount"/>
+    </resultMap>
+    
+    <select id="getDetailByUser" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO" resultMap="DetailByUserResultMap">
+	/* UIUnivCourseDiscuss.getDetailAllByUser */
+	<if test='!"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+	SELECT 
+			dis.cs_discuss_seq 			AS "dis.discussSeq" ,
+			dis.cs_course_active_seq 	AS "dis.courseActiveSeq" ,
+			dis.cs_reference_seq 		AS "dis.referenceSeq" ,
+			dis.cs_discuss_title 		AS "dis.discussTitle" ,
+			dis.cs_description 			AS "dis.description" ,
+			dis.cs_basic_supplement_cd 	AS "dis.basicSupplementCd" ,
+			dis.cs_prof_member_seq 		AS "dis.profMemberSeq" ,
+			dis.cs_start_dtime 			AS "dis.startDtime" ,
+			dis.cs_end_dtime 			AS "dis.endDtime" ,
+			dis.cs_rate 				AS "dis.rate" ,
+			dis.cs_delete_yn 			AS "dis.deleteYn" ,
+			dis.cs_reg_member_seq 		AS "dis.regMemberSeq" ,
+			dis.cs_upd_member_seq 		AS "dis.updMemberSeq" ,
+			dis.cs_reg_dtime 			AS "dis.regDtime" ,
+			dis.cs_upd_dtime 			AS "dis.updDtime" ,
+			dis.cs_reg_ip 				AS "dis.regIp" ,
+			dis.cs_upd_ip 				AS "dis.updIp" ,
+			(SELECT COUNT(*) FROM cs_course_discuss_bbs sub1 
+			  WHERE sub1.cs_delete_yn = 'N' 
+			    AND sub1.cs_discuss_seq = dis.cs_discuss_seq
+				AND sub1.cs_course_apply_seq = #{courseApplySeq} ) AS bbsMemberCount,
+		    (SELECT COUNT(*) FROM cs_course_discuss_bbs sub2 
+			  WHERE sub2.cs_delete_yn = 'N' 
+			    AND sub2.cs_discuss_seq = dis.cs_discuss_seq ) AS bbsCount ,
+			CASE
+				WHEN dis.cs_start_dtime <![CDATA[<=]]> DBO.FN_NOW_TO_CHAR() AND dis.cs_end_dtime <![CDATA[>=]]> DBO.FN_NOW_TO_CHAR() THEN '1'
+				WHEN dis.cs_start_dtime <![CDATA[>]]> DBO.FN_NOW_TO_CHAR() THEN '2'
+				WHEN dis.cs_end_dtime <![CDATA[<]]> DBO.FN_NOW_TO_CHAR() THEN '3'
+			END AS "dis.discussStatus" , 
+			DATEDIFF(DAY, GETDATE(), DBO.FN_TO_DATE(dis.cs_end_dtime)) AS "dis.dDayCount"
+	  FROM cs_course_discuss dis
+	 WHERE dis.cs_course_active_seq = #{courseActiveSeq} 
+	   AND dis.cs_discuss_seq = #{discussSeq}
+	   AND dis.cs_delete_yn = 'N'
+	</if>
+	<if test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+	SELECT
+		dis.*,
+		CASE
+			WHEN dis."dis.startDtime" <![CDATA[<=]]> DBO.FN_NOW_TO_CHAR() AND dis."dis.endDtime" <![CDATA[>=]]> DBO.FN_NOW_TO_CHAR() THEN '1'
+			WHEN dis."dis.startDtime" <![CDATA[>]]> DBO.FN_NOW_TO_CHAR() THEN '2'
+			WHEN dis."dis.endDtime" <![CDATA[<]]> DBO.FN_NOW_TO_CHAR() THEN '3'
+		END AS "dis.discussStatus" , 
+		DATEDIFF(DAY, GETDATE(), DBO.FN_TO_DATE(dis."dis.endDtime")) AS "dis.dDayCount"
+	FROM
+	(
+	SELECT 
+			dis.cs_discuss_seq 			AS "dis.discussSeq" ,
+			dis.cs_course_active_seq 	AS "dis.courseActiveSeq" ,
+			dis.cs_reference_seq 		AS "dis.referenceSeq" ,
+			dis.cs_discuss_title 		AS "dis.discussTitle" ,
+			dis.cs_description 			AS "dis.description" ,
+			dis.cs_basic_supplement_cd 	AS "dis.basicSupplementCd" ,
+			dis.cs_prof_member_seq 		AS "dis.profMemberSeq" ,
+			REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, dis.cs_start_day, dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "dis.startDtime" , 
+	        REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, dis.cs_end_day, dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "dis.endDtime" , 
+			dis.cs_rate 				AS "dis.rate" ,
+			dis.cs_delete_yn 			AS "dis.deleteYn" ,
+			dis.cs_reg_member_seq 		AS "dis.regMemberSeq" ,
+			dis.cs_upd_member_seq 		AS "dis.updMemberSeq" ,
+			dis.cs_reg_dtime 			AS "dis.regDtime" ,
+			dis.cs_upd_dtime 			AS "dis.updDtime" ,
+			dis.cs_reg_ip 				AS "dis.regIp" ,
+			dis.cs_upd_ip 				AS "dis.updIp" ,
+			(SELECT COUNT(*) FROM cs_course_discuss_bbs sub1 
+			  WHERE sub1.cs_delete_yn = 'N' 
+			    AND sub1.cs_discuss_seq = dis.cs_discuss_seq
+				AND sub1.cs_course_apply_seq = #{courseApplySeq} ) AS bbsMemberCount,
+		    (SELECT COUNT(*) FROM cs_course_discuss_bbs sub2 
+			  WHERE sub2.cs_delete_yn = 'N' 
+			    AND sub2.cs_discuss_seq = dis.cs_discuss_seq ) AS bbsCount 
+	  FROM cs_course_discuss dis
+	  	INNER JOIN cs_course_apply app 
+	        ON  dis.cs_course_active_seq = app.cs_course_active_seq 
+	        AND app.cs_course_apply_seq = #{courseApplySeq}
+	 WHERE dis.cs_course_active_seq = #{courseActiveSeq} 
+	   AND dis.cs_discuss_seq = #{discussSeq}
+	   AND dis.cs_delete_yn = 'N'
+	 ) dis
+	</if>
+    </select>
+
+    <resultMap id="listAllByProfResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseDiscussRS">
+        <result column="dis.discussSeq"        	  property="discuss.discussSeq"/>
+        <result column="dis.courseActiveSeq"      property="discuss.courseActiveSeq"/>
+        <result column="dis.referenceSeq"         property="discuss.referenceSeq"/>
+        <result column="dis.discussTitle"         property="discuss.discussTitle"/>
+        <result column="dis.description"          property="discuss.description" />
+        <result column="dis.basicSupplementCd"    property="discuss.basicSupplementCd"/>
+        <result column="dis.profMemberSeq"        property="discuss.profMemberSeq"/>
+        <result column="dis.startDtime"           property="discuss.startDtime"/>
+        <result column="dis.startDay"             property="discuss.startDay"/>
+        <result column="dis.endDtime"             property="discuss.endDtime"/>
+        <result column="dis.endDay"               property="discuss.endDay"/>
+        <result column="dis.rate"                 property="discuss.rate"/>
+        <result column="dis.deleteYn"             property="discuss.deleteYn"/>
+        <result column="dis.regMemberSeq"         property="discuss.regMemberSeq"/>
+        <result column="dis.updMemberSeq"         property="discuss.updMemberSeq"/>
+        <result column="dis.regDtime"             property="discuss.regDtime"/>
+        <result column="dis.updDtime"             property="discuss.updDtime"/>
+        <result column="dis.regIp"                property="discuss.regIp"/>
+        <result column="dis.updIp"			      property="discuss.updIp"/>
+        <result column="dis.regMemberCount"		  property="discuss.regMemberCount"/>
+        <result column="dis.memberCount"		  property="discuss.memberCount"/>
+        <result column="dis.nonMemberCount"		  property="discuss.nonMemberCount"/>
+    </resultMap>
+    
+    <select id="getListAllByProf" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO" resultMap="listAllByProfResultMap">
+	/* UIUnivCourseDiscuss.getListAllByProf */
+	SELECT 
+			dis.cs_discuss_seq 			AS "dis.discussSeq" ,
+			dis.cs_course_active_seq 	AS "dis.courseActiveSeq" ,
+			dis.cs_reference_seq 		AS "dis.referenceSeq" ,
+			dis.cs_discuss_title 		AS "dis.discussTitle" ,
+			dis.cs_description 			AS "dis.description" ,
+			dis.cs_basic_supplement_cd 	AS "dis.basicSupplementCd" ,
+			dis.cs_prof_member_seq 		AS "dis.profMemberSeq" ,
+			dis.cs_start_dtime 			AS "dis.startDtime" ,
+			dis.cs_start_day 			AS "dis.startDay" ,
+			dis.cs_end_dtime 			AS "dis.endDtime" ,
+			dis.cs_end_day 				AS "dis.endDay" ,
+			dis.cs_rate 				AS "dis.rate" ,
+			dis.cs_delete_yn 			AS "dis.deleteYn" ,
+			dis.cs_reg_member_seq 		AS "dis.regMemberSeq" ,
+			dis.cs_upd_member_seq 		AS "dis.updMemberSeq" ,
+			dis.cs_reg_dtime 			AS "dis.regDtime" ,
+			dis.cs_upd_dtime 			AS "dis.updDtime" ,
+			dis.cs_reg_ip 				AS "dis.regIp" ,
+			dis.cs_upd_ip 				AS "dis.updIp" ,
+			disbbs.regMemberCount		AS "dis.regMemberCount" ,
+			summary.cs_member_count     AS "dis.memberCount" ,
+			CASE
+				WHEN (summary.cs_member_count - disbbs.regMemberCount) <![CDATA[<]]> 0 THEN 0
+				ELSE (summary.cs_member_count - disbbs.regMemberCount)
+			END 						AS "dis.nonMemberCount"
+	  FROM cs_course_discuss dis
+	      INNER JOIN cs_course_active_summary summary
+		  	 ON dis.cs_course_active_seq = summary.cs_course_active_seq
+	  	  LEFT OUTER JOIN
+	  	  (
+		  	SELECT
+				disbbs.cs_discuss_seq,
+				COUNT(disbbs.cs_course_apply_seq) AS regMemberCount
+			FROM
+				(
+				 SELECT 
+					disbbs.cs_discuss_seq ,
+					disbbs.cs_course_apply_seq
+				 FROM cs_board board
+				 INNER JOIN cs_course_discuss_bbs disbbs
+					ON board.CS_board_seq = disbbs.cs_board_seq
+				 WHERE
+					    board.cs_board_type_cd = '${CD.BOARD_TYPE.DISCUSS}'
+					AND board.cs_reference_type = 'discuss'
+					AND board.cs_reference_seq = #{courseActiveSeq} 
+					AND disbbs.cs_delete_yn = 'N'
+				 GROUP BY
+					disbbs.cs_discuss_seq ,
+					disbbs.cs_course_apply_seq
+				) disbbs
+			GROUP BY disbbs.cs_discuss_seq
+		  ) disbbs
+		  ON dis.cs_discuss_seq = disbbs.cs_discuss_seq
+	 WHERE dis.cs_course_active_seq = #{courseActiveSeq} 
+	   AND dis.cs_delete_yn = 'N'
+	 ORDER BY dis.cs_start_dtime DESC
+    </select>
+
+	<resultMap id="listByApplyResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseDiscussRS">
+    	<result column="discuss.discussSeq"        	  	property="discuss.discussSeq"/>
+    	<result column="discuss.courseActiveSeq"        property="discuss.courseActiveSeq"/>
+    	<result column="discuss.courseApplySeq "        property="discuss.courseApplySeq "/>
+    	<result column="member.memberSeq"        	  	property="member.memberSeq"/>
+    	<result column="member.memberName"        	  	property="member.memberName"/>
+    	<result column="member.memberId"        	  	property="member.memberId"/>
+    	<result column="member.phoneMobile"        	 	property="member.phoneMobile"/>
+    	<result column="member.categoryOrganizationSeq" property="member.categoryOrganizationSeq"/>
+    	<result column="cate.categoryName"        	  	property="cate.categoryName"/>
+    	<result column="discuss.boardSeq"        	  	property="discuss.boardSeq"/>
+    	<result column="applyElement.takeScore"        	property="applyElement.takeScore"/>
+    	<result column="applyElement.scoreDtime"        property="applyElement.scoreDtime"/>
+    	<result column="discuss.evaluateCount"        	property="discuss.evaluateCount"/>
+    	<result column="discuss.bbsMemberCount"        	property="discuss.bbsMemberCount"/>
+    	<result column="discuss.startDtime"        		property="discuss.startDtime"/>
+    	<result column="discuss.endDtime"        		property="discuss.endDtime"/>
+    </resultMap>
+
+    <select id="getListByApply" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseDiscussApplyCondition" resultMap="listByApplyResultMap">
+		/* UIUnivCourseDiscuss.getListByApply */
+		<if test='currentPage != 0'>
+			SELECT Z.* FROM (SELECT Row_Number() OVER (
+	        <choose>
+	        	<when test='orderby == 1'> ORDER BY "member.memberName" ASC</when>
+            	<when test='orderby == -1'>ORDER BY "member.memberName" DESC</when>
+	        	<when test='orderby == 2'> ORDER BY "member.memberId" ASC</when>
+            	<when test='orderby == -2'>ORDER BY "member.memberId" DESC</when>
+	        	<when test='orderby == 3'> ORDER BY "cate.categoryName" ASC</when>
+            	<when test='orderby == -3'>ORDER BY "cate.categoryName" DESC</when>
+	        	<when test='orderby == 4'> ORDER BY "applyElement.takeScore" ASC</when>
+            	<when test='orderby == -4'>ORDER BY "applyElement.takeScore" DESC</when>
+	        	<when test='orderby == 5'> ORDER BY "applyElement.scoreDtime" ASC</when>
+            	<when test='orderby == -5'>ORDER BY "applyElement.scoreDtime" DESC</when>
+	            <otherwise>ORDER BY "member.memberName" ASC</otherwise>
+	        </choose>
+			) AS rownumber, * FROM (
+	 	</if>
+		SELECT
+			dis.cs_discuss_seq					AS "discuss.discussSeq" ,
+			app.cs_course_active_seq 			AS "discuss.courseActiveSeq" ,
+			app.cs_course_apply_seq 			AS "discuss.courseApplySeq" , 
+			app.cs_member_seq 					AS "member.memberSeq" , 
+			app.cs_member_name 					AS "member.memberName" , 
+			app.cs_member_id 					AS "member.memberId" , 
+			app.cs_phone_mobile					AS "member.phoneMobile" ,
+			app.cs_category_organization_seq 	AS "member.categoryOrganizationSeq" , 
+			app.cs_category_name 				AS "cate.categoryName" ,
+			board.cs_board_seq 					AS "discuss.boardSeq" ,
+			apel.cs_take_score 					AS "applyElement.takeScore" ,
+			apel.cs_score_dtime 				AS "applyElement.scoreDtime" ,
+			ISNULL(bbs.evaluate_count,0)        AS "discuss.evaluateCount" ,
+			ISNULL(bbs.bbs_member_count,0)		AS "discuss.bbsMemberCount" ,
+			<if test='!"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+			dis.cs_start_dtime				AS "discuss.startDtime" ,
+			dis.cs_end_dtime				AS "discuss.endDtime" 
+			</if>
+			<if test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+			REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, dis.cs_start_day, dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "discuss.startDtime" , 
+	        REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, dis.cs_end_day, dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "discuss.endDtime" 			
+			</if>
+		FROM
+			cs_course_discuss dis
+			INNER JOIN cs_course_active_element coel
+				ON  dis.cs_discuss_seq = coel.cs_reference_seq
+				AND coel.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.DISCUSS}' 
+				INNER JOIN
+			(
+				SELECT 
+									 app.cs_course_active_seq ,
+									 app.cs_course_apply_seq , 
+									 app.cs_member_seq , 
+									 mem.cs_member_name , 
+									 mem.cs_member_id , 
+									 mem.cs_phone_mobile,
+									 mem.cs_category_organization_seq , 
+									 cate.cs_category_name ,
+									 app.cs_study_start_date
+								FROM 
+									 cs_course_apply app 
+								 INNER JOIN cs_member mem 
+									 ON app.cs_member_seq = mem.cs_member_seq 
+									 AND app.cs_delete_yn = 'N' 
+									 AND app.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+									 AND app.cs_course_active_seq = #{courseActiveSeq}
+								 INNER JOIN cs_category cate 
+									 ON mem.cs_category_organization_seq = cate.cs_category_seq 
+							   WHERE app.cs_course_active_seq = #{courseActiveSeq}
+							   <if test='srchWord != null and !srchWord.equals("")'>
+						            <if test='srchKey.equals("memberName")'>
+						       		AND mem.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+						            </if>
+						            <if test='srchKey.equals("memberId")'>
+						       		AND mem.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+						            </if>
+						        </if>
+						        <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+								   AND cate.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+								</if>
+			) app
+				ON dis.cs_course_active_seq = app.cs_course_active_seq
+			INNER JOIN cs_board board
+				ON  board.cs_reference_seq = dis.cs_course_active_seq
+				AND board.cs_board_type_cd = '${CD.BOARD_TYPE.DISCUSS}'
+			LEFT OUTER JOIN cs_course_apply_element apel
+				ON  app.cs_course_active_seq = apel.cs_course_active_seq
+				AND app.cs_course_apply_seq = apel.cs_course_apply_seq
+				AND coel.cs_active_element_seq = apel.cs_active_element_seq
+				AND apel.cs_course_active_seq = #{courseActiveSeq}
+			LEFT OUTER JOIN
+				(
+					SELECT
+						bbs.cs_course_apply_seq,
+						bbs.cs_course_active_seq,
+						bbs.cs_discuss_seq,
+						COUNT(bbs.cs_course_apply_seq) AS bbs_member_count,
+						SUM(bbs.evaluate_count) AS evaluate_count
+					FROM
+					(
+						SELECT
+							bbs.cs_course_apply_seq ,
+							bbs.cs_course_active_seq ,
+							bbs.cs_discuss_seq ,
+							CASE
+								WHEN bbs.cs_evaluate_yn = 'Y' THEN 1
+								ELSE 0
+							END evaluate_count	
+						FROM
+							cs_course_discuss_bbs bbs
+						WHERE
+							  bbs.cs_delete_yn = 'N'	
+						  AND bbs.cs_course_active_seq = #{courseActiveSeq}
+						  AND bbs.cs_discuss_seq = #{discussSeq}
+					 ) bbs
+					 GROUP BY
+					    bbs.cs_course_apply_seq,
+						bbs.cs_course_active_seq,
+						bbs.cs_discuss_seq
+				) bbs
+				ON  dis.cs_discuss_seq = bbs.cs_discuss_seq
+				AND dis.cs_course_active_seq = bbs.cs_course_active_seq
+				AND app.cs_course_apply_seq = bbs.cs_course_apply_seq
+		WHERE
+			    dis.cs_course_active_seq = #{courseActiveSeq}
+			AND dis.cs_discuss_seq = #{discussSeq}
+        <if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+    
+    <select id="countListByApply" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseDiscussApplyCondition" resultType="int">
+    	/* UIUnivCourseDiscuss.countListByApply */
+    	SELECT COUNT(*) 
+			 FROM 
+				 cs_course_apply app 
+			 INNER JOIN cs_member mem 
+				 ON app.cs_member_seq = mem.cs_member_seq 
+				 AND app.cs_delete_yn = 'N' 
+				 AND app.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+				 AND app.cs_course_active_seq = #{courseActiveSeq}
+			 INNER JOIN cs_category cate 
+				 ON mem.cs_category_organization_seq = cate.cs_category_seq 
+		WHERE app.cs_course_active_seq = #{courseActiveSeq}
+		<if test='srchWord != null and !srchWord.equals("")'>
+		    <if test='srchKey.equals("memberName")'>
+			AND mem.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+		    </if>
+		    <if test='srchKey.equals("memberId")'>
+			AND mem.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+		    </if>
+		</if>
+		<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+		   AND cate.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+		</if>
+    </select>
+    
+    <select id="getTakeScore" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO" resultType="Double">
+    	/* UIUnivCourseDiscuss.getTakeScore */
+    	SELECT
+			CASE
+				WHEN ISNULL(eval3.cs_from_count, 0) <![CDATA[<=]]> ISNULL(bbs.evaluate_count,0) AND ISNULL(eval3.cs_to_count, 0) <![CDATA[>=]]> ISNULL(bbs.evaluate_count,0) THEN eval3.cs_score
+				WHEN ISNULL(eval2.cs_from_count, 0) <![CDATA[<=]]> ISNULL(bbs.evaluate_count,0) AND ISNULL(eval2.cs_to_count, 0) <![CDATA[>=]]> ISNULL(bbs.evaluate_count,0) THEN eval2.cs_score
+				WHEN ISNULL(eval1.cs_from_count, 0) <![CDATA[<=]]> ISNULL(bbs.evaluate_count,0) THEN eval1.cs_score
+			END AS takeScore
+		FROM
+			cs_course_apply app
+			INNER JOIN
+			cs_course_discuss dis
+				ON  dis.cs_course_active_seq = app.cs_course_active_seq
+				AND app.cs_course_apply_seq = #{courseApplySeq}
+				AND dis.cs_course_active_seq = #{courseActiveSeq}
+				AND dis.cs_discuss_seq = #{discussSeq}
+			INNER JOIN cs_board board
+				ON  board.cs_reference_seq = dis.cs_course_active_seq
+				AND board.cs_board_type_cd = '${CD.BOARD_TYPE.DISCUSS}'
+			LEFT OUTER JOIN
+				(
+					SELECT
+						bbs.cs_course_apply_seq,
+						bbs.cs_course_active_seq,
+						bbs.cs_discuss_seq,
+						ISNULL(SUM(bbs.evaluate_count), 0) AS evaluate_count
+					FROM
+						(
+							SELECT
+								bbs.cs_course_apply_seq ,
+								bbs.cs_course_active_seq ,
+								bbs.cs_discuss_seq ,
+								CASE
+									WHEN bbs.cs_evaluate_yn = 'Y' THEN 1
+									ELSE 0
+								END evaluate_count	
+							FROM
+								cs_course_discuss_bbs bbs
+							WHERE
+								  bbs.cs_delete_yn = 'N'	
+							  AND bbs.cs_course_active_seq = #{courseActiveSeq}
+							  AND bbs.cs_discuss_seq = #{discussSeq}
+							  AND bbs.cs_course_apply_seq = #{courseApplySeq}
+						 ) bbs
+					 GROUP BY
+					    bbs.cs_course_apply_seq,
+						bbs.cs_course_active_seq,
+						bbs.cs_discuss_seq
+				) bbs
+				ON  dis.cs_discuss_seq = bbs.cs_discuss_seq
+				AND dis.cs_course_active_seq = bbs.cs_course_active_seq
+				AND app.cs_course_apply_seq = bbs.cs_course_apply_seq
+			LEFT OUTER JOIN
+				(
+					SELECT 
+						   cpev.cs_course_active_seq ,
+						   cpev.cs_reference_seq ,
+						   cpev.cs_from_count ,
+						   cpev.cs_to_count ,
+						   cpev.cs_score ,
+						   cpev.cs_sort_order 
+					  FROM cs_course_post_evaluate cpev 
+					 WHERE cpev.cs_post_type = 'discuss' 
+						   AND cpev.cs_course_active_seq = #{courseActiveSeq}
+						   AND cpev.cs_reference_seq = #{discussSeq}
+						   AND cpev.cs_delete_yn = 'N'
+						   AND cpev.cs_sort_order = 1
+				) eval1
+				ON  eval1.cs_course_active_seq = dis.cs_course_active_seq
+				AND eval1.cs_reference_seq = dis.cs_discuss_seq
+			LEFT OUTER JOIN
+				(
+					SELECT 
+						   cpev.cs_course_active_seq ,
+						   cpev.cs_reference_seq ,
+						   cpev.cs_from_count ,
+						   cpev.cs_to_count ,
+						   cpev.cs_score ,
+						   cpev.cs_sort_order 
+					  FROM cs_course_post_evaluate cpev 
+					 WHERE cpev.cs_post_type = 'discuss' 
+						   AND cpev.cs_course_active_seq = #{courseActiveSeq}
+						   AND cpev.cs_reference_seq = #{discussSeq}
+						   AND cpev.cs_delete_yn = 'N'
+						   AND cpev.cs_sort_order = 2
+				) eval2
+				ON  eval2.cs_course_active_seq = dis.cs_course_active_seq
+				AND eval2.cs_reference_seq = dis.cs_discuss_seq	
+			LEFT OUTER JOIN
+				(
+					SELECT 
+						   cpev.cs_course_active_seq ,
+						   cpev.cs_reference_seq ,
+						   cpev.cs_from_count ,
+						   cpev.cs_to_count ,
+						   cpev.cs_score ,
+						   cpev.cs_sort_order 
+					  FROM cs_course_post_evaluate cpev 
+					 WHERE cpev.cs_post_type = 'discuss' 
+						   AND cpev.cs_course_active_seq = #{courseActiveSeq}
+						   AND cpev.cs_reference_seq = #{discussSeq}
+						   AND cpev.cs_delete_yn = 'N'
+						   AND cpev.cs_sort_order = 3
+				) eval3
+				ON  eval3.cs_course_active_seq = dis.cs_course_active_seq
+				AND eval3.cs_reference_seq = dis.cs_discuss_seq
+    </select>
+    
+    <resultMap id="listCopyDiscussResultMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO">
+        <result column="cs_discuss_seq"            property="discussSeq"/>
+        <result column="cs_course_active_seq"      property="courseActiveSeq"/>
+        <result column="cs_reference_seq"          property="referenceSeq"/>
+        <result column="cs_discuss_title"          property="discussTitle"/>
+        <result column="cs_description"            property="description" />
+        <result column="cs_basic_supplement_cd"    property="basicSupplementCd"/>
+        <result column="cs_prof_member_seq"        property="profMemberSeq"/>
+        <result column="cs_rate"                   property="rate"/>
+        <result column="cs_start_day"              property="startDay"/>
+        <result column="cs_end_day"                property="endDay"/>
+    </resultMap>
+    <select id="getListCopyDiscuss" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseDiscussVO" resultMap="listCopyDiscussResultMap">
+/* UIUnivCourseDiscuss.getListCopyDiscuss */
+SELECT #{targetCourseActiveSeq} AS cs_course_active_seq,
+       cs_discuss_seq,
+       cs_discuss_title,
+       cs_reference_seq,
+       cs_description,
+       cs_basic_supplement_cd,
+       cs_prof_member_seq,
+       cs_rate,
+       cs_start_day,
+       cs_end_day
+  FROM cs_course_discuss
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{sourceCourseActiveSeq}
+    </select>
+    
+    <select id="countListCopyDiscuss" parameterType="Long" resultType="int">
+/* UIUnivCourseDiscuss.countListCopyDiscuss */
+SELECT COUNT(*)
+  FROM cs_course_discuss
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{courseActiveSeq}
+    </select>
+    
+</mapper>

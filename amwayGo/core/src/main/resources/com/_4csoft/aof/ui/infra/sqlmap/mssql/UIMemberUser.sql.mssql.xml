@@ -1,0 +1,761 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.infra.mapper.UIMemberMapper">
+	
+	<resultMap id="LmsResultMap" type="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+        <result column="memb.memberSeq"                  property="memberSeq"                  />
+        <result column="memb.memberId"                   property="memberId"                   />
+        <result column="memb.memberName"                 property="memberName"                 />
+		<result column="memb.password"              	 property="password"		           />
+        <result column="memb.memberStatusCd"             property="memberStatusCd"             />
+        <result column="memb.deleteYn"                   property="deleteYn"                   />
+        <result column="memb.regMemberSeq"               property="regMemberSeq"               />        
+        <result column="memb.regDtime"                   property="regDtime"                   />
+        <result column="memb.regIp"                      property="regIp"                      />
+        <result column="memb.updMemberSeq"               property="updMemberSeq"               />
+        <result column="memb.updDtime"                   property="updDtime"                   />
+        <result column="memb.updIp"                      property="updIp"                      />     
+        <result column="memb.pinCode"                    property="pincode"                    />
+        <result column="memb.pinName"                    property="pinName"                    />                        		
+	</resultMap>
+	
+	<resultMap id="LmsApplyResultMap" type="com._4csoft.aof.univ.vo.UnivCourseApplyVO">
+        <result column="courseActiveSeq"                 property="courseActiveSeq"       />
+        <result column="courseMasterSeq"                 property="courseMasterSeq"       />
+        <result column="studyStartDate"                  property="studyStartDate"        />
+		<result column="studyEndDate"              	 	 property="studyEndDate"		  />
+        <result column="memberSeq"             			 property="memberSeq"             />
+	</resultMap>
+	
+	<select id="getLmsMember" resultMap="LmsResultMap"> 
+     	SELECT
+            DISTINCT
+			lms.CS_MEMBER_ID AS 'memb.memberId',
+			lms.CS_MEMBER_NAME AS 'memb.memberName',
+			lms.PINCODE AS 'memb.pinCode',
+			lms.PINNAME AS 'memb.pinName'
+		FROM
+			CS_ACADEMY_MEMBER lms
+            INNER JOIN CS_LMSCOURSE course
+            ON lms.CS_MEMBER_ID = course.UID
+		WHERE lms.CS_MEMBER_ID NOT IN (select CS_MEMBER_ID FROM CS_MEMBER)
+	</select>
+	
+	<select id="getLmsCourseMember" resultMap="LmsApplyResultMap">
+		SELECT
+		    active.CS_COURSE_ACTIVE_SEQ AS 'courseActiveSeq',
+		    master.CS_COURSE_MASTER_SEQ AS 'courseMasterSeq',
+		    lms.STARTDATE AS 'studyStartDate',
+		    lms.ENDDATE AS 'studyEndDate',
+		    member.CS_MEMBER_SEQ AS 'memberSeq'
+		FROM
+		    CS_LMSCOURSE lms
+		    LEFT OUTER JOIN CS_COURSE_MASTER master
+		    ON lms.COURSEID = master.CS_MIG_COURSE_MASTER_SEQ
+		    LEFT OUTER JOIN CS_COURSE_ACTIVE active
+		    ON master.CS_COURSE_MASTER_SEQ = active.CS_COURSE_MASTER_SEQ
+		    LEFT OUTER JOIN CS_MEMBER member
+		    ON lms.UID = member.CS_MEMBER_ID
+	</select>
+	
+    <select id="countNickname" parameterType="com._4csoft.aof.ui.infra.vo.UIMemberVO" resultType="int">
+		/* UIMemberMapper.countNickname */
+		SELECT COUNT(*) 
+		  FROM cs_member 
+ 		WHERE 
+       		CS_NICKNAME = #{nickname}
+    </select>
+    
+    <select id="countNameCheckNickname" parameterType="com._4csoft.aof.ui.infra.vo.UIMemberVO" resultType="int">
+    	/* UIMemberMapper.countNameCheckNickname */
+    	SELECT COUNT(*) 
+		  FROM cs_member 
+ 		WHERE 
+       		CS_MEMBER_NAME = #{nickname}
+       		AND CS_MEMBER_SEQ = #{memberSeq}
+    </select>
+
+	<select id="academyMember" parameterType="com._4csoft.aof.infra.vo.MemberVO" resultMap="LmsResultMap">
+		/* UIMemberMapper.academyMember */
+		select
+		  cs_member_id as "memberId",
+		  cs_member_name as "memberName"
+		from
+		  CS_ACADEMY_MEMBER
+		where 1=1
+			AND cs_member_id = #{memberId}
+	</select>
+	    
+    <update id="updateNickname" parameterType="com._4csoft.aof.ui.infra.vo.UIMemberVO" >
+		/* UIMemberMapper.countNickname */
+		UPDATE CS_MEMBER SET
+		CS_NICKNAME = #{nickname}
+ 		WHERE cs_member_seq = #{memberSeq}
+    </update>
+	
+	<insert id="academyCourse" parameterType="com._4csoft.aof.ui.infra.vo.UILoginStatusVO" >
+		MERGE CS_COURSE_MASTER AS "amway"
+		​USING (SELECT distinct COURSEID, COURSENAME, COURSECONTENT FROM CS_LMS_COURSE_ORDER) AS "lms"
+		​ON amway.CS_MIG_COURSE_MASTER_SEQ = lms.COURSEID
+		​WHEN NOT MATCHED THEN
+			    <selectKey resultType="Long" keyProperty="courseMasterSeq" order="AFTER">
+			    SELECT @@IDENTITY
+			    </selectKey>
+			​INSERT (
+				CS_CATEGORY_ORGANIZATION_SEQ, 
+				CS_COURSE_TITLE, 
+				CS_INTRODUCTION, 
+				CS_USE_COUNT, 
+				CS_MIG_COURSE_MASTER_SEQ, 
+				CS_COURSE_STATUS_CD, 
+				CS_COMPLETE_DIVISION_POINT, 
+				CS_DELETE_YN, 
+				CS_REG_MEMBER_SEQ, 
+				CS_UPD_MEMBER_SEQ, 
+				CS_REG_DTIME, 
+				CS_UPD_DTIME, 
+				CS_REG_IP, CS_UPD_IP
+			) 
+			VALUES(
+				14, 
+				lms.COURSENAME, 
+				lms.COURSECONTENT, 
+				1, 
+				lms.COURSEID, 
+				'COURSE_STATUS::001', 
+				0, 
+				'N', 
+				#{regMemberSeq, jdbcType=NUMERIC}, 
+				#{updMemberSeq, jdbcType=NUMERIC}, 
+				dbo.FN_NOW_TO_CHAR(), 
+				dbo.FN_NOW_TO_CHAR(), 
+				#{regIp, jdbcType=VARCHAR}, 
+				#{updIp, jdbcType=VARCHAR}
+			)
+		​WHEN MATCHED THEN
+			​UPDATE set amway.CS_COURSE_TITLE=lms.COURSENAME, amway.CS_INTRODUCTION=lms.COURSECONTENT;
+	</insert>
+	
+	
+	<insert id="academyCourseActive" parameterType="com._4csoft.aof.ui.infra.vo.UILoginStatusVO">
+		MERGE CS_COURSE_ACTIVE AS "active"
+		​USING CS_COURSE_MASTER AS "master"
+		LEFT OUTER JOIN (SELECT distinct COURSEID, COURSENAME, COURSECONTENT, YEAR, STARTDATE, ENDDATE FROM CS_LMS_COURSE_ORDER) "lms"
+        ON lms.COURSEID = master.CS_MIG_COURSE_MASTER_SEQ
+		ON active.CS_COURSE_MASTER_SEQ = master.CS_COURSE_MASTER_SEQ
+        ​WHEN NOT MATCHED THEN
+        <selectKey resultType="Long" keyProperty="courseActiveSeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>        
+            INSERT ( 
+                    cs_course_master_seq,
+                    cs_year,
+                    cs_study_start_date,
+                    cs_study_end_date,
+                    cs_study_day,
+                    cs_sequence_yn,
+                    cs_resume_day,
+                    cs_period_number,
+                    cs_organization_string,
+                    cs_limit_progress_type_cd,
+                    cs_introduction,
+                    cs_evaluate_method_type_cd,
+                    cs_course_type_cd,
+                    cs_course_active_title,
+                    cs_course_active_status_cd,
+                    cs_complete_division_point,
+                    cs_category_organization_seq,
+                    cs_cancel_day,
+                    cs_apply_type_cd,
+                    cs_delete_yn,
+                    cs_reg_member_seq ,
+                    cs_reg_dtime ,
+                    cs_reg_ip ,
+                    cs_upd_member_seq ,
+                    cs_upd_dtime ,
+                    cs_upd_ip 
+                   ,CX_COMPETITION_YN
+                   ) 
+            VALUES
+                  (    
+                    master.CS_COURSE_MASTER_SEQ ,
+                    lms.YEAR ,
+                    lms.STARTDATE ,
+                    lms.ENDDATE ,
+                    null ,
+                    'N' ,
+                    0 ,
+                    1 ,
+                    '분류::암웨이::그룹방' ,
+                    'LIMIT_PROGRESS_TYPE::NONSEQUENCE' ,
+                    master.CS_INTRODUCTION,
+                    'EVALUATE_METHOD_TYPE::ABSOLUTE' ,
+                    'COURSE_TYPE::PERIOD' ,
+                    master.CS_COURSE_TITLE ,
+                    'COURSE_ACTIVE_STATUS::INACTIVE' ,
+                    0 ,
+                    14 ,
+                    0 ,
+                    'APPLY_TYPE::MANUAL' ,
+                    'N',
+                    #{regMemberSeq, jdbcType=NUMERIC} ,
+                    dbo.FN_NOW_TO_CHAR() ,
+                    #{regIp, jdbcType=VARCHAR} ,
+                    #{updMemberSeq, jdbcType=NUMERIC} ,
+                    dbo.FN_NOW_TO_CHAR() ,
+                    #{updIp, jdbcType=VARCHAR}
+                   , 'N'
+                   )
+		​WHEN MATCHED THEN
+		​ update set cs_delete_yn = 'N';
+	</insert>	
+	
+	<insert id="academyCourseActiveSummary">
+		MERGE CS_COURSE_ACTIVE_SUMMARY AS "summary"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on summary.CS_COURSE_ACTIVE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		​WHEN NOT MATCHED THEN
+			insert(
+				CS_COURSE_ACTIVE_SEQ
+			    ,CS_MEMBER_COUNT
+			    ,CS_ACTIVE_MIDDLE_COUNT
+			    ,CS_ACTIVE_FINAL_COUNT
+			    ,CS_ACTIVE_QUIZ_COUNT
+			    ,CS_ACTIVE_DISCUSS_COUNT
+			    ,CS_ACTIVE_HOMEWORK_COUNT
+			    ,CS_ACTIVE_TEAMPROJECT_COUNT
+			    ,CS_ACTIVE_POST_COUNT
+			    ,CS_ACTIVE_EXAM_COUNT			
+			)
+			values(
+				active.CS_COURSE_ACTIVE_SEQ
+			    ,0
+			    ,0
+			    ,0
+			    ,0
+			    ,0
+			    ,0
+			    ,0
+			    ,0
+			    ,0	
+			);
+	</insert>
+	
+	<insert id="boardNoticeInsert">
+		/* UIMemberMapper.boardNoticeInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::NOTICE'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::NOTICE',
+            active.cs_course_active_seq,
+            'course',
+            '소식',
+            '',
+            1,
+            'Y',
+            'Y',
+            'Y',
+            'Y',
+            'BOARD_REPLY_TYPE::0',
+            1,
+            10,
+            'N',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>
+	
+	<insert id="boardQnaInsert">
+		/* UIMemberMapper.boardQnaInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::QNA'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::QNA',
+            active.cs_course_active_seq,
+            'course',
+            '질문(QNA)',
+            '',
+            2,
+            'Y',
+            'Y',
+            'Y',
+            'Y',
+            'BOARD_REPLY_TYPE::99',
+            1,
+            10,
+            'Y',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>
+	
+	<insert id="boardChattingInsert">
+		/* UIMemberMapper.boardChattingInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::CHATTING'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::CHATTING',
+            active.cs_course_active_seq,
+            'course',
+            '채팅',
+            '',
+            3,
+            'Y',
+            'N',
+            'N',
+            'N',
+            'N',
+            0,
+            0,
+            'N',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>
+	
+	<insert id="boardHomeworkInsert">
+		/* UIMemberMapper.boardHomeworkInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::RESOURCE'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::RESOURCE',
+            active.cs_course_active_seq,
+            'course',
+            '과제관리',
+            '',
+            4,
+            'Y',
+            'N',
+            'Y',
+            'Y',
+            'BOARD_REPLY_TYPE::1',
+            1,
+            10,
+            'N',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>
+	
+		<insert id="boardCourseTeamInsert">
+		/* UIMemberMapper.boardTeamProjectInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::TEAMPROJECT'
+		AND CS_REFERENCE_TYPE = 'course'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::TEAMPROJECT',
+            active.cs_course_active_seq,
+            'course',
+            '과정 팀활동',
+            '',
+            5,
+            'Y',
+            'Y',
+            'Y',
+            'Y',
+            'BOARD_REPLY_TYPE::99',
+            1,
+            10,
+            'Y',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>
+	
+	<insert id="boardTeamProjectInsert">
+		/* UIMemberMapper.boardTeamProjectInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::TEAMPROJECT'
+		AND CS_REFERENCE_TYPE = 'teamproject'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::TEAMPROJECT',
+            active.cs_course_active_seq,
+            'teamproject',
+            '팀활동',
+            '',
+            6,
+            'Y',
+            'Y',
+            'Y',
+            'Y',
+            'BOARD_REPLY_TYPE::99',
+            1,
+            10,
+            'N',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>
+
+	<insert id="boardFreeInsert">
+		/* UIMemberMapper.boardTeamProjectInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::FREE'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::FREE',
+            active.cs_course_active_seq,
+            'course',
+            '자유게시판',
+            '',
+            7,
+            'Y',
+            'Y',
+            'Y',
+            'Y',
+            'BOARD_REPLY_TYPE::0',
+            1,
+            10,
+            'Y',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>
+
+
+	<insert id="boardAskInsert">
+		/* UIMemberMapper.boardTeamProjectInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::ASK'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::ASK',
+            active.cs_course_active_seq,
+            'course',
+            '질문',
+            '',
+            7,
+            'Y',
+            'Y',
+            'Y',
+            'Y',
+            'BOARD_REPLY_TYPE::1',
+            1,
+            10,
+            'Y',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>
+
+	<insert id="boardDiscussInsert">
+		/* UIMemberMapper.boardTeamProjectInsert */
+		MERGE CS_BOARD AS "brd"
+		​USING CS_COURSE_ACTIVE AS "active"
+		on brd.CS_REFERENCE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+		AND CS_BOARD_TYPE_CD = 'BOARD_TYPE::DISCUSS'
+        WHEN NOT MATCHED THEN
+			<selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+				SELECT @@IDENTITY
+	        </selectKey>        
+          insert(
+            CS_BOARD_TYPE_CD,
+            CS_REFERENCE_SEQ,
+            CS_REFERENCE_TYPE,
+            CS_BOARD_TITLE,
+            CS_DESCRIPTION,
+            CS_SORT_ORDER,
+            CS_USE_YN,
+            CS_SECRET_YN,
+            CS_EDITOR_YN,
+            CS_COMMENT_YN,
+            CS_REPLY_TYPE_CD,
+            CS_ATTACH_COUNT,
+            CS_ATTACH_SIZE,
+            CS_JOIN_YN,
+            CS_DELETE_YN,
+            CS_REG_MEMBER_SEQ,
+            CS_UPD_MEMBER_SEQ,
+            CS_REG_DTIME,
+            CS_UPD_DTIME,
+            CS_REG_IP,
+            CS_UPD_IP
+          ) VALUES(
+            'BOARD_TYPE::DISCUSS',
+            active.cs_course_active_seq,
+            'discuss',
+            '토론',
+            '',
+            7,
+            'Y',
+            'N',
+            'Y',
+            'N',
+            'BOARD_REPLY_TYPE::99',
+            1,
+            10,
+            'N',
+            'N',
+            1,
+            1,
+            dbo.FN_NOW_TO_CHAR(),
+            dbo.FN_NOW_TO_CHAR(),
+            '127.0.0.1',
+            '127.0.0.1'
+          );	
+	</insert>	
+	
+</mapper>

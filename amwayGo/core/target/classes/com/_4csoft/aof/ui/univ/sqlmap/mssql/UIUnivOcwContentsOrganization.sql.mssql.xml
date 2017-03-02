@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivOcwContentsOrganizationMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwContentsOrganizationVO">
+        <selectKey resultType="Long" keyProperty="ocwOrganizaionSeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>
+			/* UnivOcwContentsOrganizationMapper.insert */
+			INSERT INTO cs_ocw_contents_organization 
+			       ( 
+						cs_course_active_seq   ,
+						cs_active_element_seq  ,
+						cs_item_seq            ,
+						cs_organization_seq    ,
+						cs_keyword             ,
+						cs_introduction        ,
+						cs_kr_script           ,
+						cs_origin_script       ,
+						cs_lecture_name        ,
+						cs_offer_name          ,
+						cs_source              ,
+						cs_reference_book      ,
+						cs_photo			   ,
+						cs_delete_yn           ,
+						cs_reg_member_seq      ,
+						cs_upd_member_seq      ,
+						cs_reg_dtime           ,
+						cs_upd_dtime           ,
+						cs_reg_ip              ,
+						cs_upd_ip             
+			       ) 
+			   VALUES
+			   	   (
+					   #{courseActiveSeq,   jdbcType=NUMERIC},
+					   #{activeElementSeq,   jdbcType=NUMERIC},
+					   #{itemSeq,   jdbcType=NUMERIC},
+					   #{organizationSeq,   jdbcType=NUMERIC},
+					   #{keyword,   jdbcType=VARCHAR},
+					   #{introduction,   jdbcType=VARCHAR},
+					   #{krScript,   jdbcType=VARCHAR},
+					   #{originScript,   jdbcType=VARCHAR},
+					   #{lectureName,   jdbcType=VARCHAR},
+					   #{offerName,   jdbcType=VARCHAR},
+					   #{source,   jdbcType=VARCHAR},
+					   #{referenceBook,   jdbcType=VARCHAR},
+					   #{photo,   jdbcType=VARCHAR},
+			   		   'N',
+			           #{regMemberSeq,   jdbcType=NUMERIC},
+			           #{updMemberSeq,   jdbcType=NUMERIC},
+			           dbo.FN_NOW_TO_CHAR(),
+			           dbo.FN_NOW_TO_CHAR(),
+			           #{regIp,          jdbcType=VARCHAR},
+			           #{updIp,          jdbcType=VARCHAR}
+			   	   )
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwContentsOrganizationVO">
+		/* UnivOcwContentsOrganizationMapper.update */
+		UPDATE cs_ocw_contents_organization 
+		   SET 
+		   <if test='courseActiveSeq != null'>
+		   	   cs_course_active_seq 	= #{courseActiveSeq, jdbcType=NUMERIC},
+		   </if>
+		   <if test='activeElementSeq != null'>
+		   	   cs_active_element_seq 	= #{activeElementSeq, jdbcType=NUMERIC},
+		   </if>
+		   <if test='itemSeq != null'>
+		   	   cs_item_seq 				= #{itemSeq, jdbcType=NUMERIC},
+		   </if>
+		   <if test='organizationSeq != null'>
+		   	   cs_organization_seq		= #{organizationSeq, jdbcType=NUMERIC},
+		   </if>
+		   <if test='keyword != null'>
+		       cs_keyword 				= #{keyword, jdbcType=VARCHAR},
+		   </if>
+		   <if test='introduction != null'>
+		       cs_introduction 				= #{introduction, jdbcType=VARCHAR},
+		   </if>
+		   <if test='krScript != null'>
+		       cs_kr_script 				= #{krScript, jdbcType=VARCHAR},
+		   </if>
+		   <if test='originScript != null'>
+		       cs_origin_script				= #{originScript, jdbcType=VARCHAR},
+		   </if>
+		   <if test='lectureName != null'>
+		       cs_lecture_name				= #{lectureName, jdbcType=VARCHAR},
+		   </if>
+		   <if test='offerName != null'>
+		       cs_offer_name				= #{offerName, jdbcType=VARCHAR},
+		   </if>
+		   <if test='source != null'>
+		       cs_source				= #{source, jdbcType=VARCHAR},
+		   </if>
+		   <if test='referenceBook != null'>
+		       cs_reference_book		= #{referenceBook, jdbcType=VARCHAR},
+		   </if>
+		   <if test='photo != null'>
+		       cs_photo		= #{photo, jdbcType=VARCHAR},
+		   </if>
+		   	   cs_upd_dtime  			= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         		= #{updIp, jdbcType=VARCHAR} 
+		 WHERE cs_ocw_organizaion_seq = #{ocwOrganizaionSeq}
+		   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwContentsOrganizationVO">
+		/* UnivOcwContentsOrganizationMapper.delete */
+		UPDATE cs_ocw_course 
+		   SET cs_upd_dtime  = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn      = 'Y' 
+		 WHERE cs_ocw_organizaion_seq = #{ocwOrganizaionSeq}
+		   AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivOcwContentsOrganizationRS">
+        <result column="cons.ocwOrganizaionSeq"    	property="ocwContents.ocwOrganizaionSeq"/>
+        <result column="cons.courseActiveSeq"    	property="ocwContents.courseActiveSeq"/>
+        <result column="cons.activeElementSeq"    	property="ocwContents.activeElementSeq"/>
+        <result column="cons.itemSeq"    			property="ocwContents.itemSeq"/>
+        <result column="cons.organizationSeq"    	property="ocwContents.organizationSeq"/>
+        <result column="cons.keyword"    			property="ocwContents.keyword"/>
+        <result column="cons.introduction"    		property="ocwContents.introduction"/>
+        <result column="cons.krScript"    			property="ocwContents.krScript"/>
+        <result column="cons.originScript"    		property="ocwContents.originScript"/>
+        <result column="cons.lectureName"    		property="ocwContents.lectureName"/>
+        <result column="cons.offerName"    			property="ocwContents.offerName"/>
+        <result column="cons.source"    			property="ocwContents.source"/>
+        <result column="cons.referenceBook"    		property="ocwContents.referenceBook"/>
+        <result column="cons.photo"    				property="ocwContents.photo"/>
+        <result column="cons.deleteYn"    			property="ocwContents.deleteYn"/>
+        <result column="cons.regMemberSeq"    		property="ocwContents.regMemberSeq"/>
+        <result column="cons.updMemberSeq"    		property="ocwContents.updMemberSeq"/>
+        <result column="cons.regDtime"    			property="ocwContents.regDtime"/>
+        <result column="cons.updDtime"    			property="ocwContents.updDtime"/>
+        <result column="cons.regIp"    				property="ocwContents.regIp"/>
+        <result column="cons.updIp"    				property="ocwContents.updIp"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwContentsOrganizationVO" resultMap="detailResultMap">
+		/* UnivOcwContentsOrganizationMapper.getDetail */
+		SELECT
+			cons.cs_ocw_organizaion_seq   AS "cons.ocwOrganizaionSeq" ,
+			cons.cs_course_active_seq     AS "cons.courseActiveSeq" ,
+			cons.cs_active_element_seq    AS "cons.activeElementSeq" ,
+			cons.cs_item_seq              AS "cons.itemSeq" ,
+			cons.cs_organization_seq      AS "cons.organizationSeq" ,
+			cons.cs_keyword               AS "cons.keyword" ,
+			cons.cs_introduction          AS "cons.introduction" ,
+			cons.cs_kr_script             AS "cons.krScript" ,
+			cons.cs_origin_script         AS "cons.originScript" ,
+			cons.cs_lecture_name          AS "cons.lectureName" ,
+			cons.cs_offer_name            AS "cons.offerName" ,
+			cons.cs_source                AS "cons.source" ,
+			cons.cs_reference_book        AS "cons.referenceBook" ,
+			cons.cs_photo        		  AS "cons.photo" ,
+			cons.cs_delete_yn             AS "cons.deleteYn" ,
+			cons.cs_reg_member_seq        AS "cons.regMemberSeq" ,
+			cons.cs_upd_member_seq        AS "cons.updMemberSeq" ,
+			cons.cs_reg_dtime             AS "cons.regDtime" ,
+			cons.cs_upd_dtime             AS "cons.updDtime" ,
+			cons.cs_reg_ip                AS "cons.regIp" ,
+			cons.cs_upd_ip                AS "cons.updIp" 
+		FROM
+			cs_ocw_contents_organization cons
+		WHERE
+				cons.cs_delete_yn = 'N'
+		<choose>
+			<when test='ocwOrganizaionSeq != null and !ocwOrganizaionSeq.equals(0l)'>
+				AND cons.cs_ocw_organizaion_seq = #{ocwOrganizaionSeq}
+			</when>
+			<otherwise>
+				AND cons.cs_course_active_seq = #{courseActiveSeq}
+				AND cons.cs_active_element_seq = #{activeElementSeq}
+				AND cons.cs_organization_seq = #{organizationSeq}
+				AND cons.cs_item_seq = #{itemSeq}
+			</otherwise>
+		</choose>
+    </select>
+
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivOcwContentsOrganizationRS">
+        <result column="element.activeElementSeq"   property="element.activeElementSeq"/>
+        <result column="element.courseActiveSeq"    property="element.courseActiveSeq"/>
+        <result column="element.activeElementTitle" property="element.activeElementTitle"/>
+        <result column="cons.ocwOrganizaionSeq"    	property="ocwContents.ocwOrganizaionSeq"/>
+        <result column="cons.courseActiveSeq"    	property="ocwContents.courseActiveSeq"/>
+        <result column="cons.activeElementSeq"    	property="ocwContents.activeElementSeq"/>
+        <result column="cons.itemSeq"    			property="ocwContents.itemSeq"/>
+        <result column="cons.organizationSeq"    	property="ocwContents.organizationSeq"/>
+        <result column="cons.keyword"    			property="ocwContents.keyword"/>
+        <result column="cons.introduction"    		property="ocwContents.introduction"/>
+        <result column="cons.krScript"    			property="ocwContents.krScript"/>
+        <result column="cons.originScript"    		property="ocwContents.originScript"/>
+        <result column="cons.lectureName"    		property="ocwContents.lectureName"/>
+        <result column="cons.offerName"    			property="ocwContents.offerName"/>
+        <result column="cons.source"    			property="ocwContents.source"/>
+        <result column="cons.referenceBook"    		property="ocwContents.referenceBook"/>
+        <result column="cons.photo"    				property="ocwContents.photo"/>
+        <result column="cons.deleteYn"    			property="ocwContents.deleteYn"/>
+        <result column="cons.regMemberSeq"    		property="ocwContents.regMemberSeq"/>
+        <result column="cons.updMemberSeq"    		property="ocwContents.updMemberSeq"/>
+        <result column="cons.regDtime"    			property="ocwContents.regDtime"/>
+        <result column="cons.updDtime"    			property="ocwContents.updDtime"/>
+        <result column="cons.regIp"    				property="ocwContents.regIp"/>
+        <result column="cons.updIp"    				property="ocwContents.updIp"/>
+        <result column="cons.regMemberName"    		property="ocwContents.regMemberName"/>
+    </resultMap>
+	
+    <select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwContentsOrganizationVO" resultMap="listResultMap">
+		/* UnivOcwContentsOrganizationMapper.getList */
+		SELECT
+			el.cs_active_element_seq AS "element.activeElementSeq",
+			el.cs_course_active_seq AS "element.courseActiveSeq",
+			el.cs_active_element_title AS "element.activeElementTitle",
+			cons.cs_ocw_organizaion_seq   AS "cons.ocwOrganizaionSeq" ,
+			cons.cs_course_active_seq     AS "cons.courseActiveSeq" ,
+			cons.cs_active_element_seq    AS "cons.activeElementSeq" ,
+			cons.cs_item_seq              AS "cons.itemSeq" ,
+			cons.cs_organization_seq      AS "cons.organizationSeq" ,
+			cons.cs_keyword               AS "cons.keyword" ,
+			cons.cs_introduction          AS "cons.introduction" ,
+			cons.cs_kr_script             AS "cons.krScript" ,
+			cons.cs_origin_script         AS "cons.originScript" ,
+			cons.cs_lecture_name          AS "cons.lectureName" ,
+			cons.cs_offer_name            AS "cons.offerName" ,
+			cons.cs_source                AS "cons.source" ,
+			cons.cs_reference_book        AS "cons.referenceBook" ,
+			cons.cs_photo        		  AS "cons.photo" ,
+			cons.cs_delete_yn             AS "cons.deleteYn" ,
+			cons.cs_reg_member_seq        AS "cons.regMemberSeq" ,
+			cons.cs_upd_member_seq        AS "cons.updMemberSeq" ,
+			cons.cs_reg_dtime             AS "cons.regDtime" ,
+			cons.cs_upd_dtime             AS "cons.updDtime" ,
+			cons.cs_reg_ip                AS "cons.regIp" ,
+			cons.cs_upd_ip                AS "cons.updIp" ,
+			rmem.cs_member_name			  AS "cons.regMemberName"
+		FROM
+			cs_course_active_element el
+			INNER JOIN cs_lcms_item item
+				ON el.cs_reference_seq = item.cs_organization_seq
+			INNER JOIN cs_ocw_contents_organization cons
+				ON cons.cs_course_active_seq = el.cs_course_active_seq
+				AND cons.cs_active_element_seq = el.cs_active_element_seq
+				AND cons.cs_organization_seq = item.cs_organization_seq
+				AND cons.cs_item_seq = item.cs_item_seq
+			INNER JOIN cs_member rmem
+			    ON cons.cs_reg_member_seq = rmem.cs_member_seq
+		WHERE
+			el.cs_delete_yn = 'N'
+		AND el.cs_course_active_seq = #{courseActiveSeq}
+		AND el.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+		ORDER BY 
+			el.cs_sort_order , item.cs_sort_order
+    </select>
+    
+	<resultMap id="detailUsrResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivOcwContentsOrganizationRS">
+        <result column="element.activeElementSeq"   property="element.activeElementSeq"/>
+        <result column="element.courseActiveSeq"    property="element.courseActiveSeq"/>
+        <result column="element.activeElementTitle" property="element.activeElementTitle"/>
+        <result column="org.width" 					property="organization.width"/>
+        <result column="org.height" 				property="organization.height"/>
+        <result column="item.identifier" 			property="item.identifier"/>
+        <result column="cons.ocwOrganizaionSeq"    	property="ocwContents.ocwOrganizaionSeq"/>
+        <result column="cons.courseActiveSeq"    	property="ocwContents.courseActiveSeq"/>
+        <result column="cons.activeElementSeq"    	property="ocwContents.activeElementSeq"/>
+        <result column="cons.itemSeq"    			property="ocwContents.itemSeq"/>
+        <result column="cons.organizationSeq"    	property="ocwContents.organizationSeq"/>
+        <result column="cons.keyword"    			property="ocwContents.keyword"/>
+        <result column="cons.introduction"    		property="ocwContents.introduction"/>
+        <result column="cons.krScript"    			property="ocwContents.krScript"/>
+        <result column="cons.originScript"    		property="ocwContents.originScript"/>
+        <result column="cons.lectureName"    		property="ocwContents.lectureName"/>
+        <result column="cons.offerName"    			property="ocwContents.offerName"/>
+        <result column="cons.source"    			property="ocwContents.source"/>
+        <result column="cons.referenceBook"    		property="ocwContents.referenceBook"/>
+        <result column="cons.photo"    				property="ocwContents.photo"/>
+        <result column="cons.deleteYn"    			property="ocwContents.deleteYn"/>
+        <result column="cons.regMemberSeq"    		property="ocwContents.regMemberSeq"/>
+        <result column="cons.updMemberSeq"    		property="ocwContents.updMemberSeq"/>
+        <result column="cons.regDtime"    			property="ocwContents.regDtime"/>
+        <result column="cons.updDtime"    			property="ocwContents.updDtime"/>
+        <result column="cons.regIp"    				property="ocwContents.regIp"/>
+        <result column="cons.updIp"    				property="ocwContents.updIp"/>
+        <result column="cons.regMemberName"    		property="ocwContents.regMemberName"/>
+        <result column="activeItem.organizationItemSeq"	property="activeItem.organizationItemSeq" />
+		<result column="referenceTablename" />
+        <collection column="{referenceSeq=activeItem.organizationItemSeq,referenceTablename=referenceTablename}" property="activeItem.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+	
+    <select id="getDetailUsr" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwContentsOrganizationVO" resultMap="detailUsrResultMap">
+		/* UnivOcwContentsOrganizationMapper.getDetailUsr */
+		SELECT
+			el.cs_active_element_seq AS "element.activeElementSeq",
+			el.cs_course_active_seq AS "element.courseActiveSeq",
+			el.cs_active_element_title AS "element.activeElementTitle",
+			org.cs_width 				AS "org.width",
+			org.cs_height 				AS "org.height",
+			item.cs_identifier 			AS "item.identifier",
+			cons.cs_ocw_organizaion_seq   AS "cons.ocwOrganizaionSeq" ,
+			cons.cs_course_active_seq     AS "cons.courseActiveSeq" ,
+			cons.cs_active_element_seq    AS "cons.activeElementSeq" ,
+			cons.cs_item_seq              AS "cons.itemSeq" ,
+			cons.cs_organization_seq      AS "cons.organizationSeq" ,
+			cons.cs_keyword               AS "cons.keyword" ,
+			cons.cs_introduction          AS "cons.introduction" ,
+			cons.cs_kr_script             AS "cons.krScript" ,
+			cons.cs_origin_script         AS "cons.originScript" ,
+			cons.cs_lecture_name          AS "cons.lectureName" ,
+			cons.cs_offer_name            AS "cons.offerName" ,
+			cons.cs_source                AS "cons.source" ,
+			cons.cs_reference_book        AS "cons.referenceBook" ,
+			cons.cs_photo        		  AS "cons.photo" ,
+			cons.cs_delete_yn             AS "cons.deleteYn" ,
+			cons.cs_reg_member_seq        AS "cons.regMemberSeq" ,
+			cons.cs_upd_member_seq        AS "cons.updMemberSeq" ,
+			cons.cs_reg_dtime             AS "cons.regDtime" ,
+			cons.cs_upd_dtime             AS "cons.updDtime" ,
+			cons.cs_reg_ip                AS "cons.regIp" ,
+			cons.cs_upd_ip                AS "cons.updIp" ,
+			rmem.cs_member_name			  AS "cons.regMemberName" ,
+			ISNULL(activeItem.cs_organization_item_seq,0) AS "activeItem.organizationItemSeq",
+		    'cs_course_active_organization_item' AS "referenceTablename"
+		FROM
+			cs_course_active_element el
+			INNER JOIN cs_lcms_organization org
+				ON el.cs_reference_seq = org.cs_organization_seq
+			INNER JOIN cs_lcms_item item
+				ON el.cs_reference_seq = item.cs_organization_seq
+			INNER JOIN cs_ocw_contents_organization cons
+				ON cons.cs_course_active_seq = el.cs_course_active_seq
+				AND cons.cs_active_element_seq = el.cs_active_element_seq
+				AND cons.cs_organization_seq = item.cs_organization_seq
+				AND cons.cs_item_seq = item.cs_item_seq
+			INNER JOIN cs_member rmem
+			    ON cons.cs_reg_member_seq = rmem.cs_member_seq
+			LEFT OUTER JOIN cs_course_active_organization_item activeItem
+				ON activeItem.cs_item_seq = item.cs_item_seq
+				AND activeItem.cs_course_active_seq = el.cs_course_active_seq
+				AND activeItem.cs_organization_seq = item.cs_organization_seq
+				AND activeItem.cs_delete_yn = 'N'
+		WHERE
+			el.cs_delete_yn = 'N'
+		AND el.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+		AND cons.cs_course_active_seq = #{courseActiveSeq}
+		AND cons.cs_active_element_seq = #{activeElementSeq}
+		AND cons.cs_organization_seq = #{organizationSeq}
+		AND cons.cs_item_seq = #{itemSeq}
+    </select>
+    
+</mapper>

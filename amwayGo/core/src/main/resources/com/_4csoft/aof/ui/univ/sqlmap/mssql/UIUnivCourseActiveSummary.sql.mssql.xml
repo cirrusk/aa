@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveSummaryMapper">
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.insert */
+INSERT INTO cs_course_active_summary 
+       ( 
+        cs_course_active_seq
+       ) 
+VALUES (#{courseActiveSeq, jdbcType=NUMERIC})
+    </insert>
+    
+    <update id="updateTeamProjectCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.updateTeamProjectCount */
+UPDATE a 
+   SET a.cs_active_teamproject_count = b.cs_active_teamproject_count 
+  FROM cs_course_active_summary a, 
+       (SELECT 
+               COUNT(*) AS cs_active_teamproject_count 
+         FROM cs_course_teamproject 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N' 
+       ) b 
+ WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="updateHomeworkCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.updateHomeworkCount */
+UPDATE a 
+   SET a.cs_active_homework_count = ISNULL(b.cs_active_homework_count , 0)
+  FROM cs_course_active_summary a, 
+       (SELECT 
+               COUNT(*) AS cs_active_homework_count 
+         FROM cs_course_homework 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N' 
+          AND cs_replace_yn = 'N'
+          AND cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}'
+       ) b 
+ WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="updateMiddleCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.updateMiddleCount */
+UPDATE a 
+   SET a.cs_active_middle_count = ISNULL(b.cs_active_middle_count , 0)
+  FROM cs_course_active_summary a, 
+       (SELECT 
+               COUNT(*) AS cs_active_middle_count 
+         FROM cs_course_active_exam_paper 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N' 
+          AND cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}'
+          AND cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}'
+       ) b 
+ WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="updateMiddleSupplementCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.updateMiddleSupplementCount */
+UPDATE a 
+   SET a.cs_active_middle_count = ISNULL(b.cs_active_homework_count , 0)
+  FROM cs_course_active_summary a, 
+       (SELECT 
+               COUNT(*) AS cs_active_homework_count 
+         FROM cs_course_homework 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N' 
+          AND cs_replace_yn = 'Y'
+          AND cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}'
+          AND cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}'
+       ) b 
+ WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="updateFinalCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.updateFinalCount */
+UPDATE a 
+   SET a.cs_active_final_count = ISNULL(b.cs_active_final_count , 0)
+  FROM cs_course_active_summary a, 
+       (SELECT 
+               COUNT(*) AS cs_active_final_count 
+         FROM cs_course_active_exam_paper 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N' 
+          AND cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}'
+          AND cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.FINAL}'
+       ) b 
+ WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="updateFinalSupplementCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.updateFinalSupplementCount */
+UPDATE a 
+   SET a.cs_active_final_count = ISNULL(b.cs_active_homework_count , 0)
+  FROM cs_course_active_summary a, 
+       (SELECT 
+               COUNT(*) AS cs_active_homework_count 
+         FROM cs_course_homework 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N' 
+          AND cs_replace_yn = 'Y'
+          AND cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}'
+          AND cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.FINAL}'
+       ) b 
+ WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="updateQuizCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.updateQuizCount */
+UPDATE a 
+   SET a.cs_active_quiz_count = ISNULL(b.cs_active_quiz_count , 0)
+  FROM cs_course_active_summary a, 
+       (SELECT 
+               COUNT(*) AS cs_active_quiz_count 
+         FROM cs_course_active_exam_paper 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N' 
+          AND cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.QUIZ}'
+       ) b 
+ WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+     <update id="updateExamCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+/* UnivCourseActiveSummaryMapper.updateExamCount */
+UPDATE a 
+   SET a.cs_active_exam_count = ISNULL(b.cs_active_exam_count , 0)
+  FROM cs_course_active_summary a, 
+       (SELECT 
+               COUNT(*) AS cs_active_exam_count 
+         FROM cs_course_active_exam_paper 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N' 
+          AND cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.EXAM}'
+       ) b 
+ WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="updateDiscussCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+	/* UnivCourseActiveSummaryMapper.updateDiscussCount */
+	UPDATE a 
+	   SET a.cs_active_discuss_count = b.cs_active_discuss_count 
+	  FROM cs_course_active_summary a, 
+	       (SELECT 
+	               COUNT(*) AS cs_active_discuss_count 
+	         FROM cs_course_discuss
+	        WHERE cs_course_active_seq = #{courseActiveSeq}
+	          AND cs_delete_yn = 'N' 
+	       ) b 
+	 WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <update id="updateApplyMemberCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+	/* UnivCourseActiveSummaryMapper.updateApplyMemberCount */
+	UPDATE a 
+	   SET a.cs_member_count = b.cs_member_count 
+	  FROM cs_course_active_summary a, 
+	       (SELECT
+				COUNT(*) AS cs_member_count
+			FROM 
+				cs_course_apply apply
+		    WHERE apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+			  AND apply.cs_delete_yn = 'N'
+			  AND apply.cs_course_active_seq = #{courseActiveSeq}
+	       ) b 
+	 WHERE a.cs_course_active_seq = #{courseActiveSeq}
+    </update>
+    
+    <select id="getDetail" parameterType="Long" resultType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSummaryVO">
+SELECT
+	cs_course_active_seq		AS "courseActiveSeq",
+	cs_member_count				AS "memberCount",
+	cs_active_middle_count		AS "activeMiddleCount",
+	cs_active_final_count		AS "activeFinalCount",
+	cs_active_quiz_count		AS "activeQuizCount",
+	cs_active_discuss_count		AS "activeDiscussCount",
+	cs_active_homework_count	AS "activeHomeworkCount",
+	cs_active_teamproject_count	AS "activeTeamprojectCount",
+	cs_active_post_count		AS "activePostCount"
+FROM
+	cs_course_active_summary
+WHERE
+	cs_course_active_seq = #{courseActiveSeq}
+    </select>
+    
+     <select id="countList" parameterType="Long" resultType="int">
+/* UnivCourseActiveSummaryMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_course_active_summary
+ WHERE cs_course_active_seq = #{courseActiveSeq}
+    </select>
+</mapper>

@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseExamItemMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamItemVO">
+		<selectKey resultType="Long" keyProperty="examItemSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseExamItemMapper.insert */
+INSERT INTO cs_course_exam_item
+	(
+		cs_exam_seq ,
+		cs_exam_item_title ,
+		cs_description ,
+		cs_comment ,
+		cs_exam_file_type_cd ,
+		cs_file_path ,
+		cs_file_path_type ,
+		cs_open_yn ,
+		cs_use_yn ,
+		cs_use_count ,
+		cs_exam_item_type_cd ,
+		cs_exam_item_difficulty_cd ,
+		cs_exam_item_align_cd ,
+		cs_sort_order ,
+		cs_correct_answer ,
+		cs_similar_answer ,
+		cs_exam_item_score ,
+		cs_prof_member_seq ,
+		cs_group_key ,
+		cs_reg_member_seq ,
+        cs_reg_dtime ,
+        cs_reg_ip ,
+        cs_upd_member_seq ,
+        cs_upd_dtime ,
+        cs_upd_ip
+	)
+	VALUES
+	(
+		#{examSeq, jdbcType=NUMERIC}  ,
+		#{examItemTitle, jdbcType=VARCHAR} ,
+		#{description, jdbcType=VARCHAR} ,
+		#{comment, jdbcType=VARCHAR} ,
+		#{examFileTypeCd, jdbcType=VARCHAR} ,
+		#{filePath, jdbcType=VARCHAR} ,
+		#{filePathType, jdbcType=VARCHAR} ,
+		#{openYn, jdbcType=VARCHAR} ,
+		#{useYn, jdbcType=VARCHAR} ,
+		#{useCount, jdbcType=NUMERIC}  ,
+		#{examItemTypeCd, jdbcType=VARCHAR} ,
+		#{examItemDifficultyCd, jdbcType=VARCHAR} ,
+		#{examItemAlignCd, jdbcType=VARCHAR} ,
+		#{sortOrder, jdbcType=NUMERIC}  ,
+		#{correctAnswer, jdbcType=VARCHAR} ,
+		#{similarAnswer, jdbcType=VARCHAR} ,
+		#{examItemScore, jdbcType=NUMERIC} ,
+		#{profMemberSeq, jdbcType=NUMERIC} ,
+		#{groupKey, jdbcType=VARCHAR} ,
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamItemVO">
+/* UIUnivCourseExamItemMapper.update */
+UPDATE cs_course_exam_item 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+	   <if test='examItemTitle != null'>
+	   ,cs_exam_item_title = #{examItemTitle, jdbcType=VARCHAR} 
+	   </if>		       
+	   <if test='description != null'>
+	   ,cs_description = #{description, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='comment != null'>
+	   ,cs_comment = #{comment, jdbcType=VARCHAR}
+	   </if>
+	   <if test='examFileTypeCd != null'>
+	   ,cs_exam_file_type_cd = #{examFileTypeCd, jdbcType=VARCHAR}
+	   </if>
+	   <if test='filePath != null'>
+	   ,cs_file_path = #{filePath, jdbcType=VARCHAR}             
+	   </if>
+	   <if test='filePathType != null'>
+       ,cs_file_path_type = #{filePathType, jdbcType=VARCHAR}          
+	   </if>
+	   <if test='openYn != null'>
+       ,cs_open_yn = #{openYn, jdbcType=VARCHAR}                
+       </if>
+	   <if test='useYn != null'>
+       ,cs_use_yn = #{useYn, jdbcType=VARCHAR}                
+       </if>
+	   <if test='useCount != null'>
+       ,cs_use_count = #{useCount, jdbcType=NUMERIC}            
+       </if>
+	   <if test='examItemTypeCd != null'>
+       ,cs_exam_item_type_cd = #{examItemTypeCd, jdbcType=VARCHAR}       
+       </if>
+	   <if test='examItemDifficultyCd != null'>
+       ,cs_exam_item_difficulty_cd = #{examItemDifficultyCd, jdbcType=VARCHAR} 
+       </if>
+	   <if test='examItemAlignCd != null'>
+       ,cs_exam_item_align_cd = #{examItemAlignCd, jdbcType=VARCHAR}     
+       </if>
+	   <if test='sortOrder != null'>
+       ,cs_sort_order = #{sortOrder, jdbcType=NUMERIC}           
+       </if>
+	   <if test='correctAnswer != null'>
+       ,cs_correct_answer = #{correctAnswer, jdbcType=VARCHAR}        
+       </if>
+	   <if test='similarAnswer != null'>
+       ,cs_similar_answer = #{similarAnswer, jdbcType=VARCHAR}        
+       </if>
+	   <if test='examItemScore != null'>
+       ,cs_exam_item_score = #{examItemScore, jdbcType=NUMERIC}        
+       </if>
+	   <if test='profMemberSeq != null'>
+       ,cs_prof_member_seq = #{profMemberSeq, jdbcType=NUMERIC}        
+       </if>
+	   <if test='groupKey != null'>
+       ,cs_group_key = #{groupKey, jdbcType=VARCHAR}              
+       </if>
+WHERE cs_exam_item_seq = #{examItemSeq}
+  AND cs_delete_yn = 'N'
+    </update>       
+
+   <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamItemVO">
+/* UIUnivCourseExamItemMapper.delete */
+UPDATE cs_course_exam_item 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+ WHERE cs_exam_item_seq = #{examItemSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamItemRS">
+         <result column="cei.examItemSeq"           property="courseExamItem.examItemSeq"           />
+         <result column="cei.examSeq"               property="courseExamItem.examSeq"               />
+         <result column="cei.examItemTitle"         property="courseExamItem.examItemTitle"         />
+         <result column="cei.description"           property="courseExamItem.description"           />
+         <result column="cei.comment"               property="courseExamItem.comment"               />
+         <result column="cei.examFileTypeCd"        property="courseExamItem.examFileTypeCd"        />
+         <result column="cei.filePath"              property="courseExamItem.filePath"              />
+         <result column="cei.filePathType"          property="courseExamItem.filePathType"          />
+         <result column="cei.openYn"                property="courseExamItem.openYn"                />
+         <result column="cei.useYn"                 property="courseExamItem.useYn"                 />
+         <result column="cei.useCount"              property="courseExamItem.useCount"              />
+         <result column="cei.examItemTypeCd"        property="courseExamItem.examItemTypeCd"        />
+         <result column="cei.examItemDifficultyCd"  property="courseExamItem.examItemDifficultyCd"  />
+         <result column="cei.examItemAlignCd"       property="courseExamItem.examItemAlignCd"       />
+         <result column="cei.sortOrder"             property="courseExamItem.sortOrder"             />
+         <result column="cei.correctAnswer"         property="courseExamItem.correctAnswer"         />
+         <result column="cei.similarAnswer"         property="courseExamItem.similarAnswer"         />
+         <result column="cei.examItemScore"         property="courseExamItem.examItemScore"         />
+         <result column="cei.profMemberSeq"         property="courseExamItem.profMemberSeq"         />
+         <result column="cei.groupKey"              property="courseExamItem.groupKey"              />
+         <result column="cei.deleteYn"              property="courseExamItem.deleteYn"              />
+         <result column="cei.regMemberSeq"          property="courseExamItem.regMemberSeq"          />
+         <result column="cei.regDtime"              property="courseExamItem.regDtime"              />
+         <result column="cei.regIp"                 property="courseExamItem.regIp"                 />
+         <result column="cei.updMemberSeq"          property="courseExamItem.updMemberSeq"          />
+         <result column="cei.updDtime"              property="courseExamItem.updDtime"              />
+         <result column="cei.updIp"                 property="courseExamItem.updIp"                 />
+         <result column="cei.regMemberName"         property="courseExamItem.regMemberName"         />
+         <result column="cei.updMemberName"         property="courseExamItem.updMemberName"         />
+         <collection column="cei.examItemSeq"       property="listCourseExamExample" javaType="List"
+		ofType="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamExampleRS" select="com._4csoft.aof.univ.mapper.UnivCourseExamExampleMapper.getList" />
+    </resultMap>
+    
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIUnivCourseExamItemMapper.getDtail */    
+SELECT cei.cs_exam_item_seq				AS "cei.examItemSeq" ,
+       cei.cs_exam_seq                  AS "cei.examSeq" ,    
+       cei.cs_exam_item_title           AS "cei.examItemTitle" ,    
+       cei.cs_description               AS "cei.description" ,    
+       cei.cs_comment                   AS "cei.comment" ,    
+       cei.cs_exam_file_type_cd         AS "cei.examFileTypeCd" ,    
+       cei.cs_file_path                 AS "cei.filePath" ,    
+       cei.cs_file_path_type            AS "cei.filePathType" ,    
+       cei.cs_open_yn                   AS "cei.openYn" ,    
+       cei.cs_use_yn                    AS "cei.useYn" ,    
+       cei.cs_use_count                 AS "cei.useCount" ,    
+       cei.cs_exam_item_type_cd         AS "cei.examItemTypeCd" ,    
+       cei.cs_exam_item_difficulty_cd   AS "cei.examItemDifficultyCd" ,    
+       cei.cs_exam_item_align_cd        AS "cei.examItemAlignCd" ,    
+       cei.cs_sort_order                AS "cei.sortOrder" ,    
+       cei.cs_correct_answer            AS "cei.correctAnswer" ,    
+       cei.cs_similar_answer            AS "cei.similarAnswer" ,    
+       cei.cs_exam_item_score           AS "cei.examItemScore" ,    
+       cei.cs_prof_member_seq           AS "cei.profMemberSeq" ,    
+       cei.cs_group_key                 AS "cei.groupKey" ,
+       cei.cs_delete_yn					AS "cei.deleteYn" ,    
+       cei.cs_reg_member_seq            AS "cei.regMemberSeq" ,
+       cei.cs_reg_dtime                 AS "cei.regDtime" ,    
+       cei.cs_reg_ip                    AS "cei.regIp" ,       
+       cei.cs_upd_member_seq            AS "cei.updMemberSeq" ,
+       cei.cs_upd_dtime                 AS "cei.updDtime" ,    
+       cei.cs_upd_ip                    AS "cei.updIp" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = cei.cs_reg_member_seq
+       ) AS "cei.regMemberName" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = cei.cs_upd_member_seq
+       ) AS "cei.updMemberName"
+  FROM cs_course_exam_item cei 
+ WHERE cei.cs_exam_item_seq = #{examItemSeq} 
+   AND cei.cs_delete_yn = 'N'           
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamItemRS">
+         <result column="cei.examItemSeq"           property="courseExamItem.examItemSeq"           />
+         <result column="cei.examSeq"               property="courseExamItem.examSeq"               />
+         <result column="cei.examItemTitle"         property="courseExamItem.examItemTitle"         />
+         <result column="cei.description"           property="courseExamItem.description"           />
+         <result column="cei.comment"               property="courseExamItem.comment"               />
+         <result column="cei.examFileTypeCd"        property="courseExamItem.examFileTypeCd"        />
+         <result column="cei.filePath"              property="courseExamItem.filePath"              />
+         <result column="cei.filePathType"          property="courseExamItem.filePathType"          />
+         <result column="cei.openYn"                property="courseExamItem.openYn"                />
+         <result column="cei.useYn"                 property="courseExamItem.useYn"                 />
+         <result column="cei.useCount"              property="courseExamItem.useCount"              />
+         <result column="cei.examItemTypeCd"        property="courseExamItem.examItemTypeCd"        />
+         <result column="cei.examItemDifficultyCd"  property="courseExamItem.examItemDifficultyCd"  />
+         <result column="cei.examItemAlignCd"       property="courseExamItem.examItemAlignCd"       />
+         <result column="cei.sortOrder"             property="courseExamItem.sortOrder"             />
+         <result column="cei.correctAnswer"         property="courseExamItem.correctAnswer"         />
+         <result column="cei.similarAnswer"         property="courseExamItem.similarAnswer"         />
+         <result column="cei.examItemScore"         property="courseExamItem.examItemScore"         />
+         <result column="cei.profMemberSeq"         property="courseExamItem.profMemberSeq"         />
+         <result column="cei.groupKey"              property="courseExamItem.groupKey"              />
+         <result column="cei.deleteYn"              property="courseExamItem.deleteYn"              />
+         <result column="cei.regMemberSeq"          property="courseExamItem.regMemberSeq"          />
+         <result column="cei.regDtime"              property="courseExamItem.regDtime"              />
+         <result column="cei.regIp"                 property="courseExamItem.regIp"                 />
+         <result column="cei.updMemberSeq"          property="courseExamItem.updMemberSeq"          />
+         <result column="cei.updDtime"              property="courseExamItem.updDtime"              />
+         <result column="cei.updIp"                 property="courseExamItem.updIp"                 />
+         <result column="cei.regMemberName"         property="courseExamItem.regMemberName"         />
+         <result column="cei.updMemberName"         property="courseExamItem.updMemberName"         />
+         <collection column="cei.examItemSeq"       property="listCourseExamExample" javaType="List"
+		ofType="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamExampleRS" select="com._4csoft.aof.univ.mapper.UnivCourseExamExampleMapper.getList" />
+    </resultMap>
+    
+    <select id="getList" parameterType="Long" resultMap="listResultMap">
+/* UIUnivCourseExamItemMapper.getList */
+SELECT cei.cs_exam_item_seq				AS "cei.examItemSeq" ,
+       cei.cs_exam_seq                  AS "cei.examSeq" ,    
+       cei.cs_exam_item_title           AS "cei.examItemTitle" ,    
+       cei.cs_description               AS "cei.description" ,    
+       cei.cs_comment                   AS "cei.comment" ,    
+       cei.cs_exam_file_type_cd         AS "cei.examFileTypeCd" ,    
+       cei.cs_file_path                 AS "cei.filePath" ,    
+       cei.cs_file_path_type            AS "cei.filePathType" ,    
+       cei.cs_open_yn                   AS "cei.openYn" ,    
+       cei.cs_use_yn                    AS "cei.useYn" ,    
+       cei.cs_use_count                 AS "cei.useCount" ,    
+       cei.cs_exam_item_type_cd         AS "cei.examItemTypeCd" ,    
+       cei.cs_exam_item_difficulty_cd   AS "cei.examItemDifficultyCd" ,    
+       cei.cs_exam_item_align_cd        AS "cei.examItemAlignCd" ,    
+       cei.cs_sort_order                AS "cei.sortOrder" ,    
+       cei.cs_correct_answer            AS "cei.correctAnswer" ,    
+       cei.cs_similar_answer            AS "cei.similarAnswer" ,
+       cei.cs_exam_item_score           AS "cei.examItemScore" ,    
+       cei.cs_prof_member_seq           AS "cei.profMemberSeq" ,        
+       cei.cs_group_key                 AS "cei.groupKey" ,
+       cei.cs_delete_yn					AS "cei.deleteYn" ,    
+       cei.cs_reg_member_seq            AS "cei.regMemberSeq" ,
+       cei.cs_reg_dtime                 AS "cei.regDtime" ,    
+       cei.cs_reg_ip                    AS "cei.regIp" ,       
+       cei.cs_upd_member_seq            AS "cei.updMemberSeq" ,
+       cei.cs_upd_dtime                 AS "cei.updDtime" ,    
+       cei.cs_upd_ip                    AS "cei.updIp" ,
+       m1.cs_member_name				AS "cei.regMemberName" ,
+       m2.cs_member_name				AS "cei.updMemberName"        
+  FROM cs_course_exam_item cei 
+	INNER JOIN cs_member m1
+		ON m1.cs_member_seq = cei.cs_reg_member_seq
+	INNER JOIN cs_member m2
+		ON m2.cs_member_seq = cei.cs_upd_member_seq
+ WHERE cei.cs_exam_seq = #{examSeq} 
+   AND cei.cs_delete_yn = 'N'
+ ORDER BY cei.cs_sort_order ASC       
+    </select>
+    
+    <select id="getListSingleAll" parameterType="Long" resultType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamItemVO">
+/* UIUnivCourseExamItemMapper.getListSingleAll */
+SELECT cei.cs_exam_item_seq				AS "examItemSeq" ,
+       cei.cs_exam_seq                  AS "examSeq" ,    
+       cei.cs_exam_item_title           AS "examItemTitle" ,    
+       cei.cs_description               AS "description" ,    
+       cei.cs_comment                   AS "comment" ,    
+       cei.cs_exam_file_type_cd         AS "examFileTypeCd" ,    
+       cei.cs_file_path                 AS "filePath" ,    
+       cei.cs_file_path_type            AS "filePathType" ,    
+       cei.cs_open_yn                   AS "openYn" ,    
+       cei.cs_use_yn                    AS "useYn" ,    
+       cei.cs_use_count                 AS "useCount" ,    
+       cei.cs_exam_item_type_cd         AS "examItemTypeCd" ,    
+       cei.cs_exam_item_difficulty_cd   AS "examItemDifficultyCd" ,    
+       cei.cs_exam_item_align_cd        AS "examItemAlignCd" ,    
+       cei.cs_sort_order                AS "sortOrder" ,    
+       cei.cs_correct_answer            AS "correctAnswer" ,    
+       cei.cs_similar_answer            AS "similarAnswer" ,
+       cei.cs_exam_item_score           AS "examItemScore" ,    
+       cei.cs_prof_member_seq           AS "profMemberSeq" ,          
+       cei.cs_group_key                 AS "groupKey" ,
+       cei.cs_delete_yn					AS "deleteYn" ,    
+       cei.cs_reg_member_seq            AS "regMemberSeq" ,
+       cei.cs_reg_dtime                 AS "regDtime" ,    
+       cei.cs_reg_ip                    AS "regIp" ,       
+       cei.cs_upd_member_seq            AS "updMemberSeq" ,
+       cei.cs_upd_dtime                 AS "updDtime" ,    
+       cei.cs_upd_ip                    AS "updIp" 
+  FROM cs_course_exam_item cei 
+ INNER JOIN cs_course_exam ce 
+    ON ce.cs_delete_yn = 'N' 
+   AND ce.cs_exam_seq = cei.cs_exam_seq 
+   AND ce.cs_exam_count = 1 
+ WHERE ce.cs_course_master_seq = #{courseMasterSeq} 
+   AND ce.cs_delete_yn = 'N'
+    </select>
+    
+    <select id="getListRandom" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamItemVO" resultType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamItemVO">
+/* UIUnivCourseExamItemMapper.getListRandom */
+SELECT 
+	   cei.cs_exam_item_seq				AS "examItemSeq" ,
+       cei.cs_exam_seq                  AS "examSeq" ,    
+       cei.cs_exam_item_title           AS "examItemTitle" ,    
+       cei.cs_description               AS "description" ,    
+       cei.cs_comment                   AS "comment" ,    
+       cei.cs_exam_file_type_cd         AS "examFileTypeCd" ,    
+       cei.cs_file_path                 AS "filePath" ,    
+       cei.cs_file_path_type            AS "filePathType" ,    
+       cei.cs_open_yn                   AS "openYn" ,    
+       cei.cs_use_yn                    AS "useYn" ,    
+       cei.cs_use_count                 AS "useCount" ,    
+       cei.cs_exam_item_type_cd         AS "examItemTypeCd" ,    
+       cei.cs_exam_item_difficulty_cd   AS "examItemDifficultyCd" ,    
+       cei.cs_exam_item_align_cd        AS "examItemAlignCd" ,    
+       cei.cs_sort_order                AS "sortOrder" ,    
+       cei.cs_correct_answer            AS "correctAnswer" ,    
+       cei.cs_similar_answer            AS "similarAnswer" ,
+       cei.cs_exam_item_score           AS "examItemScore" ,    
+       cei.cs_prof_member_seq           AS "profMemberSeq" ,          
+       cei.cs_group_key                 AS "groupKey" ,
+       cei.cs_delete_yn					AS "deleteYn" ,    
+       cei.cs_reg_member_seq            AS "regMemberSeq" ,
+       cei.cs_reg_dtime                 AS "regDtime" ,    
+       cei.cs_reg_ip                    AS "regIp" ,       
+       cei.cs_upd_member_seq            AS "updMemberSeq" ,
+       cei.cs_upd_dtime                 AS "updDtime" ,    
+       cei.cs_upd_ip                    AS "updIp" 
+  FROM cs_course_exam_item cei 
+ INNER JOIN cs_course_exam ce 
+    ON ce.cs_delete_yn = 'N' 
+   AND ce.cs_exam_seq = cei.cs_exam_seq 
+   AND ce.cs_exam_count = 1
+    <if test='courseMasterSeq != null and !courseMasterSeq.equals("")'>
+   AND ce.cs_course_master_seq = #{courseMasterSeq}
+	</if>     
+ WHERE ce.cs_delete_yn = 'N'
+	<if test='examItemTypeCd != null and !examItemTypeCd.equals("")'>
+   AND cei.cs_exam_item_type_cd = #{examItemTypeCd}
+	</if>
+	<if test='examItemDifficultyCd != null and !examItemDifficultyCd.equals("")'>
+   AND cei.cs_exam_item_difficulty_cd = #{examItemDifficultyCd}
+	</if>
+    </select>
+
+</mapper>

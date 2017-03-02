@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveExamPaperTargetMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperTargetVO">
+		<selectKey resultType="Long" keyProperty="activeExamPaperTargetSeq" order="AFTER">
+        SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseActiveExamPaperTarget.insert */
+INSERT INTO cs_course_active_exam_paper_target
+	(
+		cs_course_active_exam_paper_seq ,
+		cs_course_apply_seq ,
+		cs_take_score ,
+		<if test='scoreYn != null and !scoreYn.equals("")'>
+		cs_score_yn ,
+		</if>
+		<if test='comment != null and !comment.equals("")'>
+		cs_comment ,
+		</if>
+		cs_reg_member_seq ,
+        cs_reg_dtime ,
+        cs_reg_ip ,
+        cs_upd_member_seq ,
+        cs_upd_dtime ,
+        cs_upd_ip
+	)
+	VALUES
+	(
+		#{courseActiveExamPaperSeq, jdbcType=NUMERIC}  ,
+		#{courseApplySeq, jdbcType=NUMERIC}  ,
+		#{takeScore, jdbcType=NUMERIC}  ,
+		<if test='scoreYn != null and !scoreYn.equals("")'>
+		#{scoreYn, jdbcType=VARCHAR} , 
+		</if>
+		<if test='comment != null and !comment.equals("")'>
+		#{comment, jdbcType=VARCHAR} ,
+		</if>
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)	
+	</insert>
+	
+	<insert id="insertFirstSupplement" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO">
+/* UIUnivCourseActiveExamPaperTarget.insertFirstSupplement */	
+INSERT INTO cs_course_active_exam_paper_target
+       ( 
+			cs_course_active_exam_paper_seq, 
+			cs_course_apply_seq ,
+           	cs_delete_yn , 
+           	cs_reg_member_seq , 
+           	cs_upd_member_seq , 
+           	cs_reg_dtime , 
+           	cs_upd_dtime , 
+           	cs_reg_ip , 
+           	cs_upd_ip 
+       ) 
+		SELECT #{courseActiveExamPaperSeq ,  jdbcType=NUMERIC} ,
+		       target.cs_course_apply_seq ,
+		       'N' ,
+			   #{regMemberSeq,   jdbcType=NUMERIC} ,
+			   #{updMemberSeq,   jdbcType=NUMERIC} ,
+			   dbo.FN_NOW_TO_CHAR() ,
+			   dbo.FN_NOW_TO_CHAR() ,
+			   #{regIp,          jdbcType=VARCHAR} ,
+			   #{updIp,          jdbcType=VARCHAR}
+		  FROM
+				(
+				SELECT apply.cs_course_active_seq ,
+					   apply.cs_course_apply_seq ,
+					   ISNULL(target.cs_take_score,0) AS CS_TAKE_SCORE
+				  FROM cs_course_apply apply
+				 INNER JOIN cs_course_active_exam_paper paper
+				    ON apply.cs_course_active_seq = paper.cs_course_active_seq
+				   AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+				   AND apply.cs_delete_yn = 'N'
+				   AND apply.cs_course_active_seq = #{courseActiveSeq}
+				  LEFT OUTER JOIN cs_course_active_exam_paper_target target
+				    ON paper.cs_course_active_exam_paper_seq = target.cs_course_active_exam_paper_seq
+				   AND apply.cs_course_apply_seq = target.cs_course_apply_seq
+				 WHERE paper.cs_course_active_exam_paper_seq = #{referenceSeq}
+				) target
+		 WHERE target.cs_take_score <![CDATA[<=]]> #{limitScore}
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperTargetVO">
+/* UIUnivCourseActiveExamPaperTarget.udpate */
+UPDATE cs_course_active_exam_paper_target
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+       <if test='scoreYn != null'>
+       , cs_score_yn = #{scoreYn, jdbcType=VARCHAR}
+       </if> 
+       <if test='takeScore != null'>
+       , cs_take_score = #{takeScore, jdbcType=NUMERIC}
+       </if> 
+       <if test='comment != null'>
+       , cs_comment = #{comment, jdbcType=VARCHAR}
+       </if> 
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+   AND cs_course_apply_seq 	= #{courseApplySeq}	
+	</update>
+	
+	<update id="updateScoringYn" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperTargetVO">
+/* UIUnivCourseActiveExamPaperTarget.updateScoringYn */
+UPDATE cs_course_active_exam_paper_target
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_score_yn = #{scoreYn, jdbcType=VARCHAR}# 
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+   AND cs_course_apply_seq 	= #{courseApplySeq}	
+	</update>
+	
+	<delete id="drop" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperTargetVO">
+/* UIUnivCourseActiveExamPaperTarget.drop */
+DELETE
+  FROM cs_course_active_exam_paper_target
+ WHERE cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+   AND cs_course_apply_seq 	= #{courseApplySeq}
+	</delete>
+
+	<delete id="dropAllByCourseActiveExamPaperSeq" parameterType="Long">
+/* UIUnivCourseActiveExamPaperTarget.dropAllByCourseActiveExamPaperSeq */
+DELETE
+  FROM cs_course_active_exam_paper_target
+ WHERE cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+	</delete>
+	
+	<select id="countByScoreTarget" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperVO" resultType="int">
+/* UIUnivCourseActiveExamPaperTarget.countByScoreTarget */
+SELECT COUNT(*)
+  FROM
+	   (
+	   SELECT apply.cs_course_active_seq ,
+	   	   apply.cs_course_apply_seq ,
+	   	   ISNULL(target.cs_take_score,0) AS CS_TAKE_SCORE
+	     FROM cs_course_apply apply
+	    INNER JOIN cs_course_active_exam_paper paper
+	       ON apply.cs_course_active_seq = paper.cs_course_active_seq
+	      AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+	      AND apply.cs_delete_yn = 'N'
+	      AND apply.cs_course_active_seq = #{courseActiveSeq}
+	     LEFT OUTER JOIN cs_course_active_exam_paper_target target
+	       ON paper.cs_course_active_exam_paper_seq = target.cs_course_active_exam_paper_seq
+	      AND apply.cs_course_apply_seq = target.cs_course_apply_seq
+	   WHERE paper.cs_course_active_exam_paper_seq = #{referenceSeq}
+	   ) target
+ WHERE target.cs_take_score <![CDATA[<=]]> #{limitScore}
+    </select>
+    
+    <resultMap id="listTargetExamResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperTargetRS">
+   	 	<result column="target.courseActiveExamPaperSeq"  property="courseActiveExamPaperTarget.courseActiveExamPaperSeq" 	/>
+  	 	<result column="target.courseApplySeq"            property="courseActiveExamPaperTarget.courseApplySeq"       		/>
+   	 	<result column="target.takeScore"             	  property="courseActiveExamPaperTarget.takeScore"       			/>
+   	 	<result column="mem.memberSeq"       		      property="member.memberSeq"       								/>
+   	 	<result column="mem.memberName"       		      property="member.memberName"       								/>
+   	 	<result column="mem.memberId"       		      property="member.memberId"       									/>
+   	 	<result column="mem.studentYear"       		      property="member.studentYear"       								/>
+	</resultMap>     
+    
+    <select id="getListTarget" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveExamPaperTargetCondition" resultMap="listTargetExamResultMap">
+/* UIUnivCourseActiveExamPaperTarget.getListTarget */
+SELECT Y.* 
+  FROM (
+    	SELECT target.cs_course_active_exam_paper_seq 	AS "target.courseActiveExamPaperSeq" ,
+			   target.cs_course_apply_seq				AS "target.courseApplySeq" ,
+			   target.cs_take_score						AS "target.takeScore" ,
+			   target.cs_member_seq						AS "mem.memberSeq" ,
+			   mem.cs_member_name						AS "mem.memberName" ,
+			   mem.cs_member_id							AS "mem.memberId" ,
+			   mem.cs_student_year						AS "mem.studentYear"
+		  FROM
+				(
+					SELECT paper.cs_course_active_exam_paper_seq ,
+					       apply.cs_course_active_seq ,
+						   apply.cs_course_apply_seq ,
+						   ISNULL(target.cs_take_score,0) AS cs_take_score ,
+						   apply.cs_member_seq
+					  FROM cs_course_apply apply
+					 INNER JOIN cs_course_active_exam_paper paper
+					    ON apply.cs_course_active_seq = paper.cs_course_active_seq
+					   AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+					   AND apply.cs_delete_yn = 'N'
+					   AND apply.cs_course_active_seq = #{courseActiveSeq}
+					  LEFT OUTER JOIN cs_course_active_exam_paper_target target
+					    ON paper.cs_course_active_exam_paper_seq = target.cs_course_active_exam_paper_seq
+					   AND apply.cs_course_apply_seq = target.cs_course_apply_seq
+					 WHERE paper.cs_course_active_exam_paper_seq = #{referenceSeq}
+				) target
+		INNER JOIN cs_member mem
+		   ON target.cs_member_seq = mem.cs_member_seq
+		  AND mem.cs_delete_yn = 'N'
+		<if test='editYn.equals("Y")'>
+		INNER JOIN cs_course_active_exam_paper_target examtarget
+		   ON target.cs_course_apply_seq = examtarget.cs_course_apply_seq
+		  AND examtarget.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+	   	  AND examtarget.cs_delete_yn = 'N'
+		</if>
+		WHERE mem.cs_delete_yn = 'N'
+		  <if test='editYn.equals("N")'>
+		  AND target.cs_take_score <![CDATA[<=]]> #{limitScore}
+		  </if>
+		  <if test='srchTargetWord != null and !srchTargetWord.equals("")'>
+            <if test='srchTargetKey.equals("memberName")'>
+       	  AND mem.cs_member_name LIKE '%' + #{srchTargetWordDB} + '%'
+            </if>
+            <if test='srchTargetKey.equals("memberId")'>
+       	  AND mem.cs_member_id LIKE '%' + #{srchTargetWordDB} + '%'
+            </if>
+          </if>
+      ) Y
+      <choose>
+            <when test='orderbyTarget == 1'> ORDER BY "mem.memberName" ASC</when>
+            <when test='orderbyTarget == -1'>ORDER BY "mem.memberName" DESC</when>
+            <when test='orderbyTarget == 2'> ORDER BY "mem.memberId" ASC</when>
+            <when test='orderbyTarget == -2'>ORDER BY "mem.memberId" DESC</when>
+            <when test='orderbyTarget == 3'> ORDER BY "mem.studentYear" ASC</when>
+            <when test='orderbyTarget == -3'>ORDER BY "mem.studentYear" DESC</when>
+            <when test='orderbyTarget == 4'> ORDER BY "target.takScore" ASC</when>
+            <when test='orderbyTarget == -4'>ORDER BY "target.takeScore" DESC</when>
+            <otherwise>ORDER BY "mem.memberName" ASC</otherwise>
+        </choose>
+    </select>
+    
+    <resultMap id="listNonTargetExamResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperTargetRS">
+   	 	<result column="target.courseActiveExamPaperSeq"  property="courseActiveExamPaperTarget.courseActiveExamPaperSeq" 	/>
+  	 	<result column="target.courseApplySeq"            property="courseActiveExamPaperTarget.courseApplySeq"       		/>
+   	 	<result column="target.takeScore"             	  property="courseActiveExamPaperTarget.takeScore"       			/>
+   	 	<result column="mem.memberSeq"       		      property="member.memberSeq"       								/>
+   	 	<result column="mem.memberName"       		      property="member.memberName"       								/>
+   	 	<result column="mem.memberId"       		      property="member.memberId"       									/>
+   	 	<result column="mem.studentYear"       		      property="member.studentYear"       								/>
+	</resultMap>     
+    
+    <select id="getListNonTarget" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveExamPaperTargetCondition" resultMap="listNonTargetExamResultMap">
+/* UIUnivCourseActiveExamPaperTarget.getListNonTarget */
+SELECT Y.* 
+  FROM (
+    	SELECT target.cs_course_active_exam_paper_seq 	AS "target.courseActiveExamPaperSeq" ,
+			   target.cs_course_apply_seq				AS "target.courseApplySeq" ,
+			   target.cs_take_score						AS "target.takeScore" ,
+			   target.cs_member_seq						AS "mem.memberSeq" ,
+			   mem.cs_member_name						AS "mem.memberName" ,
+			   mem.cs_member_id							AS "mem.memberId" ,
+			   mem.cs_student_year						AS "mem.studentYear"
+		  FROM
+				(
+					SELECT paper.cs_course_active_exam_paper_seq ,
+						   apply.cs_course_active_seq ,
+						   apply.cs_course_apply_seq ,
+						   ISNULL(target.cs_take_score,0) AS cs_take_score ,
+						   apply.cs_member_seq
+					  FROM cs_course_apply apply
+					 INNER JOIN cs_course_active_exam_paper paper
+					    ON apply.cs_course_active_seq = paper.cs_course_active_seq
+					   AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+					   AND apply.cs_delete_yn = 'N'
+					   AND apply.cs_course_active_seq = #{courseActiveSeq}
+					  LEFT OUTER JOIN cs_course_active_exam_paper_target target
+					    ON paper.cs_course_active_exam_paper_seq = target.cs_course_active_exam_paper_seq
+					   AND apply.cs_course_apply_seq = target.cs_course_apply_seq
+					 WHERE paper.cs_course_active_exam_paper_seq = #{referenceSeq}
+				) target
+		INNER JOIN cs_member mem
+		   ON target.cs_member_seq = mem.cs_member_seq
+		  AND mem.cs_delete_yn = 'N'
+		<if test='editYn.equals("Y")'>
+		 LEFT JOIN cs_course_active_exam_paper_target examtarget
+		   ON target.cs_course_apply_seq = examtarget.cs_course_apply_seq
+		  AND examtarget.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+	   	  AND examtarget.cs_delete_yn = 'N'
+		</if>
+			WHERE mem.cs_delete_yn = 'N'
+		    <if test='editYn.equals("Y")'>
+		  AND examtarget.cs_course_active_exam_paper_seq IS NULL
+		    </if>
+			<if test='editYn.equals("N")'>
+		  AND target.cs_take_score <![CDATA[>]]> #{limitScore}
+			</if>
+			<if test='srchLimitScore != null and !srchLimitScore.equals("")'>
+		  AND target.cs_take_score <![CDATA[<=]]> #{srchLimitScore}
+			</if>
+			<if test='srchNonTargetWord != null and !srchNonTargetWord.equals("")'>
+	            <if test='srchNonTargetKey.equals("memberName")'>
+     	  AND mem.cs_member_name LIKE '%' + #{srchNonTargetWordDB} + '%'
+	            </if>
+	            <if test='srchNonTargetKey.equals("memberId")'>
+	      AND mem.cs_member_id LIKE '%' + #{srchNonTargetWordDB} + '%'
+	            </if>
+	        </if>
+        ) Y
+        <choose>
+            <when test='orderbyTarget == 1'> ORDER BY "mem.memberName" ASC</when>
+            <when test='orderbyTarget == -1'>ORDER BY "mem.memberName" DESC</when>
+            <when test='orderbyTarget == 2'> ORDER BY "mem.memberId" ASC</when>
+            <when test='orderbyTarget == -2'>ORDER BY "mem.memberId" DESC</when>
+            <when test='orderbyTarget == 3'> ORDER BY "mem.studentYear" ASC</when>
+            <when test='orderbyTarget == -3'>ORDER BY "mem.studentYear" DESC</when>
+            <when test='orderbyTarget == 4'> ORDER BY "target.takScore" ASC</when>
+            <when test='orderbyTarget == -4'>ORDER BY "target.takeScore" DESC</when>
+            <otherwise>ORDER BY "mem.memberName" ASC</otherwise>
+        </choose>
+    </select>
+    
+    <resultMap id="listExamResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperTargetRS">
+    	<result column="member.memberName"             property="member.memberName"                     />
+        <result column="member.memberId"               property="member.memberId"                       />
+        <result column="member.memberSeq"              property="member.memberSeq"                      />
+        <result column="member.phoneMobile"            property="member.phoneMobile"                    />
+        <result column="category.categoryName"         property="category.categoryName"                 />
+        <result column="element.courseActiveSeq"       property="courseApplyElement.courseActiveSeq"    />
+        <result column="element.activeElementSeq"      property="courseApplyElement.activeElementSeq"   />
+        <result column="element.courseApplySeq"        property="courseApplyElement.courseApplySeq"     />
+        <result column="element.takeScore"             property="courseApplyElement.takeScore"          />
+        <result column="element.evaluateScore"         property="courseApplyElement.evaluateScore"      />
+        <result column="element.choiceScore"           property="courseApplyElement.choiceScore"        />
+        <result column="element.shortScore"            property="courseApplyElement.shortScore"         />
+        <result column="element.essayScore"            property="courseApplyElement.essayScore"         />
+        <result column="element.otherScore"            property="courseApplyElement.otherScore"         />
+        <result column="element.startDtime"            property="courseApplyElement.startDtime"         />
+        <result column="element.endDtime"              property="courseApplyElement.endDtime"           />
+        <result column="element.ip"                    property="courseApplyElement.ip"                 />
+        <result column="element.scoreDtime"            property="courseApplyElement.scoreDtime"         />
+        <result column="element.completeYn"            property="courseApplyElement.completeYn"         />
+        <result column="target.scoreYn"            	   property="courseActiveExamPaperTarget.scoreYn"   />
+        <result column="target.activeExamPaperTargetSeq"   property="courseActiveExamPaperTarget.activeExamPaperTargetSeq"   />
+        <collection column="{referenceSeq=target.activeExamPaperTargetSeq,referenceTablename=referenceTablename}" property="courseActiveExamPaperTarget.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    
+    <select id="getListForExamResult" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveExamPaperTargetCondition" resultMap="listExamResultMap">
+/* UIUnivCourseActiveExamPaperTarget.getListForExamResult */
+	<if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "member.memberName" ASC</when>
+            <when test='orderby ==-1'>ORDER BY "member.memberName" DESC</when>
+            <when test='orderby == 2'>ORDER BY "member.memberId" ASC</when>
+            <when test='orderby ==-2'>ORDER BY "member.memberId" DESC</when>
+            <when test='orderby == 3'>ORDER BY "category.categoryName" ASC</when>
+            <when test='orderby ==-3'>ORDER BY "category.categoryName" DESC</when>
+            <when test='orderby == 4'>ORDER BY "element.scoreDtime" ASC</when>
+            <when test='orderby ==-4'>ORDER BY "element.scoreDtime" DESC</when>
+            <otherwise>ORDER BY "element.scoreDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+	</if>
+SELECT member.cs_member_name			AS "member.memberName",
+	   member.cs_member_id				AS "member.memberId",
+	   member.cs_member_seq				AS "member.memberSeq",
+	   member.cs_phone_mobile			AS "member.phoneMobile",
+	   category.cs_category_name		AS "category.categoryName",
+	   element.cs_course_active_seq 	AS "element.courseActiveSeq",
+	   element.cs_active_element_seq 	AS "element.activeElementSeq",
+	   CASE WHEN element.cs_course_apply_seq IS NULL 
+	   THEN (SELECT apply.cs_course_apply_seq 
+	           FROM cs_course_apply apply 
+	          WHERE apply.cs_delete_yn = 'N' 
+	            AND apply.cs_course_active_seq = #{srchCourseActiveSeq}
+	            AND apply.cs_member_seq = member.cs_member_seq
+	         )
+	   ELSE element.cs_course_apply_seq END	AS "element.courseApplySeq",
+	   element.cs_take_score 			AS "element.takeScore",
+	   element.cs_evaluate_score 		AS "element.evaluateScore",
+	   element.cs_choice_score 			AS "element.choiceScore",
+	   element.cs_short_score 			AS "element.shortScore",
+	   element.cs_essay_score 			AS "element.essayScore",
+	   element.cs_other_score			AS "element.otherScore",
+	   element.cs_start_dtime			AS "element.startDtime",
+	   element.cs_end_dtime				AS "element.endDtime",
+	   element.cs_ip					AS "element.ip",
+	   element.cs_score_dtime			AS "element.scoreDtime",
+	   element.cs_complete_yn			AS "element.completeYn",
+	   apply.cs_score_yn				AS "target.scoreYn" ,
+	   ISNULL(apply.cs_active_exam_paper_target_seq , 0) AS "target.activeExamPaperTargetSeq" ,
+	   'cs_course_active_exam_paper_target' AS "referenceTablename"
+  FROM
+		(
+		SELECT apply.cs_course_apply_seq,
+		       apply.cs_member_seq,
+		       apply.cs_course_active_seq ,
+		       apply.cs_apply_status_cd,
+		       apply.cs_delete_yn,
+		       target.cs_active_exam_paper_target_seq ,
+		       target.cs_score_yn
+		  FROM cs_course_apply apply
+	<if test='srchBasicSupplementCd != null and !srchBasicSupplementCd.equals("")'>
+		<choose>
+			<when test='srchBasicSupplementCd.equals("${CD.BASIC_SUPPLEMENT.BASIC}")'>
+		 LEFT OUTER JOIN cs_course_active_exam_paper_target target 
+			</when>
+			<when test='srchBasicSupplementCd.equals("${CD.BASIC_SUPPLEMENT.SUPPLEMENT}")'>
+		 INNER JOIN cs_course_active_exam_paper_target target 
+			</when>
+		</choose>
+	</if>
+		    ON apply.cs_course_apply_seq = target.cs_course_apply_seq
+		   AND target.cs_delete_yn = 'N'
+		   AND target.cs_course_active_exam_paper_seq = #{srchReferenceSeq} 
+		 WHERE apply.cs_delete_yn = 'N'
+           AND apply.cs_course_active_seq = #{srchCourseActiveSeq}
+           AND apply.cs_apply_status_cd = #{srchApplyStatusCd}
+		) apply			
+  LEFT OUTER JOIN
+				(
+				SELECT apply.cs_course_active_seq ,
+					   apply.cs_active_element_seq ,
+					   apply.cs_course_apply_seq ,
+					   apply.cs_take_score ,
+					   apply.cs_evaluate_score ,
+					   apply.cs_choice_score ,
+					   apply.cs_short_score ,
+					   apply.cs_essay_score ,
+					   apply.cs_other_score,
+					   apply.cs_start_dtime,
+					   apply.cs_end_dtime,
+					   apply.cs_ip,
+					   apply.cs_score_dtime,
+					   apply.cs_complete_yn
+				  FROM cs_course_apply_element apply
+				 INNER JOIN cs_course_active_element active
+				    ON apply.cs_active_element_seq = active.cs_active_element_seq
+				   AND active.cs_reference_seq = #{srchReferenceSeq}
+				   AND active.cs_reference_type_cd = #{srchReferenceTypeCd}
+				   <if test='srchCourseWeekTypeCd != null and !srchCourseWeekTypeCd.equals("")'>
+				   AND active.cs_course_week_type_cd = #{srchCourseWeekTypeCd}
+				   </if> 
+				 WHERE apply.cs_delete_yn = 'N'
+				   AND apply.cs_complete_yn = 'Y'	   
+				) element 
+    ON element.cs_course_apply_seq = apply.cs_course_apply_seq
+ INNER JOIN cs_member member
+    ON apply.cs_member_seq = member.cs_member_seq
+   AND member.cs_delete_yn = 'N'
+   AND member.cs_member_status_cd = #{srchMemberStatusCd}
+ INNER JOIN cs_category category
+    ON member.cs_category_organization_seq = category.cs_category_seq
+ WHERE 1=1
+ 	<if test='srchWord != null and !srchWord.equals("")'>
+        <if test='srchKey.equals("memberId")'>
+   AND member.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+        </if>
+        <if test='srchKey.equals("memberName")'>
+   AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+        </if>
+    </if>
+    <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   AND category.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%'
+    </if>
+	 <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+	</if>
+    </select>
+    
+    <select id="countListForExamResult" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseActiveExamPaperTargetCondition" resultType="int">
+/* UIUnivCourseActiveExamPaperTarget.countListForExamResult */
+SELECT COUNT(*)
+  FROM
+		(
+		SELECT apply.cs_course_apply_seq,
+		       apply.cs_member_seq,
+		       apply.cs_course_active_seq ,
+		       apply.cs_apply_status_cd,
+		       apply.cs_delete_yn
+		  FROM cs_course_apply apply
+	<if test='srchBasicSupplementCd != null and !srchBasicSupplementCd.equals("")'>
+		<choose>
+		  	<when test='srchBasicSupplementCd.equals("${CD.BASIC_SUPPLEMENT.BASIC}")'>
+		 LEFT OUTER JOIN cs_course_active_exam_paper_target target 
+			</when>
+			<when test='srchBasicSupplementCd.equals("${CD.BASIC_SUPPLEMENT.SUPPLEMENT}")'>
+		 INNER JOIN cs_course_active_exam_paper_target target 
+			</when>
+		</choose>
+	</if>
+		    ON apply.cs_course_apply_seq = target.cs_course_apply_seq
+		   AND target.cs_delete_yn = 'N'
+		   AND target.cs_course_active_exam_paper_seq = #{srchReferenceSeq} 
+		 WHERE apply.cs_delete_yn = 'N'
+           AND apply.cs_course_active_seq = #{srchCourseActiveSeq}
+           AND apply.cs_apply_status_cd = #{srchApplyStatusCd}
+		) apply			
+  LEFT OUTER JOIN
+				(
+				SELECT apply.cs_course_active_seq ,
+					   apply.cs_active_element_seq ,
+					   apply.cs_course_apply_seq ,
+					   apply.cs_take_score ,
+					   apply.cs_evaluate_score ,
+					   apply.cs_choice_score ,
+					   apply.cs_short_score ,
+					   apply.cs_essay_score ,
+					   apply.cs_other_score,
+					   apply.cs_start_dtime,
+					   apply.cs_end_dtime,
+					   apply.cs_ip,
+					   apply.cs_score_dtime
+				  FROM cs_course_apply_element apply
+				 INNER JOIN cs_course_active_element active
+				    ON apply.cs_active_element_seq = active.cs_active_element_seq
+				   AND active.cs_reference_seq = #{srchReferenceSeq}
+				   AND active.cs_reference_type_cd = #{srchReferenceTypeCd}
+				   <if test='srchCourseWeekTypeCd != null and !srchCourseWeekTypeCd.equals("")'> 
+				   AND active.cs_course_week_type_cd = #{srchCourseWeekTypeCd}
+				   </if>
+				 WHERE apply.cs_delete_yn = 'N'
+				   AND apply.cs_complete_yn = 'Y'	   
+				) element 
+    ON element.cs_course_apply_seq = apply.cs_course_apply_seq
+ INNER JOIN cs_member member
+    ON apply.cs_member_seq = member.cs_member_seq
+   AND member.cs_delete_yn = 'N'
+   AND member.cs_member_status_cd = #{srchMemberStatusCd}
+ INNER JOIN cs_category category
+    ON member.cs_category_organization_seq = category.cs_category_seq
+ WHERE 1=1
+ 	<if test='srchWord != null and !srchWord.equals("")'>
+        <if test='srchKey.equals("memberId")'>
+   AND member.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+        </if>
+        <if test='srchKey.equals("memberName")'>
+   AND member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+        </if>
+    </if>
+    <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   AND category.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%'
+    </if>
+    </select>
+    
+    <resultMap id="detailExamResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveExamPaperTargetRS">
+    	<result column="member.memberName"             		property="member.memberName"                     					/>
+        <result column="member.memberId"               		property="member.memberId"                       					/>
+        <result column="member.memberSeq"              		property="member.memberSeq"                      					/>
+        <result column="paper.examPaperTitle"              	property="courseExamPaper.examPaperTitle"                      		/>
+        <result column="paper.description"              	property="courseExamPaper.description"                      		/>
+        <result column="target.activeExamPaperTargetSeq"   	property="courseActiveExamPaperTarget.activeExamPaperTargetSeq"   	/>
+        <result column="target.courseActiveExamPaperSeq"   	property="courseActiveExamPaperTarget.courseActiveExamPaperSeq"   	/>
+        <result column="target.takeScore"   				property="courseActiveExamPaperTarget.takeScore"   					/>
+        <result column="target.comment"   					property="courseActiveExamPaperTarget.comment"   					/>
+        <result column="element.courseApplySeq"        		property="courseApplyElement.courseApplySeq"     					/>
+        <result column="element.activeElementSeq"      		property="courseApplyElement.activeElementSeq"   					/>
+        <result column="element.courseActiveSeq"       		property="courseApplyElement.courseActiveSeq"    					/>
+        <result column="element.scoreDtime"            		property="courseApplyElement.scoreDtime"         					/>
+        <collection column="{referenceSeq=target.activeExamPaperTargetSeq,referenceTablename=referenceTablename}" property="courseActiveExamPaperTarget.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    
+    <select id="getDetailForExamResult" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveExamPaperTargetVO" resultMap="detailExamResultMap">
+/* UIUnivCourseActiveExamPaperTarget.getDetailForExamResult */
+SELECT member.cs_member_name 					AS "member.memberName", 
+       member.cs_member_id 						AS "member.memberId", 
+       member.cs_member_seq 					AS "member.memberSeq", 
+       paper.cs_exam_paper_title				AS "paper.examPaperTitle", 
+       paper.cs_description						AS "paper.description",
+       target.cs_active_exam_paper_target_seq	AS "target.activeExamPaperTargetSeq", 
+       target.cs_course_active_exam_paper_seq	AS "target.courseActiveExamPaperSeq", 
+       target.cs_take_score						AS "target.takeScore", 
+       target.cs_comment						AS "target.comment", 
+       element.cs_course_apply_seq				AS "element.courseApplySeq", 
+       element.cs_active_element_seq			AS "element.activeElementSeq", 
+       element.cs_course_active_seq				AS "element.courseActiveSeq", 
+       element.cs_score_dtime 					AS "element.scoreDtime",
+	   'cs_course_active_exam_paper_target' 	AS "referenceTablename" 
+  FROM cs_course_active_exam_paper_target target 
+   INNER JOIN cs_course_apply_element element 
+       ON element.cs_course_active_seq = #{courseActiveSeq} 
+       AND element.cs_course_apply_seq = target.cs_course_apply_seq 
+       AND element.cs_active_element_seq = #{activeElementSeq}  
+       AND element.cs_delete_yn = 'N' 
+   INNER JOIN cs_course_active_exam_paper cpaper 
+       ON target.cs_course_active_exam_paper_seq = cpaper.cs_course_active_exam_paper_seq 
+       AND cpaper.cs_delete_yn = 'N' 
+   INNER JOIN cs_course_exam_paper paper 
+       ON paper.cs_exam_paper_seq = cpaper.cs_exam_paper_seq 
+       AND paper.cs_delete_yn = 'N' 
+   INNER JOIN cs_course_apply ca 
+       ON ca.cs_course_apply_seq = element.cs_course_apply_seq 
+       AND ca.cs_delete_yn = 'N' 
+   INNER JOIN cs_member member 
+       ON member.cs_member_seq = ca.cs_member_seq 
+       AND member.cs_delete_yn = 'N' 
+ WHERE target.cs_delete_yn = 'N' 
+       AND target.cs_course_apply_seq= #{courseApplySeq}
+       AND target.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+    </select>
+    
+</mapper>

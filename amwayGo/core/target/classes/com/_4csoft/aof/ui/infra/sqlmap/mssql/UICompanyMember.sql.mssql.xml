@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.CompanyMemberMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UICompanyMemberVO">
+/* UICompanyMemberMapper.insert */
+INSERT INTO cs_company_member 
+       ( 
+           cs_company_seq ,
+           cs_member_seq ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{companySeq, jdbcType=NUMERIC} ,
+           #{memberSeq, jdbcType=NUMERIC} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       )
+    </insert>
+
+    <delete id="drop" parameterType="com._4csoft.aof.ui.infra.vo.UICompanyMemberVO">
+/* UICompanyMemberMapper.delete */
+DELETE FROM cs_company_member 
+ WHERE cs_member_seq = #{memberSeq}
+ 	<if test='companySeqOld != null and !companySeqOld.equals("")'> 
+       AND cs_company_seq = #{companySeqOld}
+    </if>
+    </delete>
+    
+    <select id="countMember" parameterType="Long" resultType="int">
+/* UICompanyMemberMapper.countMember */
+SELECT
+	COUNT(*)
+FROM
+	cs_company_member
+WHERE
+	cs_delete_yn = 'N'
+	AND cs_company_seq = #{companySeq} 
+    </select>
+    
+    <select id="getListByMemberSeq" parameterType="Long" resultType="com._4csoft.aof.ui.infra.vo.UICompanyMemberVO">
+/* UICompanyMemberMapper.getListByMemberSeq */
+SELECT
+	cs_company_seq AS "companySeq",
+    cs_member_seq AS "memberSeq" ,
+    cs_reg_member_seq AS "regMemberSeq" ,
+    cs_reg_dtime AS "regDtime" ,
+    cs_reg_ip AS "regIp" ,
+    cs_upd_member_seq AS "updMemberSeq" ,
+    cs_upd_dtime AS "updDtime" ,
+    cs_upd_ip AS "updIp" 
+FROM
+	cs_company_member
+WHERE
+	cs_delete_yn = 'N'
+	AND cs_member_seq = #{memberSeq} 
+    </select>
+    
+
+</mapper>

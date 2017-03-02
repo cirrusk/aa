@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseAttendEvaluateMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseAttendEvaluateVO">
+			/* UnivCourseAttendEvaluateMapper.insert */
+			INSERT INTO cs_course_attend_evaluate 
+			       ( 
+			           cs_course_active_seq ,
+			           cs_attend_type_cd ,
+			           cs_onoff_cd ,
+			           cs_minus_score ,
+			           cs_count ,
+			           cs_permission_count ,
+			           cs_delete_yn, 
+			           cs_reg_member_seq, 
+			           cs_upd_member_seq, 
+			           cs_reg_dtime, 
+			           cs_upd_dtime, 
+			           cs_reg_ip, 
+			           cs_upd_ip 
+			       ) 
+			   VALUES
+			   	   (
+			   	   	   #{courseActiveSeq,  jdbcType=NUMERIC},
+			   	   	   #{attendTypeCd,     jdbcType=VARCHAR},
+			   	   	   #{onoffCd,      	   jdbcType=VARCHAR},
+			   	   	   #{minusScore,       jdbcType=DOUBLE},
+			   	   	   #{count,      	   jdbcType=NUMERIC},
+			   	   	   #{permissionCount, 	  jdbcType=NUMERIC},
+			   		   'N',
+			           #{regMemberSeq,   jdbcType=NUMERIC},
+			           #{updMemberSeq,   jdbcType=NUMERIC},
+			           dbo.FN_NOW_TO_CHAR(),
+			           dbo.FN_NOW_TO_CHAR(),
+			           #{regIp,          jdbcType=VARCHAR},
+			           #{updIp,          jdbcType=VARCHAR}
+			   	   )
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseAttendEvaluateVO">
+		/* UnivCourseAttendEvaluateMapper.update */
+		UPDATE cs_course_attend_evaluate 
+		   SET cs_course_active_seq	 	= #{courseActiveSeq,  jdbcType=NUMERIC},
+			   cs_attend_type_cd 		= #{attendTypeCd,     jdbcType=VARCHAR},
+			   cs_onoff_cd 				= #{onoffCd,      	  jdbcType=VARCHAR},
+			   cs_minus_score 			= #{minusScore,       jdbcType=DOUBLE} ,
+			   cs_permission_count 		= #{permissionCount, 	  jdbcType=NUMERIC},
+			   cs_count 				= #{count,      	  jdbcType=NUMERIC},
+		   	   cs_upd_dtime  			= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         		= #{updIp, jdbcType=VARCHAR} 
+		 WHERE cs_delete_yn = 'N'
+		   AND cs_course_active_seq 	= #{courseActiveSeq} 
+		   AND cs_attend_type_cd 		= #{attendTypeCd} 
+		   AND cs_onoff_cd 				= #{onoffCd} 
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseAttendEvaluateVO">
+		/* UnivCourseAttendEvaluateMapper.delete */
+		UPDATE cs_course_attend_evaluate 
+		   SET cs_upd_dtime  = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn      = 'Y' 
+		 WHERE cs_delete_yn = 'N'
+		   AND cs_course_active_seq 	= #{courseActiveSeq} 
+		 <if test='attendTypeCd != null and !attendTypeCd.equals("")'>
+		   AND cs_attend_type_cd 		= #{attendTypeCd} 
+		 </if>
+		 <if test='onoffCd != null and !onoffCd.equals("")'>
+		   AND cs_onoff_cd 				= #{onoffCd}
+		 </if>
+    </update>
+    <delete id="drop" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseAttendEvaluateVO">
+/* UnivCourseAttendEvaluateMapper.drop */
+DELETE FROM cs_course_attend_evaluate 
+WHERE cs_course_active_seq = #{courseActiveSeq}
+  AND cs_onoff_cd = #{onoffCd}
+      <if test='attendTypeCd != null and !attendTypeCd.equals("")'>
+  AND cs_attend_type_cd        = #{attendTypeCd} 
+      </if>
+    </delete>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseAttendEvaluateRS">
+        <result column="eval.courseActiveSeq"   property="attendEvaluate.courseActiveSeq"/>
+        <result column="eval.attendTypeCd"      property="attendEvaluate.attendTypeCd"/>
+        <result column="eval.onoffCd"           property="attendEvaluate.onoffCd"/>
+        <result column="eval.count"           	property="attendEvaluate.count"/>
+        <result column="eval.permissionCount"   property="attendEvaluate.permissionCount"/>
+        <result column="eval.minusScore"        property="attendEvaluate.minusScore"/>
+        <result column="eval.deleteYn"          property="attendEvaluate.deleteYn"/>
+        <result column="eval.regMemberSeq"      property="attendEvaluate.regMemberSeq"/>
+        <result column="eval.updMemberSeq"      property="attendEvaluate.updMemberSeq"/>
+        <result column="eval.regDtime"          property="attendEvaluate.regDtime"/>
+        <result column="eval.updDtime"          property="attendEvaluate.updDtime"/>
+        <result column="eval.regIp"           	property="attendEvaluate.regIp"/>
+        <result column="eval.updIp"           	property="attendEvaluate.updIp"/>
+        <result column="code.codeName"      	property="code.codeName"/>
+        <result column="code.code"      		property="code.code"/>
+    </resultMap>
+    <select id="getDetail" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseAttendEvaluateVO" resultMap="detailResultMap">
+		/* UnivCourseAttendEvaluateMapper.getDetail */
+		SELECT 
+			eval.cs_course_active_seq		AS "eval.courseActiveSeq",
+			eval.cs_attend_type_cd			AS "eval.attendTypeCd",
+			eval.cs_onoff_cd				AS "eval.onoffCd",
+			eval.cs_count					AS "eval.count",
+			eval.cs_permission_count		AS "eval.permissionCount",
+			eval.cs_minus_score				AS "eval.minusScore",
+			eval.cs_delete_yn				AS "dist.deleteYn" , 
+			eval.cs_reg_member_seq			AS "dist.regMemberSeq" , 
+			eval.cs_upd_member_seq			AS "dist.updMemberSeq" , 
+			eval.cs_reg_dtime				AS "dist.regDtime" , 
+			eval.cs_upd_dtime				AS "dist.updDtime" , 
+			eval.cs_reg_ip					AS "dist.regIp" , 
+			eval.cs_upd_ip					AS "dist.updIp" ,
+			code.cs_code_name				AS "code.codeName" ,
+			code.cs_code					AS "code.code"  
+		  FROM 
+		  		cs_course_attend_evaluate eval
+		  INNER JOIN
+		  		cs_code code
+		  ON  code.cs_code_group = 'ATTEND_TYPE'
+		  AND code.cs_code_name_ex1 = 'Y'
+		  AND code.cs_code = eval.cs_attend_type_cd
+		WHERE
+			  eval.cs_delete_yn = 'N'
+		  AND eval.cs_course_active_seq = #{courseActiveSeq}
+		  AND eval.cs_onoff_cd			= #{onoffCd}
+		  AND eval.cs_attend_type_cd	= #{attendTypeCd}
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseAttendEvaluateRS">
+   	 	<result column="eval.courseActiveSeq"   property="attendEvaluate.courseActiveSeq"/>
+        <result column="eval.attendTypeCd"      property="attendEvaluate.attendTypeCd"/>
+        <result column="eval.onoffCd"           property="attendEvaluate.onoffCd"/>
+        <result column="eval.count"           	property="attendEvaluate.count"/>
+        <result column="eval.permissionCount"   property="attendEvaluate.permissionCount"/>
+        <result column="eval.minusScore"        property="attendEvaluate.minusScore"/>
+        <result column="eval.deleteYn"          property="attendEvaluate.deleteYn"/>
+        <result column="eval.regMemberSeq"      property="attendEvaluate.regMemberSeq"/>
+        <result column="eval.updMemberSeq"      property="attendEvaluate.updMemberSeq"/>
+        <result column="eval.regDtime"          property="attendEvaluate.regDtime"/>
+        <result column="eval.updDtime"          property="attendEvaluate.updDtime"/>
+        <result column="eval.regIp"           	property="attendEvaluate.regIp"/>
+        <result column="eval.updIp"           	property="attendEvaluate.updIp"/>
+        <result column="code.codeName"      	property="code.codeName"/>
+        <result column="code.code"      		property="code.code"/>
+	</resultMap>
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseAttendEvaluateVO" resultMap="listResultMap">
+		/* UnivCourseAttendEvaluateMapper.getList */
+		SELECT 
+			eval.cs_course_active_seq		AS "eval.courseActiveSeq",
+			eval.cs_attend_type_cd			AS "eval.attendTypeCd",
+			eval.cs_onoff_cd				AS "eval.onoffCd",
+			eval.cs_count					AS "eval.count",
+			eval.cs_permission_count		AS "eval.permissionCount",
+			eval.cs_minus_score				AS "eval.minusScore",
+			eval.cs_delete_yn				AS "dist.deleteYn" , 
+			eval.cs_reg_member_seq			AS "dist.regMemberSeq" , 
+			eval.cs_upd_member_seq			AS "dist.updMemberSeq" , 
+			eval.cs_reg_dtime				AS "dist.regDtime" , 
+			eval.cs_upd_dtime				AS "dist.updDtime" , 
+			eval.cs_reg_ip					AS "dist.regIp" , 
+			eval.cs_upd_ip					AS "dist.updIp" ,
+			code.cs_code_name				AS "code.codeName" ,
+			code.cs_code					AS "code.code" 
+		  FROM 
+		  		(
+		  		 SELECT code.cs_code , 
+				       code.cs_code_name 
+				 FROM cs_code code 
+				       WHERE code.cs_code_group = 'ATTEND_TYPE' 
+				       AND code.cs_code_name_ex1 = 'Y'
+				) code
+		  LEFT JOIN
+		  		cs_course_attend_evaluate eval
+		  ON  code.cs_code = eval.cs_attend_type_cd
+		  AND eval.cs_delete_yn = 'N'
+		  AND eval.cs_course_active_seq = #{courseActiveSeq}
+		  AND eval.cs_onoff_cd			= #{onoffCd}
+		<if test='attendTypeCd != null and !attendTypeCd.equals("")'>
+		  AND eval.cs_attend_type_cd	= #{attendTypeCd}
+		</if>
+    </select>
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseAttendEvaluateVO" resultType="int">
+		/* UnivCourseAttendEvaluateMapper.countList */
+		SELECT 
+			COUNT(*)
+		  FROM 
+		  		cs_course_attend_evaluate eval
+		WHERE
+			  eval.cs_delete_yn = 'N'
+		  AND eval.cs_course_active_seq = #{courseActiveSeq}
+		  AND eval.cs_onoff_cd			= #{onoffCd}
+		<if test='attendTypeCd != null and !attendTypeCd.equals("")'>
+		  AND eval.cs_attend_type_cd	= #{attendTypeCd}
+		</if>
+    </select>
+    
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseAttendEvaluateVO">
+INSERT INTO cs_course_attend_evaluate
+       (
+       cs_course_active_seq,
+       cs_attend_type_cd,
+       cs_onoff_cd,
+       cs_minus_score,
+       cs_count,
+       cs_permission_count,
+       cs_delete_yn,
+       cs_reg_member_seq,
+       cs_reg_dtime,
+       cs_reg_ip,
+       cs_upd_member_seq,
+       cs_upd_dtime,
+       cs_upd_ip
+       )
+SELECT #{targetCourseActiveSeq, jdbcType=NUMERIC},
+       cs_attend_type_cd,
+       cs_onoff_cd,
+       cs_minus_score,
+       cs_count,
+       cs_permission_count,
+       'N',
+       #{regMemberSeq, jdbcType=NUMERIC},
+       dbo.FN_NOW_TO_CHAR(),
+       #{regIp, jdbcType=VARCHAR},
+       #{updMemberSeq, jdbcType=NUMERIC},
+       dbo.FN_NOW_TO_CHAR(),
+       #{updIp, jdbcType=VARCHAR}
+  FROM cs_course_attend_evaluate
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{sourceCourseActiveSeq}
+   and cs_onoff_cd = #{onoffCd}
+    </insert>
+    
+</mapper>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.reservation.basicPackage.service.impl.BasicReservationMapper">
+
+	<!-- <typeAlias alias="CommonCodeVO" type="amway.com.academy.manager.reservation.basicPackage.web.CommonCodeVO" /> -->
+
+	<resultMap id="commonCodeMap" type="amway.com.academy.manager.reservation.basicPackage.web.CommonCodeVO">
+		<result column="CODEMASTERSEQ" property="codeMasterSeq" />
+		<result column="CODEMASTERNAME" property="codeMasterName" />
+		<result column="WORKSCOPE" property="workScope" />
+		<result column="CODEMASTERUSEYN" property="codeMasterUseYn" />
+		<result column="COMMONCODESEQ" property="commonCodeSeq" />
+		<result column="CODENAME" property="codeName" />
+		<result column="CODEORDER" property="codeOrder" />
+		<result column="USEYN" property="useYn" />
+		<result column="CASEONE" property="caseOne" />
+		<result column="CASETWO" property="caseTwo" />
+		
+		<result column="CODE" property="code" />
+		<result column="NAME" property="name" />
+	</resultMap>
+	
+	<!-- 교육장 예약 공통코드 -->
+	<select id="commonCodeList" parameterType="amway.com.academy.manager.reservation.basicPackage.web.CommonCodeVO" resultMap="commonCodeMap">
+		SELECT
+			A.CODEMASTERSEQ,
+			A.CODEMASTERNAME,
+			A.WORKSCOPE,
+			A.USEYN AS CODEMASTERUSEYN,
+			B.COMMONCODESEQ,
+			B.CODENAME,
+			B.CODEORDER,
+			B.USEYN,
+			B.CASEONE,
+			B.CASETWO
+		FROM CODEMASTER A
+		INNER JOIN COMMONCODE B
+		  ON A.CODEMASTERSEQ = B.CODEMASTERSEQ
+		  AND A.USEYN = 'Y'
+		  AND B.USEYN = 'Y'
+		WHERE A.CODEMASTERSEQ = #{codeMasterSeq}
+		<if test='caseOne != null and !caseOne.equals("")'>
+		  AND B.CASEONE = #{caseOne}
+		</if>
+		<if test='caseTwo != null and !caseTwo.equals("")'>
+		  AND B.CASETWO = #{caseTwo}
+		</if>
+		ORDER BY B.CODEORDER
+	</select>
+	
+	<select id="getCommonCodeName" parameterType="amway.com.academy.manager.reservation.basicPackage.web.CommonCodeVO" resultMap="commonCodeMap">
+		SELECT
+			CODENAME
+		FROM COMMONCODE
+		WHERE CODEMASTERSEQ = #{codeMasterSeq}
+		  AND COMMONCODESEQ = #{commonCodeSeq}
+		  AND USEYN = 'Y'
+	</select>
+	
+	<!-- pp(교육장)리스트 -->
+	<select id="ppCodeList" parameterType="reqBox" resultMap="commonCodeMap" >
+		SELECT 
+			PPSEQ AS COMMONCODESEQ, 
+			PPNAME AS CODENAME
+		FROM RSVPPINFO
+		WHERE STATUSCODE = 'B01'
+		<if test="sessionApCode != null and !sessionApCode.equals('')">
+		AND PPSEQ = #{sessionApCode}
+		</if>
+	</select>
+	
+	<!-- 특정 대상자 그룹 조회 -->
+	<select id="roleGroupCodeList" resultMap="commonCodeMap" >
+		SELECT 
+			  GROUPSEQ AS COMMONCODESEQ
+			, TARGETGROUPNAME AS CODENAME
+		FROM RSVROLEGROUP
+		WHERE STATUSCODE = 'B01'
+		  AND COOKMASTERCODE != 'C01' /* 요리명장 */
+	</select>
+	
+	<!-- 특정 대상자 그룹 조회 (전체) -->
+	<select id="roleGroupWithCookMasterCodeList" resultMap="commonCodeMap" >
+		SELECT 
+			  GROUPSEQ AS COMMONCODESEQ
+			, TARGETGROUPNAME AS CODENAME
+		FROM RSVROLEGROUP
+		WHERE STATUSCODE = 'B01'
+	</select>
+			
+	<!-- pin코드 구간 리스트 -->
+	<select id="pinCodeList" resultMap="commonCodeMap" >
+		SELECT 
+			  TARGETCODESEQ AS COMMONCODESEQ
+			, TARGETCODENAME AS CODENAME
+		FROM V_TARGETCODE_NONMEM
+		WHERE TARGETMASTERSEQ = 'PINCODE'
+		ORDER BY TARGETCODEORDER ASC
+	</select>
+	
+	<!-- 나이 우대 코드 리스트 -->
+	<select id="ageCodeList" resultMap="commonCodeMap">
+		SELECT 
+			  TARGETCODESEQ AS COMMONCODESEQ
+			, TARGETCODENAME AS CODENAME
+		FROM TARGETCODE
+		WHERE TARGETMASTERSEQ = 'AGECODE'
+	    AND USEYN = 'Y'
+	    ORDER BY TARGETCODEORDER ASC
+	</select>
+	
+	<!-- 지역 코드 리스트 -->
+	<select id="cityGroupCodeList" resultMap="commonCodeMap">
+		SELECT
+			  CITYGROUPCODE AS COMMONCODESEQ
+			, CITYGROUPNAME AS CODENAME
+		FROM RSVCITYGROUPMASTER
+		WHERE STATUSCODE = 'B01' 
+	</select>
+	
+	<select id="roomTypeInfoCodeList" resultMap="commonCodeMap">
+		SELECT 
+			  TYPESEQ AS COMMONCODESEQ
+			, TYPENAME AS CODENAME
+		FROM RSVTYPEINFO
+		WHERE RSVTYPECODE = 'R01'
+			AND STATUSCODE = 'B01'
+	</select>
+	
+	<select id="expTypeInfoCodeList" resultMap="commonCodeMap">
+		SELECT 
+			  TYPESEQ AS COMMONCODESEQ
+			, TYPENAME AS CODENAME
+		FROM RSVTYPEINFO
+		WHERE RSVTYPECODE = 'R02'
+			AND STATUSCODE = 'B01'
+	</select>
+	
+	<!-- 예약현황_프로그램 타입 조회 -->
+	<select id="rervationProgramTypeCodeList" resultMap="commonCodeMap" >
+		SELECT 
+			  CATEGORYTYPE1 AS NAME
+			, 'testCode' AS CODE
+		FROM RSVEXPINFO
+	</select>
+	
+	<!-- 예약현황_프로그램  조회 -->
+	<select id="rervationProgramCodeList" resultMap="commonCodeMap" >
+		SELECT 
+			  EXPSEQ AS CODE
+			, PRODUCTNAME AS NAME
+		FROM RSVEXPINFO
+	</select>
+	
+	<!-- 행정구역 코드 리스트 -->
+	<select id="regionCodeList" resultMap="commonCodeMap" >
+		SELECT 
+			  REGIONCODE AS CODE
+			, REGIONNAME AS NAME
+		FROM RSVREGIONINFO
+	</select>
+	
+	<!-- 도시정보 목록 조회 -->
+	<select id="cityCodeListByRegionCode" parameterType="amway.com.academy.manager.reservation.basicPackage.web.CommonCodeVO" resultMap="commonCodeMap" >
+		SELECT
+			CITYCODE AS CODE,
+			CITYNAME AS NAME
+		FROM RSVCITYINFO
+		WHERE REGIONCODE = #{code} 
+	</select>
+
+	<select id="searchSessionNameList" parameterType="reqBox" resultType="dataBox">
+		SELECT  DISTINCT
+			B.SESSIONNAME
+		FROM RSVROOMINFO A
+			INNER JOIN RSVROOMSESSIONINFO B
+				ON(A.ROOMSEQ = B.ROOMSEQ AND A.STATUSCODE = 'B01' AND B.STATUSCODE ='B01')
+			INNER JOIN RSVROOMTYPEMAP C
+				ON(A.ROOMSEQ = C.ROOMSEQ)
+			INNER JOIN RSVTYPEINFO D
+				ON(C.TYPESEQ = D.TYPESEQ AND D.STATUSCODE = 'B01' AND D.RSVTYPECODE = #{rsvtypecode})
+		WHERE  A.PPSEQ = #{ppseq}
+			AND D.TYPESEQ = #{typeseq}
+			AND B.SESSIONNAME IS NOT NULL
+		ORDER BY B.SESSIONNAME
+	</select>
+	
+	<select id="searchExpSessionNameList" parameterType="reqBox" resultType="dataBox">
+		SELECT  DISTINCT
+			B.SESSIONNAME
+		FROM RSVEXPINFO A
+			INNER JOIN RSVEXPSESSIONINFO B
+				ON(A.EXPSEQ = B.EXPSEQ AND A.STATUSCODE = 'B01' AND B.STATUSCODE ='B01')
+			INNER JOIN RSVEXPTYPEMAP C
+				ON(A.EXPSEQ = C.EXPSEQ)
+			INNER JOIN RSVTYPEINFO D
+				ON(C.TYPESEQ = D.TYPESEQ AND D.STATUSCODE = 'B01' AND D.RSVTYPECODE = #{rsvtypecode})
+		WHERE  A.PPSEQ = #{ppseq}
+			AND D.TYPESEQ = #{typeseq}
+			AND B.SESSIONNAME IS NOT NULL
+		ORDER BY B.SESSIONNAME
+	</select>
+	
+	<!-- 오늘 년 월 일 조회 -->
+	<select id="reservationToday" resultType="dataBox">
+		SELECT DATEPART(YY, GETDATE()) AS YEAR
+		     , DATEPART(MM, GETDATE()) AS MONTH
+		     , DATEPART(DD, GETDATE()) AS DAY
+	</select>
+	
+</mapper>

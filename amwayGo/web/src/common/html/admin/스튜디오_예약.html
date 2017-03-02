@@ -1,0 +1,291 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if (gte IE 9)]><html lang="ko" class="modern ie"><![endif]-->
+<!--[if !(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+	<meta charset="utf-8">
+	<title>AOF5-UNIV ADMIN DEMO</title>
+	<link rel="shortcut icon" href="http://aof5.web.active4c.4csoft.com:8188/images/admin/../favicon.ico" type="image/x-icon" />
+	<!-- <link rel="stylesheet" href="http://aof5.web.active4c.4csoft.com:8188/css/admin/base.css" type="text/css"/> -->
+	<link rel="stylesheet" href="../../css/admin/base.css" type="text/css"/>
+	<link rel="stylesheet" href="../../css/admin/common.css" type="text/css"/>
+	<link rel="stylesheet" href="../../css/admin/layout.css" type="text/css"/>
+	<link rel="stylesheet" href="../../css/admin/content.css" type="text/css"/>
+	<link rel="stylesheet" href="http://aof5.web.active4c.4csoft.com:8188/css/jquery/redmond/jquery-ui-1.8.23.custom.css" type="text/css"/>
+	<link rel="stylesheet" href="../../css/admin/style.css" type="text/css"/>
+	<style type="text/css">
+	</style>
+	<script type="text/javascript" src="http://aof5.web.active4c.4csoft.com:8188/js/jquery/jquery-1.7.2.min.js"></script>
+	<script type="text/javascript" src="http://aof5.web.active4c.4csoft.com:8188/js/jquery/jquery-ui-1.8.23.custom.min.js"></script>
+	<script type="text/javascript" src="http://aof5.web.active4c.4csoft.com:8188/js/lib/jquery.aos.js"></script>
+	<script type="text/javascript" src="http://aof5.web.active4c.4csoft.com:8188/js/lib/jquery.aos.ui.js"></script>
+	<script type="text/javascript" src="http://aof5.web.active4c.4csoft.com:8188/js/lib/jquery.aos.util.js"></script>
+	<script type="text/javascript" src="http://aof5.web.active4c.4csoft.com:8188/js/lib/functions.js"></script>
+	<script type="text/javascript">
+	jQuery(function($){
+		jQuery(".snb>ul>li").hover(
+			function() {
+				var $this = jQuery(this);
+				$this.find(">ul.manage-menu").show();
+			}, 
+			function() {
+				var $this = jQuery(this);
+				$this.find(">ul.manage-menu").hide();
+			}
+		);
+
+		jQuery(".admin-group").hover(
+			function() {
+				jQuery(this).find("ul").show();
+			},
+			function() {
+				jQuery(this).find("ul").hide();
+			}
+		);
+	});
+	</script>
+	<script type="text/javascript" src="../js/lib/jquery.alsEN-1.0.min.js"></script>
+	<script type="text/javascript">
+			var $js = jQuery.noConflict();
+			jQuery(function($){
+	
+			$("ul.menu li").hover(function(){
+				$(">ul:not(:animated)",this).slideDown("fast");
+				},
+			function(){
+				$(">ul",this).slideUp("fast");
+				});
+		});
+	</script>
+	
+</head>
+
+<body>
+	<div id="layout" class="wrap skin-blue">
+		<!-- header -->
+		<div class="header">
+			<h1 class="logo"><a href="#"><img src="../../images/admin/common/logo-black.png" alt="active 4c" /></a></h1>
+			
+			<div class="gnb"><!--gnb-->
+				<div class="admin"><!--admin-->
+					<p class="admin-name dot">관리자이름 </p>
+					<div class="admin-group"><!--admin-group-->
+						<a href="#">즐겨찾기</a>
+							<ul class="manage-menu favorite"><!-- favorite -->
+								<li class="bg-top"></li>
+								<li><a href="#">즐겨찾기</a><a href="#" class="delete"><img src="../../images/admin/icon/icon_del.gif" alt="삭제" /></a></li>
+								<li><a href="#">즐겨찾기즐겨찾기즐겨찾기즐겨찾기즐겨찾기즐겨찾기</a><a href="#" class="delete"><img src="../../images/admin/icon/icon_del.gif" alt="삭제" /></a></li>
+								<li><a href="#">즐겨찾기</a><a href="#" class="delete"><img src="../../images/admin/icon/icon_del.gif" alt="삭제" /></a></li>
+								<li class="bg-bot"></li>
+							</ul>
+					</div>
+					<div class="admin-group"><!--admin-group-->
+						<a href="#">관리자 메뉴</a>
+							<ul class="manage-menu"><!-- manage-menu -->
+								<li class="bg-top"></li>
+								<li><a href="#">시스템관리그룹</a></li>
+								<li><a href="#">튜터그룹</a></li>
+								<li><a href="#">콘텐츠개발 관리 그룹</a></li>
+								<li><a href="#">콘텐츠개발  관리 - PM 그룹</a></li>
+								<li><a href="#">학습자그룹</a></li>
+								<li class="bg-bot"></li>
+							</ul>
+					</div><!--//admin-group-->
+					<a href="#" class="dot logout">로그아웃</a>
+				</div><!--//admin-->
+			</div><!--gnb-->
+
+		</div>
+		<!-- //header -->
+
+		<!-- container -->
+		<div id="container" class="container">
+			<div class="section-content">
+				<!-- snb(section_west) -->
+				<div id="section_west" class="aside">
+				
+					<!-- nav -->
+					<div class="nav">
+						<a href="#" class="prev"  title="이전 메뉴"></a>
+							<ul class="menu">
+								<li><a href="#"><span class="nav-icon001"></span>시스템<br/>관리</a>
+									<ul class="submenu01">
+										<li class="active01 submenu"><a href="#">마이페이지</a>
+											<ul class="submenu02">
+												<li class="active02"><a href="#">접속통계</a></li>
+												<li><a href="#">현재접속회원</a></li>
+												<li><a href="#">시스템상태</a></li>
+												<li><a href="#">로그인분석</a></li>
+											</ul>
+										</li>
+										<li><a href="#">소속관리 소속관리 소속관리</a></li>
+										<li><a href="#">그룹관리</a></li>
+										<li><a href="#">메뉴관리</a></li>
+										<li class="submenu"><a href="#">설정관리</a>
+											<ul class="submenu02">
+												<li class="active02"><a href="#">접속통계</a></li>
+												<li><a href="#">현재접속회원</a></li>
+												<li><a href="#">시스템상태</a></li>
+												<li><a href="#">로그인분석</a></li>
+											</ul>
+										</li>
+										<li><a href="#">코드관리</a></li>
+										<li><a href="#">일정관리</a></li>
+										<li><a href="#">쪽지관리</a></li>
+										<li><a href="#">모니터링</a></li>
+									</ul>
+								</li>
+								<li><a href="#"><span class="nav-icon002"></span>회원관리</a></li>
+								<li><a href="#"><span class="nav-icon003"></span>시스템<br/>관리</a></li>
+								<li><a href="#"><span class="nav-icon004"></span>게시판관리</a></li>
+								<li><a href="#"><span class="nav-icon005"></span>교과목관리</a>
+									<ul class="submenu01">
+										<li class="submenu"><a href="#">회원관리2</a>
+											<ul class="submenu02">
+												<li class="active02"><a href="#">접속통계2</a></li>
+												<li><a href="#">현재접속회원2</a></li>
+												<li><a href="#">시스템상태2</a></li>
+												<li><a href="#">로그인분석2</a></li>
+											</ul>
+										</li>
+										<li><a href="#">소속관리 소속관리 소속관리2</a></li>
+										<li><a href="#">그룹관리2</a></li>
+										<li><a href="#">메뉴관리2</a></li>
+										<li><a href="#">설정관리2</a></li>
+										<li><a href="#">코드관리2</a></li>
+										<li><a href="#">일정관리2</a></li>
+										<li><a href="#">쪽지관리2</a></li>
+										<li><a href="#">모니터링2</a></li>
+									</ul>
+								</li>
+								<li><a href="#"><span class="nav-icon006"></span>개설과목관리</a></li>
+								<li><a href="#"><span class="nav-icon007"></span>콘텐츠<br/>관리</a>	</li>
+								<li><a href="#"><span class="nav-icon008"></span>콘텐츠<br/>개발</a></li>
+								<li><a href="#"><span class="nav-icon009"></span>OCW</a></li>
+								<li><a href="#"><span class="nav-icon010"></span>까페</a></li>
+							</ul>
+						<a href="#" class="next" title="다음 메뉴"></a>
+					</div>
+					<!-- //nav -->
+		
+				</div>
+				<!-- //snb(section_west) -->
+			
+				<!-- content(section_2column) -->
+				<div id="section_2column" class="content-wrap">
+					<div class="content">
+						<div class="snb"><!--snb-->
+						<ul>
+							<li class="home"><a href="#"></a></li>
+							<li><a href="#">시스템관리 시스템관리</a>
+								<ul class="manage-menu"><!-- manage-menu -->
+									<li class="bg-top"></li>
+									<li><a href="#">시스템관리1 시스템관리1  시스템관리1 시스템관리1  </a></li>
+									<li><a href="#">시스템관리2</a></li>
+									<li><a href="#">시스템관리3</a></li>
+									<li><a href="#">시스템관리4</a></li>
+									<li class="bg-bot"></li>
+								</ul>
+							</li>
+							<li><a href="#">회원관리</a>
+								<ul class="manage-menu"><!-- manage-menu -->
+									<li class="bg-top"></li>
+									<li><a href="#">접속통계</a></li>
+									<li><a href="#">현재 접속회원</a></li>
+									<li><a href="#">시스템 상태</a></li>
+									<li><a href="#">로그분석</a></li>
+									<li><a href="#">접속통계</a></li>
+									<li class="bg-bot"></li>
+								</ul>
+							</li>
+						</ul>
+						<p class="favicon_on"><a href="#"><img src="../../images/admin/common/favicon_on.png" alt="즐겨찾기 체크 온"/></a></p>
+						<!--<p class="favicon_off"><a href="#"><img src="../../images/admin/common/favicon_off.png" alt="즐겨찾기 체크 오프"/></a></p>-->
+						<!--<p class="favicon_not"><a href="#"><img src="../../images/admin/common/favicon_not.png" alt="즐겨찾기 체크 비활성화"/></a></p>-->
+					</div><!--//snb-->
+						<!-- content -->
+						<table class="tbl-st">
+							<caption></caption>
+							<colgroup>
+								<col style="width:8%;" />
+								<col />
+								<col />
+								<col />
+								<col />
+								<col />
+								<col />
+								<col />
+							</colgroup>
+							<thead>
+								<tr>
+									<th></th>
+									<th>4/27 일</th>
+									<th>4/28 월</th>
+									<th>4/29 화</th>
+									<th>4/30 수</th>
+									<th>5/1 목</th>
+									<th>5/2 금</th>
+									<th>5/3 토</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th>9:00</th>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								</tr>
+								<tr class="st-mirror">
+									<th>10:00</th>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								</tr>
+								<tr>
+									<th>11:00</th>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								</tr>
+								<tr class="st-mirror">
+									<th>12:00</th>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
+						<!-- //content -->
+					</div>
+				</div>
+				<!-- //content-wrap(section_2column) -->
+			</div>
+		</div>
+		<!-- //container -->
+		<!-- footer -->
+		<div class="footer">
+			<p class="copyright">Copyright ⓒ <strong>4csoft.</strong> All Rights Reserved.</p>
+		</div>
+		<!-- //footer -->
+
+	</div>
+</body>
+</html>

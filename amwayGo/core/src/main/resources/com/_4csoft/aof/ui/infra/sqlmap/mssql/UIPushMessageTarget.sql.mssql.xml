@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.PushMessageTargetMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIPushMessageTargetVO">
+    /* UIPushMessageTargetMapper.insert */
+	   <selectKey resultType="Long" keyProperty="pushMessageTargetSeq" order="AFTER">
+            SELECT @@IDENTITY
+        </selectKey>
+	INSERT INTO cs_push_message_target 
+	       ( 
+           cs_schedule_dtime , 
+           cs_member_seq , 
+           cs_push_message , 
+           cs_device_vendor_type , 
+           cs_device_type , 
+           cs_container_id , 
+           cs_push_message_type , 
+           cs_push_send_status , 
+           cs_device_id , 
+           cs_reg_member_seq , 
+           cs_upd_member_seq , 
+           cs_reg_dtime , 
+           cs_upd_dtime , 
+           cs_reg_ip , 
+           cs_upd_ip 
+	       ) 
+    VALUES 
+	       (
+	       <choose>
+               <when test="scheduleDtime == null">
+             dbo.FN_NOW_TO_CHAR(),
+               </when>
+               <otherwise>
+            #{scheduleDtime,   jdbcType=VARCHAR} ,
+               </otherwise>
+            </choose>
+	        #{memberSeq,   jdbcType=NUMERIC} ,
+	        #{pushMessage,   jdbcType=VARCHAR} ,
+	        #{deviceVendorType,   jdbcType=VARCHAR} ,
+	        #{deviceType,   jdbcType=VARCHAR} ,
+	        <choose>
+	           <when test="containerId == null">
+            '1',
+	           </when>
+	           <otherwise>
+	        #{containerId,   jdbcType=VARCHAR} ,
+	           </otherwise>
+	        </choose>
+	        #{pushMessageType,   jdbcType=VARCHAR} ,
+	        <choose>
+	           <when test="pushSendStatus == null">
+            '00',
+	           </when>
+	           <otherwise>
+	        #{pushSendStatus,   jdbcType=VARCHAR} ,
+	           </otherwise>
+	        </choose>
+	        #{deviceId,   jdbcType=VARCHAR} ,
+            #{regMemberSeq, jdbcType=NUMERIC} ,
+            #{updMemberSeq, jdbcType=NUMERIC} ,
+            dbo.FN_NOW_TO_CHAR() ,
+            dbo.FN_NOW_TO_CHAR() ,
+            #{regIp, jdbcType=VARCHAR} ,
+            #{updIp, jdbcType=VARCHAR}
+	       ) 
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UIPushMessageTargetVO">
+    /* UIPushMessageTargetMapper.update */
+	UPDATE cs_push_message_target 
+	   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+	       ,cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+	       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	        <if test='pushMessage != null'>
+	       , cs_push_message= #{pushMessage, jdbcType=VARCHAR}
+	        </if>
+	        <if test='deviceVendorType != null'>
+	       , cs_device_vendor_type= #{deviceVendorType, jdbcType=VARCHAR}
+	        </if>
+	        <if test='deviceType != null'>
+	       , cs_device_type= #{deviceType, jdbcType=VARCHAR}
+	        </if>
+	        <if test='containerId != null'>
+	       , cs_container_id= #{containerId, jdbcType=VARCHAR}
+	        </if>
+	        <if test='pushMessageType != null'>
+	       , cs_push_message_type= #{pushMessageType, jdbcType=VARCHAR}
+	        </if>
+	        <if test='pushSendStatus != null'>
+	       , cs_push_send_status= #{pushSendStatus, jdbcType=VARCHAR}
+	        </if>
+	        <if test='deviceId != null'>
+	       , cs_device_id= #{deviceId, jdbcType=VARCHAR}
+	        </if>
+	 WHERE cs_push_message_target_seq = #{pushMessageTargetSeq}
+	   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIPushMessageTargetVO">
+	/* UIPushMessageTargetMapper.delete */
+	UPDATE cs_code 
+	   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+	       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+	       cs_delete_yn = 'Y' 
+	 WHERE cs_push_message_target_seq = #{pushMessageTargetSeq} 
+	   AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIPushMessageTargetRS">
+	    <result column="cs_push_message_target_seq"    property="pushMessageTarget.pushMessageTargetSeq"    />
+	    <result column="cs_schedule_dtime"             property="pushMessageTarget.scheduleDtime"    />
+	    <result column="cs_member_seq"                 property="pushMessageTarget.memberSeq"    />
+	    <result column="cs_push_message"               property="pushMessageTarget.pushMessage"    />
+	    <result column="cs_device_vendor_type"         property="pushMessageTarget.deviceVendorType"    />
+	    <result column="cs_device_type"                property="pushMessageTarget.deviceType"    />
+	    <result column="cs_container_id"               property="pushMessageTarget.containerId"    />
+	    <result column="cs_push_message_type"          property="pushMessageTarget.pushMessageType"    />
+	    <result column="cs_push_send_status"           property="pushMessageTarget.pushSendStatus"    />
+	    <result column="cs_device_id"                  property="pushMessageTarget.deviceId"    />
+	    <result column="cs_member_name"                property="member.memberName"    />
+	    <result column="cs_member_id"                  property="member.memberId"    />
+	</resultMap>
+	<select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIPushMessageTargetCondition" resultMap="listResultMap">
+	/* UIPushMessageTargetMapper.getList */
+	    <if test='currentPage != 0'>
+	SELECT Z.* FROM (SELECT Row_Number() OVER (
+	        <choose>
+	            <when test='orderby == 1'>ORDER BY cs_member_name ASC</when>
+	            <when test='orderby == -1'>ORDER BY cs_member_name DESC</when>
+	            <otherwise>ORDER BY cs_schedule_dtime DESC</otherwise>
+	        </choose>
+	) AS rownumber, * FROM (
+	    </if>
+		SELECT pumt.cs_push_message_target_seq , 
+		       pumt.cs_schedule_dtime , 
+		       pumt.cs_member_seq , 
+		       pumt.cs_push_message , 
+		       pumt.cs_device_vendor_type , 
+		       pumt.cs_device_type , 
+		       pumt.cs_container_id , 
+		       pumt.cs_push_message_type , 
+		       pumt.cs_push_send_status , 
+		       pumt.cs_device_id , 
+		       m.cs_member_name , 
+		       m.cs_member_id 
+		  FROM cs_push_message_target pumt 
+    INNER JOIN cs_member m 
+	        ON pumt.cs_member_seq = m.cs_member_seq 
+		   AND m.cs_delete_yn        = 'N' 
+		 WHERE pumt.cs_delete_yn     = 'N'  
+		 <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("memberName")'>
+       AND m.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo}
+        </if>
+    </select>
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIPushMessageTargetCondition" resultMap="listResultMap">
+    /* UIPushMessageTargetMapper.countList */
+        SELECT COUNT(*)
+          FROM cs_push_message_target pumt 
+    INNER JOIN cs_member m 
+            ON pumt.cs_member_seq = m.cs_member_seq 
+           AND m.cs_delete_yn        = 'N' 
+         WHERE pumt.cs_delete_yn     = 'N'  
+         <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("memberName")'>
+       AND m.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+</mapper>

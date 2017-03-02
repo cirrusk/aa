@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.common.service.impl.LmsCommonMapper">
+	
+	<!-- 공통코드 리스트 -->
+	<select id="selectLmsCommonCodeList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsCommonCodeList */
+		SELECT
+			TARGETCODESEQ AS COMMONCODESEQ 
+			, TARGETCODENAME AS CODENAME
+		FROM TARGETCODE
+		WHERE TARGETMASTERSEQ = #{codemasterseq}
+		AND USEYN = 'Y'
+		ORDER BY TARGETCODEORDER ASC
+	</select>
+	
+	<select id="selectLmsCategoryCodeList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsCategoryCodeList */
+		SELECT
+			CATEGORYID ,
+			CATEGORYNAME ,
+			CATEGORYLEVEL ,
+			COMPLIANCEFLAG
+		FROM LMSCATEGORY
+		WHERE USEFLAG = 'Y'
+			AND CATEGORYTYPE = #{categorytype}
+		 	AND CATEGORYUPID = #{categoryid}
+		ORDER BY CATEGORYORDER ASC
+	</select>
+	
+	<select id="selectLmsCategoryCode3Depth" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsCategoryCode3Depth */
+		WITH TREE_QUERY  AS (
+			SELECT  
+				CATEGORYID ,
+				CATEGORYUPID ,
+				CATEGORYNAME ,
+				CATEGORYLEVEL
+			FROM LMSCATEGORY
+			WHERE CATEGORYID = #{categoryid}
+			UNION ALL 
+			SELECT
+				B.CATEGORYID ,
+				B.CATEGORYUPID ,
+				B.CATEGORYNAME ,
+				B.CATEGORYLEVEL
+			FROM  LMSCATEGORY B, TREE_QUERY C
+			WHERE B.CATEGORYID = C.CATEGORYUPID
+		) 
+		SELECT 
+			MAX(CASE WHEN CATEGORYLEVEL = '1' THEN CATEGORYID ELSE NULL END) CATEGORYID1 ,
+			MAX(CASE WHEN CATEGORYLEVEL = '2' THEN CATEGORYID ELSE NULL END) CATEGORYID2 ,
+			MAX(CASE WHEN CATEGORYLEVEL = '3' THEN CATEGORYID ELSE NULL END) CATEGORYID3
+		FROM TREE_QUERY 
+	</select>
+	
+	<select id="selectLmsApCodeList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsApCodeList */
+		SELECT 
+			PPSEQ AS APSEQ ,
+			PPNAME AS APNAME
+		FROM RSVPPINFO
+		WHERE STATUSCODE = 'B01'
+		ORDER BY ORDERNUMBER ASC
+	</select>
+	
+	<select id="selectLmsRoomCodeList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRoomCodeList */
+		SELECT ROOMSEQ ,
+			ROOMNAME 
+		FROM RSVROOMINFO
+		WHERE STATUSCODE = 'B01'
+			<if test='apseq != null and !apseq.equals("")'>
+			AND PPSEQ = #{ apseq}
+			</if>
+		ORDER BY ROOMNAME ASC
+	</select>
+	
+	
+	<!-- 쪽지발신 등록-->
+	<!-- <selectKey resultType="int" keyProperty="notesendseq" order="BEFORE">
+	        SELECT ISNULL(MAX(NOTESENDSEQ),0)+1 AS NOTESENDSEQ FROM NOTESEND        
+	    </selectKey>
+				NOTESENDSEQ ,
+				(SELECT ISNULL(MAX(NOTESENDSEQ),0)+1 AS NOTESENDSEQ FROM NOTESEND) ,
+	     -->
+ 	<insert id="insertLmsNoteSend" parameterType="java.util.Map">
+		/* LmsCommonSQL.xml insertLmsNoteSend */
+			INSERT INTO NOTESEND(
+				NOTESERVICE ,
+				NAME ,
+				UID ,
+				NOTEITEM ,
+				NOTECONTENT ,
+				SENDDATE ,
+				MODIFIER ,
+				MODIFYDATE ,
+				REGISTRANT ,
+				REGISTRANTDATE ,
+				DELETEYN 
+				)
+			VALUES(
+				#{noteservice } ,
+				#{name } ,
+				#{uid } ,
+				#{noteitem } ,
+				#{notecontent } ,
+		<choose>
+			<when test='senddate != null and senddate.equals("now")'>
+				GETDATE() ,
+			</when>
+			<otherwise>
+				#{senddate } ,
+			</otherwise>
+		</choose>
+				#{modifier } ,
+				GETDATE() ,
+				#{registrant } ,
+				GETDATE() ,
+				'N' 
+				)
+	</insert>
+	
+ 	<insert id="insertLmsNoteSendLmsSubsribe" parameterType="java.util.Map">
+
+	    <!-- <selectKey resultType="int" keyProperty="notesendseq" order="BEFORE">
+	        SELECT ISNULL(MAX(NOTESENDSEQ),0) AS NOTESENDSEQ FROM NOTESEND        
+	    </selectKey>
+	     --> 
+		/* LmsCommonSQL.xml insertLmsNoteSendLmsSubsribe */
+			INSERT INTO NOTESEND(
+				NOTESERVICE ,
+				NAME ,
+				UID ,
+				NOTEITEM ,
+				NOTECONTENT ,
+				SENDDATE ,
+				MODIFIER ,
+				MODIFYDATE ,
+				REGISTRANT ,
+				REGISTRANTDATE ,
+				DELETEYN 
+				)
+				SELECT 
+				#{noteservice } AS NOTESERVICE,
+				B.NAME AS NAME,
+				A.UID AS UID,
+				#{noteitem }  AS NOTEITEM,
+				#{notecontent } AS NOTECONTENT,
+				GETDATE() AS SENDDATE,
+				#{modifier } AS MODIFIER,
+				GETDATE() AS MODIFYDATE,
+				#{registrant } AS REGISTRANT,
+				GETDATE() AS REGISTRANTDATE,
+				'N' AS DELETEYN
+				FROM LMSSUBSCRIBE A
+					INNER JOIN MEMBER B ON (A.UID = B.UID)
+				WHERE CATEGORYID = #{categoryid }
+	</insert>
+
+	<select id="selectNowDate" parameterType="reqBox" resultType="dataBox">
+		/* selectNowDate */
+		SELECT DBO.F_LMS_DATETYPE(GETDATE(), '3') AS NOWDATE
+	</select>
+	
+	<select id="selectYYYYMMDDHHMISS" parameterType="reqBox" resultType="dataBox">
+		/* selectYYYYMMDDHHMISS */
+		SELECT FORMAT(GETDATE(),'yyyy') AS YYYY ,
+			FORMAT(GETDATE(),'MM') AS MM ,
+			FORMAT(GETDATE(),'dd') AS DD ,
+			FORMAT(GETDATE(),'HH') AS HH ,
+			FORMAT(GETDATE(),'mm') AS MI ,
+			FORMAT(GETDATE(),'ss') AS SS ,
+			FORMAT(GETDATE(),'yy') AS YY 
+	</select>
+	
+	<select id="selectYYYYMMDDHHMISSMINUS" parameterType="reqBox" resultType="dataBox">
+		/* selectYYYYMMDDHHMISSMINUS */
+		SELECT FORMAT(GETDATE()-1,'yyyy') AS YYYY ,
+			FORMAT(GETDATE()-1,'MM') AS MM ,
+			FORMAT(GETDATE()-1,'dd') AS DD ,
+			FORMAT(GETDATE()-1,'HH') AS HH ,
+			FORMAT(GETDATE()-1,'mm') AS MI ,
+			FORMAT(GETDATE()-1,'ss') AS SS 
+	</select>
+	
+	<select id="selectLmsMemberInfo" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsMemberInfo */
+		SELECT NAME 
+		FROM MEMBER
+		WHERE UID = #{uid }
+	</select>
+	
+	<!-- 오프라인 1일전 안내 쪽지 발송 procedure -->
+	<select id="lmsSchedulerOffLineNoteSend" statementType="CALLABLE" resultType="java.util.Map">
+     {call
+            DBO.SP_LMS_NOTESEND_OFFLINE(
+                       #{RETURN, mode=OUT, jdbcType=VARCHAR}
+            )
+       }
+	</select>
+	
+	<!-- GLMS 데이타 연동 procedure -->
+	<select id="lmsSchedulerGLMSInterface" statementType="CALLABLE" resultType="java.util.Map">
+     {call
+            DBO.SP_LMS_ONLINEBATCH_STAMPONLINE(
+            			#{NOWDATE, mode=IN, jdbcType=VARCHAR}
+                        , #{RETURN, mode=IN, jdbcType=VARCHAR}
+            )
+       }
+	</select>
+	
+	
+	<!-- DW데이터 연동 procedure -->
+	<select id="lmsSchedulerMemberDwInterface" statementType="CALLABLE" resultType="java.util.Map">
+     {call
+            DBO.SP_LMS_MEMBERDW(
+            			#{NOWMONTH, mode=IN, jdbcType=VARCHAR}
+                        , #{RETURN, mode=OUT, jdbcType=VARCHAR}
+            )
+       }
+	</select>
+	
+	
+	<select id="selectLmsPushSendSubsribeMember" parameterType="reqBox" resultType="dataBox">
+
+				SELECT 
+				A.UID AS UID
+				FROM LMSSUBSCRIBE A
+					INNER JOIN MEMBER B ON (A.UID = B.UID)
+				WHERE CATEGORYID = #{categoryid }
+	</select>
+	
+	<!-- AmwayGo 그룹방 동기화 procedure -->
+	<insert id="lmsAmwayGoDataSynch" parameterType="reqBox">
+	/*lmsAmwayGoDataSynch*/
+	EXEC DBO.SP_AMWAYGO_LMS #{uid}, #{courseid}
+	</insert>
+	
+</mapper>

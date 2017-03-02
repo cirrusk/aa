@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsMetadataMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsMetadataVO">
+        <selectKey resultType="Long" keyProperty="metadataSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UILcmsMetadataMapper.insert */
+INSERT INTO cs_lcms_metadata 
+       ( 
+           cs_metadata_element_seq ,
+           cs_reference_seq ,
+           cs_reference_type ,
+           cs_metadata_value ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{metadataElementSeq, jdbcType=NUMERIC} ,
+           #{referenceSeq, jdbcType=NUMERIC} ,
+           #{referenceType, jdbcType=VARCHAR} ,
+           #{metadataValue, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       )
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsMetadataVO">
+/* UILcmsMetadataMapper.update */
+UPDATE cs_lcms_metadata 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_metadata_value = #{metadataValue, jdbcType=VARCHAR}
+ WHERE cs_metadata_seq = #{metadataSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsMetadataVO">
+/* UILcmsMetadataMapper.delete */
+UPDATE cs_lcms_metadata 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+ WHERE cs_metadata_seq = #{metadataSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsMetadataRS">
+        <result column="cm.metadataSeq"         property="metadata.metadataSeq" />
+        <result column="cm.metadataElementSeq"  property="metadata.metadataElementSeq" />
+        <result column="cm.referenceSeq"        property="metadata.referenceSeq" />
+        <result column="cm.referenceType"       property="metadata.referenceType" />
+        <result column="cm.metadataValue"       property="metadata.metadataValue" />
+        <result column="cm.deleteYn"            property="metadata.deleteYn" />
+        <result column="cm.regMemberSeq"        property="metadata.regMemberSeq" />
+        <result column="cm.regDtime"            property="metadata.regDtime" />
+        <result column="cm.regIp"               property="metadata.regIp" />
+        <result column="cm.updMemberSeq"        property="metadata.updMemberSeq" />
+        <result column="cm.updDtime"            property="metadata.updDtime" />
+        <result column="cm.updIp"               property="metadata.updIp" />
+        <result column="cme.metadataName"       property="metadataElement.metadataName" />
+        <result column="cme.metadataPath"       property="metadataElement.metadataPath" />
+        <result column="cme.readonlyYn"         property="metadataElement.readonlyYn" />
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UILcmsMetadataElementMapper.getDetail */
+SELECT cm.cs_metadata_seq          AS "cm.metadataSeq" ,
+       cm.cs_metadata_element_seq  AS "cm.metadataElementSeq" ,
+       cm.cs_reference_seq         AS "cm.referenceSeq" ,
+       cm.cs_reference_type        AS "cm.referenceType" ,
+       cm.cs_metadata_value        AS "cm.metadataValue" ,
+       cm.cs_delete_yn             AS "cm.deleteYn" ,
+       cm.cs_reg_member_seq        AS "cm.regMemberSeq" ,
+       cm.cs_reg_dtime             AS "cm.regDtime" ,
+       cm.cs_reg_ip                AS "cm.regIp" ,
+       cm.cs_upd_member_seq        AS "cm.updMemberSeq" ,
+       cm.cs_upd_dtime             AS "cm.updDtime" ,
+       cm.cs_upd_ip                AS "cm.updIp" ,
+       cme.cs_metadata_name        AS "cme.metadataName" ,
+       cme.cs_metadata_path        AS "cme.metadataPath" ,
+       cme.cs_readonly_yn          AS "cme.readonlyYn" 
+  FROM cs_lcms_metadata_element cme 
+ WHERE cs_metadata_seq = #{metadataSeq} 
+       AND cme.cs_delete_yn = 'N'
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsMetadataRS">
+        <result column="cm.metadataSeq"         property="metadata.metadataSeq" />
+        <result column="cm.metadataElementSeq"  property="metadata.metadataElementSeq" />
+        <result column="cm.referenceSeq"        property="metadata.referenceSeq" />
+        <result column="cm.referenceType"       property="metadata.referenceType" />
+        <result column="cm.metadataValue"       property="metadata.metadataValue" />
+        <result column="cm.deleteYn"            property="metadata.deleteYn" />
+        <result column="cm.regMemberSeq"        property="metadata.regMemberSeq" />
+        <result column="cm.regDtime"            property="metadata.regDtime" />
+        <result column="cm.regIp"               property="metadata.regIp" />
+        <result column="cm.updMemberSeq"        property="metadata.updMemberSeq" />
+        <result column="cm.updDtime"            property="metadata.updDtime" />
+        <result column="cm.updIp"               property="metadata.updIp" />
+        <result column="cme.metadataName"       property="metadataElement.metadataName" />
+        <result column="cme.metadataPath"       property="metadataElement.metadataPath" />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsMetadataCondition" resultMap="listResultMap">
+/* UILcmsMetadataMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "cme.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "cme.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "cme.metadataName" ASC</when>
+            <when test='orderby == -2'>ORDER BY "cme.metadataName" DESC</when>
+            <when test='orderby == 3'>ORDER BY "cme.metadataPath" ASC</when>
+            <when test='orderby == -3'>ORDER BY "cme.metadataPath" DESC</when>
+            <otherwise>ORDER BY "cme.regDtime" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT cm.cs_metadata_seq          AS "cm.metadataSeq" ,
+       cm.cs_metadata_element_seq  AS "cm.metadataElementSeq" ,
+       cm.cs_reference_seq         AS "cm.referenceSeq" ,
+       cm.cs_reference_type        AS "cm.referenceType" ,
+       cm.cs_metadata_value        AS "cm.metadataValue" ,
+       cm.cs_delete_yn             AS "cm.deleteYn" ,
+       cm.cs_reg_member_seq        AS "cm.regMemberSeq" ,
+       cm.cs_reg_dtime             AS "cm.regDtime" ,
+       cm.cs_reg_ip                AS "cm.regIp" ,
+       cm.cs_upd_member_seq        AS "cm.updMemberSeq" ,
+       cm.cs_upd_dtime             AS "cm.updDtime" ,
+       cm.cs_upd_ip                AS "cm.updIp" ,
+       cme.cs_metadata_name        AS "cme.metadataName" ,
+       cme.cs_metadata_path        AS "cme.metadataPath"
+  FROM cs_lcms_metadata cm 
+ INNER JOIN cs_lcms_metadata_element cme 
+    ON cm.cs_metadata_element_seq = cme.cs_metadata_element_seq 
+       AND cme.cs_delete_yn = 'N'
+ WHERE cm.cs_delete_yn = 'N'
+        <if test='srchReferenceSeq != null and !srchReferenceSeq.equals(0L)'>
+        AND cm.cs_reference_seq = #{srchReferenceSeq}
+        </if>
+        <if test='srchReferenceType != null and !srchReferenceType.equals("")'>
+        AND cm.cs_reference_type = #{srchReferenceType}
+        </if>
+        <if test='srchMetadataPath != null and !srchMetadataPath.equals("")'>
+        AND cme.cs_metadata_path = #{srchMetadataPath}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <choose>
+                <when test='"equals".equals(srchMethod)'>
+                    AND cm.cs_metadata_value = #{srchWord}
+                </when>
+                <otherwise>
+                    AND cm.cs_metadata_value LIKE '%' + #{srchWordDB} + '%'
+                </otherwise>
+            </choose>
+        </if>
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsMetadataCondition" resultType="int">
+/* UILcmsMetadataElementMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_lcms_metadata cm 
+ INNER JOIN cs_lcms_metadata_element cme 
+    ON cm.cs_metadata_element_seq = cme.cs_metadata_element_seq 
+       AND cme.cs_delete_yn = 'N'
+ WHERE cm.cs_delete_yn = 'N'
+        <if test='srchReferenceSeq != null and !srchReferenceSeq.equals(0L)'>
+        AND cm.cs_reference_seq = #{srchReferenceSeq}
+        </if>
+        <if test='srchReferenceType != null and !srchReferenceType.equals("")'>
+        AND cm.cs_reference_type = #{srchReferenceType}
+        </if>
+        <if test='srchMetadataPath != null and !srchMetadataPath.equals("")'>
+        AND cme.cs_metadata_path = #{srchMetadataPath}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <choose>
+                <when test='"equals".equals(srchMethod)'>
+                    AND cm.cs_metadata_value = #{srchWord}
+                </when>
+                <otherwise>
+                    AND cm.cs_metadata_value LIKE '%' + #{srchWordDB} + '%'
+                </otherwise>
+            </choose>
+        </if>
+    </select>
+
+    <resultMap id="listByReferenceResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsMetadataRS">
+        <result column="cm.metadataSeq"         property="metadata.metadataSeq" />
+        <result column="cm.metadataElementSeq"  property="metadata.metadataElementSeq" />
+        <result column="cm.referenceSeq"        property="metadata.referenceSeq" />
+        <result column="cm.referenceType"       property="metadata.referenceType" />
+        <result column="cm.metadataValue"       property="metadata.metadataValue" />
+        <result column="cm.deleteYn"            property="metadata.deleteYn" />
+        <result column="cm.regMemberSeq"        property="metadata.regMemberSeq" />
+        <result column="cm.regDtime"            property="metadata.regDtime" />
+        <result column="cm.regIp"               property="metadata.regIp" />
+        <result column="cm.updMemberSeq"        property="metadata.updMemberSeq" />
+        <result column="cm.updDtime"            property="metadata.updDtime" />
+        <result column="cm.updIp"               property="metadata.updIp" />
+        <result column="cme.metadataElementSeq" property="metadataElement.metadataElementSeq" />
+        <result column="cme.metadataName"       property="metadataElement.metadataName" />
+        <result column="cme.metadataPath"       property="metadataElement.metadataPath" />
+    </resultMap>
+    <select id="getListByReference" parameterType="map" resultMap="listByReferenceResultMap">
+/* UILcmsMetadataMapper.getListByReference */
+SELECT cm.cs_metadata_seq          AS "cm.metadataSeq" ,
+       cm.cs_metadata_element_seq  AS "cm.metadataElementSeq" ,
+       cm.cs_reference_seq         AS "cm.referenceSeq" ,
+       cm.cs_reference_type        AS "cm.referenceType" ,
+       cm.cs_metadata_value        AS "cm.metadataValue" ,
+       cm.cs_delete_yn             AS "cm.deleteYn" ,
+       cm.cs_reg_member_seq        AS "cm.regMemberSeq" ,
+       cm.cs_reg_dtime             AS "cm.regDtime" ,
+       cm.cs_reg_ip                AS "cm.regIp" ,
+       cm.cs_upd_member_seq        AS "cm.updMemberSeq" ,
+       cm.cs_upd_dtime             AS "cm.updDtime" ,
+       cm.cs_upd_ip                AS "cm.updIp" ,
+       cme.cs_metadata_element_seq AS "cme.metadataElementSeq" ,
+       cme.cs_metadata_name        AS "cme.metadataName" ,
+       cme.cs_metadata_path        AS "cme.metadataPath"
+  FROM cs_lcms_metadata_element cme 
+   LEFT OUTER JOIN cs_lcms_metadata cm 
+     ON cme.cs_metadata_element_seq = cm.cs_metadata_element_seq  
+    AND cm.cs_reference_seq = #{referenceSeq}
+    AND cm.cs_reference_type = #{referenceType}
+    AND cm.cs_delete_yn = 'N'
+ WHERE cme.cs_delete_yn = 'N'
+ ORDER BY cme.cs_metadata_element_seq ASC
+    </select>
+
+</mapper>

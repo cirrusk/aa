@@ -1,0 +1,142 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+* {margin:0;padding:0}
+body, table {margin:0;padding:0;font-size:12px;font-family:Nanum Gothic, '나눔고딕','돋음', dotum, Arial, Helvetica, sans-serif; color:#666}
+input,textarea{padding:2px 4px 2px 3px;border:1px solid #c7c7c7; color:#666;vertical-align:middle; font-family:Nanum Gothic, '나눔고딕','돋음', dotum; font-size:12px}
+img{border: 0;vertical-align:middle}
+
+#mlogin {background:url("../../images/www/bg/bg_login_body.gif") repeat-x left top; width:100%;}
+
+
+/*******************************************************************************
+  layout
+*******************************************************************************/
+#wrap_login{width:100%; overflow:hidden;}
+#wrap_login:after{display:block;clear:both;content:' '}
+
+#header_login{position:relative;width:100%;height:42px; background:url("../../images/www/bg/bg_login_header.gif") repeat-x left top; z-index:100}
+#header_login h1 {width:746px; margin:0 auto; padding-left:8px;}
+
+#container_login{width:100%;}
+#container_login:after{display:block;clear:both;content:''}
+
+
+#content_login{width:754px; margin:0 auto; padding:25px 0 75px 0;}
+#content_login h2 {background:url("../../images/www/bg/line_join.gif") no-repeat 5px top; padding-left:14px;}
+#content_login h3 {color:#4d4d98; padding-left:5px; margin-bottom:9px;}
+#content_login h3 span {color:#555!important; font-weight:normal; background:url("../../images/www/bg/line_agree.gif") no-repeat 6px 2px; padding-left:15px;}
+#m_content_login{width:755px;margin:0 auto;/*height:607px;*/} /*2014.07.01 수정 */ 
+
+/*******************************************************************************
+   footer
+*******************************************************************************/
+#footer_login{clear:both; height:94px; border-top:1px solid #b0b0b0;}
+#footer_login .footMenu {width:754px; margin:0 auto;} /*2012.11.06 수정 */
+#footer_login .footMenu ul {padding:25px 0 10px 0; *padding:25px 0 5px 0; display:inline-block;}
+#footer_login .footMenu li{float:left; padding:0 6px; }
+#footer_login p {padding:0 0 5px 5px; *padding:0 0 0 5px;}/*2012.11.06 수정 */ 
+
+
+/*******************************************************************************
+  login - 2012.11.27 수정 , 2014.07.01 수정 
+*******************************************************************************/
+.m_visual {background:url("../../images/www/bg/bg_login_visual.png") no-repeat right -20px; height:250px; position:relative; width:754px; overflow:hidden; display:block;}
+.m_visual .welcome {position:absolute; top:116px; left:20px;}
+
+.loginBox {background:url("../../images/www/bg/bg_loginbox.gif") no-repeat left top; width:754px; height:179px; position:relative; overflow:hidden; display:block;}
+.loginBox .loginform {width:396px; padding:30px 52px 0 44px; float:left;}
+.loginBox .loginform dl {overflow:hidden; padding-top:20px;}
+.loginBox .loginform dt,
+.loginBox .loginform dd {float:left;}
+.loginBox .loginform dt {width:60px; padding-top:10px;}
+.loginBox .loginform dd {width:330px; padding-bottom:5px;}
+.loginBox .loginform dd .login_input {height:28px;padding:2px 5px;font-size:15px; line-height:180%;width:218px;}
+.logBtn {position:absolute; top:73px; left:344px;}
+
+.loginBox .loginLink {float:left; width:216px; padding:30px 0 0 20px;}
+.loginBox .loginLink dt {background:url("../../images/www/bg/bullet_01.gif") no-repeat left 6px; padding:0 0 5px 8px; letter-spacing:-1px;}
+.loginBox .loginLink dd{padding-bottom:7px;}
+
+.installWrap {/*overflow:hidden;*/border-top:1px dotted #676767; padding-top:25px; margin-top:25px;}
+.installWrap .installArea {float:left;}
+.installWrap dl {/*float:left;*/ width:370px; padding:8px 0 0 15px;}
+.installWrap dt {background:url("../../images/www/icon/img_down.gif") no-repeat left top; font-weight:bold; color:#5252a0; font-size:14px; padding:3px 0 5px 30px; /*height:22px;*/}
+.installWrap dd {background:url("../../images/www/bg/bullet_01.gif") no-repeat 3px 8px; padding:2px 0 0 8px; font-size:12px;}
+.installWrap .instBox {background:url("../../images/www/bg/bg_install_box.gif") no-repeat left top; margin:10px 0 0 22px; width:315px; height:89px; /*float:right;*/}
+.installWrap .instBox .media,
+.installWrap .instBox .flash {text-align:center; width:157px;height:89px; float:left; }
+.installWrap .instBox .media span,  
+.installWrap .instBox .flash span {height:24px; display:inline-block; padding:8px 0 5px 37px; margin-top:15px; letter-spacing:-1px;}
+.installWrap .instBox .media span {background:url("../../images/www/icon/img_window.gif") no-repeat left top; }
+.installWrap .instBox .flash span {background:url("../../images/www/icon/img_flash.gif") no-repeat left top;}
+
+.installWrap .ocwBanner {float:left; height:113px; margin:15px 70px 0 0; }
+
+/*******************************************************************************
+  join
+*******************************************************************************/
+.stepBox {border-bottom:1px solid #d9d9d9; border-top:1px solid #d9d9d9; height:82px; margin-top:40px;}
+.stepBox ul {width:754px; margin:0 auto;}
+.stepBox li {float:left;}
+
+/*약관동의*/
+.scollbox {}
+.scollbox .scrollCont {border:1px solid #e0e0e0; height:200px; overflow-x:hidden; overflow-y:auto; padding:5px 10px; line-height:18px;}
+.scollbox .scrollCont h4 {padding:5px 0;}
+.scollbox .agree_sel {text-align:right; color:#333; padding-top:10px;}
+.scollbox .agree_sel .selForm {margin-right:3px;}
+
+/*직원인증&비밀번호찾기*/
+.searchPw {width:648px; margin:0 auto; background:url("../../images/www/common/search_pw_img.gif") no-repeat 18px top; height:51px; padding:31px 0 0 106px}
+.searchPw span{padding-left:10px;}
+
+.result_search{border:1px solid #e0e0e0; padding:20px; text-align:center; color:#333;}
+.result_search em{color:#d9681c; font-weight:bold;}
+.result_search li {line-height:20px;}
+
+.memberBox {background:#f6f4fc; border:1px solid #d5d5ed; padding:20px 0; margin-top:15px; overflow:hidden;}
+.memberBox .input_Info {width:400px; overflow:hidden; border-right:1px solid #c1c0e0; padding-bottom:20px; float:left;}
+.memberBox .input_Info dl {padding:20px 0 0 30px; overflow:hidden;}
+.memberBox .input_Info dt,
+.memberBox .input_Info dd {float:left;}
+.memberBox .input_Info dt {width:80px; padding-top:6px;}
+.memberBox .input_Info dd {width:270px; padding-bottom:10px;}
+.memberBox .input_Info dd span {padding-left:5px;}
+
+.memberBox .explain {width:300px; padding-left:20px; float:left;}
+.memberBox .explain ul {padding-top:5px;}
+.memberBox .explain li{background:url("../../images/www/icon/ico_important.gif") no-repeat left 2px; padding-left:14px;}
+
+.memberBox .explain li.pb25 {padding-bottom:25px;}
+.memberBox .explain li.pb10 {padding-bottom:10px;}
+.memberBox .explain ul.pt25 {padding-top:25px;}
+
+/*가입완료*/
+.join_finish {text-align:center; padding-top:15px;}
+
+/*******************************************************************************
+  btn
+*******************************************************************************/
+
+a.btn_login01{display:inline-block; padding-right:12px; background:url("../../images/www/bg/bg_btn_default.gif") no-repeat 100% -224px; color:#51519f; line-height:22px; word-spacing:-1px; text-decoration:none !important; white-space:nowrap; font-size:11px;}
+a.btn_login01 span,a.btn_login01 strong{display:block; padding:2px 3px 1px 7px;background:url("../../images/www/bg/bg_btn_default.gif") no-repeat 0 -224px;}
+
+/* common-table out */
+a.btn_login02{display:inline-block; padding-right:4px; background:url("../../images/www/bg/bg_btn_default.gif") no-repeat 100% 0; color:#fff; line-height:25px; word-spacing:-1px; text-decoration:none !important; white-space:nowrap}
+a.btn_login02 span,a.btn_login02 strong{display:block; padding:0 11px 1px 24px;background:url("../../images/www/bg/bg_btn_default.gif") no-repeat}
+
+
+/*******************************************************************************
+  table
+*******************************************************************************/
+table.memberBoard {width:100%; border-collapse:collapse; border-spacing:0; border-top:2px solid #6b6bbd}
+table.memberBoard caption {visibility:hidden; height:0; font-size:0}
+table.memberBoard th {height:11px;padding:10px 7px 8px; border-bottom:1px solid #babad3; color:#333; background:#ebebf5; text-align:left;}
+table.memberBoard td {padding:8px 5px;border-bottom:1px solid #babad3; text-align:left; vertical-align:middle; line-height:17px}
+table.memberBoard  .star{color:#cc4a66;}
+
+.mt20 {margin-top:20px;}
+.mt15 {margin-top:15px;}
+

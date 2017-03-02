@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsItemResourceMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsItemResourceVO">
+        <selectKey resultType="Long" keyProperty="resourceSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UILcmsItemResourceMapper.insert */
+INSERT INTO cs_lcms_item_resource 
+       ( 
+           cs_item_seq ,
+           cs_identifier ,
+           cs_scorm_type ,
+           cs_resource_type ,
+           cs_href ,
+           cs_base ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+       VALUES 
+       ( 
+           #{itemSeq, jdbcType=NUMERIC} ,
+           #{identifier, jdbcType=VARCHAR} ,
+           #{scormType, jdbcType=VARCHAR} ,
+           #{resourceType, jdbcType=VARCHAR} ,
+           #{href, jdbcType=VARCHAR} ,
+           #{base, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       )
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsItemResourceVO">
+/* UILcmsItemResourceMapper.update */
+UPDATE cs_lcms_item_resource 
+   SET cs_href = #{href, jdbcType=VARCHAR} ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+ WHERE cs_resource_seq = #{resourceSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsItemResourceVO">
+/* UILcmsItemResourceMapper.delete */
+UPDATE cs_lcms_item_resource 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+ WHERE cs_resource_seq = #{resourceSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+</mapper>

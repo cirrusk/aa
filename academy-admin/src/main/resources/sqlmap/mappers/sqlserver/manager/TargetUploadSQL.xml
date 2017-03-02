@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.targetUpload.service.impl.TargetUploadMapper">
+
+    <select id="targetUploadListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(*) AS TOTAL_CNT
+        FROM RSVROLEGROUP
+        WHERE  1=1
+        <if test="targetgroupname != null and !targetgroupname.equals('')">
+            AND TARGETGROUPNAME LIKE ('%${targetgroupname}%')
+        </if>
+    </select>
+
+    <select id="targetUploadList" parameterType="reqBox" resultType="dataBox">
+        SELECT    AI.ROW_NUM
+                , AI.GROUPSEQ
+                , AI.TARGETGROUPNAME
+                , AI.TARGETCNT
+                , AI.COOKMASTERCODE
+                , AI.TARGETUSE
+                , AI.INSERTUSER
+                , AI.UPDATEDATE
+        FROM (
+        SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType} ) AS ROW_NUM
+                ,  GROUPSEQ
+                ,  TARGETGROUPNAME
+                , (SELECT COUNT(TARGETSEQ)
+                   FROM RSVROLETARGET
+                   WHERE GROUPSEQ = AI.GROUPSEQ) AS TARGETCNT
+                ,  COOKMASTERCODE
+                ,  TARGETUSE
+                ,  INSERTUSER
+                , CONVERT(VARCHAR, CONVERT(DATETIME,UPDATEDATE),20) AS UPDATEDATE
+        FROM   RSVROLEGROUP AI
+        WHERE  1=1
+        <if test="targetgroupname != null and !targetgroupname.equals('')">
+            AND TARGETGROUPNAME LIKE ('%${targetgroupname}%')
+        </if>
+        ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="targetUploadDetailPop" parameterType="reqBox" resultType="dataBox">
+         SELECT GROUPSEQ
+              , TARGETGROUPNAME
+              , TARGETUSE
+              , CASE WHEN COOKMASTERCODE = 'C01' THEN 'Y'
+                     ELSE 'N' END COOKMASTERCODE
+          FROM   RSVROLEGROUP
+          WHERE  GROUPSEQ = #{groupseq}
+    </select>
+
+    <select id="targetUploadListCntPop" parameterType="reqBox" resultType="dataBox">
+       <![CDATA[
+                   SELECT ROW_NUMBER() OVER( ORDER BY GROUPSEQ ) AS ROW_NUM
+                         , GROUPSEQ
+						 , TARGETSEQ
+						 , ABONO
+						 , ABONAME
+					 FROM  RSVROLETARGET
+					WHERE  GROUPSEQ = #{groupseq}
+        ]]>
+    </select>
+
+    <insert id="targeterUploadInsert" parameterType="reqBox">
+       INSERT INTO RSVROLEGROUP (
+               TARGETGROUPNAME
+             , TARGETUSE
+             , COOKMASTERCODE
+             , STATUSCODE
+             , INSERTUSER
+             , INSERTDATE
+             , UPDATEUSER
+             , UPDATEDATE
+        ) VALUES (
+              #{targetgroupname}
+        	, #{targetuse}
+            , #{cookmastercode}
+            , 'B01'
+        	, #{sessionAccount}
+	        , Getdate()
+            , #{sessionAccount}
+            , Getdate()
+        )
+        <selectKey resultType="integer" keyProperty="groupseq" order="AFTER">
+            SELECT MAX(groupseq) FROM RSVROLEGROUP
+        </selectKey>
+    </insert>
+
+    <insert id="insertExcelData"  parameterType="java.util.Map">
+        INSERT INTO RSVROLETARGET (
+               ABONO
+             , ABONAME
+             , GROUPSEQ
+             , STATUSCODE
+        ) VALUES (
+             #{abono}
+           , #{aboname}
+           , #{groupseq}
+           , 'B01'
+        )
+    </insert>
+
+    <delete id="targetUploadDelete" parameterType="reqBox">
+        DELETE FROM
+               RSVROLETARGET
+        WHERE  GROUPSEQ IN
+        <foreach collection="groupseqdels" item="data" index="i" open="(" close=")" separator=",">${data}</foreach>
+
+        DELETE FROM
+               RSVROLEGROUP
+        WHERE  GROUPSEQ IN
+        <foreach collection="groupseqdel" item="data" index="i" open="(" close=")" separator=",">${data}</foreach>
+    </delete>
+
+    <delete id="targetUploadDetailDelete" parameterType="reqBox">
+        DELETE FROM RSVROLETARGET
+        WHERE  GROUPSEQ = ${groupseq}
+    </delete>
+
+</mapper>

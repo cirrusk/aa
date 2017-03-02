@@ -1,0 +1,1369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.statistics.service.impl.LmsStatisticsMapper">
+
+	
+<!-- 보고서 목록, 카운트 공통 조회조건 -->
+	<sql id="lmsReportCommonWhere">
+		<if test='coursetype.equals("F")'>
+			INNER JOIN 
+				LMSOFFLINE B
+			ON(A.COURSEID = B.COURSEID)
+		</if>
+		WHERE 
+			A.USEFLAG = 'Y' 
+			AND A.COURSETYPE=#{coursetype}
+		<choose>
+			<when test='coursetype.equals("F")'>
+				AND A.OPENFLAG <![CDATA[ <> ]]> 'C'
+				<if test='searchapseq != null and !searchapseq.equals("")'>
+					AND B.APSEQ = #{searchapseq}
+				</if>
+			</when>
+			<otherwise>
+				<if test='searchedustatus != null and !searchedustatus.equals("")'>
+					AND A.OPENFLAG = #{searchedustatus}
+				</if>
+			</otherwise>
+		</choose>
+		<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+			AND CATEGORYID = #{searchcategoryid }
+		</if>
+		<if test='searchstartdate != null and !searchstartdate.equals("")'>
+			AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+		</if>
+		<if test='searchenddate != null and !searchenddate.equals("")'>
+			AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchtype.equals("")'>
+				AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR A.COURSECONTENT LIKE '%'+#{searchtext }+'%' OR A.SEARCHWORD LIKE '%'+#{searchtext }+'%' OR A.THEMENAME LIKE '%'+#{searchtext }+'%')  
+			</if>
+		 	<if test='searchtype.equals("1")'>
+		 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		 	<if test='searchtype.equals("2")'>
+		 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'  
+		 	</if>
+		 	<if test='searchtype.equals("3")'>
+		 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchtype.equals("4")'>
+		 		AND A.THEMENAME LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		</if>
+	</sql>	
+	
+	
+	<!-- 회계년도 가져오기 -->
+	<select id="selectLmsYear" resultType="int">
+		/*selectLmsYear*/
+		SELECT DBO.F_LMS_DFYEAR(getDate()) AS YEAR
+	</select>
+	
+	<!-- 월별 접속(누적) -->
+	<select id="lmsStatisticsConnectPerMonth"  parameterType="reqBox" resultType="dataBox">
+	/*lmsStatisticsConnectPerMonth*/
+	
+			WITH 
+			CONNECTPERMONTH AS(
+					SELECT
+						ISNULL(MAX([09]),0) AS SEPTEMBER
+						,ISNULL(MAX([10]),0) AS OCTOBER
+						,ISNULL(MAX([11]),0) AS NOVEMBER
+						,ISNULL(MAX([12]),0) AS DECEMBER
+						,ISNULL(MAX([01]),0) AS JANUARY
+						,ISNULL(MAX([02]),0) AS FEBRUARY
+						,ISNULL(MAX([03]),0) AS MARCH
+						,ISNULL(MAX([04]),0) AS APRIL
+						,ISNULL(MAX([05]),0) AS MAY
+						,ISNULL(MAX([06]),0) AS JUNE
+						,ISNULL(MAX([07]),0) AS JULY
+						,ISNULL(MAX([08]),0) AS AUGUST
+						,ISNULL(MAX([09]),0)+ISNULL(MAX([10]),0)+ISNULL(MAX([11]),0)
+						  +ISNULL(MAX([12]),0)+ISNULL(MAX([01]),0)+ISNULL(MAX([02]),0)
+						  +ISNULL(MAX([03]),0)+ISNULL(MAX([04]),0)+ISNULL(MAX([05]),0)
+						  +ISNULL(MAX([06]),0)+ISNULL(MAX([07]),0)+ISNULL(MAX([08]),0) 
+						  AS TOTALCNT
+						,'월별 접속(누적)' AS FLAG
+					FROM
+					(
+						    SELECT
+							    UID
+							    ,FORMAT(CONNECTDATE,'MM') AS MONTHS
+						    FROM
+						    	LMSCONNECTLOG
+						    WHERE
+							    FORMAT(CONNECTDATE,'yyyyMM') <![CDATA[>=]]> #{startdate}
+							    AND FORMAT(CONNECTDATE,'yyyyMM') <![CDATA[<=]]> #{enddate}
+						) A
+					PIVOT
+					(
+					    COUNT(UID)
+					    FOR MONTHS IN([09],[10],[11],[12],[01],[02],[03],[04],[05],[06],[07],[08])
+					) AS PVT
+			)
+			,CURMONTH AS (
+				SELECT
+					COUNT(*) AS CNT1
+				FROM
+					LMSCONNECTLOG
+				WHERE 
+					FORMAT(CONNECTDATE,'yyyyMM') = FORMAT(getDate(),'yyyyMM')
+			)    
+			,PREMONTH AS(
+				SELECT
+					COUNT(*) AS CNT2
+				FROM
+					LMSCONNECTLOG
+				WHERE 
+					FORMAT(CONNECTDATE,'yyyyMM') = FORMAT(getDate(),'yyyyMM')-1
+			)
+			,INCREASE AS(
+			  SELECT
+			    CASE
+			      WHEN CNT2 = 0 THEN '999999999999'
+			      ELSE
+			        CONVERT(NUMERIC(20,2),(CNT1*1.0/CNT2))*100 
+			    END AS PCT
+			  FROM CURMONTH JOIN PREMONTH ON 1=1
+			)
+			SELECT *,CONVERT(VARCHAR(100),(CONVERT(NUMERIC(20,0),PCT)-100))+'%' AS PCT2 FROM CONNECTPERMONTH JOIN INCREASE ON 1=1
+	</select>
+	
+	<!-- 월별 순수접속(UV) -->
+	<select id="lmsStatisticsConnectUVPerMonth" parameterType="reqBox" resultType="dataBox">
+	/*lmsStatisticsConnectUVPerMonth*/
+
+		
+			WITH 
+			CONNECTUVPERMONTH AS(
+					SELECT
+						ISNULL(MAX([09]),0) AS SEPTEMBER
+						,ISNULL(MAX([10]),0) AS OCTOBER
+						,ISNULL(MAX([11]),0) AS NOVEMBER
+						,ISNULL(MAX([12]),0) AS DECEMBER
+						,ISNULL(MAX([01]),0) AS JANUARY
+						,ISNULL(MAX([02]),0) AS FEBRUARY
+						,ISNULL(MAX([03]),0) AS MARCH
+						,ISNULL(MAX([04]),0) AS APRIL
+						,ISNULL(MAX([05]),0) AS MAY
+						,ISNULL(MAX([06]),0) AS JUNE
+						,ISNULL(MAX([07]),0) AS JULY
+						,ISNULL(MAX([08]),0) AS AUGUST
+						,ISNULL(MAX([09]),0)+ISNULL(MAX([10]),0)+ISNULL(MAX([11]),0)
+						  +ISNULL(MAX([12]),0)+ISNULL(MAX([01]),0)+ISNULL(MAX([02]),0)
+						  +ISNULL(MAX([03]),0)+ISNULL(MAX([04]),0)+ISNULL(MAX([05]),0)
+						  +ISNULL(MAX([06]),0)+ISNULL(MAX([07]),0)+ISNULL(MAX([08]),0) 
+						  AS TOTALCNT
+						,'월별 순수접속(UV)' AS FLAG
+					FROM
+					(
+						SELECT
+							UID
+							,SUBSTRING(CONNECTDAY,5,2) MONTHS
+						FROM
+						(
+							SELECT
+								UID
+								,FORMAT(CONNECTDATE,'yyyyMMdd') AS CONNECTDAY
+							FROM
+								LMSCONNECTLOG
+							WHERE
+								FORMAT(CONNECTDATE,'yyyyMM') <![CDATA[>=]]> #{startdate}
+								AND FORMAT(CONNECTDATE,'yyyyMM') <![CDATA[<=]]> #{enddate}
+								GROUP BY UID, FORMAT(CONNECTDATE, 'yyyyMMdd')
+						) A
+					) AA
+					PIVOT
+					(
+						COUNT(UID)
+						FOR MONTHS IN([09],[10],[11],[12],[01],[02],[03],[04],[05],[06],[07],[08])
+					) AS PVT
+			)
+			,CURMONTH AS (
+				SELECT 
+					COUNT(*) AS CNT1
+				FROM 
+				(
+					SELECT
+						UID
+						,FORMAT(CONNECTDATE,'yyyyMMdd') AS CONNECTDAY
+					FROM
+						LMSCONNECTLOG
+					GROUP BY UID, FORMAT(CONNECTDATE, 'yyyyMMdd')
+				) A
+				WHERE 
+					SUBSTRING(CONNECTDAY,1,6) = FORMAT(getDate(),'yyyyMM')
+			)
+			,PREMONTH AS(
+				SELECT 
+					COUNT(*) AS CNT2
+				FROM 
+				(
+					SELECT
+						UID
+						,FORMAT(CONNECTDATE,'yyyyMMdd') AS CONNECTDAY
+					FROM
+						LMSCONNECTLOG
+					GROUP BY UID, FORMAT(CONNECTDATE, 'yyyyMMdd')
+				) A
+				WHERE 
+					SUBSTRING(CONNECTDAY,1,6) = FORMAT(getDate(),'yyyyMM')-1
+			)
+			,INCREASE AS(
+			  SELECT
+			    CASE
+			      WHEN CNT2 = 0 THEN '999999999999'
+			      ELSE
+			        CONVERT(NUMERIC(20,2),(CNT1*1.0/CNT2))*100 
+			    END AS PCT
+			  FROM CURMONTH JOIN PREMONTH ON 1=1
+			)
+			SELECT *,CONVERT(VARCHAR(100),(CONVERT(NUMERIC(20,0),PCT)-100))+'%' AS PCT2 FROM CONNECTUVPERMONTH JOIN INCREASE ON 1=1
+	</select>
+	
+	<!-- //콘텐츠 조회 -->
+	<select id="lmsStatisticsContentsViewCount" resultType="dataBox" parameterType="reqBox">
+	/*lmsStatisticsContentsViewCount*/
+		
+			WITH 
+			CONTENTSVIEWCOUNTPERMONTH AS(
+					SELECT
+						ISNULL(MAX([09]),0) AS SEPTEMBER
+						,ISNULL(MAX([10]),0) AS OCTOBER
+						,ISNULL(MAX([11]),0) AS NOVEMBER
+						,ISNULL(MAX([12]),0) AS DECEMBER
+						,ISNULL(MAX([01]),0) AS JANUARY
+						,ISNULL(MAX([02]),0) AS FEBRUARY
+						,ISNULL(MAX([03]),0) AS MARCH
+						,ISNULL(MAX([04]),0) AS APRIL
+						,ISNULL(MAX([05]),0) AS MAY
+						,ISNULL(MAX([06]),0) AS JUNE
+						,ISNULL(MAX([07]),0) AS JULY
+						,ISNULL(MAX([08]),0) AS AUGUST
+						,ISNULL(MAX([09]),0)+ISNULL(MAX([10]),0)+ISNULL(MAX([11]),0)
+						  +ISNULL(MAX([12]),0)+ISNULL(MAX([01]),0)+ISNULL(MAX([02]),0)
+						  +ISNULL(MAX([03]),0)+ISNULL(MAX([04]),0)+ISNULL(MAX([05]),0)
+						  +ISNULL(MAX([06]),0)+ISNULL(MAX([07]),0)+ISNULL(MAX([08]),0) 
+						  AS TOTALCNT
+						,'콘텐츠 조회' AS FLAG
+					FROM
+					(
+						SELECT 
+							VIEWCOUNT
+							,SUBSTRING(VIEWMONTH,5,2) AS VIEWMONTH
+						FROM 
+							LMSVIEWLOG
+						WHERE
+							VIEWMONTH <![CDATA[>=]]> #{startdate}
+							AND VIEWMONTH <![CDATA[<=]]> #{enddate}
+					) A
+					PIVOT
+					(
+						  SUM(VIEWCOUNT)
+						  FOR VIEWMONTH IN([09],[10],[11],[12],[01],[02],[03],[04],[05],[06],[07],[08])
+					) AS PVT
+			)
+			,CURMONTH AS (
+				SELECT 
+					ISNULL(SUM(VIEWCOUNT),0) AS CNT1
+				FROM 
+					LMSVIEWLOG
+				WHERE 
+				 	VIEWMONTH = FORMAT(getDate(),'yyyyMM')
+			)
+			,PREMONTH AS(
+				SELECT 
+					SUM(VIEWCOUNT) AS CNT2
+				FROM 
+					LMSVIEWLOG
+				WHERE 
+					VIEWMONTH = FORMAT(getDate(),'yyyyMM')-1
+			)
+			,INCREASE AS(
+			  SELECT
+			    CASE
+			      WHEN CNT2 = 0 THEN '999999999999'
+			      ELSE
+			        CONVERT(NUMERIC(20,2),(CNT1*1.0/CNT2))*100 
+			    END AS PCT
+			  FROM CURMONTH JOIN PREMONTH ON 1=1
+			)
+			SELECT *,CONVERT(VARCHAR(100),(CONVERT(NUMERIC(20,0),PCT)-100))+'%' AS PCT2 FROM CONTENTSVIEWCOUNTPERMONTH JOIN INCREASE ON 1=1
+	</select>
+	
+
+	<!-- 온라인 수료 -->
+	<select id="lmsStatisticsOnlineFinishCount" resultType="dataBox" parameterType="reqBox">
+	/*lmsStatisticsOnlineFinishCount*/
+			WITH 
+			FINISHONLINEPERMONTH AS(
+					SELECT
+						ISNULL(MAX([09]),0) AS SEPTEMBER
+						,ISNULL(MAX([10]),0) AS OCTOBER
+						,ISNULL(MAX([11]),0) AS NOVEMBER
+						,ISNULL(MAX([12]),0) AS DECEMBER
+						,ISNULL(MAX([01]),0) AS JANUARY
+						,ISNULL(MAX([02]),0) AS FEBRUARY
+						,ISNULL(MAX([03]),0) AS MARCH
+						,ISNULL(MAX([04]),0) AS APRIL
+						,ISNULL(MAX([05]),0) AS MAY
+						,ISNULL(MAX([06]),0) AS JUNE
+						,ISNULL(MAX([07]),0) AS JULY
+						,ISNULL(MAX([08]),0) AS AUGUST
+						,ISNULL(MAX([09]),0)+ISNULL(MAX([10]),0)+ISNULL(MAX([11]),0)
+						  +ISNULL(MAX([12]),0)+ISNULL(MAX([01]),0)+ISNULL(MAX([02]),0)
+						  +ISNULL(MAX([03]),0)+ISNULL(MAX([04]),0)+ISNULL(MAX([05]),0)
+						  +ISNULL(MAX([06]),0)+ISNULL(MAX([07]),0)+ISNULL(MAX([08]),0) 
+						  AS TOTALCNT
+						,'온라인 수료' AS FLAG
+					FROM
+					(
+							SELECT
+								UID
+								,FORMAT(FINISHDATE,'MM') AS MONTHS
+							FROM 
+								LMSONLINE A 
+							INNER JOIN 
+								LMSSTUDENT B 
+							ON(A.COURSEID = B.COURSEID) 
+							WHERE 
+								B.REQUESTFLAG='Y' 
+								AND B.FINISHFLAG = 'Y'
+								AND FORMAT(B.FINISHDATE,'yyyyMM') <![CDATA[>=]]> #{startdate}
+								AND FORMAT(B.FINISHDATE,'yyyyMM') <![CDATA[<=]]> #{enddate}
+						) AA
+					PIVOT
+					(
+						  COUNT(UID)
+						  FOR MONTHS IN([09],[10],[11],[12],[01],[02],[03],[04],[05],[06],[07],[08])
+					) AS PVT
+			)
+			,CURMONTH AS (
+				SELECT 
+					COUNT(*) AS CNT1
+				FROM 
+					LMSONLINE A 
+				INNER JOIN 
+					LMSSTUDENT B 
+				ON(A.COURSEID = B.COURSEID) 
+				WHERE 
+					B.REQUESTFLAG='Y' 
+					AND B.FINISHFLAG = 'Y'
+					AND FORMAT(FINISHDATE,'yyyyMM') = FORMAT(getDate(),'yyyyMM')
+			)
+			,PREMONTH AS(
+				SELECT 
+					COUNT(*) AS CNT2
+				FROM 
+					LMSONLINE A 
+				INNER JOIN 
+					LMSSTUDENT B 
+				ON(A.COURSEID = B.COURSEID) 
+				WHERE 
+					B.REQUESTFLAG='Y' 
+					AND B.FINISHFLAG = 'Y'
+					AND FORMAT(FINISHDATE,'yyyyMM') = FORMAT(getDate(),'yyyyMM')-1
+			)
+			,INCREASE AS(
+			  SELECT
+			    CASE
+			      WHEN CNT2 = 0 THEN '999999999999'
+			      ELSE
+			        CONVERT(NUMERIC(20,2),(CNT1*1.0/CNT2))*100 
+			    END AS PCT
+			  FROM CURMONTH JOIN PREMONTH ON 1=1
+			)
+			SELECT *,CONVERT(VARCHAR(100),(CONVERT(NUMERIC(20,0),PCT)-100))+'%' AS PCT2 FROM FINISHONLINEPERMONTH JOIN INCREASE ON 1=1
+	</select>
+
+	<!-- 오프라인 출석 -->
+	<select id="lmsStatisticsOfflineFinishCount" resultType="dataBox" parameterType="reqBox">
+	/*lmsStatisticsOfflineFinishCount*/
+		
+		WITH 
+			FINISHOFFLINEPERMONTH AS(
+				SELECT
+					ISNULL(MAX([09]),0) AS SEPTEMBER
+					,ISNULL(MAX([10]),0) AS OCTOBER
+					,ISNULL(MAX([11]),0) AS NOVEMBER
+					,ISNULL(MAX([12]),0) AS DECEMBER
+					,ISNULL(MAX([01]),0) AS JANUARY
+					,ISNULL(MAX([02]),0) AS FEBRUARY
+					,ISNULL(MAX([03]),0) AS MARCH
+					,ISNULL(MAX([04]),0) AS APRIL
+					,ISNULL(MAX([05]),0) AS MAY
+					,ISNULL(MAX([06]),0) AS JUNE
+					,ISNULL(MAX([07]),0) AS JULY
+					,ISNULL(MAX([08]),0) AS AUGUST
+					,ISNULL(MAX([09]),0)+ISNULL(MAX([10]),0)+ISNULL(MAX([11]),0)
+					  +ISNULL(MAX([12]),0)+ISNULL(MAX([01]),0)+ISNULL(MAX([02]),0)
+					  +ISNULL(MAX([03]),0)+ISNULL(MAX([04]),0)+ISNULL(MAX([05]),0)
+					  +ISNULL(MAX([06]),0)+ISNULL(MAX([07]),0)+ISNULL(MAX([08]),0) 
+					  AS TOTALCNT
+					,'오프라인 출석' AS FLAG
+				FROM
+				(
+						SELECT 
+							UID
+							,FORMAT(FINISHDATE,'MM') AS MONTHS
+						FROM 
+							LMSOFFlINE A 
+						INNER JOIN 
+							LMSSTUDENT B 
+						ON(A.COURSEID = B.COURSEID) 
+						WHERE 
+							B.REQUESTFLAG='Y' 
+							AND B.FINISHFLAG = 'Y'
+							AND FORMAT(B.FINISHDATE,'yyyyMM') <![CDATA[>=]]> #{startdate}
+							AND FORMAT(B.FINISHDATE,'yyyyMM') <![CDATA[<=]]> #{enddate}
+					) AA
+				PIVOT
+				(
+					  COUNT(UID)
+					  FOR MONTHS IN([09],[10],[11],[12],[01],[02],[03],[04],[05],[06],[07],[08])
+				) AS PVT
+			)
+			,CURMONTH AS (
+				SELECT 
+					COUNT(*) AS CNT1
+				FROM 
+					LMSOFFlINE A 
+				INNER JOIN 
+					LMSSTUDENT B 
+				ON(A.COURSEID = B.COURSEID) 
+				WHERE 
+					B.REQUESTFLAG='Y' 
+					AND B.FINISHFLAG = 'Y'
+					AND FORMAT(FINISHDATE,'yyyyMM') = FORMAT(getDate(),'yyyyMM')
+			)
+			,PREMONTH AS(
+				SELECT 
+					COUNT(*) AS CNT2
+				FROM 
+					LMSOFFlINE A 
+				INNER JOIN 
+					LMSSTUDENT B 
+				ON(A.COURSEID = B.COURSEID) 
+				WHERE 
+					B.REQUESTFLAG='Y' 
+					AND B.FINISHFLAG = 'Y'
+					AND FORMAT(FINISHDATE,'yyyyMM') = FORMAT(getDate(),'yyyyMM')-1
+			)
+			,INCREASE AS(
+				SELECT
+					CASE
+						WHEN CNT2 = 0 THEN '999999999999'
+						ELSE
+							CONVERT(NUMERIC(20,2),(CNT1*1.0/CNT2))*100 
+					END AS PCT
+				FROM CURMONTH JOIN PREMONTH ON 1=1
+			)
+			SELECT *,CONVERT(VARCHAR(100),(CONVERT(NUMERIC(20,0),PCT)-100))+'%' AS PCT2 FROM FINISHOFFLINEPERMONTH JOIN INCREASE ON 1=1
+	</select>
+
+	<!-- 스탬프 획득 -->
+	<select id="lmsStatisticsStampObtainCount" resultType="dataBox" parameterType="reqBox">
+	/*lmsStatisticsStampObtainCount*/
+	WITH 
+		OBTAINSTAMPPERMONTH AS(
+			SELECT
+				ISNULL(MAX([09]),0) AS SEPTEMBER
+				,ISNULL(MAX([10]),0) AS OCTOBER
+				,ISNULL(MAX([11]),0) AS NOVEMBER
+				,ISNULL(MAX([12]),0) AS DECEMBER
+				,ISNULL(MAX([01]),0) AS JANUARY
+				,ISNULL(MAX([02]),0) AS FEBRUARY
+				,ISNULL(MAX([03]),0) AS MARCH
+				,ISNULL(MAX([04]),0) AS APRIL
+				,ISNULL(MAX([05]),0) AS MAY
+				,ISNULL(MAX([06]),0) AS JUNE
+				,ISNULL(MAX([07]),0) AS JULY
+				,ISNULL(MAX([08]),0) AS AUGUST
+				,ISNULL(MAX([09]),0)+ISNULL(MAX([10]),0)+ISNULL(MAX([11]),0)
+				  +ISNULL(MAX([12]),0)+ISNULL(MAX([01]),0)+ISNULL(MAX([02]),0)
+				  +ISNULL(MAX([03]),0)+ISNULL(MAX([04]),0)+ISNULL(MAX([05]),0)
+				  +ISNULL(MAX([06]),0)+ISNULL(MAX([07]),0)+ISNULL(MAX([08]),0) 
+				  AS TOTALCNT
+				,'스탬프 획득' AS FLAG
+			FROM
+			(
+					SELECT
+						UID
+						,FORMAT(OBTAINDATE,'MM') AS MONTHS
+					FROM
+						LMSSTAMPOBTAIN
+					WHERE
+						FORMAT(OBTAINDATE,'yyyyMM') <![CDATA[>=]]> #{startdate}
+						AND FORMAT(OBTAINDATE,'yyyyMM') <![CDATA[<=]]> #{enddate}
+			) A
+			PIVOT
+			(
+				COUNT(UID)
+				FOR MONTHS IN([09],[10],[11],[12],[01],[02],[03],[04],[05],[06],[07],[08])
+			) AS PVT
+		)
+		,CURMONTH AS (
+			SELECT 
+				COUNT(*) AS CNT1
+			FROM 
+				LMSSTAMPOBTAIN 
+			WHERE 
+				FORMAT(OBTAINDATE,'yyyyMM') = FORMAT(getDate(),'yyyyMM')
+		)
+		,PREMONTH AS(
+			SELECT 
+				COUNT(*) AS CNT2
+			FROM 
+				LMSSTAMPOBTAIN 
+			WHERE 
+				FORMAT(OBTAINDATE,'yyyyMM') = FORMAT(getDate(),'yyyyMM')-1
+		)
+		,INCREASE AS(
+				SELECT
+					CASE
+						WHEN CNT2 = 0 THEN '999999999999'
+						ELSE
+							CONVERT(NUMERIC(20,2),(CNT1*1.0/CNT2))*100 
+					END AS PCT
+				FROM 
+					CURMONTH JOIN PREMONTH 
+				ON 1=1
+		)
+		SELECT *,CONVERT(VARCHAR(100),(CONVERT(NUMERIC(20,0),PCT)-100))+'%' AS PCT2 FROM OBTAINSTAMPPERMONTH JOIN INCREASE ON 1=1
+	</select>
+	
+	<!-- 교육자료,온라인 조회수 상위 20 -->
+	<select id="lmsStatisticsPerMonthTop20" parameterType="reqBox" resultType="dataBox">
+	/*lmsStatisticsPerMonthTop20*/
+			SELECT
+				*
+			FROM
+			(
+				SELECT 
+					RANK() OVER(ORDER BY B.VIEWCOUNT DESC) AS RANK
+					, DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME
+					, A.COURSENAME
+					, B.VIEWCOUNT 
+				FROM 
+					LMSCOURSE A
+				INNER JOIN 
+	            (
+					SELECT 
+						COURSEID
+						,VIEWMONTH
+						,SUM(VIEWCOUNT) AS VIEWCOUNT 
+					FROM 
+						LMSVIEWLOG 
+					WHERE 
+						VIEWTYPE=#{viewtype}
+					GROUP BY COURSEID, VIEWMONTH
+				) B
+				ON(A.COURSEID = B.COURSEID)
+				WHERE 
+					A.COURSETYPE=#{coursetype}
+        			AND B.VIEWMONTH = #{date}
+			)A
+			WHERE A.RANK <![CDATA[<]]> 21
+	</select>
+	
+	<!-- 교육자료,온라인 조회수 상위 20 엑셀 다운 -->
+	<select id="lmsStatisticsPerMonthTop20ExcelDown" parameterType="reqBox" resultType="hashmap">
+	/*lmsStatisticsPerMonthTop20ExcelDown*/
+			SELECT
+				*
+			FROM
+			(
+				SELECT 
+					RANK() OVER(ORDER BY B.VIEWCOUNT DESC) AS RANK
+					, DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME
+					, A.COURSENAME
+					, B.VIEWCOUNT 
+				FROM 
+					LMSCOURSE A
+				INNER JOIN 
+	            (
+					SELECT 
+						COURSEID
+						,VIEWMONTH
+						,SUM(VIEWCOUNT) AS VIEWCOUNT 
+					FROM 
+						LMSVIEWLOG 
+					WHERE 
+						VIEWTYPE=#{viewtype}
+					GROUP BY COURSEID, VIEWMONTH
+				) B
+				ON(A.COURSEID = B.COURSEID)
+				WHERE 
+					A.COURSETYPE=#{coursetype}
+        			AND B.VIEWMONTH = #{date}
+			)A
+			WHERE A.RANK <![CDATA[<]]> 21
+	</select>
+	
+	<!-- 오프라인 참석수 상위 10 -->
+	<select id="lmsStatistisOfflineAttendPerMonthTop10" parameterType="reqBox" resultType="dataBox">
+	/*lmsStatistisOfflineAttendPerMonthTop10*/
+		SELECT
+			RANK() OVER(ORDER BY B.VIEWCOUNT DESC) AS RANK
+			, DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME
+			, A.COURSENAME 
+			, B.VIEWCOUNT
+		FROM LMSCOURSE A
+		INNER JOIN
+		(    
+			SELECT 
+				COURSEID
+				,COUNT(COURSEID) AS VIEWCOUNT 
+			FROM 
+				LMSSTUDENT 
+			WHERE 
+				REQUESTFLAG='Y' 
+				AND FINISHFLAG='Y' 
+				AND STUDYFLAG='Y'
+			GROUP BY COURSEID
+		) B
+		ON (A.COURSEID = B.COURSEID)
+		WHERE 
+			A.COURSETYPE = 'F'
+			AND FORMAT(A.STARTDATE,'yyyyMM') = #{date}
+	</select>
+	
+		<!-- 오프라인 참석수 상위 10 ExcelDown-->
+	<select id="lmsStatistisOfflineAttendPerMonthTop10ExcelDown" parameterType="reqBox" resultType="hashmap">
+	/*lmsStatistisOfflineAttendPerMonthTop10ExcelDown*/
+		SELECT
+			RANK() OVER(ORDER BY B.VIEWCOUNT DESC) AS RANK
+			, DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME
+			, A.COURSENAME 
+			, B.VIEWCOUNT
+		FROM LMSCOURSE A
+		INNER JOIN
+		(    
+			SELECT 
+				COURSEID
+				,COUNT(COURSEID) AS VIEWCOUNT 
+			FROM 
+				LMSSTUDENT 
+			WHERE 
+				REQUESTFLAG='Y' 
+				AND FINISHFLAG='Y' 
+				AND STUDYFLAG='Y'
+			GROUP BY COURSEID
+		) B
+		ON (A.COURSEID = B.COURSEID)
+		WHERE 
+			A.COURSETYPE = 'F'
+			AND FORMAT(A.STARTDATE,'yyyyMM') = #{date}
+	</select>
+	
+	<!--과정보고서 목록  -->
+	<select id="lmsReportListAjax" resultType="dataBox" parameterType="reqBox">
+	/*lmsReportListAjax*/
+	
+	SELECT
+		#{totalCount} - ROW_NUM + 1 AS NO
+		,*	
+	FROM	
+	(
+			SELECT
+				ROW_NUMBER() OVER ( ORDER BY A.COURSEID DESC ) AS ROW_NUM
+				,DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME
+				,A.COURSENAME
+				,A.COURSEID
+				,A.THEMENAME
+				,CASE
+					WHEN A.OPENFLAG = 'Y' THEN '공개'
+					WHEN A.OPENFLAG = 'C' THEN '정규'
+					ELSE '비공개'
+				END OPENFLAG
+				<if test='coursetype.equals("F")'>
+				,B.APNAME
+				</if>
+				,(
+					SELECT 
+						COUNT(*) 
+					FROM 
+					LMSSTUDENT 
+					WHERE 
+					A.COURSEID=COURSEID 
+					AND REQUESTFLAG='Y' 
+					AND FINISHFLAG='Y'
+				) AS FINISHCOUNT
+				,(
+					SELECT 
+						ISNULL(SUM(VIEWCOUNT),0) 
+					FROM LMSVIEWLOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND VIEWTYPE='2'
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND VIEWMONTH  <![CDATA[ >= ]]> REPLACE(SUBSTRING(#{searchstartdate},1,7),'-','')
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND VIEWMONTH <![CDATA[ <= ]]> REPLACE(SUBSTRING(#{searchenddate},1,7),'-','')
+						</if> 
+				) AS LIKECOUNT
+				,(
+					SELECT 
+						ISNULL(SUM(VIEWCOUNT),0) 
+					FROM LMSVIEWLOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND VIEWTYPE='1'
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND VIEWMONTH  <![CDATA[ >= ]]> REPLACE(SUBSTRING(#{searchstartdate},1,7),'-','')
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND VIEWMONTH <![CDATA[ <= ]]> REPLACE(SUBSTRING(#{searchenddate},1,7),'-','')
+						</if> 
+				) AS SNSCOUNT
+				,(
+					SELECT 
+						COUNT(*) 
+					FROM 
+						LMSSAVELOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND FORMAT(SAVEDATE, 'yyyy-MM-dd')  <![CDATA[ >= ]]> #{searchstartdate }
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND FORMAT(SAVEDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+						</if> 
+				) AS KEEPCOUNT
+			FROM
+				LMSCOURSE A
+			<include refid="lmsReportCommonWhere" />
+	)
+	AA
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 과정보고서 목록 카운트 -->
+	<select id="lmsReportListCount" resultType="int" parameterType="reqBox">
+	/*lmsReportListCount*/
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM
+			LMSCOURSE A
+		<include refid="lmsReportCommonWhere" />
+	</select>
+	
+	
+	<!-- 보고서 팝업용 Data  -->
+	<select id="selectLmsReportPopData" parameterType="reqBox" resultType="dataBox">
+	/*selectLmsReportPopData*/
+	SELECT
+		A.COURSENAME
+		,A.THEMENAME
+		,FORMAT(A.STARTDATE, 'yyyy-MM-dd')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd') AS EDUDATE
+		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND REQUESTFLAG='Y' AND FINISHFLAG = 'Y') AS FINISHCOUNT
+	FROM
+		LMSCOURSE A
+	WHERE
+		COURSEID=#{courseid}
+	</select>
+	
+	<!-- 핀코드리스트 조회 -->
+	<select id="selectLmsPinCodeList" resultType="dataBox" parameterType="reqBox">
+	/*selectLmsPinCodeList*/
+	SELECT TARGETCODESEQ, TARGETCODENAME FROM TARGETCODE WHERE TARGETMASTERSEQ='PINCODE'
+	ORDER BY TARGETCODEORDER ASC
+	</select>
+	
+	<!-- 레이어팝업 리스트 카운트 -->
+	<select id="lmsReportPopListCount" resultType="int" parameterType="reqBox">
+	/*lmsReportPopListCount*/
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM
+			LMSSTUDENT A
+		INNER JOIN
+			MEMBER B
+		ON(A.UID = B.UID)
+		WHERE
+			COURSEID = #{courseid}
+			AND REQUESTFLAG = 'Y'
+		<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+			AND A.PINCODE = #{searchpinlevel }
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchtype.equals("")'>
+				AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%')  
+			</if>
+		 	<if test='searchtype.equals("1")'>
+		 		AND A.UID LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		 	<if test='searchtype.equals("2")'>
+		 		AND B.NAME LIKE '%'+#{searchtext }+'%'  
+		 	</if>
+		</if>
+	</select>
+	
+	<!-- 레이어팝업 리스트  -->
+	<select id="lmsReportPopListAjax" resultType="dataBox" parameterType="reqBox">
+	/*lmsReportPopListAjax*/
+		
+	SELECT
+		#{totalCount} - ROW_NUM + 1 AS NO
+		,*	
+	FROM	
+	(
+		SELECT
+			ROW_NUMBER() OVER(ORDER BY A.UID) ROW_NUM
+			,A.UID
+			,B.NAME
+			,B.PARTNERINFONAME
+			,(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETCODESEQ=A.PINCODE AND TARGETMASTERSEQ='PINCODE') AS PINCODE
+			,FORMAT(A.FINISHDATE,'yyyy-MM-dd hh:mm') AS FINISHDATE
+			,CASE
+				WHEN A.FINISHFLAG = 'Y' THEN '수료'
+				ELSE '미수료'
+			END FINISHFLAG
+		FROM
+			LMSSTUDENT A
+		INNER JOIN
+			MEMBER B
+		ON(A.UID = B.UID)
+		WHERE
+			A.COURSEID = #{courseid}
+			AND A.REQUESTFLAG = 'Y'
+		<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+			AND A.PINCODE = #{searchpinlevel }
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchtype.equals("")'>
+				AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%')  
+			</if>
+		 	<if test='searchtype.equals("1")'>
+		 		AND A.UID LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		 	<if test='searchtype.equals("2")'>
+		 		AND B.NAME LIKE '%'+#{searchtext }+'%'  
+		 	</if>
+		</if>
+			
+		)
+	AA
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 과정보고서 엑셀용 데이터 -->
+	<select id="lmsReportExcelDownload" resultType="hashmap" parameterType="reqBox">
+	/*lmsReportExcelDownload*/
+		SELECT
+			#{totalcount} - ROW_NUM + 1 AS NO
+			,*	
+		FROM	
+		(
+			SELECT
+				ROW_NUMBER() OVER ( ORDER BY A.COURSEID DESC ) AS ROW_NUM
+				,DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME
+				,A.COURSENAME
+				,A.COURSEID
+				,A.THEMENAME
+				,CASE
+					WHEN A.OPENFLAG = 'Y' THEN '공개'
+					WHEN A.OPENFLAG = 'C' THEN '정규'
+					ELSE '비공개'
+				END OPENFLAG
+				<if test='coursetype.equals("F")'>
+				,B.APNAME
+				</if>
+				,(
+					SELECT 
+						COUNT(*) 
+					FROM 
+					LMSSTUDENT 
+					WHERE 
+					A.COURSEID=COURSEID 
+					AND REQUESTFLAG='Y' 
+					AND FINISHFLAG='Y'
+				) AS FINISHCOUNT
+				,(
+					SELECT 
+						ISNULL(SUM(VIEWCOUNT),0) 
+					FROM LMSVIEWLOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND VIEWTYPE='2'
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND VIEWMONTH  <![CDATA[ >= ]]> REPLACE(SUBSTRING(#{searchstartdate},1,7),'-','')
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND VIEWMONTH <![CDATA[ <= ]]> REPLACE(SUBSTRING(#{searchenddate},1,7),'-','')
+						</if> 
+				) AS LIKECOUNT
+				,(
+					SELECT 
+						ISNULL(SUM(VIEWCOUNT),0) 
+					FROM LMSVIEWLOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND VIEWTYPE='1'
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND VIEWMONTH  <![CDATA[ >= ]]> REPLACE(SUBSTRING(#{searchstartdate},1,7),'-','')
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND VIEWMONTH <![CDATA[ <= ]]> REPLACE(SUBSTRING(#{searchenddate},1,7),'-','')
+						</if> 
+				) AS SNSCOUNT
+				,(
+					SELECT 
+						COUNT(*) 
+					FROM 
+						LMSSAVELOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND FORMAT(SAVEDATE, 'yyyy-MM-dd')  <![CDATA[ >= ]]> #{searchstartdate }
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND FORMAT(SAVEDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+						</if> 
+				) AS KEEPCOUNT
+			FROM
+				LMSCOURSE A
+			<include refid="lmsReportCommonWhere" />
+	)
+	AA
+	ORDER BY NO DESC
+	
+	</select>
+	
+	<!-- 단계수 조회 -->
+	<select id="selectLmsRegularStepCount" resultType="int" parameterType="reqBox">
+	/*selectLmsRegularStepCount*/
+		SELECT
+			ISNULL(MAX(B.STEPSEQ),0) AS STEPCOUNT
+		FROM
+			LMSCOURSE A
+		INNER JOIN 
+			LMSSTEP B
+		ON(A.COURSEID = B.COURSEID)
+		WHERE 
+			A.USEFLAG = 'Y' 
+			AND A.COURSETYPE='R'
+			<if test='searchedustatus != null and !searchedustatus.equals("")'>
+				AND A.OPENFLAG = #{searchedustatus}
+			</if>
+			<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+				AND A.CATEGORYID = #{searchcategoryid }
+			</if>
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR A.COURSECONTENT LIKE '%'+#{searchtext }+'%' OR A.SEARCHWORD LIKE '%'+#{searchtext }+'%' OR A.THEMENAME LIKE '%'+#{searchtext }+'%')  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'   
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("4")'>
+			 		AND A.THEMENAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</select>
+	
+	<!-- 정규과정보고서 리스트 카운트 -->
+	<select id="lmsReportRegularCourseListCount"  parameterType="reqBox" resultType="int">
+	/*lmsReportRegularCourseListCount*/
+			SELECT
+				COUNT(*) AS TOTAL_CNT
+			FROM
+				LMSCOURSE A
+			WHERE 
+				A.USEFLAG = 'Y' 
+				AND A.COURSETYPE='R'
+				<if test='searchedustatus != null and !searchedustatus.equals("")'>
+					AND A.OPENFLAG = #{searchedustatus}
+				</if>
+				<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+					AND A.CATEGORYID = #{searchcategoryid }
+				</if>
+				<if test='searchstartdate != null and !searchstartdate.equals("")'>
+					AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+				</if>
+				<if test='searchenddate != null and !searchenddate.equals("")'>
+					AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR A.COURSECONTENT LIKE '%'+#{searchtext }+'%' OR A.SEARCHWORD LIKE '%'+#{searchtext }+'%' OR A.THEMENAME LIKE '%'+#{searchtext }+'%')  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'  
+				 	</if>
+				 	<if test='searchtype.equals("3")'>
+				 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("4")'>
+				 		AND A.THEMENAME LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				</if>
+	</select>
+	  
+	<!-- 정규과정보고서 리스트 -->
+	<select id="lmsReportRegularCourseListAjax" resultType="dataBox" parameterType="reqBox">
+	/*lmsReportRegularCourseListAjax*/
+		WITH REGULAR AS
+		(
+			SELECT
+				ROW_NUMBER() OVER ( ORDER BY A.COURSEID DESC ) AS ROW_NUM
+				,DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME
+				,A.COURSENAME
+				,A.COURSEID
+				,A.THEMENAME
+				,CASE
+					WHEN A.OPENFLAG = 'Y' THEN '공개'
+					WHEN A.OPENFLAG = 'C' THEN '정규'
+					ELSE '비공개'
+				END OPENFLAG
+				,(
+					SELECT
+						COUNT(*)
+					FROM
+						LMSSTUDENT
+					WHERE
+						A.COURSEID=COURSEID
+						AND REQUESTFLAG='Y'
+				) AS REQUESTCOUNT
+				,(
+					SELECT 
+						COUNT(*) 
+					FROM 
+						LMSSTUDENT 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND REQUESTFLAG='Y' 
+						AND FINISHFLAG='Y'
+				) AS FINISHCOUNT
+				,(
+					SELECT 
+						ISNULL(SUM(VIEWCOUNT),0) 
+					FROM 
+						LMSVIEWLOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND VIEWTYPE='2'
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND VIEWMONTH  <![CDATA[ >= ]]> REPLACE(SUBSTRING(#{searchstartdate},1,7),'-','')
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND VIEWMONTH <![CDATA[ <= ]]> REPLACE(SUBSTRING(#{searchenddate},1,7),'-','')
+						</if> 
+				) AS LIKECOUNT
+				,(
+					SELECT 
+						ISNULL(SUM(VIEWCOUNT),0) 
+					FROM 
+						LMSVIEWLOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND VIEWTYPE='1' 
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND VIEWMONTH  <![CDATA[ >= ]]> REPLACE(SUBSTRING(#{searchstartdate},1,7),'-','')
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND VIEWMONTH <![CDATA[ <= ]]> REPLACE(SUBSTRING(#{searchenddate},1,7),'-','')
+						</if> 
+				) AS SNSCOUNT
+				,(
+					SELECT 
+						MAX(STEPSEQ) 
+					FROM 
+						LMSSTEPUNIT 
+					WHERE 
+						COURSEID=A.COURSEID
+				) AS MAXSTEPSEQ
+				,(
+					SELECT 
+						COUNT(*) 
+					FROM 
+						LMSSTEPUNIT 
+					WHERE 
+						COURSEID=A.COURSEID
+				) AS STEPCOURSECOUNT
+			FROM
+				LMSCOURSE A
+			WHERE 
+				A.USEFLAG = 'Y' 
+				AND A.COURSETYPE='R'
+				<if test='searchedustatus != null and !searchedustatus.equals("")'>
+					AND A.OPENFLAG = #{searchedustatus}
+				</if>
+				<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+					AND A.CATEGORYID = #{searchcategoryid }
+				</if>
+				<if test='searchstartdate != null and !searchstartdate.equals("")'>
+					AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+				</if>
+				<if test='searchenddate != null and !searchenddate.equals("")'>
+					AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR A.COURSECONTENT LIKE '%'+#{searchtext }+'%' OR A.SEARCHWORD LIKE '%'+#{searchtext }+'%' OR A.THEMENAME LIKE '%'+#{searchtext }+'%')  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'  
+				 	</if>
+				 	<if test='searchtype.equals("3")'>
+				 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("4")'>
+				 		AND A.THEMENAME LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				</if>
+		)
+		, STEPFINISHCOUNT AS
+		(
+			SELECT
+				COURSEID
+				${dynamicQuery}
+			FROM
+			(
+				SELECT
+					COURSEID
+					,STEPSEQ
+					,COUNT(*) AS STEPFINISHCOUNT
+					,MAX(STEPSEQ) AS MAXSTEPSEQ
+				FROM 
+					LMSSTEPFINISH
+				WHERE 
+					FINISHFLAG='Y'
+				GROUP BY COURSEID,STEPSEQ
+			) AA
+			GROUP BY COURSEID
+		)
+		SELECT 
+			#{totalCount} - ROW_NUM + 1 AS NO	
+			,A.*
+			,CASE 
+				WHEN A.REQUESTCOUNT = 0 THEN '0%'
+				ELSE CONVERT(VARCHAR(10),CONVERT(NUMERIC(3,0),CONVERT(NUMERIC(3,2),(A.FINISHCOUNT*1.0/A.REQUESTCOUNT))*100)) +'%'
+			END AS FINISHPERCENT
+			${dynamicQuery2} 
+		FROM 
+			REGULAR A 
+		LEFT OUTER JOIN 
+			STEPFINISHCOUNT B 
+		ON(A.COURSEID=B.COURSEID)
+		WHERE
+			A.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	
+	</select>
+	
+	<!-- 정규과정보고서 엑셀용 리스트 -->
+	<select id="lmsReportRegularCurseExcelDownload" resultType="hashmap" parameterType="reqBox">
+	/*lmsReportRegularCurseExcelDownload*/
+		WITH REGULAR AS
+		(
+			SELECT
+				ROW_NUMBER() OVER ( ORDER BY A.COURSEID DESC ) AS ROW_NUM
+				,DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME
+				,A.COURSENAME
+				,A.COURSEID
+				,A.THEMENAME
+				,CASE
+					WHEN A.OPENFLAG = 'Y' THEN '공개'
+					WHEN A.OPENFLAG = 'C' THEN '정규'
+					ELSE '비공개'
+				END OPENFLAG
+				,(
+					SELECT
+						COUNT(*)
+					FROM
+						LMSSTUDENT
+					WHERE
+						A.COURSEID=COURSEID
+						AND REQUESTFLAG='Y'
+				) AS REQUESTCOUNT
+				,(
+					SELECT 
+						COUNT(*) 
+					FROM 
+						LMSSTUDENT 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND REQUESTFLAG='Y' 
+						AND FINISHFLAG='Y'
+				) AS FINISHCOUNT
+				,(
+					SELECT 
+						ISNULL(SUM(VIEWCOUNT),0) 
+					FROM 
+						LMSVIEWLOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND VIEWTYPE='2'
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND VIEWMONTH  <![CDATA[ >= ]]> REPLACE(SUBSTRING(#{searchstartdate},1,7),'-','')
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND VIEWMONTH <![CDATA[ <= ]]> REPLACE(SUBSTRING(#{searchenddate},1,7),'-','')
+						</if> 
+				) AS LIKECOUNT
+				,(
+					SELECT 
+						ISNULL(SUM(VIEWCOUNT),0) 
+					FROM 
+						LMSVIEWLOG 
+					WHERE 
+						A.COURSEID=COURSEID 
+						AND VIEWTYPE='1' 
+						<if test='searchstartdate != null and !searchstartdate.equals("")'>
+							AND VIEWMONTH  <![CDATA[ >= ]]> REPLACE(SUBSTRING(#{searchstartdate},1,7),'-','')
+						</if>
+						<if test='searchenddate != null and !searchenddate.equals("")'>
+							AND VIEWMONTH <![CDATA[ <= ]]> REPLACE(SUBSTRING(#{searchenddate},1,7),'-','')
+						</if> 
+				) AS SNSCOUNT
+				,(
+					SELECT 
+						MAX(STEPSEQ) 
+					FROM 
+						LMSSTEPUNIT 
+					WHERE 
+						COURSEID=A.COURSEID
+				) AS MAXSTEPSEQ
+				,(
+					SELECT 
+						COUNT(*) 
+					FROM 
+						LMSSTEPUNIT 
+					WHERE 
+						COURSEID=A.COURSEID
+				) AS STEPCOURSECOUNT
+			FROM
+				LMSCOURSE A
+			WHERE 
+				A.USEFLAG = 'Y' 
+				AND A.COURSETYPE='R'
+				<if test='searchedustatus != null and !searchedustatus.equals("")'>
+					AND A.OPENFLAG = #{searchedustatus}
+				</if>
+				<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+					AND A.CATEGORYID = #{searchcategoryid }
+				</if>
+				<if test='searchstartdate != null and !searchstartdate.equals("")'>
+					AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+				</if>
+				<if test='searchenddate != null and !searchenddate.equals("")'>
+					AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR A.COURSECONTENT LIKE '%'+#{searchtext }+'%' OR A.SEARCHWORD LIKE '%'+#{searchtext }+'%' OR A.THEMENAME LIKE '%'+#{searchtext }+'%')  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'  
+				 	</if>
+				 	<if test='searchtype.equals("3")'>
+				 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("4")'>
+				 		AND A.THEMENAME LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				</if>
+		)
+		, STEPFINISHCOUNT AS
+		(
+			SELECT
+				COURSEID
+				${dynamicQuery}
+			FROM
+			(
+				SELECT
+					COURSEID
+					,STEPSEQ
+					,COUNT(*) AS STEPFINISHCOUNT
+					,MAX(STEPSEQ) AS MAXSTEPSEQ
+				FROM 
+					LMSSTEPFINISH
+				WHERE 
+					FINISHFLAG='Y'
+				GROUP BY COURSEID,STEPSEQ
+			) AA
+			GROUP BY COURSEID
+		)
+		SELECT 
+			#{totalCount} - ROW_NUM + 1 AS NO	
+			,A.*
+			,CASE 
+				WHEN A.REQUESTCOUNT = 0 THEN '0%'
+				ELSE CONVERT(VARCHAR(10),CONVERT(NUMERIC(3,0),CONVERT(NUMERIC(3,2),(A.FINISHCOUNT*1.0/A.REQUESTCOUNT))*100)) +'%'
+			END AS FINISHPERCENT
+			${dynamicQuery2} 
+		FROM 
+			REGULAR A 
+		LEFT OUTER JOIN 
+			STEPFINISHCOUNT B 
+		ON(A.COURSEID=B.COURSEID)
+		ORDER BY NO DESC
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

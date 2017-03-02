@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.menu.service.impl.MenuMapper">
+
+	<select id="selectMenuList" parameterType="reqBox" resultType="dataBox">
+	/*selectMenuList*/
+
+		WITH tree_query  AS (
+		  SELECT
+		         menucode
+			   , menutype
+			   , linkurl
+			   , menuseq
+			   , menulevel
+			   , useyn
+			   , visibleyn
+			   , menuyn
+		       , uppergroup
+		       , menuname
+		       , sortnum
+		       , convert(varchar(255), sortnum) sort
+		  	   , convert(varchar(255), menuname) depth_fullname
+		  FROM menucode
+		  WHERE uppergroup = 'Academy'
+		  and systemcode = 'MNG'
+		  and useyn = 'Y'
+		  UNION ALL
+		  SELECT
+		         b.menucode
+			   , b.menutype
+			   , b.linkurl
+			   , b.menuseq
+			   , b.menulevel
+			   , b.useyn
+			   , b.visibleyn
+			   , b.menuyn
+		       , b.uppergroup
+		       , b.menuname
+		       , b.sortnum
+		       , convert(varchar(255), convert(nvarchar,C.sort) + ' > ' +  convert(varchar(255), B.sortnum)) sort
+		       , convert(varchar(255), convert(nvarchar,C.depth_fullname) + ' > ' +  convert(varchar(255), B.menuname)) depth_fullname
+		  FROM  menucode B, tree_query C
+		  WHERE B.uppergroup = C.menucode
+		  and b.systemcode = 'MNG'
+		  and b.useyn = 'Y'
+		)
+		SELECT
+		         A.menucode
+			   , A.menutype
+			   , A.linkurl
+			   , A.menuseq
+			   , A.menulevel
+			   , A.useyn
+			   , A.visibleyn
+			   , A.menuyn
+		       , A.uppergroup
+		       , A.menuname
+		       , A.sortnum
+			   , A.sort
+		       , A.depth_fullname
+		FROM
+			tree_query A
+		ORDER BY SORT
+	</select>
+
+	<select id="selectMainMenuList" parameterType="reqBox" resultType="dataBox">
+		/*selectMenuList*/
+		WITH TREE_QUERY AS ( SELECT   SYSTEMCODE
+		                            , MENUCODE
+							        , MENUTYPE
+							        , LINKURL
+							        , MENUSEQ
+							        , MENULEVEL
+							        , USEYN
+							        , VISIBLEYN
+							        , MENUYN
+							        , UPPERGROUP
+							        , MENUNAME
+							        , SORTNUM
+							        , CONVERT(VARCHAR(255), SORTNUM) SORT
+							        , CONVERT(VARCHAR(255), MENUNAME) DEPTH_FULLNAME
+							   FROM   MENUCODE
+							  WHERE   UPPERGROUP = 'Academy'
+							    AND   SYSTEMCODE = 'MNG'
+							    AND   USEYN = 'Y'
+							 UNION ALL
+							 SELECT   B.SYSTEMCODE
+							        , B.MENUCODE
+							        , B.MENUTYPE
+							        , B.LINKURL
+							        , B.MENUSEQ
+							        , B.MENULEVEL
+							        , B.USEYN
+							        , B.VISIBLEYN
+							        , B.MENUYN
+							        , B.UPPERGROUP
+							        , B.MENUNAME
+							        , B.SORTNUM
+							        , CONVERT(VARCHAR(255), CONVERT(NVARCHAR,C.SORT) + ' > ' +  CONVERT(VARCHAR(255), B.SORTNUM)) SORT
+							        , CONVERT(VARCHAR(255), CONVERT(NVARCHAR,C.DEPTH_FULLNAME) + ' > ' +  CONVERT(VARCHAR(255), B.MENUNAME)) DEPTH_FULLNAME
+							   FROM   MENUCODE B
+						 INNER JOIN   TREE_QUERY C ON B.UPPERGROUP = C.MENUCODE 
+							  WHERE   B.SYSTEMCODE = 'MNG'
+							    AND   B.USEYN = 'Y' )
+		SELECT   A.MENUCODE
+		       , A.MENUTYPE
+		       , A.LINKURL
+		       , A.MENUSEQ
+		       , A.MENULEVEL
+		       , A.USEYN
+		       , A.VISIBLEYN
+		       , A.MENUYN
+		       , A.UPPERGROUP
+		       , A.MENUNAME
+		       , A.SORTNUM
+		       , A.SORT
+		       , A.DEPTH_FULLNAME
+		       , ( SELECT   ISNULL(B.MENUAUTH,'R') AS MENUAUTH
+                     FROM   DBO.MANAGERMENU B 
+                    WHERE   B.SYSTEMCODE = A.SYSTEMCODE
+                      AND   B.MENUCODE   = A.MENUCODE
+                      AND   B.ADNO       = #{adno} ) AS MENUAUTH
+               , C.APSEQ
+		  FROM   TREE_QUERY A
+    INNER JOIN   MANAGERMENU B ON ( A.MENUCODE = B.MENUCODE 
+                                AND B.ADNO = #{adno} )
+    INNER JOIN   MANAGER C ON (B.ADNO = C.ADNO)
+		 WHERE   B.ADNO IS NOT NULL
+	  ORDER BY   SORT
+	</select>
+
+	<insert id="insertMenu"  parameterType="reqBox">
+      <selectKey resultType="string" keyProperty="menuCode" order="BEFORE">
+        SELECT dbo.FN_CMM_MENUCODE(#{upperGroup},#{menuLevel});
+      </selectKey>
+        INSERT INTO MENUCODE(
+             SYSTEMCODE
+           , MENUSEQ
+           , MENUTYPE
+           , MENUCODE
+           , MENUNAME
+           , LINKURL
+           , SORTNUM
+           , UPPERGROUP
+           , MENULEVEL
+           , MENUYN
+           , VISIBLEYN
+           , USEYN
+           ) VALUES (
+             'MNG'
+           , '1'
+           , #{menuType}
+           , #{menuCode}
+           , #{menuName}
+           , #{linkurl}
+           , #{sortnum}
+           , #{upperGroup}
+           , #{menuLevel}
+           , #{menuYn}
+           , #{visibleYn}
+           , #{useYn}
+           )
+	</insert>
+
+	<update id="updateMenu" parameterType="reqBox">
+      UPDATE MENUCODE
+      SET  MENUNAME = #{menuName}
+           , LINKURL = #{linkurl}
+           , MENUTYPE = #{menuType}
+           , SORTNUM = #{sortnum}
+           , VISIBLEYN = #{visibleYn}
+           , USEYN = #{useYn}
+           , MENUYN = #{menuYn}
+      WHERE  SYSTEMCODE = 'MNG'
+        AND  MENUCODE = #{menuCode}
+	</update>
+
+    <delete id="deleteMenu" parameterType="reqBox">
+      DELETE FROM MENUCODE
+      WHERE  SYSTEMCODE = 'MNG'
+        AND  MENUCODE = #{menuCode}
+    </delete>
+
+</mapper>

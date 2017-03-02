@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivSurveyExampleMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveyExampleVO">
+/* UIUnivSurveyExampleMapper.insert */
+INSERT INTO cs_survey_example 
+       ( 
+           cs_survey_seq ,
+           cs_survey_example_title ,
+           cs_sort_order ,
+           cs_measure_score ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{surveySeq, jdbcType=NUMERIC} ,
+           #{surveyExampleTitle, jdbcType=VARCHAR} ,
+           #{sortOrder, jdbcType=NUMERIC} ,
+           #{measureScore, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       )
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveyExampleVO">
+/* UIUnivSurveyExampleMapper.update */
+UPDATE cs_survey_example 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_survey_example_title = #{surveyExampleTitle, jdbcType=VARCHAR} ,
+       cs_sort_order = #{sortOrder, jdbcType=NUMERIC} , 
+       cs_measure_score = #{measureScore, jdbcType=VARCHAR} 
+ WHERE cs_delete_yn = 'N' 
+   AND cs_survey_example_seq = #{surveyExampleSeq}	
+	</update>
+	
+	<update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveyExampleVO">
+/* UIUnivSurveyExampleMapper.delete */
+UPDATE cs_survey_example 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} 
+ WHERE cs_delete_yn = 'N' 
+   AND cs_survey_example_seq = #{surveyExampleSeq}	
+	</update>
+	
+	<resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivSurveyExampleRS">
+		<result column="sce.surveyExampleSeq"     property="univSurveyExample.surveyExampleSeq"    />
+		<result column="sce.surveySeq"            property="univSurveyExample.surveySeq"           />
+		<result column="sce.surveyExampleTitle"   property="univSurveyExample.surveyExampleTitle"  />
+		<result column="sce.sortOrder"            property="univSurveyExample.sortOrder"           />
+		<result column="sce.measureScore"         property="univSurveyExample.measureScore"        />
+		<result column="sce.deleteYn"             property="univSurveyExample.deleteYn"            />
+		<result column="sce.regMemberSeq"         property="univSurveyExample.regMemberSeq"        />
+		<result column="sce.regDtime"             property="univSurveyExample.regDtime"            />
+		<result column="sce.regIp"                property="univSurveyExample.regIp"               />
+		<result column="sce.updMemberSeq"         property="univSurveyExample.updMemberSeq"        />
+		<result column="sce.updDtime"             property="univSurveyExample.updDtime"            />
+		<result column="sce.updIp"                property="univSurveyExample.updIp"               />
+		<result column="sce.regMemberName"        property="univSurveyExample.regMemberName"       />
+		<result column="sce.updMemberName"        property="univSurveyExample.updMemberName"       />
+	</resultMap>
+	
+	<select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIUnivSurveyExampleMapper.getDetail */
+SELECT sce.cs_survey_example_seq 					AS "sce.surveyExampleSeq" ,
+       sce.cs_survey_seq 							AS "sce.surveySeq" ,
+       sce.cs_survey_example_title 					AS "sce.surveyExampleTitle" ,
+       sce.cs_sort_order 							AS "sce.sortOrder" ,
+       sce.cs_measure_score 						AS "sce.measureScore" ,
+       sce.cs_delete_yn 							AS "sce.deleteYn" ,
+       sce.cs_reg_member_seq 						AS "sce.regMemberSeq" ,
+       sce.cs_reg_dtime 							AS "sce.regDtime" ,
+       sce.cs_reg_ip		 						AS "sce.regIp" ,
+       sce.cs_upd_member_seq 						AS "sce.updMemberSeq" ,
+       sce.cs_upd_dtime 							AS "sce.updDtime" ,
+       sce.cs_upd_ip		 						AS "sce.updIp" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = sce.cs_reg_member_seq
+       ) AS "sce.regMemberName" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = sce.cs_upd_member_seq
+       ) AS "sce.updMemberName"
+  FROM cs_survey_example sce 
+ WHERE sce.cs_delete_yn = 'N' 
+   AND sce.cs_survey_example_seq = #{surveyExampleSeq}	
+	</select>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivSurveyExampleRS">
+		<result column="sce.surveyExampleSeq"     property="univSurveyExample.surveyExampleSeq"    />
+		<result column="sce.surveySeq"            property="univSurveyExample.surveySeq"           />
+		<result column="sce.surveyExampleTitle"   property="univSurveyExample.surveyExampleTitle"  />
+		<result column="sce.sortOrder"            property="univSurveyExample.sortOrder"           />
+		<result column="sce.measureScore"         property="univSurveyExample.measureScore"        />
+		<result column="sce.deleteYn"             property="univSurveyExample.deleteYn"            />
+		<result column="sce.regMemberSeq"         property="univSurveyExample.regMemberSeq"        />
+		<result column="sce.regDtime"             property="univSurveyExample.regDtime"            />
+		<result column="sce.regIp"                property="univSurveyExample.regIp"               />
+		<result column="sce.updMemberSeq"         property="univSurveyExample.updMemberSeq"        />
+		<result column="sce.updDtime"             property="univSurveyExample.updDtime"            />
+		<result column="sce.updIp"                property="univSurveyExample.updIp"               />
+		<result column="sce.regMemberName"        property="univSurveyExample.regMemberName"       />
+		<result column="sce.updMemberName"        property="univSurveyExample.updMemberName"       />
+	</resultMap>
+	
+	<select id="getList" parameterType="Long" resultMap="listResultMap">
+/* UIUnivSurveyExampleMapper.getList */
+SELECT sce.cs_survey_example_seq 					AS "sce.surveyExampleSeq" ,
+       sce.cs_survey_seq 							AS "sce.surveySeq" ,
+       sce.cs_survey_example_title 					AS "sce.surveyExampleTitle" ,
+       sce.cs_sort_order 							AS "sce.sortOrder" ,
+       sce.cs_measure_score 						AS "sce.measureScore" ,
+       sce.cs_delete_yn 							AS "sce.deleteYn" ,
+       sce.cs_reg_member_seq 						AS "sce.regMemberSeq" ,
+       sce.cs_reg_dtime 							AS "sce.regDtime" ,
+       sce.cs_reg_ip		 						AS "sce.regIp" ,
+       sce.cs_upd_member_seq 						AS "sce.updMemberSeq" ,
+       sce.cs_upd_dtime 							AS "sce.updDtime" ,
+       sce.cs_upd_ip		 						AS "sce.updIp" ,
+       m1.cs_member_name							AS "sce.regMemberName" ,
+       m2.cs_member_name							AS "sce.updMemberName" 
+  FROM cs_survey_example sce 
+  INNER JOIN cs_member m1
+  	ON m1.cs_member_seq = sce.cs_reg_member_seq
+  INNER JOIN cs_member m2
+  	ON m2.cs_member_seq = sce.cs_upd_member_seq
+ WHERE sce.cs_delete_yn = 'N' 
+   AND sce.cs_survey_seq = #{surveySeq}
+ORDER BY sce.cs_sort_order ASC   	
+	</select>
+	
+	<select id="countList" parameterType="Long" resultType="int">
+/* UIUnivSurveyExampleMapper.countList */	
+SELECT COUNT(*) 
+  FROM cs_survey_example sce 
+ WHERE sce.cs_delete_yn = 'N' 
+   AND sce.cs_survey_seq = #{surveySeq}	
+	</select>
+	
+</mapper>

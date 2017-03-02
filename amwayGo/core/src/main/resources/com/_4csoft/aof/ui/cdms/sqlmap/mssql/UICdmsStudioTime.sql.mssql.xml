@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsStudioTimeMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioTimeVO">
+        <selectKey resultType="Long" keyProperty="studioTimeSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsStudioTimeMapper.insert */
+INSERT INTO cs_cdms_studio_time 
+       ( 
+           cs_studio_seq ,
+           cs_sort_order ,
+           cs_start_time ,
+           cs_end_time ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+SELECT
+       #{studioSeq, jdbcType=NUMERIC} ,
+       (SELECT 
+               ISNULL(MAX(cs_sort_order) + 1, 1) 
+          FROM 
+               cs_cdms_studio_time 
+         WHERE cs_studio_seq = #{studioSeq}
+               AND cs_delete_yn = 'N'
+       ) ,
+       #{startTime, jdbcType=VARCHAR} ,
+       #{endTime, jdbcType=VARCHAR} ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR}
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioTimeVO">
+/* UICdmsStudioTimeMapper.update */
+UPDATE cs_cdms_studio_time 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+       <if test='sortOrder != null'>
+       ,cs_sort_order = #{sortOrder, jdbcType=NUMERIC}
+       </if>
+       <if test='startTime != null'>
+       ,cs_start_time = #{startTime, jdbcType=VARCHAR}
+       </if>
+       <if test='endTime != null'>
+       ,cs_end_time = #{endTime, jdbcType=VARCHAR}
+       </if>
+ WHERE cs_studio_time_seq = #{studioTimeSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioTimeVO">
+/* UICdmsStudioTimeMapper.delete */
+UPDATE cs_cdms_studio_time 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_studio_time_seq = #{studioTimeSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsStudioTimeRS">
+        <result column="studioTime.studioTimeSeq" property="studioTime.studioTimeSeq"/>
+        <result column="studioTime.studioSeq"     property="studioTime.studioSeq"/>
+        <result column="studioTime.sortOrder"     property="studioTime.sortOrder"/>
+        <result column="studioTime.startTime"     property="studioTime.startTime"/>
+        <result column="studioTime.endTime"       property="studioTime.endTime"/>
+        <result column="studioTime.deleteYn"      property="studioTime.deleteYn"/>
+        <result column="studioTime.regMemberSeq"  property="studioTime.regMemberSeq"/>
+        <result column="studioTime.regDtime"      property="studioTime.regDtime"/>
+        <result column="studioTime.regIp"         property="studioTime.regIp"/>
+        <result column="studioTime.updMemberSeq"  property="studioTime.updMemberSeq"/>
+        <result column="studioTime.updDtime"      property="studioTime.updDtime"/>
+        <result column="studioTime.updIp"         property="studioTime.updIp"/>
+    </resultMap>
+    <select id="getList" parameterType="Long" resultMap="getList_result">
+/* UICdmsStudioTimeMapper.getList */
+SELECT stime.cs_studio_time_seq  AS "studioTime.studioTimeSeq" ,
+       stime.cs_studio_seq       AS "studioTime.studioSeq" ,
+       stime.cs_sort_order       AS "studioTime.sortOrder" ,
+       stime.cs_start_time       AS "studioTime.startTime" ,
+       stime.cs_end_time         AS "studioTime.endTime" ,
+       stime.cs_delete_yn        AS "studioTime.deleteYn" ,
+       stime.cs_reg_member_seq   AS "studioTime.regMemberSeq" ,
+       stime.cs_reg_dtime        AS "studioTime.regDtime" ,
+       stime.cs_reg_ip           AS "studioTime.regIp" ,
+       stime.cs_upd_member_seq   AS "studioTime.updMemberSeq" ,
+       stime.cs_upd_dtime        AS "studioTime.updDtime" ,
+       stime.cs_upd_ip           AS "studioTime.updIp"
+  FROM cs_cdms_studio_time stime 
+ WHERE stime.cs_studio_seq = #{studioSeq} 
+       AND stime.cs_delete_yn = 'N'
+ORDER BY stime.cs_sort_order ASC 
+    </select>
+
+</mapper>

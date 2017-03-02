@@ -1,0 +1,24 @@
+@charset "utf-8";
+
+/* PB */
+@import url(http://fonts.googleapis.com/earlyaccess/nanumgothic.css);
+
+/* reset */
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,hr,pre,code,form,fieldset,legend,textarea,p,blockquote,th,td,input,select,textarea,button {margin:0;padding:0}
+h1, h2, h3, h4, h5, h6 {font-size:100%;font-weight:normal;}
+fieldset,img {border:0 none}
+dl,ul,ol,menu,li {list-style:none}
+img,input,select,textarea,button,label {font-size:100%;vertical-align:middle}
+textarea {resize:none;}
+button {*overflow:visible;*white-space:nowrap;} /* IE7 */
+button::-moz-focus-inner {border:0;padding:0;} /* FF */
+label, button {border:0 none;background-color:transparent;cursor:pointer}
+a {text-decoration:none;}
+address,caption,cite,code,dfn,em,var {font-style:normal;font-weight:normal}
+caption,legend {display:none;}
+table {width:100%;table-layout:fixed;border-collapse:collapse;}
+th,td,textarea {word-wrap:break-word;line-height:1.4;} /* line-height */
+
+/* IE9 and IE10 rule sets */
+@media screen and (min-width:0\0) {
+}

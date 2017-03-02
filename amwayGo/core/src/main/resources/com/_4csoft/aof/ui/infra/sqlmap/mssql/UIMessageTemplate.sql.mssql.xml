@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.MessageTemplateMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageTemplateVO">
+        <selectKey resultType="Long" keyProperty="templateSeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>
+		/* MessageTemplateMapper.insert */
+		INSERT INTO cs_message_template ( 
+			cs_template_title ,
+			cs_template_description ,
+			cs_template_content1 ,
+			cs_template_content2 ,
+			cs_template_content3 ,
+			cs_message_type_cd ,
+			cs_sms_type_cd ,
+			cs_use_yn,
+			cs_reg_member_seq ,
+			cs_reg_dtime ,
+			cs_reg_ip ,
+			cs_upd_member_seq ,
+			cs_upd_dtime ,
+			cs_upd_ip,
+			cs_template_type_cd,
+			cs_basic_use_yn
+		) VALUES ( 
+        	#{templateTitle, jdbcType=VARCHAR} ,   
+        	#{templateDescription, jdbcType=VARCHAR} ,   
+        	#{templateContent1, jdbcType=VARCHAR} ,   
+        	#{templateContent2, jdbcType=VARCHAR} ,   
+        	#{templateContent3, jdbcType=VARCHAR} ,   
+        	#{messageTypeCd, jdbcType=VARCHAR} ,   
+        	#{smsTypeCd, jdbcType=VARCHAR} ,   
+        	#{useYn, jdbcType=VARCHAR} ,   
+			#{regMemberSeq, jdbcType=NUMERIC} ,
+			dbo.FN_NOW_TO_CHAR() ,
+			#{regIp, jdbcType=VARCHAR} ,
+			#{updMemberSeq, jdbcType=NUMERIC} ,
+			dbo.FN_NOW_TO_CHAR() ,
+			#{updIp, jdbcType=VARCHAR},
+			#{templateTypeCd, jdbcType=VARCHAR} ,
+			#{basicUseYn, jdbcType=VARCHAR}  
+		)
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageTemplateVO">
+		/* MessageTemplateMapper.update */
+		UPDATE
+			cs_message_template 
+		SET
+   			cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       		,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       		,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+		<if test='templateTitle != null'>
+       		,cs_template_title = #{templateTitle, jdbcType=VARCHAR}
+       	</if>
+       	<if test='templateDescription != null'>
+			,cs_template_description = #{templateDescription, jdbcType=VARCHAR}
+		</if>
+		<if test='templateContent1 != null'>
+			,cs_template_content1 = #{templateContent1, jdbcType=VARCHAR}
+		</if>
+		<if test='templateContent2 != null'>
+			,cs_template_content2 = #{templateContent2, jdbcType=VARCHAR}
+		</if>
+		<if test='templateContent3 != null'>
+			,cs_template_content3 = #{templateContent3, jdbcType=VARCHAR}
+		</if>
+		<if test='messageTypeCd != null'>
+			,cs_message_type_cd = #{messageTypeCd, jdbcType=VARCHAR}
+		</if>
+		<if test='smsTypeCd != null'>
+			,cs_sms_type_cd = #{smsTypeCd, jdbcType=VARCHAR}
+		</if>
+		<if test='useYn != null'>
+			,cs_use_yn = #{useYn, jdbcType=VARCHAR}
+		</if>
+		<if test='basicUseYn != null'>
+			,cs_basic_use_yn = #{basicUseYn, jdbcType=VARCHAR}
+		</if>
+		WHERE
+			cs_template_seq = #{templateSeq} 
+			AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageTemplateVO">
+		/* MessageTemplateMapper.delete */
+		UPDATE
+			cs_message_template 
+		SET
+			cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+			cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+			cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+			cs_delete_yn = 'Y'
+		WHERE 
+			cs_template_seq = #{templateSeq} 
+			AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMessageTemplateRS">
+		<result column="template.templateSeq"			property="template.templateSeq"     		/>
+		<result column="template.templateTitle"			property="template.templateTitle"     		/>
+		<result column="template.templateDescription"	property="template.templateDescription"		/>
+		<result column="template.templateContent1"      property="template.templateContent1"     	/>
+		<result column="template.templateContent2"      property="template.templateContent2"     	/>
+		<result column="template.templateContent3"      property="template.templateContent3"     	/>
+		<result column="template.messageTypeCd"      	property="template.messageTypeCd"     		/>
+		<result column="template.smsTypeCd"      		property="template.smsTypeCd"     			/>
+		<result column="template.useYn"      			property="template.useYn"     				/>
+		<result column="template.deleteYn"      		property="template.deleteYn"     			/>
+		<result column="template.regMemberSeq"      	property="template.regMemberSeq"     		/>
+		<result column="template.regDtime"      		property="template.regDtime"     			/>
+		<result column="template.regIp"      			property="template.regIp"     				/>
+		<result column="template.updMemberSeq"      	property="template.updMemberSeq"     		/>
+		<result column="template.updDtime"      		property="template.updDtime"     			/>
+		<result column="template.updIp"      			property="template.updIp"     				/>
+		<result column="template.regMemberName"      	property="template.regMemberName"     		/>
+		<result column="template.templateTypeCd"      	property="template.templateTypeCd"     		/>
+		<result column="template.basicUseYn"      		property="template.basicUseYn"     			/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* MessageTemplateMapper.getDetail */
+		SELECT
+			template.cs_template_seq AS "template.templateSeq",
+			template.cs_template_title AS "template.templateTitle",
+			template.cs_template_description AS "template.templateDescription",
+			template.cs_template_content1 AS "template.templateContent1",
+			template.cs_template_content2 AS "template.templateContent2",
+			template.cs_template_content3 AS "template.templateContent3",
+			template.cs_message_type_cd AS "template.messageTypeCd",
+			template.cs_sms_type_cd AS "template.smsTypeCd",
+			template.cs_use_yn AS "template.useYn",
+			template.cs_delete_yn AS "template.deleteYn",
+			template.cs_reg_member_seq AS "template.regMemberSeq",
+			template.cs_reg_dtime AS "template.regDtime",
+			template.cs_reg_ip AS "template.regIp",
+			template.cs_upd_member_seq AS "template.updMemberSeq",
+			template.cs_upd_dtime AS "template.updDtime",
+			template.cs_upd_ip AS "template.updIp",
+			rmem.cs_member_name AS "template.regMemberName",
+			template.cs_template_type_cd AS "template.templateTypeCd",
+			template.cs_basic_use_yn AS "template.basicUseYn"
+		FROM
+			cs_message_template template 
+			INNER JOIN cs_member rmem
+			        ON rmem.cs_member_seq = template.cs_reg_member_seq
+ 		WHERE
+ 			template.cs_template_seq = #{templateSeq}
+			AND template.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMessageTemplateRS">
+		<result column="template.templateSeq"			property="template.templateSeq"     		/>
+		<result column="template.templateTitle"			property="template.templateTitle"     		/>
+		<result column="template.templateDescription"	property="template.templateDescription"		/>
+		<result column="template.templateContent1"      property="template.templateContent1"     	/>
+		<result column="template.templateContent2"      property="template.templateContent2"     	/>
+		<result column="template.templateContent3"      property="template.templateContent3"     	/>
+		<result column="template.messageTypeCd"      	property="template.messageTypeCd"     		/>
+		<result column="template.smsTypeCd"      		property="template.smsTypeCd"     			/>
+		<result column="template.useYn"      			property="template.useYn"     				/>
+		<result column="template.deleteYn"      		property="template.deleteYn"     			/>
+		<result column="template.regMemberSeq"      	property="template.regMemberSeq"     		/>
+		<result column="template.regDtime"      		property="template.regDtime"     			/>
+		<result column="template.regIp"      			property="template.regIp"     				/>
+		<result column="template.updMemberSeq"      	property="template.updMemberSeq"     		/>
+		<result column="template.updDtime"      		property="template.updDtime"     			/>
+		<result column="template.updIp"      			property="template.updIp"     				/>
+		<result column="template.regMemberName"      	property="template.regMemberName"     		/>
+		<result column="template.templateTypeCd"      	property="template.templateTypeCd"     		/>
+		<result column="template.basicUseYn"      		property="template.basicUseYn"     			/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageTemplateCondition" resultMap="listResultMap">
+		/* MessageTemplateMapper.getList */
+		        <if test='currentPage != 0'>
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+				ORDER BY "template.regDtime" DESC
+		) AS rownumber, * FROM (
+		        </if>
+			SELECT
+				template.cs_template_seq AS "template.templateSeq",
+				template.cs_template_title AS "template.templateTitle",
+				template.cs_template_description AS "template.templateDescription",
+				template.cs_template_content1 AS "template.templateContent1",
+				template.cs_template_content2 AS "template.templateContent2",
+				template.cs_template_content3 AS "template.templateContent3",
+				template.cs_message_type_cd AS "template.messageTypeCd",
+				template.cs_sms_type_cd AS "template.smsTypeCd",
+				template.cs_use_yn AS "template.useYn",
+				template.cs_delete_yn AS "template.deleteYn",
+				template.cs_reg_member_seq AS "template.regMemberSeq",
+				template.cs_reg_dtime AS "template.regDtime",
+				template.cs_reg_ip AS "template.regIp",
+				template.cs_upd_member_seq AS "template.updMemberSeq",
+				template.cs_upd_dtime AS "template.updDtime",
+				template.cs_upd_ip AS "template.updIp",
+				rmem.cs_member_name AS "template.regMemberName",
+				template.cs_template_type_cd AS "template.templateTypeCd",
+				template.cs_basic_use_yn AS "template.basicUseYn"
+			FROM
+				cs_message_template template 
+				INNER JOIN cs_member rmem
+				      ON rmem.cs_member_seq = template.cs_reg_member_seq
+			WHERE
+				template.cs_delete_yn = 'N'
+			<if test='srchMessageTemplateType != null and !srchMessageTemplateType.equals("")'>
+				AND template.cs_template_type_cd = #{srchMessageTemplateType}
+			</if>				
+			<if test='srchTemplateType.equals("sms")'>
+				AND template.cs_message_type_cd = '${CD.MESSAGE_TYPE.SMS}'
+			</if>
+			<if test='srchTemplateType.equals("email")'>
+				AND template.cs_message_type_cd = '${CD.MESSAGE_TYPE.EMAIL}'
+			</if>
+			<if test='srchUseYn != null and !srchUseYn.equals("")'>
+ 	   			AND template.cs_use_yn = #{srchUseYn}
+ 	    	</if>
+		<if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("title")'>
+       			AND template.cs_template_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+            	<choose>
+            		<when test='srchTemplateType.equals("sms")'>
+            			AND template.cs_template_content1 LIKE '%' + #{srchWordDB} + '%'
+            		</when>
+            		<otherwise>
+            			AND template.cs_template_description LIKE '%' + #{srchWordDB} + '%'
+            		</otherwise>
+            	</choose>
+       			
+            </if>
+       	</if>
+        <if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageTemplateCondition" resultType="int">
+		/* MessageTemplateMapper.countList */
+		SELECT
+			count(*)
+		FROM
+			cs_message_template template 
+		WHERE
+			template.cs_delete_yn = 'N'
+		<if test='srchMessageTemplateType != null and !srchMessageTemplateType.equals("")'>
+			AND template.cs_template_type_cd = #{srchMessageTemplateType}
+		</if>			
+		<if test='srchTemplateType.equals("sms")'>
+			AND template.cs_message_type_cd = '${CD.MESSAGE_TYPE.SMS}'
+		</if>
+		<if test='srchTemplateType.equals("email")'>
+			AND template.cs_message_type_cd = '${CD.MESSAGE_TYPE.EMAIL}'
+		</if>
+		<if test='srchUseYn != null and !srchUseYn.equals("")'>
+			AND template.cs_use_yn = #{srchUseYn}
+    	</if>
+   	<if test='srchWord != null and !srchWord.equals("")'>
+        <if test='srchKey.equals("title")'>
+   			AND template.cs_template_title LIKE '%' + #{srchWordDB} + '%'
+        </if>
+        <if test='srchKey.equals("description")'>
+        	<choose>
+        		<when test='srchTemplateType.equals("sms")'>
+        			AND template.cs_template_content1 LIKE '%' + #{srchWordDB} + '%'
+        		</when>
+        		<otherwise>
+        			AND template.cs_template_description LIKE '%' + #{srchWordDB} + '%'
+        		</otherwise>
+        	</choose>
+        </if>
+   	</if>
+    </select>
+
+    <update id="updateByBasicUseYn" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageTemplateVO">
+		/* MessageTemplateMapper.updateByBasicUseYn */
+		UPDATE
+			cs_message_template 
+		SET
+   			cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       		,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       		,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+       		,cs_basic_use_yn = 'N'
+		WHERE
+			cs_template_type_cd = #{templateTypeCd}
+			AND cs_message_type_cd = #{messageTypeCd}
+			AND cs_basic_use_yn = 'Y'
+			AND cs_delete_yn = 'N'
+    </update>
+    
+    <select id="getAlarmMessageList" parameterType="String" resultType="com._4csoft.aof.ui.infra.vo.UIMessageTemplateVO">
+    	/* MessageTemplateMapper.getAlarmMessageList */
+    	SELECT 
+    		cs_template_title		AS "templateTitle"
+			,cs_template_content1   AS "templateContent1"
+			,cs_template_content2	AS "templateContent2"
+			,cs_template_content3   AS "templateContent3"
+			,cs_message_type_cd	    AS "messageTypeCd"
+			,cs_sms_type_cd			AS "smsTypeCd"
+		FROM 
+			cs_message_template
+		WHERE 
+			cs_template_type_cd = #{templateTypeCd}
+		 AND cs_basic_use_yn = 'Y'
+		 AND cs_use_yn = 'Y'
+		 AND cs_delete_yn = 'N' 
+    </select>
+
+</mapper>

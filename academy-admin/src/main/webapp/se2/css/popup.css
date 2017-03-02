@@ -1,0 +1,26 @@
+@charset "utf-8";
+/* ---------------------------------------
+	Description : popup
+	Author	: netive
+	--------------------------------------- */
+
+#pbPopWrap{padding:30px; position:relative;}
+#pbPopHeader{background:url(../img/bg_popup.gif) repeat-x 0 bottom; height:42px;}
+#pbPopHeader.bgSizeL{background:url(../img/bg_popup_sizel.gif) no-repeat 0 bottom;}
+#pbPopHeader.bgSizeL2{background:url(../img/bg_popup_sizel2.gif) no-repeat 0 bottom;}
+#pbPopHeader.bgMove{background:url(../img/bg_popup_sizelmov.gif) no-repeat 0 bottom;}
+#pbPopContent{padding-top:30px;}
+
+.scrollNone{overflow:hidden;}
+
+.btnPopClose{position:absolute; right:30px; top:31px;}
+.btnPopPrint{position:absolute; right:74px; top:32px;}
+
+#pbPopWrap .btnPopPrint.pPrint { right:70px; top:30px; }
+
+#pbPopContent .agreeBoxYN{border-bottom:1px solid #e3e3e3; padding-bottom:13px;}
+#pbPopContent .agreeBox{padding:12px 15px 13px 14px;}
+#pbPopContent h2{font-size:14px; font-weight:bold; color:#444; background:url(../img/bul_dot.gif) no-repeat 0 5px; padding:0 0 0 10px; margin-top:0; line-height:normal;}
+#pbPopContent .tabWrap{margin-top:0;}
+#pbPopContent .tabWrapLogical h2{background:none;}
+#pbPopContent .h2{margin-top:0; margin-bottom:0;}

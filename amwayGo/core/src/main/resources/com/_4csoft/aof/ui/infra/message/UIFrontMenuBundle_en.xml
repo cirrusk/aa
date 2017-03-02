@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+<!-- 프론트 메뉴 : 마이페이지 -->
+    <entry key="메뉴:마이페이지">마이페이지</entry>
+    <entry key="메뉴:마이페이지:학위과정">학위과정</entry>
+    <entry key="메뉴:마이페이지:학위과정:수강과목">수강과목</entry>
+    <entry key="메뉴:마이페이지:학위과정:복습과목">복습과목</entry>
+    <entry key="메뉴:마이페이지:비학위과정">비학위과정</entry>
+    <entry key="메뉴:마이페이지:비학위과정:수강과목">수강과목</entry>
+    <entry key="메뉴:마이페이지:비학위과정:복습과목">복습과목</entry>
+    <entry key="메뉴:마이페이지:일정관리">일정관리</entry>
+    <entry key="메뉴:마이페이지:쪽지함">쪽지함</entry>
+    <entry key="메뉴:마이페이지:주소록">주소록</entry>
+    <entry key="메뉴:마이페이지:개인정보조회">개인정보조회</entry>
+
+<!-- 프론트 메뉴 : 개설과목 -->
+    <entry key="메뉴:개설과목">개설과목</entry>
+    <entry key="메뉴:개설과목:학위과정">학위과정</entry>
+    <entry key="메뉴:개설과목:비학위과정">비학위과정</entry>
+
+<!-- 프론트 메뉴 : 학습지원센터 -->
+    <entry key="메뉴:학습지원센터">학습지원센터</entry>
+    <entry key="메뉴:학습지원센터:공지사항">공지사항</entry>
+    <entry key="메뉴:학습지원센터:자료실">자료실</entry>
+    <entry key="메뉴:학습지원센터:FAQ">FAQ</entry>
+    <entry key="메뉴:학습지원센터:QNA">Q&amp;A</entry>
+    <entry key="메뉴:학습지원센터:자유게시판">자유게시판</entry>
+
+<!-- 프론트 메뉴 : 강의실 -->
+    <entry key="메뉴:강의실">강의실</entry>
+    <entry key="메뉴:강의실:강의실홈">Home</entry>
+    <entry key="메뉴:강의실:온라인학습">온라인학습</entry>
+    <entry key="메뉴:강의실:과정게시판">과정게시판</entry>
+    <entry key="메뉴:강의실:강의실나가기">강의실나가기</entry>
+    
+    
+    <entry key="메뉴:강의실:시험응시">시험응시</entry>
+    <entry key="메뉴:강의실:퀴즈응시">퀴즈응시</entry>
+    <entry key="메뉴:강의실:과제제출">과제제출</entry>
+    <entry key="메뉴:강의실:팀프로젝트">팀프로젝트</entry>
+    <entry key="메뉴:강의실:토론실">토론실</entry>
+    <entry key="메뉴:강의실:설문참여">설문참여</entry>
+    <entry key="메뉴:강의실:공지사항">공지사항</entry>
+    <entry key="메뉴:강의실:자유게시판">자유게시판</entry>
+    <entry key="메뉴:강의실:QNA">Q&amp;A</entry>
+    <entry key="메뉴:강의실:일대일상담">1:1상담</entry>
+    <entry key="메뉴:강의실:자료실">자료실</entry>
+    <entry key="메뉴:강의실:성적이의신청">성적이의신청</entry>
+
+
+    <entry key="메뉴:커뮤니티">커뮤니티</entry>
+    <entry key="메뉴:학사서비스">학사서비스</entry>
+    <entry key="메뉴:학사서비스:수강신청">수강신청</entry>
+    <entry key="메뉴:학사서비스:휴학신청">휴학신청</entry>
+    <entry key="메뉴:학사서비스:복학신청">복학신청</entry>
+
+<!-- 프론트 메뉴 -->
+    <entry key="메뉴:홈페이지">4Csoft Homepage</entry>
+    <entry key="메뉴:전자도서관">4Csoft 전자도서관</entry>
+
+
+</properties>

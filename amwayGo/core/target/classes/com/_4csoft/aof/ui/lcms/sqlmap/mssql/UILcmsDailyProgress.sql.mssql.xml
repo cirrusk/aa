@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsDailyProgressMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsDailyProgressVO">
+        <selectKey resultType="Long" keyProperty="dailyProgressSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UILcmsDailyProgressMapper.insert */
+INSERT INTO cs_lcms_daily_progress 
+       ( 
+           cs_learner_id ,
+           cs_course_active_seq ,
+           cs_course_apply_seq ,
+           cs_organization_seq ,
+           cs_item_seq ,
+           cs_study_date ,
+           cs_attempt ,
+           cs_progress_measure ,
+           cs_session_time ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{learnerId, jdbcType=VARCHAR} ,
+           #{courseActiveSeq, jdbcType=NUMERIC} ,
+           #{courseApplySeq, jdbcType=NUMERIC} ,
+           #{organizationSeq, jdbcType=NUMERIC} ,
+           #{itemSeq, jdbcType=NUMERIC} ,
+           #{studyDate, jdbcType=VARCHAR} ,
+           #{attempt, jdbcType=VARCHAR} ,
+           #{progressMeasure, jdbcType=VARCHAR} ,
+           #{sessionTime, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       )
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsDailyProgressVO">
+/* UILcmsDailyProgressMapper.update */
+UPDATE cs_lcms_daily_progress 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+        <if test='attempt != null and !attempt.equals("")'>
+       ,cs_attempt = #{attempt, jdbcType=VARCHAR}
+        </if>
+        <if test='progressMeasure != null and !progressMeasure.equals("")'>
+       ,cs_progress_measure = #{progressMeasure, jdbcType=VARCHAR}
+        </if>
+        <if test='sessionTime != null and !sessionTime.equals("")'>
+       ,cs_session_time = #{sessionTime, jdbcType=VARCHAR}
+        </if>
+  WHERE cs_daily_progress_seq = #{dailyProgressSeq}
+        AND cs_delete_yn = 'N' 
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsDailyProgressVO">
+/* UILcmsDailyProgressMapper.delete */
+UPDATE cs_lcms_daily_progress 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR(),
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} 
+ WHERE cs_daily_progress_seq = #{dailyProgressSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsDailyProgressRS">
+        <result column="dp.dailyProgressSeq"    property="dailyProgress.dailyProgressSeq" />
+        <result column="dp.learnerId"           property="dailyProgress.learnerId" />
+        <result column="dp.courseActiveSeq"     property="dailyProgress.courseActiveSeq" />
+        <result column="dp.courseApplySeq"      property="dailyProgress.courseApplySeq" />
+        <result column="dp.organizationSeq"     property="dailyProgress.organizationSeq" />
+        <result column="dp.itemSeq"             property="dailyProgress.itemSeq" />
+        <result column="dp.studyDate"           property="dailyProgress.studyDate" />
+        <result column="dp.attempt"             property="dailyProgress.attempt" />
+        <result column="dp.progressMeasure"     property="dailyProgress.progressMeasure" />
+        <result column="dp.sessionTime"         property="dailyProgress.sessionTime" />
+        <result column="dp.deleteYn"            property="dailyProgress.deleteYn" />
+        <result column="dp.regMemberSeq"        property="dailyProgress.regMemberSeq" />
+        <result column="dp.regDtime"            property="dailyProgress.regDtime" />
+        <result column="dp.regIp"               property="dailyProgress.regIp" />
+        <result column="dp.updMemberSeq"        property="dailyProgress.updMemberSeq" />
+        <result column="dp.updDtime"            property="dailyProgress.updDtime" />
+        <result column="dp.updIp"               property="dailyProgress.updIp" />
+    </resultMap>
+    <select id="getList" parameterType="map" resultMap="listResultMap">
+/* UILcmsDailyProgressMapper.getList */
+SELECT dp.cs_daily_progress_seq AS "dp.dailyProgressSeq" ,
+       dp.cs_learner_id         AS "dp.learnerId" ,
+       dp.cs_course_active_seq  AS "dp.courseActiveSeq" ,
+       dp.cs_course_apply_seq   AS "dp.courseApplySeq" ,
+       dp.cs_organization_seq   AS "dp.organizationSeq" ,
+       dp.cs_item_seq           AS "dp.itemSeq" ,
+       dp.cs_study_date         AS "dp.studyDate" ,
+       dp.cs_attempt            AS "dp.attempt" ,
+       dp.cs_progress_measure   AS "dp.progressMeasure" ,
+       dp.cs_session_time       AS "dp.sessionTime" ,
+       dp.cs_delete_yn          AS "dp.deleteYn" ,
+       dp.cs_reg_member_seq     AS "dp.regMemberSeq" ,
+       dp.cs_reg_dtime          AS "dp.regDtime" ,
+       dp.cs_reg_ip             AS "dp.regIp" ,
+       dp.cs_upd_member_seq     AS "dp.updMemberSeq" ,
+       dp.cs_upd_dtime          AS "dp.updDtime" , 
+       dp.cs_upd_ip             AS "dp.updIp" 
+  FROM cs_lcms_daily_progress dp 
+ WHERE dp.cs_item_seq = #{itemSeq} 
+       AND dp.cs_learner_id = #{learnerId} 
+       AND dp.cs_course_active_seq = #{courseActiveSeq} 
+       AND dp.cs_course_apply_seq = #{courseApplySeq} 
+       AND dp.cs_organization_seq = #{organizationSeq} 
+       AND dp.cs_delete_yn = 'N'
+ORDER BY dp.cs_study_date DESC
+    </select>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsDailyProgressRS">
+        <result column="dp.dailyProgressSeq"    property="dailyProgress.dailyProgressSeq" />
+        <result column="dp.learnerId"           property="dailyProgress.learnerId" />
+        <result column="dp.courseActiveSeq"     property="dailyProgress.courseActiveSeq" />
+        <result column="dp.courseApplySeq"      property="dailyProgress.courseApplySeq" />
+        <result column="dp.organizationSeq"     property="dailyProgress.organizationSeq" />
+        <result column="dp.itemSeq"             property="dailyProgress.itemSeq" />
+        <result column="dp.studyDate"           property="dailyProgress.studyDate" />
+        <result column="dp.attempt"             property="dailyProgress.attempt" />
+        <result column="dp.progressMeasure"     property="dailyProgress.progressMeasure" />
+        <result column="dp.sessionTime"         property="dailyProgress.sessionTime" />
+        <result column="dp.deleteYn"            property="dailyProgress.deleteYn" />
+        <result column="dp.regMemberSeq"        property="dailyProgress.regMemberSeq" />
+        <result column="dp.regDtime"            property="dailyProgress.regDtime" />
+        <result column="dp.regIp"               property="dailyProgress.regIp" />
+        <result column="dp.updMemberSeq"        property="dailyProgress.updMemberSeq" />
+        <result column="dp.updDtime"            property="dailyProgress.updDtime" />
+        <result column="dp.updIp"               property="dailyProgress.updIp" />
+    </resultMap>
+    <select id="getDetail" parameterType="map" resultMap="detailResultMap">
+/* UILcmsDailyProgressMapper.getDetail */
+SELECT dp.cs_daily_progress_seq AS "dp.dailyProgressSeq" ,
+       dp.cs_learner_id         AS "dp.learnerId" ,
+       dp.cs_course_active_seq  AS "dp.courseActiveSeq" ,
+       dp.cs_course_apply_seq   AS "dp.courseApplySeq" ,
+       dp.cs_organization_seq   AS "dp.organizationSeq" ,
+       dp.cs_item_seq           AS "dp.itemSeq" ,
+       dp.cs_study_date         AS "dp.studyDate" ,
+       dp.cs_attempt            AS "dp.attempt" ,
+       dp.cs_progress_measure   AS "dp.progressMeasure" ,
+       dp.cs_session_time       AS "dp.sessionTime" ,
+       dp.cs_delete_yn          AS "dp.deleteYn" ,
+       dp.cs_reg_member_seq     AS "dp.regMemberSeq" ,
+       dp.cs_reg_dtime          AS "dp.regDtime" ,
+       dp.cs_reg_ip             AS "dp.regIp" ,
+       dp.cs_upd_member_seq     AS "dp.updMemberSeq" ,
+       dp.cs_upd_dtime          AS "dp.updDtime" , 
+       dp.cs_upd_ip             AS "dp.updIp" 
+  FROM cs_lcms_daily_progress dp 
+ WHERE dp.cs_study_date = #{studyDate} 
+       AND dp.cs_learner_id = #{learnerId} 
+       AND dp.cs_course_active_seq = #{courseActiveSeq} 
+       AND dp.cs_course_apply_seq = #{courseApplySeq} 
+       AND dp.cs_organization_seq = #{organizationSeq} 
+       AND dp.cs_item_seq = #{itemSeq} 
+       AND dp.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="detailDaySumResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsDailyProgressRS">
+        <result column="dp.courseApplySeq"      property="dailyProgress.courseApplySeq" />
+        <result column="dp.sumAttempt"          property="dailyProgress.sumAttempt" />
+        <result column="dp.sumProgressMeasure"  property="dailyProgress.sumProgressMeasure" />
+        <result column="dp.sumSessionTime"      property="dailyProgress.sumSessionTime" />
+    </resultMap>
+    <select id="getDetailDaySum" parameterType="map" resultMap="detailDaySumResultMap">
+/* UILcmsDailyProgressMapper.getDetailDaySum */
+SELECT dp.cs_course_apply_seq                        AS "dp.courseApplySeq" ,
+       SUM(CONVERT(FLOAT, dp.cs_attempt))            AS "dp.sumAttempt" ,
+       SUM(CONVERT(FLOAT, dp.cs_progress_measure))   AS "dp.sumProgressMeasure" ,
+       SUM(CONVERT(FLOAT, dp.cs_session_time))       AS "dp.sumSessionTime" 
+  FROM cs_lcms_daily_progress dp 
+ WHERE dp.cs_study_date = #{studyDate} 
+       AND dp.cs_course_apply_seq = #{courseApplySeq} 
+       AND dp.cs_delete_yn = 'N'
+ GROUP BY dp.cs_course_apply_seq
+    </select>
+
+    <resultMap id="detailMonthSumResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsDailyProgressRS">
+        <result column="dp.courseApplySeq"      property="dailyProgress.courseApplySeq" />
+        <result column="dp.sumAttempt"          property="dailyProgress.sumAttempt" />
+        <result column="dp.sumProgressMeasure"  property="dailyProgress.sumProgressMeasure" />
+        <result column="dp.sumSessionTime"      property="dailyProgress.sumSessionTime" />
+    </resultMap>
+    <select id="getDetailMonthSum" parameterType="map" resultMap="detailMonthSumResultMap">
+/* UILcmsDailyProgressMapper.getDetailMonthSum */
+SELECT dp.cs_course_apply_seq                   AS "dp.courseApplySeq" ,
+       SUM(CONVERT(FLOAT, dp.cs_attempt))            AS "dp.sumAttempt" ,
+       SUM(CONVERT(FLOAT, dp.cs_progress_measure))   AS "dp.sumProgressMeasure" ,
+       SUM(CONVERT(FLOAT, dp.cs_session_time))       AS "dp.sumSessionTime" 
+  FROM cs_lcms_daily_progress dp 
+ WHERE dp.cs_course_apply_seq = #{courseApplySeq} 
+       AND dp.cs_delete_yn = 'N'
+       AND dp.cs_study_date LIKE SUBSTRING(#{studyDate}, 1, 6) + '%' 
+ GROUP BY dp.cs_course_apply_seq
+    </select>
+
+</mapper>

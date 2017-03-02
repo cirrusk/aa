@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.regular.service.impl.LmsRegularMapper">
+	
+	<!-- 정규과정 목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsRegularWhere">
+		WHERE USEFLAG = 'Y'  AND COURSETYPE = 'R'
+			<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+				AND A.CATEGORYID = #{searchcategoryid }
+			</if>
+			<if test='searchopenflag != null and !searchopenflag.equals("")'>
+				AND A.OPENFLAG = #{searchopenflag }
+			</if>
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR COURSECONTENT LIKE '%'+#{searchtext }+'%' OR SEARCHWORD LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</sql>
+	
+	<!-- 정규과정 목록 카운트 -->
+	<select id="selectLmsRegularCount" parameterType="reqBox" resultType="int">
+		/* selectLmsRegularCount */
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSCOURSE A
+		<include refid="selectLmsRegularWhere" />
+	</select>
+	
+	<!-- 정규과정 목록 -->
+	<select id="selectLmsRegularList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, CASE WHEN AA.OPENFLAG='Y' THEN '공개' WHEN AA.OPENFLAG='N' THEN '비공개' END AS OPENFLAGNAME
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+		, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+		, (SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID = AA.COURSEID AND REQUESTFLAG='Y' ) AS STUDENTCOUNT 
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY A.COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				A.COURSEID ,
+				A.CATEGORYID ,
+				A.COURSENAME ,
+				A.STARTDATE ,
+				A.ENDDATE ,
+				A.OPENFLAG 
+			FROM LMSCOURSE A
+			<include refid="selectLmsRegularWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+		<!-- 정규과정 목록 엑셀다운로드 -->
+	<select id="selectLmsRegularListExcelDown" parameterType="reqBox" resultType="hashmap">
+		/* selectLmsRegularListExcelDown */
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS NO , 
+				COURSEID ,
+				CATEGORYID ,
+				COURSENAME ,
+				FORMAT(STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE,
+				CASE WHEN OPENFLAG='Y' THEN '공개' WHEN OPENFLAG='N' THEN '비공개' END AS OPENFLAGNAME ,
+				DBO.F_LMS_CATEGORY_TREENAME(CATEGORYID) AS CATEGORYTREENAME 
+			FROM LMSCOURSE A
+			<include refid="selectLmsRegularWhere" />
+	</select>
+	
+	<!-- 정규과정 삭제(상세 정보는 삭제 하지 않는다.) -->
+ 	<update id="deleteLmsRegular" parameterType="reqBox">
+		/* deleteLmsRegular */
+		UPDATE LMSREGULAR
+			SET
+				 COURSEID = COURSEID 
+		WHERE COURSEID  IN
+			<foreach collection="courseids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+
+	<!-- 정규과정 상세 -->
+	<select id="selectLmsRegular" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegular */
+			SELECT
+				STEPCOUNT ,
+				TOGETHERFLAG ,
+				STAMPFLAG ,
+				STAMPID ,
+				LIMITCOUNT ,
+				TARGETDETAIL ,
+				NOTE ,
+				PASSNOTE ,
+				LINKTITLE ,
+				LINKURL ,
+				PENALTYNOTE ,
+				CANCELTERM ,
+				(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID = A.COURSEID AND REQUESTFLAG = 'Y' ) AS STUDENTCOUNT
+			FROM LMSREGULAR A
+			WHERE COURSEID = #{courseid}
+	</select>
+	
+	<!-- 정규과정 등록 -->
+ 	<insert id="insertLmsRegular" parameterType="reqBox">
+		/* insertLmsRegular */
+			INSERT INTO LMSREGULAR(
+				COURSEID ,
+				STEPCOUNT ,
+				TOGETHERFLAG ,
+				STAMPFLAG ,
+				STAMPID ,
+				LIMITCOUNT ,
+				TARGETDETAIL ,
+				NOTE ,
+				PASSNOTE ,
+				LINKTITLE ,
+				LINKURL ,
+				PENALTYNOTE ,
+				CANCELTERM
+				)
+			VALUES(
+				#{maxcourseid} ,
+				#{stepcounttotal} ,
+				#{togetherflag} ,
+				#{stampflag} ,
+				#{stampid} ,
+				#{limitcount} ,
+				#{targetdetail} ,
+				#{note} ,
+				#{passnote} ,
+				#{linktitle} ,
+				#{linkurl} ,
+				#{penaltynote} ,
+				#{cancelterm}
+				)
+	</insert>
+
+	<!-- 정규과정 업데이트 -->
+ 	<update id="updateLmsRegular" parameterType="reqBox">
+		/* updateLmsRegular */
+			UPDATE LMSREGULAR SET
+				STEPCOUNT			=	#{stepcounttotal} ,
+				TOGETHERFLAG	=	#{togetherflag} ,
+				STAMPFLAG			=	#{stampflag} ,
+				STAMPID				=	#{stampid} ,
+				LIMITCOUNT			=	#{limitcount} ,
+				TARGETDETAIL		=	#{targetdetail} ,
+				NOTE						=	#{note} ,
+				PASSNOTE				=	#{passnote} ,
+				LINKTITLE				=	#{linktitle} ,
+				LINKURL					=	#{linkurl} ,
+				PENALTYNOTE		=	#{penaltynote} ,
+				CANCELTERM		=	#{cancelterm}
+			WHERE COURSEID = #{courseid} 
+	</update>
+
+	<!-- 정규과정 스탬프 목록 가져오기 -->
+	<select id="selectLmsRegularStampList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularStampList */
+			SELECT 
+				A.STAMPID, A.STAMPNAME, C.THEMESEQ, C.THEMENAME
+			FROM LMSSTAMP A
+				LEFT OUTER JOIN LMSREGULAR B ON (A.STAMPID = B.STAMPID AND B.STAMPFLAG = 'Y')
+				LEFT OUTER JOIN LMSCOURSE C ON (B.COURSEID = C.COURSEID AND C.USEFLAG = 'Y')
+			WHERE A.USEFLAG = 'Y' AND A.STAMPTYPE = 'C'
+			GROUP BY A.STAMPID, A.STAMPNAME, C.THEMESEQ, C.THEMENAME
+			ORDER BY A.STAMPNAME ASC
+			/*
+			SELECT 
+				STAMPID ,
+				STAMPNAME
+			FROM LMSSTAMP
+			WHERE STAMPTYPE = 'C'
+				AND USEFLAG = 'Y' 
+			ORDER BY STAMPNAME DESC
+			*/
+			
+			
+	</select>
+	
+	
+	<!-- 정규과정 과정 목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsRegularCourseWhere">
+		WHERE USEFLAG = 'Y' AND OPENFLAG='C'  AND COURSETYPE = #{searchcoursetype }
+				AND NOT EXISTS (SELECT 'X' FROM LMSSTEPUNIT WHERE STEPCOURSEID = A.COURSEID)
+			<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+				AND A.CATEGORYID = #{searchcategoryid }
+			</if>
+			<if test='searchopenflag != null and !searchopenflag.equals("")'>
+				AND A.OPENFLAG = #{searchopenflag }
+			</if>
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR COURSECONTENT LIKE '%'+#{searchtext }+'%' OR SEARCHWORD LIKE '%'+#{searchtext }+'%' OR A.TEHMENAME LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("4")'>
+			 		AND A.TEHMENAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</sql>
+	
+	<!-- 정규과정 과정 목록 카운트 -->
+	<select id="selectLmsRegularCourseCount" parameterType="reqBox" resultType="int">
+		/* selectLmsRegularCourseCount */
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSCOURSE A
+		<include refid="selectLmsRegularCourseWhere" />
+	</select>
+	
+	<!-- 정규과정 과정 목록 -->
+	<select id="selectLmsRegularCourseList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularCourseList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, CASE WHEN AA.COURSETYPE='O' THEN '온라인과정' 
+					WHEN AA.COURSETYPE='F' THEN '오프라인과정' 
+					WHEN AA.COURSETYPE='L' THEN '라이브과정'
+					WHEN AA.COURSETYPE='D' THEN '교육자료'
+					WHEN AA.COURSETYPE='V' THEN '설문'
+					WHEN AA.COURSETYPE='T' THEN '시험'
+				END AS COURSETYPENAME
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+		, FORMAT(AA.STARTDATE, 'yyyy-MM-dd')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd') AS EDUDATE 
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY A.COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				A.COURSEID ,
+				A.THEMESEQ ,
+				A.CATEGORYID ,
+				A.COURSENAME ,
+				A.STARTDATE ,
+				A.ENDDATE ,
+				A.COURSETYPE 
+			FROM LMSCOURSE A
+			<include refid="selectLmsRegularCourseWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	
+	<!-- 정규과정 과정 목록 카운트 오프라인테마-->
+	<select id="selectLmsRegularCourseThemeCount" parameterType="reqBox" resultType="int">
+		/* selectLmsRegularCourseThemeCount */
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM (
+				SELECT THEMESEQ
+				FROM LMSCOURSE A
+				<include refid="selectLmsRegularCourseWhere" />
+				GROUP BY THEMESEQ, THEMENAME
+		) AA
+	</select>
+	
+	<!-- 정규과정 과정 목록 오프라인테마-->
+	<select id="selectLmsRegularCourseThemeList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularCourseThemeList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, CASE WHEN AA.COURSETYPE='O' THEN '온라인과정' 
+					WHEN AA.COURSETYPE='F' THEN '오프라인과정' 
+					WHEN AA.COURSETYPE='L' THEN '라이브과정'
+					WHEN AA.COURSETYPE='D' THEN '교육자료'
+					WHEN AA.COURSETYPE='V' THEN '설문'
+					WHEN AA.COURSETYPE='T' THEN '시험'
+				END AS COURSETYPENAME
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+		, FORMAT(AA.STARTDATE, 'yyyy-MM-dd')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd') AS EDUDATE 
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER ( ORDER BY A.THEMESEQ DESC ) AS ROW_NUM , 
+				A.THEMESEQ AS THEMESEQ ,
+				A.THEMESEQ AS COURSEID ,
+				A.THEMENAME AS COURSENAME ,
+				MIN(A.STARTDATE) AS STARTDATE ,
+				MAX(A.ENDDATE) AS ENDDATE ,
+				MAX(A.COURSETYPE) AS COURSETYPE ,
+				MAX(A.CATEGORYID) AS CATEGORYID
+			FROM LMSCOURSE A
+			<include refid="selectLmsRegularCourseWhere" />
+			GROUP BY THEMESEQ, THEMENAME
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 정규과정 오프라인과정 테마번호로 검색한 목록 -->
+	<select id="selectLmsRegularOffCourseList" parameterType="reqBox" resultType="dataBox">
+		/* "selectLmsRegularOffCourseList" */
+			SELECT
+				CASE WHEN A.COURSETYPE='O' THEN '온라인과정' 
+							WHEN A.COURSETYPE='F' THEN '오프라인과정' 
+							WHEN A.COURSETYPE='L' THEN '라이브과정'
+							WHEN A.COURSETYPE='D' THEN '교육자료'
+							WHEN A.COURSETYPE='V' THEN '설문'
+							WHEN A.COURSETYPE='T' THEN '시험'
+						END AS COURSETYPENAME ,
+				DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME ,
+				FORMAT(A.STARTDATE, 'yyyy-MM-dd')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd') AS EDUDATE ,
+				A.COURSEID ,
+				A.THEMESEQ ,
+				A.CATEGORYID ,
+				A.COURSENAME ,
+				A.STARTDATE ,
+				A.ENDDATE ,
+				A.COURSETYPE 
+			FROM LMSCOURSE A
+			WHERE USEFLAG = 'Y' AND OPENFLAG='C'  AND COURSETYPE = 'F'
+				AND THEMESEQ = #{themeseq}
+			ORDER BY COURSEID ASC
+	</select>
+
+	<!-- 정규과정 수강생 삭제 -->
+ 	<delete id="deleteLmsStudent" parameterType="reqBox">
+		/* deleteLmsStudent */
+		DELETE FROM LMSSTUDENT
+		WHERE COURSEID = #{courseid}
+			OR COURSEID IN (SELECT STEPCOURSEID FROM LMSSTEPUNIT WHERE COURSEID=#{courseid})
+	</delete>
+	
+	<!-- 정규과정 스텝종료 삭제 -->
+ 	<delete id="deleteLmsStepFinish" parameterType="reqBox">
+		/* deleteLmsStepFinish */
+		DELETE FROM LMSSTEPFINISH
+		WHERE COURSEID = #{courseid}
+	</delete>
+
+	<!-- 정규과정 스텝 유닛 삭제 -->
+ 	<delete id="deleteLmsStepUnit" parameterType="reqBox">
+		/* deleteLmsStepUnit */
+		DELETE FROM LMSSTEPUNIT
+		WHERE COURSEID = #{courseid}
+	</delete>
+	
+	<!-- 정규과정 스텝 삭제 -->
+ 	<delete id="deleteLmsStep" parameterType="reqBox">
+		/* deleteLmsStep */
+		DELETE FROM LMSSTEP
+		WHERE COURSEID = #{courseid}
+	</delete>
+	
+	<!-- 정규과정 스텝 등록 -->
+ 	<insert id="insertLmsStep" parameterType="reqBox">
+		/* insertLmsStep */
+		INSERT INTO LMSSTEP (
+				COURSEID ,
+				STEPSEQ ,
+				STEPNAME ,
+				STEPORDER ,
+				STEPCOUNT ,
+				MUSTFLAG
+			) VALUES (
+				#{courseid } ,
+				#{stepseqstep } ,
+				#{stepnamestep } ,
+				#{steporderstep } ,
+				#{stepcountstep } ,
+				#{mustflagstep } 
+			)
+	</insert>
+	
+	<!-- 정규과정 스텝 유닛 등록 -->
+ 	<insert id="insertLmsStepUnit" parameterType="reqBox">
+		/* insertLmsStepUnit */
+		INSERT INTO LMSSTEPUNIT (
+				COURSEID ,
+				STEPSEQ ,
+				STEPCOURSEID ,
+				MUSTFLAG ,
+				UNITORDER
+			) VALUES (
+				#{courseid } ,
+				#{stepseqstep } ,
+				#{stepcourseidunit } ,
+				#{mustflagunit } ,
+				#{unitorderunit } 
+			)
+	</insert>
+	
+	<!-- 정규과정 교육기간 최하 최상으로 업데이트 -->
+ 	<update id="updateLmsCourseEduDate" parameterType="reqBox">
+		/* updateLmsCourseEduDate */
+			UPDATE LMSCOURSE SET
+				STARTDATE = (SELECT ISNULL(MIN(STARTDATE),'2000-01-01') FROM LMSSTEPUNIT A INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID) AND A.COURSEID = LMSCOURSE.COURSEID) ,
+				ENDDATE = (SELECT ISNULL(MAX(ENDDATE),'2100-12-31') FROM LMSSTEPUNIT A INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID) AND A.COURSEID = LMSCOURSE.COURSEID)
+			WHERE COURSEID = #{courseid}
+	</update>
+
+	<!-- 정규과정 스텝 목록 -->
+	<select id="selectLmsRegularStepList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularStepList */
+			SELECT 
+				COURSEID ,
+				STEPSEQ ,
+				STEPNAME ,
+				STEPORDER ,
+				STEPCOUNT ,
+				MUSTFLAG 
+			FROM
+			LMSSTEP
+			WHERE COURSEID = #{courseid}
+			ORDER BY STEPORDER ASC
+	</select>
+	
+	<!-- 정규과정 스텝유닛 목록 -->
+	<select id="selectLmsRegularStepUnitList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularStepUnitList */
+			SELECT
+				CASE WHEN B.COURSETYPE='O' THEN '온라인과정' 
+							WHEN B.COURSETYPE='F' THEN '오프라인과정' 
+							WHEN B.COURSETYPE='L' THEN '라이브과정'
+							WHEN B.COURSETYPE='D' THEN '교육자료'
+							WHEN B.COURSETYPE='V' THEN '설문'
+							WHEN B.COURSETYPE='T' THEN '시험'
+						END AS COURSETYPENAME ,
+				FORMAT(B.STARTDATE, 'yyyy-MM-dd')  + ' ~ ' + FORMAT(B.ENDDATE, 'yyyy-MM-dd') AS EDUDATE ,
+				B.THEMESEQ ,
+				B.CATEGORYID ,
+				B.COURSENAME ,
+				B.STARTDATE ,
+				B.ENDDATE ,
+				B.COURSETYPE ,
+				B.COURSEID ,
+				A.STEPCOURSEID ,
+				A.STEPSEQ ,
+				A.MUSTFLAG AS COURSEMUSTFLAG ,
+				A.UNITORDER
+			FROM LMSSTEPUNIT A INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID)
+			WHERE A.COURSEID = #{courseid}
+			ORDER BY A.STEPSEQ ASC, A.UNITORDER ASC
+	</select>
+	
+	<!-- 정규과정 스텝유닛별 수정용 상세 -->
+	<select id="selectLmsRegularStepUnitEditDetail" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularStepUnitEditDetail */
+			SELECT
+				COURSEID , 
+				COURSENAME ,
+				COURSETYPE ,
+				CASE WHEN A.COURSETYPE='O' THEN '온라인과정' 
+							WHEN A.COURSETYPE='F' THEN '오프라인과정' 
+							WHEN A.COURSETYPE='L' THEN '라이브과정'
+							WHEN A.COURSETYPE='D' THEN '교육자료'
+							WHEN A.COURSETYPE='V' THEN '설문'
+							WHEN A.COURSETYPE='T' THEN '시험'
+						END AS COURSETYPENAME ,
+				STARTDATE ,
+				FORMAT(STARTDATE, 'yyyy-MM-dd') AS STARTDATEYYMMDD ,
+				FORMAT(STARTDATE, 'HH') AS STARTDATEHH ,
+				FORMAT(STARTDATE, 'mm') AS STARTDATEMM ,
+				ENDDATE ,
+				FORMAT(ENDDATE, 'yyyy-MM-dd') AS ENDDATEYYMMDD ,
+				FORMAT(ENDDATE, 'HH') AS ENDDATEHH ,
+				FORMAT(ENDDATE, 'mm') AS ENDDATEMM
+			FROM LMSCOURSE A
+			WHERE A.COURSEID = #{courseid}
+	</select>
+	
+	<!-- 정규과정 스텝유닛별 수정 -->
+ 	<update id="updateLmsRegularStepUnitEdit" parameterType="reqBox">
+		/* updateLmsRegularStepUnitEdit */
+			UPDATE LMSCOURSE SET
+				STARTDATE = #{startdate } ,
+				ENDDATE = #{enddate } ,
+				MODIFYDATE = getdate() ,
+				MODIFIER = #{adminid } 
+			WHERE COURSEID = #{courseid}
+	</update>
+	
+	<!-- 정규과정 스텝유닛별 수정용 상세 시험 -->
+	<select id="selectLmsRegularStepUnitEditTestDetail" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularStepUnitEditTestDetail */
+			SELECT
+				LIMITTIME ,
+				PASSPOINT
+			FROM LMSTEST A
+			WHERE A.COURSEID = #{courseid}
+	</select>
+
+	<!-- 정규과정 스텝유닛별 시험 수정 -->
+ 	<update id="updateLmsRegularStepUnitEditTest" parameterType="reqBox">
+		/* updateLmsRegularStepUnitEditTest */
+			UPDATE LMSTEST SET
+				LIMITTIME = #{limittime } ,
+				PASSPOINT = #{passpoint } 
+			WHERE COURSEID = #{courseid}
+	</update>
+	
+	<!-- 정규과정 스텝유닛별 수정용 상세 오프라인 -->
+	<select id="selectLmsRegularStepUnitEditOffDetail" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularStepUnitEditOffDetail */
+			SELECT
+				APSEQ ,
+				APNAME ,
+				ROOMSEQ ,
+				ROOMNAME ,
+				LIMITCOUNT ,
+				DETAILCONTENT
+			FROM LMSOFFLINE A
+			WHERE A.COURSEID = #{courseid}
+	</select>
+
+	<!-- 정규과정 스텝유닛별 오프라인 수정 -->
+ 	<update id="updateLmsRegularStepUnitEditOff" parameterType="reqBox">
+		/* updateLmsRegularStepUnitEditOff */
+			UPDATE LMSOFFLINE SET
+				APSEQ					=	#{	apseq	} ,
+				APNAME				=	#{	apname	} ,
+				ROOMSEQ				=	#{	roomseq	} ,
+				ROOMNAME			=	#{	roomname	} ,
+				LIMITCOUNT			=	#{	limitcount	} ,
+				DETAILCONTENT	=	#{	detailcontent	}
+			WHERE COURSEID = #{courseid}
+	</update>
+
+</mapper>

@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.auth.service.impl.AuthMapper">
+	<!-- 관리자 권한 그룹 리스트 -->
+	<select id="selectAuthGroupList" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			#{totalCount} - ROW_NUM + 1 AS NO
+			,*
+		FROM
+		(
+			SELECT 
+				ROW_NUMBER() OVER(ORDER BY A.ADNO DESC ) AS ROW_NUM
+				,ISNULL(A.MANAGENAME,'') AS MANAGENAME
+				,A.ADNO
+				,A.MANAGEDEPART
+				,A.MODIFIER
+				,FORMAT(A.MODIFYDATE,'yyyy-MM-dd') MODIFYDATE
+				,A.AUTHMODIFIER
+				,FORMAT(A.AUTHMODIFYDATE,'yyyy-MM-dd') AUTHMODIFYDATE
+				,(SELECT PPNAME FROM RSVPPINFO WHERE PPSEQ=A.APSEQ) AS APNAME
+			FROM 
+				MANAGER A
+			WHERE 
+				1=1
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.ADNO LIKE '%'+#{searchtext }+'%' OR A.MANAGENAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.ADNO LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND A.MANAGENAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+		) A
+	</select>
+	
+	<!-- 관리자 권한 그룹 리스트 TotalCount -->
+	<select id="selectAuthGroupListTotalCount" parameterType="reqBox" resultType="int">
+		SELECT 
+		  COUNT(*)
+		FROM MANAGER
+		WHERE 
+			1=1
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( ADNO LIKE '%'+#{searchtext }+'%' OR MANAGENAME LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND ADNO LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND MANAGENAME LIKE '%'+#{searchtext }+'%'   
+			 	</if>
+			</if>
+	</select>
+	
+	<!-- Pop목록 -->
+	<select id="authGroupListPopAjax" parameterType="reqBox" resultType="dataBox">
+	/*authGroupListPopAjax*/
+		SELECT
+			#{totalCount} - ROW_NUM + 1 AS NO 
+			,A.ADNO
+			,ISNULL(A.MANAGENAME,'') AS MANAGENAME
+			,ISNULL(A.MANAGEDEPART,'') AS MANAGEDEPART
+			,A.EXPERIENCEYN
+			,A.GAUGEYN
+			,A.APSEQ
+		FROM
+		(
+			SELECT
+			ROW_NUMBER() OVER(ORDER BY ADNO DESC ) AS ROW_NUM
+			  ,* 
+			FROM 
+				MANAGER
+			WHERE 1=1
+					<if test='searchtext != null and !searchtext.equals("")'>
+						<if test='searchtype.equals("")'>
+							AND ( ADNO LIKE '%'+#{searchtext }+'%' OR MANAGENAME LIKE '%'+#{searchtext }+'%' )  
+						</if>
+					 	<if test='searchtype.equals("1")'>
+					 		AND ADNO LIKE '%'+#{searchtext }+'%'
+					 	</if>
+					 	<if test='searchtype.equals("2")'>
+					 		AND MANAGENAME LIKE '%'+#{searchtext }+'%'   
+					 	</if>
+					</if>
+		) A
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- Pop목록 카운트 -->
+	<select id="authGroupListPopCount" resultType="int" parameterType="reqBox">
+	/*authGroupListPopCount*/
+		SELECT
+			  COUNT(*) AS TOTAL_CNT 
+			FROM 
+				MANAGER
+			WHERE 1=1
+					<if test='searchtext != null and !searchtext.equals("")'>
+						<if test='searchtype.equals("")'>
+							AND ( ADNO LIKE '%'+#{searchtext }+'%' OR MANAGENAME LIKE '%'+#{searchtext }+'%' )  
+						</if>
+					 	<if test='searchtype.equals("1")'>
+					 		AND ADNO LIKE '%'+#{searchtext }+'%'
+					 	</if>
+					 	<if test='searchtype.equals("2")'>
+					 		AND MANAGENAME LIKE '%'+#{searchtext }+'%'   
+					 	</if>
+					</if>
+	
+	</select>
+	
+	<!-- PopUp 수정 -->
+	<update id="authGroupListPopUpdateAjax" parameterType="reqBox">
+		/*authGroupListPopUpdateAjax*/
+		UPDATE 
+			MANAGER
+		SET
+			MANAGENAME=#{managename}
+			,MANAGEDEPART = #{managedepart}
+			,APSEQ = #{ppseq}
+			,MODIFIER = #{adminid}
+			,MODIFYDATE = getDate()
+		WHERE
+			ADNO = #{adno}
+	</update>
+	
+	<!-- 장소 불러오기 -->
+	<select id="selectPpList" resultType="dataBox">
+	/*selectPpList*/
+	SELECT PPSEQ,PPNAME FROM RSVPPINFO WHERE STATUSCODE = 'B01'
+	</select>
+	
+	<!-- 메뉴 불러오기 -->
+	<select id="authGroupListRightDivAjax" resultType="dataBox" parameterType="reqBox">
+	/*authGroupListRightDivAjax*/
+		WITH tree_query  AS (
+					SELECT  
+						menucode
+						, menutype
+						, linkurl
+						, menuseq
+						, menulevel
+						, useyn
+						, visibleyn
+						, menuyn
+						, uppergroup
+						, menuname
+						, sortnum
+						, convert(varchar(255), menucode) sort  
+						, convert(varchar(255), sortnum) ordersort  
+						, convert(varchar(255), menuname) depth_fullname
+					FROM 
+						menucode
+					WHERE 
+						uppergroup = 'Academy'
+						AND systemcode = 'MNG'
+						AND useyn = 'Y'
+					UNION ALL 
+					SELECT
+						b.menucode
+						, b.menutype
+						, b.linkurl
+						, b.menuseq
+						, b.menulevel
+						, b.useyn
+						, b.visibleyn
+						, b.menuyn
+						, b.uppergroup
+						, b.menuname
+						, b.sortnum
+						, convert(varchar(255), convert(nvarchar,C.sort) + ' > ' +  convert(varchar(255), B.menucode)) sort
+						, convert(varchar(255), convert(nvarchar,C.ordersort) + ' > ' +  convert(varchar(255), B.sortnum)) ordersort
+						, convert(varchar(255), convert(nvarchar,C.depth_fullname) + ' > ' +  convert(varchar(255), B.menuname)) depth_fullname
+					FROM  
+						menucode B, tree_query C
+					WHERE 
+						B.uppergroup = C.menucode
+						AND b.systemcode = 'MNG'
+						AND b.useyn = 'Y'
+					) 
+		SELECT
+			A.MENUNAME
+			,A.MENUCODE
+			,A.MENULEVEL
+			,ISNULL(B.MENUAUTH,'') AS MENUAUTH
+			,REPLACE(SORT,'>',' ') AS SORT
+		FROM 
+			tree_query A
+		LEFT OUTER JOIN MANAGERMENU B
+		ON ( A.MENUCODE = B.MENUCODE AND ADNO=#{adno})
+		ORDER BY ORDERSORT
+	</select>
+	
+	<!--  -->
+	<select id="authGroupListManagerInfo" parameterType="reqBox" resultType="dataBox">
+	/*authGroupListManagerInfo*/
+	SELECT 
+		MANAGENAME
+		,ADNO
+		,MANAGEDEPART
+		,APSEQ
+	FROM 
+		MANAGER
+	WHERE
+		ADNO = #{adno}
+	</select>
+	
+	<!-- ADNO체크 -->
+	<select id="authGroupListPopCheckAdno" resultType="String" parameterType="reqBox">
+	/*authGroupListPopCheckAdno*/
+	SELECT 
+		ISNULL((SELECT 'Y' FROM MANAGER WHERE ADNO=LTRIM(#{adno})),'N') AS RESULT
+	</select>
+	
+	<!-- popUp 운영자 개별 등록 -->
+	<insert id="authGroupListPopInsertAjax" parameterType="reqBox">
+	/*authGroupListPopInsertAjax*/
+		INSERT INTO MANAGER(ADNO,MANAGENAME,MANAGEDEPART,APSEQ,MODIFYDATE,MODIFIER,REGISTRANTDATE,REGISTRANT)
+		VALUES(LTRIM(#{adno}),#{managename},#{managedepart},#{ppseq},getDate(),#{adminid},getDate(),#{adminid})
+	</insert>
+	
+	<!-- ppseq존재여부 확인 -->
+	<select id="ppseqExistCheck" resultType="String" parameterType="reqBox">
+	/*ppseqExistCheck*/
+		SELECT 
+			ISNULL((SELECT 'Y' FROM RSVPPINFO WHERE PPSEQ=#{ppseq}),'N') AS RESULT
+	</select>
+	
+	<!-- 메뉴 권한 초기화 -->
+	<delete id="authGroupListMenuAuthDelete" parameterType="reqBox">
+	/*authGroupListMenuAuthDelete*/
+		DELETE FROM MANAGERMENU WHERE ADNO=#{adno} AND SYSTEMCODE='MNG'
+	</delete>
+	
+	<!-- 메뉴 권한 등록 -->
+	<insert id="authGroupListMenuAuthInsert" parameterType="reqBox">
+		/*authGroupListMenuAuthInsert*/
+		INSERT INTO MANAGERMENU(ADNO,SYSTEMCODE,MENUCODE,MENUAUTH)
+		VALUES(#{adno},'MNG',#{menucode},#{menuauth})
+	</insert>
+
+	<insert id="authLogInsert" parameterType="reqBox">
+		INSERT INTO MANAGERAUTHLOG ( ADNO, REGISTRANT, REGISTRANTDATE )
+		VALUES ( #{adno}, #{adminid}, getDate() )
+	</insert>
+
+	<update id="authGroupListMenuAuthUpdate" parameterType="reqBox">
+		/*authGroupListMenuAuthInsert*/
+		UPDATE MANAGER SET
+			  AUTHMODIFIER = #{adminid}
+			, AUTHMODIFYDATE = getDate()
+		WHERE ADNO = #{adno}
+	</update>
+	
+	<!-- 운영자 삭제 -->
+	<delete id="authGroupListManagerDeleteAjax" parameterType="reqBox">
+	/*authGroupListManagerDeleteAjax*/
+		DELETE FROM MANAGER WHERE ADNO=#{adno}
+	</delete>
+
+	<!-- 운영자 로그 -->
+	<insert id="userLogInsert" parameterType="reqBox">
+		<selectKey resultType="integer" keyProperty="logseq" order="BEFORE">
+			SELECT ISNULL(MAX(SEQ),0)+1 FROM TB_AI_USER_LOG
+		</selectKey>
+		INSERT INTO TB_AI_USER_LOG (
+			  SEQ
+			, INFONUM
+			, USERID
+			, LOGKIND
+			, LOGDETAIL
+			, REGDT
+			, CIP
+		) VALUES (
+			  #{logseq}
+			, 'AI'
+			, #{adminid}
+			, #{logkind}
+			, #{logdetail}
+			, Getdate()
+			, #{conip}
+		)
+	</insert>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

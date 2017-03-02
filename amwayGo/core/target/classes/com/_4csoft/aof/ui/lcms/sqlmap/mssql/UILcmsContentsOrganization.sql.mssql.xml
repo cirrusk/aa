@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsContentsOrganizationMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsContentsOrganizationVO">
+/* UILcmsContentsOrganizationMapper.insert */
+INSERT INTO cs_lcms_contents_organization 
+       ( 
+           cs_contents_seq ,
+           cs_organization_seq ,
+           cs_sort_order ,
+           cs_reg_member_seq ,
+           cs_reg_ip ,
+           cs_reg_dtime ,
+           cs_upd_member_seq ,
+           cs_upd_ip ,
+           cs_upd_dtime 
+       ) 
+    SELECT
+           #{contentsSeq, jdbcType=NUMERIC} ,
+           #{organizationSeq, jdbcType=NUMERIC} ,
+           ISNULL((
+                SELECT MAX(cs_sort_order) + 1 
+                  FROM cs_lcms_contents_organization 
+                 WHERE cs_delete_yn = 'N' 
+                   AND cs_contents_seq = #{contentsSeq}), 1), 
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           #{regIp, jdbcType=VARCHAR} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           #{updIp, jdbcType=VARCHAR} ,
+           dbo.FN_NOW_TO_CHAR()
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsContentsOrganizationVO">
+/* UILcmsContentsOrganizationMapper.update */
+UPDATE cs_lcms_contents_organization 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_sort_order = #{sortOrder, jdbcType=NUMERIC} 
+ WHERE cs_organization_seq = #{organizationSeq} 
+       AND cs_contents_seq = #{contentsSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <delete id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsContentsOrganizationVO">
+/* UILcmsContentsOrganizationMapper.delete */
+DELETE 
+  FROM cs_lcms_contents_organization 
+ WHERE cs_organization_seq = #{organizationSeq} 
+       AND cs_contents_seq = #{contentsSeq} 
+       AND cs_delete_yn = 'N'
+    </delete>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsContentsOrganizationRS">
+        <result column="co.contentsSeq"             property="contentsOrganization.contentsSeq" />
+        <result column="co.organizationSeq"         property="contentsOrganization.organizationSeq" />
+        <result column="co.sortOrder"               property="contentsOrganization.sortOrder" />
+        <result column="co.deleteYn"                property="contentsOrganization.deleteYn" />
+        <result column="co.regMemberSeq"            property="contentsOrganization.regMemberSeq" />
+        <result column="co.regDtime"                property="contentsOrganization.regDtime" />
+        <result column="co.regIp"                   property="contentsOrganization.regIp" />
+        <result column="co.updMemberSeq"            property="contentsOrganization.updMemberSeq" />
+        <result column="co.updDtime"                property="contentsOrganization.updDtime" />
+        <result column="co.updIp"                   property="contentsOrganization.updIp" />
+        <result column="org.organizationSeq"        property="organization.organizationSeq" />
+        <result column="org.title"                  property="organization.title" />
+        <result column="org.identifier"             property="organization.identifier" />
+        <result column="org.contentsTypeCd"         property="organization.contentsTypeCd" />
+        <result column="org.width"                  property="organization.width" />
+        <result column="org.height"                 property="organization.height" />
+        <result column="item.itemSeq"               property="item.itemSeq" />
+        <result column="item.organizationSeq"       property="item.organizationSeq" />
+        <result column="item.sortOrder"             property="item.sortOrder" />
+        <result column="item.level"                 property="item.level" />
+        <result column="item.title"                 property="item.title" />
+        <result column="item.identifier"            property="item.identifier" />
+        <result column="item.parameters"            property="item.parameters" />
+        <result column="item.dataFromLms"           property="item.dataFromLms" />
+        <result column="item.timeLimitAction"       property="item.timeLimitAction" />
+        <result column="item.minNormalizedMeasure"  property="item.minNormalizedMeasure" />
+        <result column="item.attemptDurationLimit"  property="item.attemptDurationLimit" />
+        <result column="item.completionThreshold"   property="item.completionThreshold" />
+        <result column="item.keyword"               property="item.keyword" />
+    </resultMap>
+    <select id="getList" parameterType="Long" resultMap="listResultMap">
+/* UILcmsContentsOrganizationMapper.getList */
+SELECT co.cs_contents_seq           AS "co.contentsSeq" ,
+       co.cs_organization_seq       AS "co.organizationSeq" ,
+       co.cs_sort_order             AS "co.sortOrder" ,
+       co.cs_delete_yn              AS "co.deleteYn" ,
+       co.cs_reg_member_seq         AS "co.regMemberSeq" ,
+       co.cs_reg_dtime              AS "co.regDtime" ,
+       co.cs_reg_ip                 AS "co.regIp" ,
+       co.cs_upd_member_seq         AS "co.updMemberSeq" ,
+       co.cs_upd_dtime              AS "co.updDtime" ,
+       co.cs_upd_ip                 AS "co.updIp" ,
+       org.cs_organization_seq      AS "org.organizationSeq" ,
+       org.cs_title                 AS "org.title" ,
+       org.cs_identifier            AS "org.identifier" ,
+       org.cs_contents_type_cd      AS "org.contentsTypeCd" ,
+       org.cs_width                 AS "org.width" ,
+       org.cs_height                AS "org.height" ,
+       item.cs_item_seq             AS "item.itemSeq" ,
+       item.cs_organization_seq     AS "item.organizationSeq" ,
+       item.cs_sort_order           AS "item.sortOrder" ,
+       item.cs_level                AS "item.level" ,
+       item.cs_title                AS "item.title" ,
+       item.cs_identifier           AS "item.identifier" ,
+       item.cs_parameters           AS "item.parameters" ,
+       item.cs_data_from_lms        AS "item.dataFromLms" ,
+       item.cs_time_limit_action    AS "item.timeLimitAction" ,
+       item.cs_min_normalized_measure AS "item.minNormalizedMeasure" ,
+       item.cs_attempt_duration_limit AS "item.attemptDurationLimit" ,
+       item.cs_completion_threshold AS "item.completionThreshold" ,
+       item.cs_keyword              AS "item.keyword" 
+  FROM cs_lcms_contents_organization co 
+ INNER JOIN cs_lcms_organization org 
+    ON co.cs_organization_seq = org.cs_organization_seq 
+       AND org.cs_delete_yn = 'N'
+ INNER JOIN cs_lcms_item item 
+    ON item.cs_organization_seq = org.cs_organization_seq 
+       AND item.cs_delete_yn = 'N'
+ WHERE co.cs_contents_seq = #{contentsSeq} 
+       AND co.cs_delete_yn = 'N'
+ORDER BY co.cs_sort_order ASC, item.cs_sort_order ASC
+    </select>
+
+    <select id="getCount" parameterType="map" resultType="int">
+/* UILcmsContentsOrganizationMapper.getCount */
+SELECT COUNT(*) 
+  FROM cs_lcms_contents_organization co 
+ WHERE co.cs_organization_seq = #{organizationSeq} 
+       AND co.cs_contents_seq = #{contentsSeq} 
+       AND co.cs_delete_yn = 'N'
+    </select>
+
+    <select id="getMappingCount" parameterType="Long" resultType="int">
+/* UILcmsContentsOrganizationMapper.getMappingCount */
+SELECT COUNT(*) 
+  FROM cs_lcms_contents_organization co 
+ WHERE co.cs_organization_seq = #{organizationSeq} 
+       AND co.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listMappingContentsResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsContentsOrganizationRS">
+        <result column="cnt.contentsSeq"    property="contents.contentsSeq" />
+        <result column="cnt.categorySeq"    property="contents.categorySeq" />
+        <result column="cnt.title"          property="contents.title" />
+        <result column="cnt.statusCd"       property="contents.statusCd" />
+        <result column="cnt.description"    property="contents.description" />
+        <result column="cnt.deleteYn"       property="contents.deleteYn" />
+        <result column="cnt.regMemberSeq"   property="contents.regMemberSeq" />
+        <result column="cnt.regDtime"       property="contents.regDtime" />
+        <result column="cnt.regIp"          property="contents.regIp" />
+        <result column="cnt.updMemberSeq"   property="contents.updMemberSeq" />
+        <result column="cnt.updDtime"       property="contents.updDtime" />
+        <result column="cnt.updIp"          property="contents.updIp" />
+    </resultMap>
+    <select id="getListMappingContents" parameterType="Long" resultMap="listMappingContentsResultMap">
+/* UILcmsContentsOrganizationMapper.getListMappingContents */
+SELECT cnt.cs_contents_seq      AS "cnt.contentsSeq" ,
+       cnt.cs_category_seq      AS "cnt.categorySeq" ,
+       cnt.cs_title             AS "cnt.title" ,
+       cnt.cs_status_cd         AS "cnt.statusCd" ,
+       cnt.cs_description       AS "cnt.description" ,
+       cnt.cs_delete_yn         AS "cnt.deleteYn" ,
+       cnt.cs_reg_member_seq    AS "cnt.regMemberSeq" ,
+       cnt.cs_reg_dtime         AS "cnt.regDtime" ,
+       cnt.cs_reg_ip            AS "cnt.regIp" ,
+       cnt.cs_upd_member_seq    AS "cnt.updMemberSeq" ,
+       cnt.cs_upd_dtime         AS "cnt.updDtime" , 
+       cnt.cs_upd_ip            AS "cnt.updIp" 
+  FROM cs_lcms_contents_organization co 
+ INNER JOIN cs_lcms_contents cnt 
+       ON co.cs_contents_seq = cnt.cs_contents_seq 
+       AND cnt.cs_delete_yn = 'N'
+ WHERE co.cs_organization_seq = #{organizationSeq} 
+       AND co.cs_delete_yn = 'N'
+    </select>
+    
+	<resultMap id="listBrowseContentsResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsContentsOrganizationRS">
+        <result column="co.contentsSeq"             property="contentsOrganization.contentsSeq" />
+        <result column="co.organizationSeq"         property="contentsOrganization.organizationSeq" />
+        <result column="co.sortOrder"               property="contentsOrganization.sortOrder" />
+        <result column="org.title"                  property="organization.title" />
+    </resultMap>
+    <select id="getListBrowseContents" parameterType="Long" resultMap="listBrowseContentsResultMap">
+/* UILcmsContentsOrganizationMapper.getListBrowseContents */
+SELECT co.cs_contents_seq AS "co.contentsSeq",
+	   co.cs_organization_seq AS "co.organizationSeq",
+	   co.cs_sort_order AS "co.sortOrder",
+	   org.cs_title AS "org.title"
+  FROM cs_lcms_contents_organization co 
+ INNER JOIN cs_lcms_organization org 
+    ON co.cs_organization_seq = org.cs_organization_seq 
+       AND org.cs_delete_yn = 'N'
+ WHERE co.cs_contents_seq = #{contentsSeq} 
+       AND co.cs_delete_yn = 'N'
+ORDER BY co.cs_sort_order ASC
+    </select>
+
+</mapper>

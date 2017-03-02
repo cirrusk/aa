@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsStudioWorkMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioWorkVO">
+        <selectKey resultType="Long" keyProperty="workSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsStudioWorkMapper.insert */
+INSERT INTO cs_cdms_studio_work 
+       ( 
+           cs_studio_seq ,
+           cs_project_seq ,
+           cs_shooting_cd ,
+           cs_start_dtime ,
+           cs_end_dtime ,
+           cs_memo ,
+           cs_studio_status_type_cd,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{studioSeq, jdbcType=NUMERIC} ,
+           #{projectSeq, jdbcType=NUMERIC} ,
+           #{shootingCd, jdbcType=VARCHAR} ,
+           #{startDtime, jdbcType=VARCHAR} ,
+           #{endDtime, jdbcType=VARCHAR} ,
+           #{memo, jdbcType=VARCHAR} ,
+           #{studioStatusTypeCd, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioWorkVO">
+/* UICdmsStudioWorkMapper.update */
+UPDATE cs_cdms_studio_work 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+       <if test='studioSeq != null'>
+       ,cs_studio_seq = #{studioSeq, jdbcType=NUMERIC}
+       </if>
+       <if test='projectSeq != null'>
+       ,cs_project_seq = #{projectSeq, jdbcType=NUMERIC}
+       </if>
+       <if test='shootingCd != null'>
+       ,cs_shooting_cd = #{shootingCd, jdbcType=VARCHAR}
+       </if>
+       <if test='startDtime != null'>
+       ,cs_start_dtime = #{startDtime, jdbcType=VARCHAR}
+       </if>
+       <if test='endDtime != null'>
+       ,cs_end_dtime = #{endDtime, jdbcType=VARCHAR}
+       </if>
+       <if test='memo != null'>
+       ,cs_memo = #{memo, jdbcType=VARCHAR}
+       </if>
+       <if test='studioStatusTypeCd != null'>
+       ,cs_studio_status_type_cd = #{studioStatusTypeCd, jdbcType=VARCHAR}
+       </if>
+ WHERE cs_work_seq = #{workSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateCancel" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioWorkVO">
+/* UICdmsStudioWorkMapper.updateCancel */
+UPDATE cs_cdms_studio_work 
+   SET cs_cancel_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_cancel_memo = #{cancelMemo, jdbcType=VARCHAR} ,
+       cs_studio_cancel_type_cd = #{studioCancelTypeCd, jdbcType=VARCHAR} ,
+       cs_cancel_member_seq = #{cancelMemberSeq, jdbcType=NUMERIC} 
+ WHERE cs_work_seq = #{workSeq}
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateResult" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioWorkVO">
+/* UICdmsStudioWorkMapper.updateResult */
+UPDATE cs_cdms_studio_work 
+   SET cs_result_dtime = dbo.FN_NOW_TO_CHAR()
+        <if test='completeYn != null'>
+	   ,cs_complete_yn = #{completeYn, jdbcType=VARCHAR} 
+        </if>
+        <if test='resultMemberSeq != null'>
+       ,cs_result_member_seq = #{resultMemberSeq, jdbcType=NUMERIC}
+        </if>
+        <if test='resultMemo != null'>
+       ,cs_result_memo = #{resultMemo, jdbcType=VARCHAR}
+        </if>
+ WHERE cs_work_seq = #{workSeq}
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsStudioWorkVO">
+/* UICdmsStudioWorkMapper.delete */
+UPDATE cs_cdms_studio_work 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_work_seq = #{workSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsStudioWorkRS">
+        <result column="work.workSeq"               property="studioWork.workSeq"/>
+        <result column="work.studioSeq"             property="studioWork.studioSeq"/>
+        <result column="work.projectSeq"            property="studioWork.projectSeq"/>
+        <result column="work.shootingCd"            property="studioWork.shootingCd"/>
+        <result column="work.startDtime"            property="studioWork.startDtime"/>
+        <result column="work.endDtime"              property="studioWork.endDtime"/>
+        <result column="work.memo"                  property="studioWork.memo"/>
+        <result column="work.resultMemberSeq"       property="studioWork.resultMemberSeq"/>
+        <result column="work.resultDtime"           property="studioWork.resultDtime"/>
+        <result column="work.resultMemo"            property="studioWork.resultMemo"/>
+        <result column="work.studioCancelTypeCd"    property="studioWork.studioCancelTypeCd"/>
+        <result column="work.cancelMemberSeq"       property="studioWork.cancelMemberSeq"/>
+        <result column="work.cancelDtime"           property="studioWork.cancelDtime"/>
+        <result column="work.cancelMemo"            property="studioWork.cancelMemo"/>
+        <result column="work.completeYn"            property="studioWork.completeYn"/>
+        <result column="work.studioStatusTypeCd"    property="studioWork.studioStatusTypeCd"/>
+        <result column="work.deleteYn"              property="studioWork.deleteYn"/>
+        <result column="work.regMemberSeq"          property="studioWork.regMemberSeq"/>
+        <result column="work.regDtime"              property="studioWork.regDtime"/>
+        <result column="work.regIp"                 property="studioWork.regIp"/>
+        <result column="work.updMemberSeq"          property="studioWork.updMemberSeq"/>
+        <result column="work.updDtime"              property="studioWork.updDtime"/>
+        <result column="work.updIp"                 property="studioWork.updIp"/>
+        <result column="studio.studioSeq"           property="studio.studioSeq"/>
+        <result column="studio.studioName"          property="studio.studioName"/>
+        <result column="project.projectSeq"         property="project.projectSeq"/>
+        <result column="project.projectName"        property="project.projectName"/>
+        <result column="resultMember.memberSeq"     property="resultMember.memberSeq"/>
+        <result column="resultMember.memberName"    property="resultMember.memberName"/>
+        <result column="resultMember.memberId"      property="resultMember.memberId"/>
+        <result column="resultMember.nickname"      property="resultMember.nickname"/>
+        <result column="resultMember.photo"         property="resultMember.photo"/>
+        <result column="cancelMember.memberSeq"     property="cancelMember.memberSeq"/>
+        <result column="cancelMember.memberName"    property="cancelMember.memberName"/>
+        <result column="cancelMember.memberId"      property="cancelMember.memberId"/>
+        <result column="cancelMember.nickname"      property="cancelMember.nickname"/>
+        <result column="cancelMember.photo"         property="cancelMember.photo"/>
+        <result column="regMember.memberSeq"        property="regMember.memberSeq"/>
+        <result column="regMember.memberName"       property="regMember.memberName"/>
+        <result column="regMember.memberId"         property="regMember.memberId"/>
+        <result column="regMember.nickname"         property="regMember.nickname"/>
+        <result column="regMember.photo"            property="regMember.photo"/>
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=work.workSeq,referenceTablename=referenceTablename}" property="studioWork.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="Long" resultMap="getDetail_result">
+/* UICdmsStudioWorkMapper.getDetail */
+SELECT work.cs_work_seq                 AS "work.workSeq" ,
+       work.cs_studio_seq               AS "work.studioSeq" ,
+       work.cs_project_seq              AS "work.projectSeq" ,
+       work.cs_shooting_cd              AS "work.shootingCd" ,
+       work.cs_start_dtime              AS "work.startDtime" ,
+       work.cs_end_dtime                AS "work.endDtime" ,
+       work.cs_memo                     AS "work.memo" ,
+       work.cs_result_member_seq        AS "work.resultMemberSeq" ,
+       work.cs_result_dtime             AS "work.resultDtime" ,
+       work.cs_result_memo              AS "work.resultMemo" ,
+       work.cs_studio_cancel_type_cd    AS "work.studioCancelTypeCd" ,
+       work.cs_cancel_member_seq        AS "work.cancelMemberSeq" ,
+       work.cs_cancel_dtime             AS "work.cancelDtime" ,
+       work.cs_cancel_memo              AS "work.cancelMemo" ,
+       work.cs_complete_yn              AS "work.completeYn" ,
+       work.cs_studio_status_type_cd    AS "work.studioStatusTypeCd" ,
+       work.cs_delete_yn                AS "work.deleteYn" ,
+       work.cs_reg_member_seq           AS "work.regMemberSeq" ,
+       work.cs_reg_dtime                AS "work.regDtime" ,
+       work.cs_reg_ip                   AS "work.regIp" ,
+       work.cs_upd_member_seq           AS "work.updMemberSeq" ,
+       work.cs_upd_dtime                AS "work.updDtime" ,
+       work.cs_upd_ip                   AS "work.updIp" ,
+       studio.cs_studio_seq             AS "studio.studioSeq" ,
+       studio.cs_studio_name            AS "studio.studioName" ,
+       project.cs_project_seq           AS "project.projectSeq" ,
+       project.cs_project_name          AS "project.projectName" ,
+       result_member.cs_member_seq      AS "resultMember.memberSeq" ,
+       result_member.cs_member_name     AS "resultMember.memberName" ,
+       result_member.cs_member_id       AS "resultMember.memberId" ,
+       result_member.cs_nickname        AS "resultMember.nickname" ,
+       result_member.cs_photo           AS "resultMember.photo" , 
+       cancel_member.cs_member_seq      AS "cancelMember.memberSeq" ,
+       cancel_member.cs_member_name     AS "cancelMember.memberName" ,
+       cancel_member.cs_member_id       AS "cancelMember.memberId" ,
+       cancel_member.cs_nickname        AS "cancelMember.nickname" ,
+       cancel_member.cs_photo           AS "cancelMember.photo" ,
+       reg_member.cs_member_seq         AS "regMember.memberSeq" ,
+       reg_member.cs_member_name        AS "regMember.memberName" ,
+       reg_member.cs_member_id          AS "regMember.memberId" ,
+       reg_member.cs_nickname           AS "regMember.nickname" ,
+       reg_member.cs_photo              AS "regMember.photo",
+       'cs_cdms_studio_work'            AS "referenceTablename"
+  FROM cs_cdms_studio_work work
+   INNER JOIN cs_cdms_studio studio
+       ON work.cs_studio_seq = studio.cs_studio_seq  
+   LEFT OUTER JOIN cs_cdms_project project
+       ON work.cs_project_seq = project.cs_project_seq  
+   LEFT OUTER JOIN cs_member result_member 
+       ON work.cs_result_member_seq = result_member.cs_member_seq 
+   LEFT OUTER JOIN cs_member reg_member 
+       ON work.cs_reg_member_seq = reg_member.cs_member_seq 
+   LEFT OUTER JOIN cs_member cancel_member 
+       ON work.cs_cancel_member_seq = cancel_member.cs_member_seq 
+ WHERE work.cs_work_seq = #{workSeq} 
+       AND work.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsStudioWorkRS">
+        <result column="work.workSeq"               property="studioWork.workSeq"/>
+        <result column="work.studioSeq"             property="studioWork.studioSeq"/>
+        <result column="work.projectSeq"            property="studioWork.projectSeq"/>
+        <result column="work.shootingCd"            property="studioWork.shootingCd"/>
+        <result column="work.startDtime"            property="studioWork.startDtime"/>
+        <result column="work.endDtime"              property="studioWork.endDtime"/>
+        <result column="work.memo"                  property="studioWork.memo"/>
+        <result column="work.resultMemberSeq"       property="studioWork.resultMemberSeq"/>
+        <result column="work.resultDtime"           property="studioWork.resultDtime"/>
+        <result column="work.resultMemo"            property="studioWork.resultMemo"/>
+        <result column="work.studioCancelTypeCd"    property="studioWork.studioCancelTypeCd"/>
+        <result column="work.cancelMemberSeq"       property="studioWork.cancelMemberSeq"/>
+        <result column="work.cancelDtime"           property="studioWork.cancelDtime"/>
+        <result column="work.cancelMemo"            property="studioWork.cancelMemo"/>
+        <result column="work.completeYn"            property="studioWork.completeYn"/>
+        <result column="work.studioStatusTypeCd"    property="studioWork.studioStatusTypeCd"/>
+        <result column="work.deleteYn"              property="studioWork.deleteYn"/>
+        <result column="work.regMemberSeq"          property="studioWork.regMemberSeq"/>
+        <result column="work.regDtime"              property="studioWork.regDtime"/>
+        <result column="work.regIp"                 property="studioWork.regIp"/>
+        <result column="work.updMemberSeq"          property="studioWork.updMemberSeq"/>
+        <result column="work.updDtime"              property="studioWork.updDtime"/>
+        <result column="work.updIp"                 property="studioWork.updIp"/>
+        <result column="studio.studioSeq"           property="studio.studioSeq"/>
+        <result column="studio.studioName"          property="studio.studioName"/>
+        <result column="project.projectSeq"         property="project.projectSeq"/>
+        <result column="project.projectName"        property="project.projectName"/>
+        <result column="resultMember.memberSeq"     property="resultMember.memberSeq"/>
+        <result column="resultMember.memberName"    property="resultMember.memberName"/>
+        <result column="resultMember.memberId"      property="resultMember.memberId"/>
+        <result column="resultMember.nickname"      property="resultMember.nickname"/>
+        <result column="resultMember.photo"         property="resultMember.photo"/>
+        <result column="cancelMember.memberSeq"     property="cancelMember.memberSeq"/>
+        <result column="cancelMember.memberName"    property="cancelMember.memberName"/>
+        <result column="cancelMember.memberId"      property="cancelMember.memberId"/>
+        <result column="cancelMember.nickname"      property="cancelMember.nickname"/>
+        <result column="cancelMember.photo"         property="cancelMember.photo"/>
+        <result column="regMember.memberSeq"        property="regMember.memberSeq"/>
+        <result column="regMember.memberName"       property="regMember.memberName"/>
+        <result column="regMember.memberId"         property="regMember.memberId"/>
+        <result column="regMember.nickname"         property="regMember.nickname"/>
+        <result column="regMember.photo"            property="regMember.photo"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsStudioWorkCondition" resultMap="getList_result">
+/* UICdmsStudioWorkMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "work.startDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "work.startDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "project.projectName" ASC</when>
+            <when test='orderby == -2'>ORDER BY "project.projectName" DESC</when>
+            <when test='orderby == 3'>ORDER BY "studio.studioName" ASC</when>
+            <when test='orderby == -3'>ORDER BY "studio.studioName" DESC</when>
+            <otherwise>ORDER BY "work.startDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT work.cs_work_seq                 AS "work.workSeq" ,
+       work.cs_studio_seq               AS "work.studioSeq" ,
+       work.cs_project_seq              AS "work.projectSeq" ,
+       work.cs_shooting_cd              AS "work.shootingCd" ,
+       work.cs_start_dtime              AS "work.startDtime" ,
+       work.cs_end_dtime                AS "work.endDtime" ,
+       work.cs_memo                     AS "work.memo" ,
+       work.cs_result_member_seq        AS "work.resultMemberSeq" ,
+       work.cs_result_dtime             AS "work.resultDtime" ,
+       work.cs_result_memo              AS "work.resultMemo" ,
+       work.cs_studio_cancel_type_cd    AS "work.studioCancelTypeCd" ,
+       work.cs_cancel_member_seq        AS "work.cancelMemberSeq" ,
+       work.cs_cancel_dtime             AS "work.cancelDtime" ,
+       work.cs_cancel_memo              AS "work.cancelMemo" ,
+       work.cs_complete_yn              AS "work.completeYn" ,
+       work.cs_studio_status_type_cd    AS "work.studioStatusTypeCd" ,
+       work.cs_delete_yn                AS "work.deleteYn" ,
+       work.cs_reg_member_seq           AS "work.regMemberSeq" ,
+       work.cs_reg_dtime                AS "work.regDtime" ,
+       work.cs_reg_ip                   AS "work.regIp" ,
+       work.cs_upd_member_seq           AS "work.updMemberSeq" ,
+       work.cs_upd_dtime                AS "work.updDtime" ,
+       work.cs_upd_ip                   AS "work.updIp" ,
+       studio.cs_studio_seq             AS "studio.studioSeq" ,
+       studio.cs_studio_name            AS "studio.studioName" ,
+       project.cs_project_seq           AS "project.projectSeq" ,
+       project.cs_project_name          AS "project.projectName" ,
+       result_member.cs_member_seq      AS "resultMember.memberSeq" ,
+       result_member.cs_member_name     AS "resultMember.memberName" ,
+       result_member.cs_member_id       AS "resultMember.memberId" ,
+       result_member.cs_nickname        AS "resultMember.nickname" ,
+       result_member.cs_photo           AS "resultMember.photo" , 
+       cancel_member.cs_member_seq      AS "cancelMember.memberSeq" ,
+       cancel_member.cs_member_name     AS "cancelMember.memberName" ,
+       cancel_member.cs_member_id       AS "cancelMember.memberId" ,
+       cancel_member.cs_nickname        AS "cancelMember.nickname" ,
+       cancel_member.cs_photo           AS "cancelMember.photo" ,
+       reg_member.cs_member_seq         AS "regMember.memberSeq" ,
+       reg_member.cs_member_name        AS "regMember.memberName" ,
+       reg_member.cs_member_id          AS "regMember.memberId" ,
+       reg_member.cs_nickname           AS "regMember.nickname" ,
+       reg_member.cs_photo              AS "regMember.photo"
+  FROM cs_cdms_studio_work work
+   INNER JOIN cs_cdms_studio studio
+       ON work.cs_studio_seq = studio.cs_studio_seq  
+   LEFT OUTER JOIN cs_cdms_project project
+       ON work.cs_project_seq = project.cs_project_seq 
+       AND project.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_cdms_project_group projGroup
+   	   ON projGroup.cs_project_group_seq = project.cs_project_group_seq
+	   AND projGroup.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_member result_member 
+       ON work.cs_result_member_seq = result_member.cs_member_seq
+       AND result_member.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_member reg_member 
+       ON work.cs_reg_member_seq = reg_member.cs_member_seq
+       AND reg_member.cs_delete_yn = 'N' 
+   LEFT OUTER JOIN cs_member cancel_member 
+       ON work.cs_cancel_member_seq = cancel_member.cs_member_seq
+       AND cancel_member.cs_delete_yn = 'N' 
+ WHERE work.cs_delete_yn = 'N' 
+        <if test='srchStudioSeq != null and !srchStudioSeq.equals("")'>
+       AND work.cs_studio_seq = #{srchStudioSeq}
+        </if>
+        <if test='srchProjectSeq != null and !srchProjectSeq.equals("")'>
+       AND work.cs_project_seq = #{srchProjectSeq}
+        </if>
+        <if test='srchStartDate != null and !srchStartDate.equals("")'>
+       AND work.cs_start_dtime >= #{srchStartDate}
+        </if>
+        <if test='srchEndDate != null and !srchEndDate.equals("")'>
+       AND work.cs_end_dtime &lt;= #{srchEndDate}
+        </if>
+        <if test='srchProjectGroupSeq != null and !srchProjectGroupSeq.equals("")'>
+       AND projGroup.cs_project_group_seq = #{srchProjectGroupSeq}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("projectName")'>
+       AND project.cs_project_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("studioName")'>
+       AND studio.cs_studio_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND reg_member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsStudioWorkCondition" resultType="int">
+/* UICdmsStudioWorkMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_cdms_studio_work work
+   INNER JOIN cs_cdms_studio studio
+       ON work.cs_studio_seq = studio.cs_studio_seq  
+   LEFT OUTER JOIN cs_cdms_project project
+       ON work.cs_project_seq = project.cs_project_seq
+       AND project.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_cdms_project_group projGroup
+   	   ON projGroup.cs_project_group_seq = project.cs_project_group_seq
+	   AND projGroup.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_member result_member 
+       ON work.cs_result_member_seq = result_member.cs_member_seq
+       AND result_member.cs_delete_yn = 'N'
+   LEFT OUTER JOIN cs_member reg_member 
+       ON work.cs_reg_member_seq = reg_member.cs_member_seq
+       AND reg_member.cs_delete_yn = 'N' 
+   LEFT OUTER JOIN cs_member cancel_member 
+       ON work.cs_cancel_member_seq = cancel_member.cs_member_seq
+       AND cancel_member.cs_delete_yn = 'N' 
+ WHERE work.cs_delete_yn = 'N' 
+        <if test='srchStudioSeq != null and !srchStudioSeq.equals("")'>
+       AND work.cs_studio_seq = #{srchStudioSeq}
+        </if>
+        <if test='srchProjectSeq != null and !srchProjectSeq.equals("")'>
+       AND work.cs_project_seq = #{srchProjectSeq}
+        </if>
+        <if test='srchStartDate != null and !srchStartDate.equals("")'>
+       AND work.cs_start_dtime >= #{srchStartDate}
+        </if>
+        <if test='srchEndDate != null and !srchEndDate.equals("")'>
+       AND work.cs_end_dtime &lt;= #{srchEndDate}
+        </if>
+        <if test='srchProjectGroupSeq != null and !srchProjectGroupSeq.equals("")'>
+       AND projGroup.cs_project_group_seq = #{srchProjectGroupSeq}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("projectName")'>
+       AND project.cs_project_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("studioName")'>
+       AND studio.cs_studio_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("regMemberName")'>
+       AND reg_member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+
+    <select id="getCount" parameterType="map" resultType="int">
+/* UICdmsStudioWorkMapper.getCount */
+SELECT COUNT(*) 
+  FROM cs_cdms_studio_work work
+ WHERE work.cs_delete_yn = 'N' 
+       AND work.cs_studio_seq = #{studioSeq}
+       AND (#{startDtime} BETWEEN work.cs_start_dtime AND work.cs_end_dtime
+            OR #{endDtime} BETWEEN work.cs_start_dtime AND work.cs_end_dtime)
+       AND work.cs_cancel_dtime IS NULL
+    </select>
+    
+</mapper>

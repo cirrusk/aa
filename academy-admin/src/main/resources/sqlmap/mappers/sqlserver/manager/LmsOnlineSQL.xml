@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.online.service.impl.LmsOnlineMapper">
+	
+	<!-- 온라인 목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsOnlineWhere">
+		WHERE USEFLAG = 'Y' AND COURSETYPE='O'
+			<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+				AND CATEGORYID = #{searchcategoryid }
+			</if>
+			<if test='searchopenflag != null and !searchopenflag.equals("")'>
+				AND OPENFLAG = #{searchopenflag }
+			</if>
+			<if test='searchstartregistrantdate != null and !searchstartregistrantdate.equals("")'>
+				AND FORMAT(REGISTRANTDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartregistrantdate }
+			</if>
+			<if test='searchendregistrantdate != null and !searchendregistrantdate.equals("")'>
+				AND FORMAT(REGISTRANTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchendregistrantdate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( COURSENAME LIKE '%'+#{searchtext }+'%' OR COURSECONTENT LIKE '%'+#{searchtext }+'%' OR SEARCHWORD LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND COURSENAME LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND COURSECONTENT LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND SEARCHWORD LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</sql>
+	
+	<!-- 온라인 목록 카운트 -->
+	<select id="selectLmsOnlineCount" parameterType="reqBox" resultType="int">
+		/* selectLmsOnlineCount */
+		SELECT  
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSCOURSE
+		<include refid="selectLmsOnlineWhere" />
+	</select>
+	
+	<!-- 온라인 목록 -->
+	<select id="selectLmsOnlineList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsOnlineList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, CASE WHEN AA.OPENFLAG='Y' THEN '공개' WHEN AA.OPENFLAG='N' THEN '비공개' WHEN AA.OPENFLAG='C' THEN '정규공개' END AS OPENFLAGNAME
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+		, FORMAT(AA.REGISTRANTDATE2, 'yyyy-MM-dd') AS REGISTRANTDATE 
+		, (SELECT COUNT(*) FROM LMSSTEPUNIT WHERE STEPCOURSEID = AA.COURSEID) AS UNITCOUNT
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				COURSEID ,
+				CATEGORYID ,
+				COURSENAME ,
+				REGISTRANTDATE AS  REGISTRANTDATE2,
+				OPENFLAG 
+			FROM LMSCOURSE
+			<include refid="selectLmsOnlineWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 온라인 목록 엑셀다운로드 -->
+	<select id="selectLmsOnlineListExcelDown" parameterType="reqBox" resultType="hashmap">
+		/* selectLmsOnlineListExcelDown */
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS NO , 
+				COURSEID ,
+				CATEGORYID ,
+				COURSENAME ,
+				FORMAT(REGISTRANTDATE, 'yyyy-MM-dd') AS REGISTRANTDATE ,
+				CASE WHEN OPENFLAG='Y' THEN '공개' WHEN OPENFLAG='N' THEN '비공개' WHEN OPENFLAG='C' THEN '정규공개' END AS OPENFLAGNAME ,
+				DBO.F_LMS_CATEGORY_TREENAME(CATEGORYID) AS CATEGORYTREENAME 
+			FROM LMSCOURSE
+			<include refid="selectLmsOnlineWhere" />
+	</select>
+	
+	<!-- 온라인 삭제(상세 정보는 삭제 하지 않는다.) -->
+ 	<update id="deleteLmsOnline" parameterType="reqBox">
+		/* deleteLmsOnline */
+		UPDATE LMSONLINE
+			SET
+				 COURSEID = COURSEID 
+		WHERE COURSEID  IN
+			<foreach collection="courseids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+
+	<!-- 온라인 상세 -->
+	<select id="selectLmsOnline" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsOnline */
+			SELECT
+				ACTIVITYID ,
+				ACTIVITYCODE
+			FROM LMSONLINE
+			WHERE COURSEID = #{courseid}
+	</select>
+	
+	<!-- 온라인 등록 -->
+ 	<insert id="insertLmsOnline" parameterType="reqBox">
+		/* insertLmsOnline */
+			INSERT INTO LMSONLINE(
+				COURSEID ,
+				ACTIVITYID ,
+				ACTIVITYCODE
+				)
+			VALUES(
+				#{maxcourseid} ,
+				#{activityid} ,
+				#{activitycode}
+				)
+	</insert>
+
+	<!-- 온라인 업데이트 -->
+ 	<update id="updateLmsOnline" parameterType="reqBox">
+		/* updateLmsOnline */
+			UPDATE LMSONLINE SET
+				ACTIVITYID = #{activityid},
+				ACTIVITYCODE = #{activitycode}
+			WHERE COURSEID = #{courseid} 
+	</update>
+
+</mapper>

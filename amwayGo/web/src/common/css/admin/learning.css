@@ -1,0 +1,108 @@
+@charset "utf-8";
+
+/*******************************************************************************
+  학습창
+*******************************************************************************/
+body              {background-color:#5c5c5c;}
+.learning         {position:relative; background-color:#5c5c5c; padding:2px; color:#ffffff; }
+
+.learning .section-head     {height:35px; line-height:35px; overflow:hidden; position:relative; color:#ffffff; }
+.learning .section-head .title    {font-size:18px; font-weight:bold; height:35px; line-height:35px; padding-left:5px;}
+.learning .section-head .subtitle {font-size:13px; font-weight:bold; }
+.learning .section-head .timer    {font-size:13px; font-weight:bold; position:absolute; right:6px; top:6px; height:20px; line-height:20px; padding:0px 5px;}
+.learning .section-head .warning  {color:#ff0000; background-color:#ffff00; }
+.learning .section-head .close    {background:url("../../images/admin/icon/icons_learning.png") no-repeat -21px -21px; width:25px; height:25px; cursor:pointer; position:absolute; right:2px; top:4px; }
+
+.learning .section-contents {position:relative; }
+.learning .section-contents .data {color:#000; background-color:#ffffff; border:solid 1px #fff; overflow:hidden;}
+.learning .section-contents .scroller {position:relative; overflow-x:hidden; overflow-y:auto; scrollbar-face-color:#727272; scrollbar-arrow-color:#727272; scrollbar-track-color:#ffffff;}
+.learning .section-contents .section-overlay {display:none; position:absolute; left:0; top:0; background-color:#727272; filter:alpha(opacity=50); opacity:0.5; -moz-opacity:0.5;}
+.learning .section-contents .section-media {display:none; position:absolute; width:400px; max-height:400px; padding:10px; background-color:#727272; vertical-align:middle; text-align: center;}
+.learning .section-contents .section-media .media .image {max-width:400px; max-height:400px; }
+.learning .section-contents .section-media .close {background:url("../../images/admin/icon/icons_learning.png") no-repeat -53px -34px; width:12px; height:12px; cursor:pointer; position:absolute; right:-10px; top:-10px;}
+.learning .section-contents .section-overlay-visible {display:block;}
+.learning .section-contents .section-media-visible {display:block;}
+.learning .section-contents .chrome-downsize-height {height:450px !important;}
+
+.learning .section-contents .question {color:#000; padding:0 3px 0 25px; position:relative; clear:both; line-height:25px; }
+.learning .section-contents .question .question-head {position:absolute; left:0; top:0px; font-size:15px; font-weight:bold; padding:3px 0;}
+.learning .section-contents .question .answer-incorrect {position:absolute; left:0; top:-10px; background: url("../../images/admin/icon/icons_learning.png") no-repeat -12px -98px; width:100px; height:46px; }
+.learning .section-contents .question .answer-correct {position:absolute; left:0; top:-20px; background: url("../../images/admin/icon/icons_learning.png") no-repeat -256px -98px; width:100px; height:89px; }
+.learning .section-contents .question .answer-triangle {position:absolute; left:0; top:-30px; background: url("../../images/admin/icon/icons_learning.png") no-repeat -130px -98px; width:100px; height:72px; }
+.learning .section-contents .question .question-title {font-size:15px; font-weight:bold; border-bottom:solid 1px #cdcdcd; padding:3px 0;}
+.learning .section-contents .question .question-title .question-type {font-size:12px; font-weight:normal; }
+.learning .section-contents .question .question-title .take-score {font-size:12px; font-weight:normal; color:#ff0000; }
+.learning .section-contents .question .question-body {list-style:none; margin-bottom:120px; padding:10px 0;}
+.learning .section-contents .question .question-body .question-item {width:200px; padding:0 10px 0 0; vertical-align:top; text-align:center; position:relative; }
+.learning .section-contents .question .question-body .question-media {display:inline-block; *display:inline; *zoom:1; border:solid 1px #cdcdcd; text-align:center;}
+.learning .section-contents .question .question-body .question-media .image {width:200px; height:200px; cursor:pointer; }
+.learning .section-contents .question .question-body .question-media .video {cursor:pointer; background: url("../../images/admin/icon/icons_learning.png") no-repeat -20px -239px; width:60px; height:60px; }
+.learning .section-contents .question .question-body .question-media .audio {cursor:pointer; background: url("../../images/admin/icon/icons_learning.png") no-repeat -143px -239px; width:60px; height:57px; }
+.learning .section-contents .question .question-body .example-media {display:inline-block; *display:inline; *zoom:1; border:solid 1px #cdcdcd; text-align:center; }
+.learning .section-contents .question .question-body .example-media .image {width:160px; height:160px; cursor:pointer;  }
+.learning .section-contents .question .question-body .example-media .video {cursor:pointer; background: url("../../images/admin/icon/icons_learning.png") no-repeat -20px -239px; width:60px; height:60px;}
+.learning .section-contents .question .question-body .example-media .audio {cursor:pointer; background: url("../../images/admin/icon/icons_learning.png") no-repeat -143px -239px; width:60px; height:57px;}
+.learning .section-contents .question .question-body .media-padding-l {padding:70px;}
+.learning .section-contents .question .question-body .media-padding-s {padding:10px;}
+.learning .section-contents .question .question-body .question-example {vertical-align:top; text-align:left; position:relative;}
+.learning .section-contents .question .question-body .question-example .example-item {font-size:13px; padding:3px 0 3px 15px; position:relative; vertical-align:top; }
+.learning .section-contents .question .question-body .question-example .example-item .number {font-size:13px; position:absolute; left:0px; top:3px;}
+.learning .section-contents .question .question-body .example-horizontal .question-example .example-item {float:left; margin-right:4px; overflow:hidden;}
+.learning .section-contents .question .question-body .example-horizontal .question-example .example-item-2 {width:315px; }
+.learning .section-contents .question .question-body .example-horizontal .question-example .example-item-3 {width:203px; }
+.learning .section-contents .question .question-body .example-horizontal .question-example .example-item-4 {width:147px; }
+.learning .section-contents .question .question-body .example-horizontal .question-example .example-item-5 {width:113px; }
+.learning .section-contents .question .question-body .example-horizontal-s .question-example .example-item {float:left; margin-right:4px; overflow:hidden; }
+.learning .section-contents .question .question-body .example-horizontal-s .question-example .example-item-2 {width:210px; }
+.learning .section-contents .question .question-body .example-horizontal-s .question-example .example-item-3 {width:133px; }
+.learning .section-contents .question .question-body .example-horizontal-s .question-example .example-item-4 {width:96px; }
+.learning .section-contents .question .question-body .example-horizontal-s .question-example .example-item-5 {width:74px; }
+.learning .section-contents .question .question-body .example-horizontal-s .question-example .example-item-5 .media-padding-s {padding:0;}
+.learning .section-contents .question .question-body .example-vertical .question-example .example-item {width:97%; }
+.learning .section-contents .question .question-body .example-2column .question-example .example-item {float:left; width:45%; margin-right:4px;}
+.learning .section-contents .question .question-body .description {text-align:left; padding:3px 0 5px 0; }
+.learning .section-contents .question .question-body .description .text {border:dotted 1px #cdcdcd; padding:3px;}
+.learning .section-contents .question .question-body .description .highlight {color:#0000ff;}
+.learning .section-contents .question .question-body .answer-selected {background:url("../../images/admin/icon/icons_learning.png") no-repeat -389px -98px; color:#0000ff;}
+.learning .section-contents .question .question-body .example-correct {color:#0000ff; font-weight:bold;}
+
+.learning .section-answer {position:absolute; right:3px; top:37px; width:240px; margin-left:5px; border:solid 1px #fff; background-color:#727272; color:#ffffff; }
+.learning .section-answer .answer {padding-left:25px; position:relative; clear:both; line-height:25px; }
+.learning .section-answer .answer .answer-head {position:absolute; left:0; top:-2px; *top:0px; font-size:15px; cursor:pointer; }
+.learning .section-answer .answer .answer-body {list-style:none; min-height:25px; margin-bottom:5px; }
+.learning .section-answer .answer .answer-body .answer-item {float:left; cursor:pointer; font-size:18px; }
+.learning .section-answer .answer .answer-body .answer-radio {width:20px; }
+.learning .section-answer .answer .answer-body .answer-checkbox {width:20px;}
+.learning .section-answer .answer .answer-body .answer-text {width:150px; }
+.learning .section-answer .answer .answer-body .answer-text .textarea {width:180px; height:50px; padding:0px 3px; border:none; }
+.learning .section-answer .answer .answer-body .answer-text .input {width:180px; height:20px; padding:0px 3px; border:none; background-color:#fff;}
+.learning .section-answer .answer .answer-body .answer-file .file {color:#000; background-color:#fff; border:none; margin-top:1px; cursor:default;}
+.learning .section-answer .answer .answer-body .answer-file .previousFile {font-size:13px;}
+.learning .section-answer .answer .answer-body .answer-hidden {display:none; }
+.learning .section-answer .answer .answer-body .answer-selected {background:url("../../images/admin/icon/icons_learning.png") no-repeat -388px -98px; color:#ff0000;}
+.learning .section-answer .scroller {padding:5px; *position:relative; scrollbar-face-color:#ffffff; scrollbar-arrow-color:#ffffff; scrollbar-track-color:#727272;}
+
+.learning .tabs-bottom-right {position:absolute; right:1px; bottom:2px; }
+.learning .tabs-bottom-right .tab {float:left; color:#ffffff; display:inline-block; *display:inline; *zoom:1; width:auto; line-height:15px; padding:7px 10px 5px 7px; margin-right:2px; font-size:110%; font-weight:bold; cursor:pointer; text-decoration:none; background-color:#727272; border:solid 1px #fff; border-top:none; border-radius:0px 0px 7px 7px; -moz-border-radius:0px 0px 7px 7px; -webkit-border-radius:0px 0px 7px 7px;}
+.learning .tabs-bottom-left {position:absolute; left:3px; bottom:2px;}
+.learning .tabs-bottom-left .tab {float:left; color:#ffffff; display:inline-block; *display:inline; *zoom:1; width:auto; line-height:15px; padding:7px 10px 5px 7px; margin-right:2px; font-size:110%; font-weight:bold; cursor:pointer; text-decoration:none; background-color:#727272; border:solid 1px #fff; border-top:none; border-radius:0px 0px 7px 7px; -moz-border-radius:0px 0px 7px 7px; -webkit-border-radius:0px 0px 7px 7px;}
+
+.learning .tabs-bottom-right .tab:hover, 
+.learning .tabs-bottom-right .tab-on, 
+.learning .tabs-bottom-left .tab:hover, 
+.learning .tabs-bottom-left .tab-on {background-color:#fff; border-color:#4d4e53; color:#727272; text-decoration:none;}
+
+.learning .tab-section .search .input        {width:160px; height:22px; border:none; line-height:22px;}
+.learning .tab-section .search .srch-btn-set {display:inline-block; *display:inline; *zoom:1; width:30px; height:18px; padding-top:4px; background-color:#ffffff; vertical-align:middle; }
+.learning .tab-section .search .vline        {background:url("../../images/admin/icon/icons_learning.png") no-repeat -46px -59px; width:8px; height:14px; vertical-align:top; }
+.learning .tab-section .search .srch-btn     {background:url("../../images/admin/icon/icons_learning.png") no-repeat -21px -59px; width:14px; height:14px; vertical-align:top; cursor:pointer; }
+.learning .tab-section a  {color:#fff; cursor:pointer; }
+
+.learning .tab-section-bottom          {display:none; position:absolute; left:2px; bottom:30px; z-index:10; border:solid 2px #4d4e53; background-color:#727272; color:#ffffff; }
+.learning .tab-section-bottom .search  {text-align:left; padding:5px; border-bottom:solid 2px #4d4e53; height:25px; line-height:25px;}
+.learning .tab-section-bottom .data    {height:200px; overflow-x:hidden; overflow-y:auto; clear:both; padding:5px; }
+.learning .tab-section-bottom .close   {background:url("../../images/admin/icon/icons_learning.png") no-repeat -53px -34px; width:12px; height:12px; cursor:pointer; position:absolute; right:5px; top:5px; z-index:10;}
+.learning .tab-section-visible {display:block;}
+
+.learning .failure-circle {background:url("../../images/admin/icon/icons_learning.png") no-repeat -263px -241px; width:14px; height:14px;}
+.learning .success-circle {background:url("../../images/admin/icon/icons_learning.png") no-repeat -284px -241px; width:14px; height:14px;}

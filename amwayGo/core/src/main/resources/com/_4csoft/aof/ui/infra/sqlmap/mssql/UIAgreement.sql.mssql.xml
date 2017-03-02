@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.infra.mapper.UIAgreementMapper">    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIAgreementRS">
+        <result column="agree.agreementSeq"   		property="agreement.agreementSeq"  />
+        <result column="agree.agreementType"      	property="agreement.agreementType"    />
+        <result column="code.codeNames"      		property="agreement.agreementCodeName"    />
+        <result column="agree.agreementTitle"  		property="agreement.agreementTitle" />
+        <result column="agree.agreementChek"        property="agreement.agreementChek"        />
+        <result column="agree.agreementVersion"     property="agreement.agreementVersion"    />
+        <result column="agree.agreementMemberSeq"   property="agreement.agreementMemberSeq"   />
+        <result column="member.memberName"    		property="agreement.agreementMemberName"   />
+        <result column="agree.agreementDtime"       property="agreement.agreementDtime"    />
+        <result column="agree.agreementText"        property="agreement.agreementText"    />
+		<result column="agree.courseActiveSeqs"     property="agreement.courseActiveSeqs"    />
+		<result column="agree.agreementApplySeq"    property="agreement.agreementApplySeq"    />
+		<result column="agree.applyCheck"        	property="agreement.applyCheck"    />
+		<result column="agree.regApplyDtime"        property="agreement.regApplyDtime"    />
+		<result column="agree.updApplyDtime"        property="agreement.updApplyDtime"    />
+		<result column="agree.srchAgreeSeq1"		property="agreement.srchAgreeSeq1"/>
+		<result column="agree.srchAgreeSeq2"		property="agreement.srchAgreeSeq2"/>
+		<result column="agree.srchAgreeSeq3"		property="agreement.srchAgreeSeq3"/>
+		<result column="agree.myAgreeDtime"			property="agreement.myAgreeDtime"/>
+		<result column="agree.courseAgreementYn"	property="agreement.courseAgreementYn"/>
+    </resultMap>
+    
+    <resultMap id="SeqResultMap" type="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition">
+		<result column="srchAgreeSeq1"		property="srchAgreeSeq1"/>
+		<result column="srchAgreeSeq2"		property="srchAgreeSeq2"/>
+		<result column="srchAgreeSeq3"		property="srchAgreeSeq3"/>
+    </resultMap>
+    
+    <resultMap id="codeResultMap" type="com._4csoft.aof.ui.infra.vo.UIAgreementCodeVO">
+        <result column="code.codeName"   property="codeNames"  />
+        <result column="code.code"      property="codes"    />
+        <result column="code.sortOrder"  property="sortOrder" />
+    </resultMap>
+    
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition" resultMap="listResultMap">
+		/* AgreementMaaper.getList */
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+				ORDER BY "agree.agreementSeq" DESC, "agree.agreementTitle" ASC
+		) AS rownumber, * 
+		FROM (SELECT
+					AGREE.CS_AGREEMENT_SEQ AS 'agree.agreementSeq',
+				    AGREE.CS_AGREEMENT_TYPE AS 'agree.agreementType',
+				    CODE.CS_CODE_NAME AS 'code.codeNames',
+				    AGREE.CS_AGREEMENT_TITLE AS 'agree.agreementTitle',
+				    AGREE.CS_AGREEMENT_CHEK AS 'agree.agreementChek',
+				    AGREE.CS_AGREEMENT_VERSION AS 'agree.agreementVersion',
+				    AGREE.CS_AGREEMENT_TEXT AS 'agreement.agreementText',
+				    AGREE.CS_AGREEMENT_MEMBER_SEQ AS 'agree.agreementMemberSeq',
+				    MEMBER.CS_MEMBER_NAME AS 'member.memberName',
+				    AGREE.CS_REG_DTIME AS 'agree.agreementDtime'
+			FROM CS_AGREEMENT AGREE
+				LEFT OUTER JOIN CS_CODE CODE
+					ON AGREE.CS_AGREEMENT_TYPE = CODE.CS_CODE
+				LEFT OUTER JOIN CS_MEMBER MEMBER
+					ON AGREE.CS_AGREEMENT_MEMBER_SEQ = MEMBER.CS_MEMBER_SEQ
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+    </select>
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition" resultType="int">
+		/* AgreementMaaper.countList */
+		SELECT
+			COUNT(*)
+		FROM CS_AGREEMENT AGREE
+			LEFT OUTER JOIN CS_CODE CODE
+				ON AGREE.CS_AGREEMENT_TYPE = CODE.CS_CODE
+			LEFT OUTER JOIN CS_MEMBER MEMBER
+				ON AGREE.CS_AGREEMENT_MEMBER_SEQ = MEMBER.CS_MEMBER_SEQ
+    </select>
+    
+    <select id="getDetailAgreement" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition" 
+    											resultType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition">
+			/* AgreementMaaper.getDetailAgreement */
+			SELECT
+			    CS_AGREEMENT_SEQ as "agreementSeq",
+			    CS_AGREEMENT_TYPE as "agreementType",
+			    CS_AGREEMENT_TITLE as "agreementTitle",
+			    CS_CODE_NAME as "agreementCodeName",
+			    CS_AGREEMENT_TEXT as "agreementText",
+			    CS_AGREEMENT_CHEK as "agreementChek",
+			    CS_AGREEMENT_VERSION as "agreementVersion"
+			FROM
+			    CS_AGREEMENT
+			LEFT OUTER JOIN CS_CODE CODE
+				ON CS_AGREEMENT_TYPE = CODE.CS_CODE			    
+			WHERE
+			    CS_AGREEMENT_SEQ = #{agreementSeq}
+    </select>
+    
+    
+    <select id="getClause" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition" resultMap="listResultMap">
+    	/* AgreementMaaper.getClause */
+		SELECT
+			AGREE.CS_AGREEMENT_SEQ AS 'agree.agreementSeq',
+		    AGREE.CS_AGREEMENT_TYPE AS 'agree.agreementType',
+		    AGREE.CS_AGREEMENT_TITLE AS 'agree.agreementTitle',
+		    AGREE.CS_AGREEMENT_CHEK AS 'agree.agreementChek',
+		    AGREE.CS_AGREEMENT_VERSION AS 'agree.agreementVersion',
+		    AGREE.CS_AGREEMENT_TEXT AS 'agreement.agreementText',
+		    AGREE.CS_AGREEMENT_MEMBER_SEQ AS 'agree.agreementMemberSeq',
+		    AGREE.CS_REG_DTIME AS 'agree.agreementDtime',
+		    APP.CS_REG_APPLY_DTIME AS 'agree.myAgreeDtime'
+		    <if test='srchMemberSeq != null and !srchMemberSeq.equals("")'>
+			, CASE WHEN (SELECT COUNT(*) FROM CS_AGREEMENT_APPLY agreeChk WHERE agreeChk.CS_AGREEMENT_SEQ IN (#{srchAgreeSeq1}, #{srchAgreeSeq2}, #{srchAgreeSeq3}) 
+			AND agreeChk.CS_MEMBER_SEQ = #{srchMemberSeq}) > 0 THEN 'Y' ELSE 'N' END AS 'agree.courseAgreementYn'
+			</if>
+		FROM CS_AGREEMENT agree
+		LEFT OUTER JOIN CS_AGREEMENT_APPLY app 
+			ON agree.CS_AGREEMENT_SEQ = app.CS_AGREEMENT_SEQ
+		INNER JOIN CS_COURSE_ACTIVE active 
+			ON active.CS_AGREEMENT_SEQ1=AGREE.CS_AGREEMENT_SEQ
+			OR active.CS_AGREEMENT_SEQ2=AGREE.CS_AGREEMENT_SEQ
+			OR active.CS_AGREEMENT_SEQ3=AGREE.CS_AGREEMENT_SEQ
+		WHERE
+			agree.CS_AGREEMENT_SEQ in (#{srchAgreeSeq1}, #{srchAgreeSeq2}, #{srchAgreeSeq3})
+			<!-- AND app.cs_member_seq = #{srchMemberSeq} -->
+			<if test='srchCourseActiveSeq != null'>
+			AND active.CS_COURSE_ACTIVE_SEQ = #{srchCourseActiveSeq}
+			</if>
+    </select>
+    
+        <select id="getActiveAgreeSeq" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition" resultMap="SeqResultMap">
+    	/* AgreementMaaper.getListAgreement */
+		SELECT
+			CS_AGREEMENT_SEQ1 AS "srchAgreeSeq1",
+			CS_AGREEMENT_SEQ2 AS "srchAgreeSeq2",
+			CS_AGREEMENT_SEQ3 AS "srchAgreeSeq3"
+		FROM CS_COURSE_ACTIVE
+		WHERE CS_COURSE_ACTIVE_SEQ = #{srchCourseActiveSeq}
+    </select>
+    
+   	<select id="getCallAgree" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseApplyCondition" resultMap="listResultMap">
+		/* AgreementMaaper.getCallAgree */
+	        <if test='currentPage != 0'>
+	SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "agree.agreementType" ASC</when>
+            <when test='orderby == -1'>ORDER BY "agree.agreementType" DESC</when>
+            <when test='orderby == 2'>ORDER BY "agree.agreementTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "agree.agreementTitle" DESC</when>
+            <otherwise>ORDER BY "agree.agreementType" DESC, "agree.agreementTitle" ASC</otherwise>
+        </choose>
+	) AS rownumber, * FROM (
+	        </if>		
+		SELECT
+			agree.CS_AGREEMENT_SEQ     AS 'agree.agreementSeq',
+			agree.CS_AGREEMENT_TYPE as 'agree.agreementType',
+			agree.CS_AGREEMENT_TITLE as 'agree.agreementTitle',
+			agree.CS_AGREEMENT_VERSION as 'agree.agreementVersion', 
+			apply.CS_APPLY_CHECK as 'agree.applyCheck',
+			apply.CS_REG_APPLY_DTIME as 'agree.regApplyDtime',
+			apply.CS_UPD_APPLY_DTIME as 'agree.updApplyDtime'
+		FROM
+			CS_AGREEMENT_APPLY apply
+			INNER JOIN CS_COURSE_ACTIVE active
+			ON apply.CS_COURSE_ACTIVE_SEQ = active.CS_COURSE_ACTIVE_SEQ
+			AND active.CS_DELETE_YN = 'N'
+			INNER JOIN CS_MEMBER member
+			ON apply.CS_MEMBER_SEQ=member.CS_MEMBER_SEQ
+<!-- 			INNER JOIN (
+				SELECT CS_AGREEMENT.CS_AGREEMENT_SEQ, CS_AGREEMENT.CS_AGREEMENT_TYPE, CS_AGREEMENT.CS_AGREEMENT_TITLE, CS_AGREEMENT.CS_AGREEMENT_TEXT, CS_AGREEMENT.CS_AGREEMENT_VERSION
+				FROM(
+					SELECT CS_AGREEMENT_TYPE, MAX(CS_AGREEMENT_VERSION) as CS_AGREEMENT_VERSION
+					FROM CS_AGREEMENT
+					GROUP BY CS_AGREEMENT_TYPE
+				) x INNER JOIN CS_AGREEMENT ON x.CS_AGREEMENT_TYPE = CS_AGREEMENT.CS_AGREEMENT_TYPE AND x.CS_AGREEMENT_VERSION = CS_AGREEMENT.CS_AGREEMENT_VERSION
+			) agree -->
+	       INNER JOIN (SELECT cs_agreement.cs_agreement_seq, 
+	                          cs_agreement.cs_agreement_type, 
+	                          cs_agreement.cs_agreement_title, 
+	                          cs_agreement.cs_agreement_text, 
+	                          cs_agreement.cs_agreement_version 
+	                   FROM  cs_agreement 
+	                  ) agree 			
+			ON apply.CS_AGREEMENT_SEQ = agree.CS_AGREEMENT_SEQ
+		WHERE
+			apply.CS_MEMBER_SEQ = #{srchMemberSeq}
+			AND apply.CS_COURSE_ACTIVE_SEQ = #{srchCourseActiveSeq}
+    	<if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>			
+    </select>
+        
+    <select id="getListCode" resultMap="codeResultMap">
+   		 /* AgreementMaaper.getListCode */
+		 SELECT
+		       code.cs_code           AS "code.code" ,
+		       code.cs_code_name      AS "code.codeName" ,
+		       code.cs_sort_order     AS "code.sortOrder" 
+		 FROM cs_code code 
+		 WHERE 
+		 	code.cs_delete_yn = 'N'
+		 	AND code.cs_use_yn = 'Y'
+		 	AND code.cs_code like '%AGREEMENT_TYPE::%'
+		 ORDER BY code.cs_sort_order
+    </select>
+    
+    <select id="getVersion" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition" resultType="Long">
+    /* AgreementMaaper.getVersion */
+  	SELECT
+		ISNULL(MAX(CS_AGREEMENT_VERSION),0)
+	FROM
+		CS_AGREEMENT
+	WHERE 1=1
+		<if test='agreementType != null and !agreementType.equals("")'>
+		AND CS_AGREEMENT_TYPE = #{agreementType}
+		</if>
+    </select>
+    
+    <insert id="insertAgreement" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition">
+    	/* AgreementMaaper.insertAgreement */
+    	<selectKey resultType="Long" keyProperty="agreementSeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>
+		INSERT INTO CS_AGREEMENT
+		( 
+			CS_AGREEMENT_TYPE,
+			CS_AGREEMENT_TITLE,
+			CS_AGREEMENT_CHEK,
+			CS_AGREEMENT_VERSION,
+			CS_AGREEMENT_TEXT,
+			CS_AGREEMENT_MEMBER_SEQ,
+			CS_REG_DTIME
+       ) 
+       VALUES 
+       ( 
+           #{agreementType, jdbcType=VARCHAR},
+		   #{agreementTitle, jdbcType=VARCHAR},
+           #{agreementChek, jdbcType=VARCHAR},
+           #{agreementVersion, jdbcType=NUMERIC},
+           #{agreementText, jdbcType=VARCHAR},
+           #{agreementMemberSeq, jdbcType=NUMERIC},
+           dbo.FN_NOW_TO_CHAR()
+       ) 
+    </insert>
+    
+    
+   	<insert id="insertAgreeApply" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition">
+    	/* AgreementMaaper.insertAgreeApply */
+    	<selectKey resultType="Long" keyProperty="agreementApplySeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>
+		INSERT INTO CS_AGREEMENT_APPLY
+		( 
+			CS_AGREEMENT_SEQ,
+			CS_COURSE_ACTIVE_SEQ,
+			CS_MEMBER_SEQ,
+			CS_APPLY_CHECK,
+			CS_REG_APPLY_DTIME,
+			CS_UPD_APPLY_DTIME
+       ) 
+       VALUES 
+       ( 
+           #{agreementSeq, jdbcType=NUMERIC},
+		   #{srchCourseActiveSeq, jdbcType=NUMERIC},
+           #{agreementMemberSeq, jdbcType=NUMERIC},
+           #{applyCheck, jdbcType=NUMERIC},
+           dbo.FN_NOW_TO_CHAR(),
+           #{updApplyDtime, jdbcType=VARCHAR}
+       ) 
+    </insert>
+    
+   	<update id="updateActiveApply" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIAgreementCondition">
+    	/* AgreementMaaper.updateActiveApply */
+		UPDATE CS_COURSE_ACTIVE SET 
+		CS_AGREEMENT_SEQ1 = #{srchAgreeSeq1}, 
+		CS_AGREEMENT_SEQ2 = #{srchAgreeSeq2}, 
+		CS_AGREEMENT_SEQ3 = #{srchAgreeSeq3}
+        WHERE CS_COURSE_ACTIVE_SEQ = #{srchCourseActiveSeq}
+    </update>    
+
+</mapper>

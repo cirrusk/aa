@@ -1,0 +1,75 @@
+<!doctype html>
+
+<title>CodeMirror: Theme Demo</title>
+<meta charset="utf-8"/>
+<link rel="stylesheet" href="../lib/codemirror.css">
+<link rel="stylesheet" href="../theme/eclipse.css">
+<link rel="stylesheet" href="../addon/display/fullscreen.css">
+<script src="../lib/codemirror.js"></script>
+<script src="../mode/javascript/javascript.js"></script>
+<script src="../mode/xml/xml.js"></script>
+<script src="../addon/selection/active-line.js"></script>
+<script src="../addon/edit/matchbrackets.js"></script>
+<script src="../addon/display/fullscreen.js"></script>
+<style type="text/css">
+  .CodeMirror {border: 1px solid black; font-size:13px}
+  .cm-tab {
+     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAGFJREFUSMft1LsRQFAQheHPowAKoACx3IgEKtaEHujDjORSgWTH/ZOdnZOcM/sgk/kFFWY0qV8foQwS4MKBCS3qR6ixBJvElOobYAtivseIE120FaowJPN75GMu8j/LfMwNjh4HUpwg4LUAAAAASUVORK5CYII=);
+     background-position: right;
+     background-repeat: no-repeat;
+  }
+
+</style>
+
+<article>
+<h2>Theme Demo</h2>
+<div style="width:300px">
+<form><textarea id="code" name="code">
+<script src="../mode/javascript/javascript.js"></script>
+<script src="../addon/selection/active-line.js"></script>
+<script src="../addon/edit/matchbrackets.js"></script>
+<script src="../addon/display/fullscreen.js"></script>
+function findSequence(goal) {
+  function find(start, history) {
+    if (start == goal)
+      return history;
+    else if (start > goal)
+      return null;
+    else
+      return find(start + 5, "(" + history + " + 5)") ||
+             find(start * 3, "(" + history + " * 3)");
+  }
+  return find(1, "1");
+}</textarea></form>
+</div>
+
+<script>
+  var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+  	//mode: "application/xml",
+  	mode: "text/html",
+  	mode: "javascript",
+    lineNumbers: true,
+    styleActiveLine: true,
+    matchBrackets: true,
+    theme : "eclipse",
+    indentUnit:4,
+    tabSize:4,
+    indentWithTabs:true,
+    smartIndent:false,
+    extraKeys: {
+        "F11": function(cm) {
+          cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+        },
+        "Esc": function(cm) {
+          if (cm.getOption("fullScreen")) cm.setOption("fullScreen", false);
+        }
+      }
+
+  });
+  test = function() {
+  	document.getElementById("code").value = editor.getValue();
+  	alert(document.getElementById("code").value);
+}
+</script>
+  </article>
+<a href="javascript:test()">test</a>

@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.board.mapper.BoardMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.board.vo.UIBoardVO">
+        <selectKey resultType="Long" keyProperty="boardSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* BoardMapper.insert */
+INSERT INTO cs_board 
+       ( 
+           cs_board_type_cd ,
+           cs_reference_seq ,
+           cs_reference_type ,
+           cs_board_title ,
+           cs_description ,
+           cs_sort_order ,
+           cs_use_yn ,
+           cs_secret_yn ,
+           cs_editor_yn ,
+           cs_comment_yn ,
+           cs_join_yn ,
+           cs_reply_type_cd ,
+           cs_attach_count ,
+           cs_attach_size ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+SELECT 
+       #{boardTypeCd, jdbcType=VARCHAR} ,
+       #{referenceSeq, jdbcType=NUMERIC} ,
+       #{referenceType, jdbcType=VARCHAR} ,
+       #{boardTitle, jdbcType=VARCHAR} ,
+       #{description, jdbcType=VARCHAR} ,
+       ISNULL(MAX(cs_sort_order) + 1, 1) ,
+       #{useYn, jdbcType=VARCHAR} ,
+       #{secretYn, jdbcType=VARCHAR} ,
+       #{editorYn, jdbcType=VARCHAR} ,
+       #{commentYn, jdbcType=VARCHAR} ,
+       #{joinYn, jdbcType=VARCHAR} ,
+       #{replyTypeCd, jdbcType=VARCHAR} ,
+       #{attachCount, jdbcType=NUMERIC} ,
+       #{attachSize, jdbcType=NUMERIC} ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR}
+  FROM cs_board 
+ WHERE cs_reference_seq = #{referenceSeq, jdbcType=NUMERIC}
+       AND cs_reference_type = #{referenceType, jdbcType=VARCHAR} 
+       AND cs_delete_yn = 'N' 
+    </insert>
+
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.board.vo.UIBoardVO">
+/* BoardMapper.insertCopy */
+INSERT INTO cs_board 
+       ( 
+           cs_board_type_cd ,
+           cs_reference_seq ,
+           cs_reference_type ,
+           cs_board_title ,
+           cs_description ,
+           cs_sort_order ,
+           cs_use_yn ,
+           cs_secret_yn ,
+           cs_editor_yn ,
+           cs_comment_yn ,
+           cs_join_yn ,
+           cs_reply_type_cd ,
+           cs_attach_count ,
+           cs_attach_size ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+SELECT 
+       cs_board_type_cd ,
+       #{targetReferenceSeq, jdbcType=NUMERIC} ,
+       cs_reference_type ,
+       cs_board_title ,
+       cs_description ,
+       cs_sort_order ,
+       cs_use_yn ,
+       cs_secret_yn ,
+       cs_editor_yn ,
+       cs_comment_yn ,
+       cs_join_yn ,
+       cs_reply_type_cd ,
+       cs_attach_count ,
+       cs_attach_size ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR}
+  FROM cs_board 
+ WHERE cs_reference_seq = #{sourceReferenceSeq, jdbcType=NUMERIC}
+       AND cs_reference_type = #{referenceType, jdbcType=VARCHAR} 
+       AND cs_delete_yn = 'N' 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.board.vo.UIBoardVO">
+/* UIBoardMapper.update */
+UPDATE cs_board 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+        <if test='boardTitle != null'>
+       ,cs_board_title = #{boardTitle, jdbcType=VARCHAR} 
+        </if>
+        <if test='sortOrder != null'>
+       ,cs_sort_order = #{sortOrder, jdbcType=NUMERIC}
+        </if>
+        <if test='description != null'>
+       ,cs_description = #{description, jdbcType=VARCHAR}
+        </if>
+        <if test='useYn != null'>
+       ,cs_use_yn = #{useYn, jdbcType=VARCHAR}
+        </if>
+        <if test='secretYn != null'>
+       ,cs_secret_yn = #{secretYn, jdbcType=VARCHAR}
+        </if>
+        <if test='editorYn != null'>
+       ,cs_editor_yn = #{editorYn, jdbcType=VARCHAR}
+        </if>
+        <if test='commentYn != null'>
+       ,cs_comment_yn = #{commentYn, jdbcType=VARCHAR}
+        </if>
+        <if test='joinYn != null'>
+       ,cs_join_yn = #{joinYn, jdbcType=VARCHAR}
+        </if>
+        <if test='replyTypeCd != null'>
+       ,cs_reply_type_cd = #{replyTypeCd, jdbcType=VARCHAR}
+        </if>
+        <if test='attachCount != null'>
+       ,cs_attach_count = #{attachCount, jdbcType=NUMERIC}
+        </if>
+        <if test='attachSize != null'>
+       ,cs_attach_size = #{attachSize, jdbcType=NUMERIC}
+        </if>
+ WHERE cs_board_seq = #{boardSeq}
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.board.vo.UIBoardVO">
+/* UIBoardMapper.delete */
+UPDATE cs_board 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR},
+       cs_delete_yn = 'Y'
+ WHERE cs_board_seq = #{boardSeq}
+       AND cs_delete_yn = 'N' 
+    </update>
+
+    <select id="getDetailVO" parameterType="Long" resultType="com._4csoft.aof.ui.board.vo.UIBoardVO">
+/* UIBoardMapper.getDetailVO */
+SELECT brd.cs_board_seq       AS "boardSeq" ,
+       brd.cs_board_type_cd   AS "boardTypeCd" ,
+       brd.cs_reference_seq   AS "referenceSeq" ,
+       brd.cs_reference_type  AS "referenceType" ,
+       brd.cs_board_title     AS "boardTitle" ,
+       brd.cs_description     AS "description" ,
+       brd.cs_sort_order      AS "sortOrder" ,
+       brd.cs_use_yn          AS "useYn" ,
+       brd.cs_secret_yn       AS "secretYn" ,
+       brd.cs_editor_yn       AS "editorYn" ,
+       brd.cs_comment_yn      AS "commentYn" ,
+       brd.cs_join_yn         AS "joinYn" ,
+       brd.cs_reply_type_cd   AS "replyTypeCd" ,
+       brd.cs_attach_count    AS "attachCount" ,
+       brd.cs_attach_size     AS "attachSize" ,
+       brd.cs_delete_yn       AS "deleteYn" ,
+       brd.cs_reg_member_seq  AS "regMemberSeq" ,
+       brd.cs_reg_dtime       AS "regDtime" ,
+       brd.cs_reg_ip          AS "regIp" ,
+       brd.cs_upd_member_seq  AS "updMemberSeq" ,
+       brd.cs_upd_dtime       AS "updDtime" ,
+       brd.cs_upd_ip          AS "updIp"
+  FROM cs_board brd 
+ WHERE brd.cs_board_seq = #{boardSeq}  
+       AND brd.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.board.vo.resultset.UIBoardRS">
+        <result column="brd.boardSeq"      property="board.boardSeq"      />
+        <result column="brd.boardTypeCd"   property="board.boardTypeCd"   />
+        <result column="brd.referenceSeq"  property="board.referenceSeq"  />
+        <result column="brd.referenceType" property="board.referenceType" />
+        <result column="brd.boardTitle"    property="board.boardTitle"    />
+        <result column="brd.description"   property="board.description"   />
+        <result column="brd.sortOrder"     property="board.sortOrder"     />
+        <result column="brd.useYn"         property="board.useYn"         />
+        <result column="brd.secretYn"      property="board.secretYn"      />
+        <result column="brd.editorYn"      property="board.editorYn"      />
+        <result column="brd.commentYn"     property="board.commentYn"     />
+        <result column="brd.joinYn"        property="board.joinYn"        />
+        <result column="brd.replyTypeCd"   property="board.replyTypeCd"   />
+        <result column="brd.attachCount"   property="board.attachCount"   />
+        <result column="brd.attachSize"    property="board.attachSize"    />
+        <result column="brd.deleteYn"      property="board.deleteYn"      />
+        <result column="brd.regMemberSeq"  property="board.regMemberSeq"  />
+        <result column="brd.regDtime"      property="board.regDtime"      />
+        <result column="brd.regIp"         property="board.regIp"         />
+        <result column="brd.updMemberSeq"  property="board.updMemberSeq"  />
+        <result column="brd.updDtime"      property="board.updDtime"      />
+        <result column="brd.updIp"         property="board.updIp"         />
+        <result column="brd.updMemberName" property="board.updMemberName" />
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="getDetail_result">
+/* UIBoardMapper.getDetail */
+SELECT brd.cs_board_seq       AS "brd.boardSeq" ,
+       brd.cs_board_type_cd   AS "brd.boardTypeCd" ,
+       brd.cs_reference_seq   AS "brd.referenceSeq" ,
+       brd.cs_reference_type  AS "brd.referenceType" ,
+       brd.cs_board_title     AS "brd.boardTitle" ,
+       brd.cs_description     AS "brd.description" ,
+       brd.cs_sort_order      AS "brd.sortOrder" ,
+       brd.cs_use_yn          AS "brd.useYn" ,
+       brd.cs_secret_yn       AS "brd.secretYn" ,
+       brd.cs_editor_yn       AS "brd.editorYn" ,
+       brd.cs_comment_yn      AS "brd.commentYn" ,
+       brd.cs_join_yn         AS "brd.joinYn" ,
+       brd.cs_reply_type_cd   AS "brd.replyTypeCd" ,
+       brd.cs_attach_count    AS "brd.attachCount" ,
+       brd.cs_attach_size     AS "brd.attachSize" ,
+       brd.cs_delete_yn       AS "brd.deleteYn" ,
+       brd.cs_reg_member_seq  AS "brd.regMemberSeq" ,
+       brd.cs_reg_dtime       AS "brd.regDtime" ,
+       brd.cs_reg_ip          AS "brd.regIp" ,
+       brd.cs_upd_member_seq  AS "brd.updMemberSeq" ,
+       brd.cs_upd_dtime       AS "brd.updDtime" ,
+       brd.cs_upd_ip          AS "brd.updIp" ,
+       (SELECT umem.cs_member_name FROM cs_member umem WHERE umem.cs_member_seq = brd.cs_upd_member_seq) AS "brd.updMemberName" 
+  FROM cs_board brd 
+ WHERE brd.cs_board_seq = #{boardSeq}  
+       AND brd.cs_delete_yn = 'N'
+    </select>
+    
+    <select id="getDetailByReference" parameterType="map" resultMap="getDetail_result">
+/* UIBoardMapper.getDetailByReference */
+SELECT brd.cs_board_seq       AS "brd.boardSeq" ,
+       brd.cs_board_type_cd   AS "brd.boardTypeCd" ,
+       brd.cs_reference_seq   AS "brd.referenceSeq" ,
+       brd.cs_reference_type  AS "brd.referenceType" ,
+       brd.cs_board_title     AS "brd.boardTitle" ,
+       brd.cs_description     AS "brd.description" ,
+       brd.cs_sort_order      AS "brd.sortOrder" ,
+       brd.cs_use_yn          AS "brd.useYn" ,
+       brd.cs_secret_yn       AS "brd.secretYn" ,
+       brd.cs_editor_yn       AS "brd.editorYn" ,
+       brd.cs_comment_yn      AS "brd.commentYn" ,
+       brd.cs_join_yn         AS "brd.joinYn" ,
+       brd.cs_reply_type_cd   AS "brd.replyTypeCd" ,
+       brd.cs_attach_count    AS "brd.attachCount" ,
+       brd.cs_attach_size     AS "brd.attachSize" ,
+       brd.cs_delete_yn       AS "brd.deleteYn" ,
+       brd.cs_reg_member_seq  AS "brd.regMemberSeq" ,
+       brd.cs_reg_dtime       AS "brd.regDtime" ,
+       brd.cs_reg_ip          AS "brd.regIp" ,
+       brd.cs_upd_member_seq  AS "brd.updMemberSeq" ,
+       brd.cs_upd_dtime       AS "brd.updDtime" ,
+       brd.cs_upd_ip          AS "brd.updIp" ,
+       (SELECT umem.cs_member_name FROM cs_member umem WHERE umem.cs_member_seq = brd.cs_upd_member_seq) AS "brd.updMemberName" 
+  FROM cs_board brd 
+ WHERE brd.cs_reference_type = #{referenceType}  
+       AND brd.cs_reference_seq = #{referenceSeq}  
+       AND brd.cs_board_type_cd = #{boardTypeCd}  
+       AND brd.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.board.vo.resultset.UIBoardRS">
+        <result column="brd.boardSeq"      property="board.boardSeq"      />
+        <result column="brd.boardTypeCd"   property="board.boardTypeCd"   />
+        <result column="brd.referenceSeq"  property="board.referenceSeq"  />
+        <result column="brd.referenceType" property="board.referenceType" />
+        <result column="brd.boardTitle"    property="board.boardTitle"    />
+        <result column="brd.description"   property="board.description"   />
+        <result column="brd.sortOrder"     property="board.sortOrder"     />
+        <result column="brd.useYn"         property="board.useYn"         />
+        <result column="brd.secretYn"      property="board.secretYn"      />
+        <result column="brd.editorYn"      property="board.editorYn"      />
+        <result column="brd.commentYn"     property="board.commentYn"     />
+        <result column="brd.joinYn"        property="board.joinYn"        />
+        <result column="brd.replyTypeCd"   property="board.replyTypeCd"   />
+        <result column="brd.attachCount"   property="board.attachCount"   />
+        <result column="brd.attachSize"    property="board.attachSize"    />
+        <result column="brd.deleteYn"      property="board.deleteYn"      />
+        <result column="brd.regMemberSeq"  property="board.regMemberSeq"  />
+        <result column="brd.regDtime"      property="board.regDtime"      />
+        <result column="brd.regIp"         property="board.regIp"         />
+        <result column="brd.updMemberSeq"  property="board.updMemberSeq"  />
+        <result column="brd.updDtime"      property="board.updDtime"      />
+        <result column="brd.updIp"         property="board.updIp"         />
+        <result column="brd.updMemberName" property="board.updMemberName" />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.board.vo.condition.UIBoardCondition" resultMap="getList_result">
+/* UIBoardMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "brd.sortOrder" ASC</when>
+            <when test='orderby == -1'>ORDER BY "brd.sortOrder" DESC</when>
+            <when test='orderby == 2'>ORDER BY "brd.boardTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "brd.boardTitle" DESC</when>
+            <otherwise>ORDER BY "brd.sortOrder" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+	SELECT brd.cs_board_seq       AS "brd.boardSeq" ,
+	       brd.cs_board_type_cd   AS "brd.boardTypeCd" ,
+	       brd.cs_reference_seq   AS "brd.referenceSeq" ,
+	       brd.cs_reference_type  AS "brd.referenceType" ,
+	       brd.cs_board_title     AS "brd.boardTitle" ,
+	       brd.cs_description     AS "brd.description" ,
+	       brd.cs_sort_order      AS "brd.sortOrder" ,
+	       brd.cs_use_yn          AS "brd.useYn" ,
+	       brd.cs_secret_yn       AS "brd.secretYn" ,
+	       brd.cs_editor_yn       AS "brd.editorYn" ,
+	       brd.cs_comment_yn      AS "brd.commentYn" ,
+	       brd.cs_join_yn         AS "brd.joinYn" ,
+	       brd.cs_reply_type_cd   AS "brd.replyTypeCd" ,
+	       brd.cs_attach_count    AS "brd.attachCount" ,
+	       brd.cs_attach_size     AS "brd.attachSize" ,
+	       brd.cs_delete_yn       AS "brd.deleteYn" ,
+	       brd.cs_reg_member_seq  AS "brd.regMemberSeq" ,
+	       brd.cs_reg_dtime       AS "brd.regDtime" ,
+	       brd.cs_reg_ip          AS "brd.regIp" ,
+	       brd.cs_upd_member_seq  AS "brd.updMemberSeq" ,
+	       brd.cs_upd_dtime       AS "brd.updDtime" ,
+	       brd.cs_upd_ip          AS "brd.updIp" ,
+	       mem.cs_member_name     AS "brd.updMemberName" 
+  	  FROM cs_board brd 
+INNER JOIN cs_member mem
+        ON mem.cs_member_seq = brd.cs_upd_member_seq
+     WHERE brd.cs_reference_type = #{srchReferenceType} 
+       AND brd.cs_delete_yn = 'N'
+        <if test='srchReferenceSeq != null and !srchReferenceSeq.equals("")'>
+       AND brd.cs_reference_seq = #{srchReferenceSeq}
+        </if>
+        <if test='srchNotReferenceSeq != null and !srchNotReferenceSeq.equals("")'>
+       AND brd.cs_reference_seq != #{srchNotReferenceSeq}
+        </if>
+        <if test='srchBoardTypeCd != null and !srchBoardTypeCd.equals("")'>
+       AND brd.cs_board_type_cd = #{srchBoardTypeCd}
+        </if>
+        <if test='srchUseYn != null and !srchUseYn.equals("")'>
+       AND brd.cs_use_yn = #{srchUseYn}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("boardTitle")'>
+       AND brd.cs_board_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND brd.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        
+        <choose>
+        <when test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </when>
+        <otherwise>
+ ORDER BY brd.cs_sort_order ASC
+        </otherwise>
+        </choose>
+        
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.board.vo.condition.UIBoardCondition" resultType="int">
+/* UIBoardMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_board brd 
+ WHERE brd.cs_reference_type = #{srchReferenceType} 
+       AND brd.cs_delete_yn = 'N'
+        <if test='srchReferenceSeq != null and !srchReferenceSeq.equals("")'>
+       AND brd.cs_reference_seq = #{srchReferenceSeq}
+        </if>
+        <if test='srchNotReferenceSeq != null and !srchNotReferenceSeq.equals("")'>
+       AND brd.cs_reference_seq != #{srchNotReferenceSeq}
+        </if>
+        <if test='srchBoardTypeCd != null and !srchBoardTypeCd.equals("")'>
+       AND brd.cs_board_type_cd = #{srchBoardTypeCd}
+        </if>
+        <if test='srchUseYn != null and !srchUseYn.equals("")'>
+       AND brd.cs_use_yn = #{srchUseYn}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("boardTitle")'>
+       AND brd.cs_board_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND brd.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+
+    <resultMap id="getListsByReference_result" type="com._4csoft.aof.ui.board.vo.resultset.UIBoardRS">
+        <result column="brd.boardSeq"      property="board.boardSeq"      />
+        <result column="brd.boardTypeCd"   property="board.boardTypeCd"   />
+        <result column="brd.referenceSeq"  property="board.referenceSeq"  />
+        <result column="brd.referenceType" property="board.referenceType" />
+        <result column="brd.boardTitle"    property="board.boardTitle"    />
+        <result column="brd.description"   property="board.description"   />
+        <result column="brd.sortOrder"     property="board.sortOrder"     />
+        <result column="brd.useYn"         property="board.useYn"         />
+        <result column="brd.secretYn"      property="board.secretYn"      />
+        <result column="brd.editorYn"      property="board.editorYn"      />
+        <result column="brd.commentYn"     property="board.commentYn"     />
+        <result column="brd.joinYn"        property="board.joinYn"        />
+        <result column="brd.replyTypeCd"   property="board.replyTypeCd"   />
+        <result column="brd.attachCount"   property="board.attachCount"   />
+        <result column="brd.attachSize"    property="board.attachSize"    />
+        <result column="brd.deleteYn"      property="board.deleteYn"      />
+        <result column="brd.regMemberSeq"  property="board.regMemberSeq"  />
+        <result column="brd.regDtime"      property="board.regDtime"      />
+        <result column="brd.regIp"         property="board.regIp"         />
+        <result column="brd.updMemberSeq"  property="board.updMemberSeq"  />
+        <result column="brd.updDtime"      property="board.updDtime"      />
+        <result column="brd.updIp"         property="board.updIp"         />
+        <result column="brd.updMemberName" property="board.updMemberName" />
+        <result column="brd.newsCnt" 	   property="board.newsCnt" 	  />
+    </resultMap>
+    <select id="getListByReference" parameterType="map" resultMap="getListsByReference_result">
+	/* UIBoardMapper.getListByReference */
+	SELECT brd.cs_board_seq       AS "brd.boardSeq" ,
+	       brd.cs_board_type_cd   AS "brd.boardTypeCd" ,
+	       brd.cs_reference_seq   AS "brd.referenceSeq" ,
+	       brd.cs_reference_type  AS "brd.referenceType" ,
+	       brd.cs_board_title     AS "brd.boardTitle" ,
+	       brd.cs_description     AS "brd.description" ,
+	       brd.cs_sort_order      AS "brd.sortOrder" ,
+	       brd.cs_use_yn          AS "brd.useYn" ,
+	       brd.cs_secret_yn       AS "brd.secretYn" ,
+	       brd.cs_editor_yn       AS "brd.editorYn" ,
+	       brd.cs_comment_yn      AS "brd.commentYn" ,
+	       brd.cs_join_yn         AS "brd.joinYn" ,
+	       brd.cs_reply_type_cd   AS "brd.replyTypeCd" ,
+	       brd.cs_attach_count    AS "brd.attachCount" ,
+	       brd.cs_attach_size     AS "brd.attachSize" ,
+	       brd.cs_delete_yn       AS "brd.deleteYn" ,
+	       brd.cs_reg_member_seq  AS "brd.regMemberSeq" ,
+	       brd.cs_reg_dtime       AS "brd.regDtime" ,
+	       brd.cs_reg_ip          AS "brd.regIp" ,
+	       brd.cs_upd_member_seq  AS "brd.updMemberSeq" ,
+	       brd.cs_upd_dtime       AS "brd.updDtime" ,
+	       brd.cs_upd_ip          AS "brd.updIp" ,
+	       mem.cs_member_name     AS "brd.updMemberName",
+	       ISNULL((
+	        SELECT COUNT(*) 
+			  FROM cs_bbs bs 
+			 WHERE bs.cs_board_seq = brd.cs_board_seq 
+			   AND bs.cs_delete_yn = 'N' 
+			   AND bs.cs_reg_dtime <![CDATA[>=]]> convert(char(8) , dateadd(day , -1 , getdate()) , 112) +'000000' 
+			   AND bs.cs_reg_dtime <![CDATA[<=]]> convert(char(8) , dateadd(day , 1 , getdate()) , 112) + '235959'  
+	       ),0) AS "brd.newsCnt"
+	  FROM cs_board brd
+	INNER JOIN cs_member mem
+        ON mem.cs_member_seq = brd.cs_upd_member_seq
+	 WHERE brd.cs_reference_type = #{referenceType}  
+	       AND brd.cs_reference_seq = #{referenceSeq}  
+	       AND brd.cs_delete_yn = 'N'
+    </select>
+	
+	<resultMap id="getNewsCountResult" type="com._4csoft.aof.ui.board.vo.resultset.UIBoardRS">
+        <result column="brd.boardSeq"      property="board.boardSeq"      />
+        <result column="brd.boardTitle"    property="board.boardTitle"    />
+        <result column="brd.boardTypeCd"   property="board.boardTypeCd"   />
+        <result column="brd.newsCnt"   	   property="board.newsCnt"   />
+    </resultMap>
+    <select id="getNewsCount" parameterType="com._4csoft.aof.ui.board.vo.condition.UIBoardCondition" resultMap="getNewsCountResult">
+    /* UIBoardMapper.getNewsCount */
+    SELECT
+	   cs_board_seq			AS "brd.boardSeq" ,
+	   cs_board_title		AS "brd.boardTitle" ,
+	   cs_board_type_cd		AS "brd.boardTypeCd" ,
+       CASE
+           WHEN cs_board_type_cd = '${CD.BOARD_TYPE.DYNAMIC}'
+           THEN
+               (SELECT count(*)
+                 FROM cs_bbs bbs
+				INNER JOIN cs_course_active_bbs active
+				 ON bbs.cs_bbs_seq = active.cs_bbs_seq
+				 AND active.cs_delete_yn = 'N'
+				WHERE bbs.cs_board_seq = brd.cs_board_seq
+				   AND bbs.cs_delete_yn = 'N'
+				   AND DATEDIFF(DD, dbo.FN_TO_DATE(bbs.cs_reg_dtime), getDATE()) <![CDATA[<=]]> #{srchNewsLimitNumber}
+               )
+	   	   WHEN cs_board_type_cd in ('${CD.BOARD_TYPE.APPEAL}' ,'${CD.BOARD_TYPE.ONE2ONE}')
+		   THEN
+		   	    (
+				SELECT count(*)
+                 FROM cs_course_active_bbs active
+				 INNER JOIN cs_bbs bbs
+				 ON bbs.cs_bbs_seq = active.cs_bbs_seq
+				 AND bbs.cs_delete_yn = 'N'
+                WHERE active.cs_board_type_cd = brd.cs_board_type_cd
+                    AND active.CS_COURSE_ACTIVE_SEQ = #{srchReferenceSeq}
+					AND active.cs_delete_yn = 'N'
+					AND active.cs_course_apply_seq = #{courseApplySeq}
+			        AND DATEDIFF(DD, dbo.FN_TO_DATE(bbs.cs_reg_dtime), getDATE()) <![CDATA[<=]]> #{srchNewsLimitNumber}
+				)
+           ELSE
+               (SELECT count(*)
+                 FROM cs_course_active_bbs active
+				 INNER JOIN cs_bbs bbs
+				 ON bbs.cs_bbs_seq = active.cs_bbs_seq
+				 AND bbs.cs_delete_yn = 'N'
+                WHERE active.cs_board_type_cd = brd.cs_board_type_cd
+                    AND active.CS_COURSE_ACTIVE_SEQ = #{srchReferenceSeq}
+					AND active.cs_delete_yn = 'N'
+				    AND DATEDIFF(DD, dbo.FN_TO_DATE(bbs.cs_reg_dtime), getDATE()) <![CDATA[<=]]> #{srchNewsLimitNumber}
+               )			
+       END  AS  "brd.newsCnt"
+	  FROM cs_board brd
+	 WHERE brd.cs_reference_type = #{srchReferenceType}
+	       AND brd.cs_reference_seq = #{srchReferenceSeq}
+	       AND brd.cs_use_yn = #{srchUseYn}
+	 ORDER BY brd.CS_SORT_ORDER ASC
+    </select>
+
+</mapper>

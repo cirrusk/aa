@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivSurveyPaperElementMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveyPaperElementVO">
+/* UnivSurveyPaperElementMapper.insert */
+INSERT INTO cs_survey_paper_element 
+       ( 
+           cs_survey_paper_seq ,
+           cs_survey_seq ,
+           cs_sort_order ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+       VALUES 
+       ( 
+           #{surveyPaperSeq, jdbcType=NUMERIC} ,
+           #{surveySeq, jdbcType=NUMERIC} ,
+           #{sortOrder, jdbcType=NUMERIC} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       )        
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveyPaperElementVO">
+/* UnivSurveyPaperElementMapper.update */
+UPDATE cs_survey_paper_element 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_sort_order = #{sortOrder, jdbcType=NUMERIC} 
+ WHERE cs_delete_yn = 'N'
+   AND cs_survey_paper_seq = #{surveyPaperSeq} 
+   AND cs_survey_seq = #{surveySeq} 
+	</update>
+	
+	<delete id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveyPaperElementVO">
+/* UnivSurveyPaperElementMapper.delete */
+DELETE
+  FROM cs_survey_paper_element
+ WHERE cs_delete_yn = 'N'
+   AND cs_survey_paper_seq = #{surveyPaperSeq} 	
+   AND cs_survey_seq = #{surveySeq} 
+	</delete>
+	
+	<delete id="deleteAll" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveyPaperElementVO">
+/* UnivSurveyPaperElementMapper.deleteAll */
+DELETE
+  FROM cs_survey_paper_element 
+ WHERE cs_delete_yn = 'N'
+   AND cs_survey_paper_seq = #{surveyPaperSeq} 	
+	</delete>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivSurveyPaperElementRS">
+		<result column="cspe.surveyPaperSeq"   property="univSurveyPaperElement.surveyPaperSeq" />
+	    <result column="cspe.surveySeq"        property="univSurveyPaperElement.surveySeq"      />
+	    <result column="cspe.sortOrder"        property="univSurveyPaperElement.sortOrder"      />
+	    <result column="cs.surveySeq"          property="univSurvey.surveySeq"                  />
+	    <result column="cs.surveyTitle"        property="univSurvey.surveyTitle"                />
+	    <result column="cs.surveyTypeCd"       property="univSurvey.surveyTypeCd"               />
+	    <result column="cs.surveyItemTypeCd"   property="univSurvey.surveyItemTypeCd"           />
+	    <result column="cs.useCount"           property="univSurvey.useCount"                   />
+	    <result column="cs.useYn"              property="univSurvey.useYn"                      />
+	    <collection column="cspe.surveySeq"       property="listSurveyExample" javaType="List"
+		ofType="com._4csoft.aof.ui.univ.vo.resultset.UIUnivSurveyExampleRS" select="com._4csoft.aof.univ.mapper.UnivSurveyExampleMapper.getList" />
+	</resultMap>
+	
+	<select id="getList" parameterType="Long" resultMap="listResultMap">
+/* UnivSurveyPaperElementMapper.getList */
+SELECT cspe.cs_survey_paper_seq  AS "cspe.surveyPaperSeq" ,
+       cspe.cs_survey_seq        AS "cspe.surveySeq" ,
+       cspe.cs_sort_order        AS "cspe.sortOrder" ,
+       cs.cs_survey_seq          AS "cs.surveySeq" ,
+       cs.cs_survey_title        AS "cs.surveyTitle" ,
+       cs.cs_survey_type_cd      AS "cs.surveyTypeCd" ,
+       cs.cs_survey_item_type_cd AS "cs.surveyItemTypeCd" ,
+       cs.cs_use_count           AS "cs.useCount" ,
+       cs.cs_use_yn              AS "cs.useYn"
+  FROM cs_survey_paper_element cspe 
+ INNER JOIN cs_survey cs 
+    ON cs.cs_delete_yn = 'N' 
+   AND cs.cs_survey_seq = cspe.cs_survey_seq  
+ WHERE cspe.cs_delete_yn = 'N' 
+   AND cspe.cs_survey_paper_seq = #{surveyPaperSeq} 
+ ORDER BY cspe.cs_sort_order ASC
+	</select>
+	
+	<select id="countList" parameterType="map" resultType="int">
+/* UnivSurveyPaperElementMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_survey_paper_element cspe 
+ WHERE cspe.cs_survey_seq = #{surveySeq} 
+       AND cspe.cs_survey_paper_seq = #{surveyPaperSeq} 
+       AND cspe.cs_delete_yn = 'N'
+	</select>
+	
+</mapper>

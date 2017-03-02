@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseTeamProjectMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectVO">
+        <selectKey resultType="Long" keyProperty="courseTeamProjectSeq" order="AFTER">
+    SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseTeamProject.insert */
+INSERT INTO cs_course_teamproject 
+       ( 
+           cs_course_active_seq,
+           cs_teamproject_title,
+           cs_description,
+           cs_rate,
+           cs_start_dtime,
+           cs_end_dtime,
+           cs_homework_start_dtime, 
+           cs_homework_end_dtime,
+           cs_rate_homework,
+           cs_rate_relation,
+           cs_open_yn,
+           cx_download_yn,
+           cs_delete_yn,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+  VALUES
+         ( #{courseActiveSeq, jdbcType=NUMERIC} ,
+           #{teamProjectTitle, jdbcType=VARCHAR} ,
+           #{description, jdbcType=VARCHAR} ,
+           <choose>
+               <when test="rate != null">
+           #{rate, jdbcType=NUMERIC} ,
+               </when>
+               <otherwise>
+           0,    
+               </otherwise>
+           </choose>
+           #{startDtime, jdbcType=VARCHAR} ,
+           #{endDtime, jdbcType=VARCHAR} ,
+           #{homeworkStartDtime, jdbcType=VARCHAR} ,
+           #{homeworkEndDtime, jdbcType=VARCHAR} ,
+           #{rateHomework, jdbcType=DOUBLE} ,
+           #{rateRelation, jdbcType=DOUBLE} ,
+           #{openYn, jdbcType=VARCHAR} ,
+           #{downloadYn, jdbcType=VARCHAR} ,
+           'N',
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR})
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectVO">
+/* UIUnivCourseTeamProject.update */
+UPDATE cs_course_teamproject 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+        <if test='teamProjectTitle != null'>
+       ,cs_teamproject_title = #{teamProjectTitle, jdbcType=VARCHAR} 
+        </if>
+         <if test='description != null'>
+       ,cs_description = #{description, jdbcType=VARCHAR} 
+        </if>
+        <if test='rate != null'>
+       ,cs_rate = #{rate, jdbcType=DOUBLE}
+        </if>
+        <if test='startDtime != null'>
+       ,cs_start_dtime = #{startDtime, jdbcType=VARCHAR}
+        </if>
+        <if test='endDtime != null'>
+        ,cs_end_dtime = #{endDtime, jdbcType=VARCHAR}
+        </if>
+        <if test='homeworkStartDtime != null'>
+        ,cs_homework_start_dtime  = #{homeworkStartDtime, jdbcType=VARCHAR}
+        </if>
+        <if test='homeworkEndDtime != null'>
+        ,cs_homework_end_dtime  = #{homeworkEndDtime, jdbcType=VARCHAR}
+        </if>
+        <if test='rateHomework != null'>
+        ,cs_rate_homework  = #{rateHomework, jdbcType=DOUBLE}
+        </if>
+        <if test='rateRelation != null'>
+        ,cs_rate_relation  = #{rateRelation, jdbcType=DOUBLE}
+        </if>
+        <if test='openYn != null'>
+        ,cs_open_yn  = #{openYn, jdbcType=VARCHAR}
+        </if>
+        <if test='downloadYn != null'>
+       ,cx_download_yn = #{downloadYn, jdbcType=VARCHAR}
+        </if>
+ WHERE cs_course_teamproject_seq = #{courseTeamProjectSeq} 
+   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectVO">
+/* UIUnivCourseTeamProject.delete */
+UPDATE cs_course_teamproject 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y'  
+ WHERE cs_course_teamproject_seq = #{courseTeamProjectSeq} 
+   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="deleteCourseActiveSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectVO">
+/* UIUnivCourseTeamProject.deleteCourseActiveSeq */
+UPDATE cs_course_teamproject 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y'  
+ WHERE cs_course_active_seq = #{courseActiveSeq} 
+   AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseTeamProjectRS">
+        <result column="cs_course_teamproject_seq"  property="courseTeamProject.courseTeamProjectSeq"/>
+        <result column="cs_course_active_seq"       property="courseTeamProject.courseActiveSeq"/>
+        <result column="cs_teamproject_title"       property="courseTeamProject.teamProjectTitle"/>
+        <result column="cs_description"             property="courseTeamProject.description"/>
+        <result column="cs_rate"                    property="courseTeamProject.rate" />
+        <result column="cs_start_dtime"             property="courseTeamProject.startDtime"/>
+        <result column="cs_end_dtime"               property="courseTeamProject.endDtime"/>
+        <result column="cs_homework_start_dtime"    property="courseTeamProject.homeworkStartDtime"/>
+        <result column="cs_homework_end_dtime"      property="courseTeamProject.homeworkEndDtime"/>
+        <result column="cs_rate_homework"           property="courseTeamProject.rateHomework"/>
+        <result column="cs_rate_relation"           property="courseTeamProject.rateRelation"/>
+        <result column="team_project_status_cd"     property="courseTeamProject.teamProjectStatusCd"/>
+        <result column="homework_status_cd"         property="courseTeamProject.homeworkStatusCd"/>
+        <result column="cs_open_yn"                 property="courseTeamProject.openYn"/>
+        <result column="cs_delete_yn"               property="courseTeamProject.deleteYn"/>
+        <result column="cs_reg_member_seq "         property="courseTeamProject.regMemberSeq"/>
+        <result column="cs_reg_dtime"               property="courseTeamProject.regDtime"/>
+        <result column="cs_reg_ip"                  property="courseTeamProject.regIp"/>
+        <result column="cs_upd_member_seq"          property="courseTeamProject.updMemberSeq"/>
+        <result column="cs_upd_dtime"               property="courseTeamProject.updDtime"/>
+        <result column="cs_upd_ip"                  property="courseTeamProject.updIp"/>
+        <result column="project_team_count"         property="courseTeamProject.projectTeamCount"/>
+        <result column="cx_download_yn"     		property="courseTeamProject.downloadYn"  />
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=cs_course_teamproject_seq,referenceTablename=referenceTablename}" property="courseTeamProject.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIUnivCourseTeamProject.getDetail */
+SELECT ct.cs_course_teamproject_seq,
+       ct.cs_course_active_seq,
+       ct.cs_teamproject_title,
+       ct.cs_description,
+       ct.cs_rate,
+       ct.cs_start_dtime,
+       ct.cs_end_dtime,
+       ct.cs_homework_start_dtime, 
+       ct.cs_homework_end_dtime,
+       ct.cs_rate_homework,
+       ct.cs_rate_relation,
+       ct.cs_open_yn,
+       CASE WHEN ct.cs_start_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.TEAM_PROJECT_STATUS.R}'
+            WHEN ct.cs_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND  cs_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.TEAM_PROJECT_STATUS.D}'
+            WHEN ct.cs_end_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.TEAM_PROJECT_STATUS.E}' END AS team_project_status_cd,
+       CASE WHEN ct.cs_homework_start_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.HOMEWORK_STATUS.R}'
+            WHEN ct.cs_homework_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND  cs_homework_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.HOMEWORK_STATUS.D}'
+            WHEN ct.cs_homework_end_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.HOMEWORK_STATUS.E}' END AS homework_status_cd,
+       ct.cs_delete_yn,
+       ct.cs_reg_member_seq ,
+       ct.cs_reg_dtime ,
+       ct.cs_reg_ip ,
+       ct.cs_upd_member_seq ,
+       ct.cs_upd_dtime ,
+       ct.cs_upd_ip,
+       ct.cx_download_yn,
+       'cs_course_teamproject' AS "referenceTablename",
+       (SELECT COUNT(*) FROM cs_course_teamproject_team ctt 
+         WHERE ctt.cs_course_teamproject_seq = ct.cs_course_teamproject_seq 
+           AND cs_delete_yn = 'N') AS project_team_count
+  FROM cs_course_teamproject ct 
+ WHERE ct.cs_course_teamproject_seq = #{courseTeamProjectSeq}
+   AND ct.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseTeamProjectRS">
+        <result column="cs_course_teamproject_seq"  property="courseTeamProject.courseTeamProjectSeq"/>
+        <result column="cs_course_active_seq"       property="courseTeamProject.courseActiveSeq"/>
+        <result column="cs_teamproject_title"       property="courseTeamProject.teamProjectTitle"/>
+        <result column="cs_description"             property="courseTeamProject.description"/>
+        <result column="cs_rate"                    property="courseTeamProject.rate" />
+        <result column="cs_start_dtime"             property="courseTeamProject.startDtime"/>
+        <result column="cs_end_dtime"               property="courseTeamProject.endDtime"/>
+        <result column="cs_homework_start_dtime"    property="courseTeamProject.homeworkStartDtime"/>
+        <result column="cs_homework_end_dtime"      property="courseTeamProject.homeworkEndDtime"/>
+        <result column="cs_rate_homework"           property="courseTeamProject.rateHomework"/>
+        <result column="cs_rate_relation"           property="courseTeamProject.rateRelation"/>
+        <result column="project_team_count"         property="courseTeamProject.projectTeamCount"/>
+        <result column="team_project_status_cd"     property="courseTeamProject.teamProjectStatusCd"/>
+        <result column="cs_open_yn"                 property="courseTeamProject.openYn"/>
+        <result column="cs_delete_yn"               property="courseTeamProject.deleteYn"/>
+        <result column="cs_reg_member_seq "         property="courseTeamProject.regMemberSeq"/>
+        <result column="cs_reg_dtime"               property="courseTeamProject.regDtime"/>
+        <result column="cs_reg_ip"                  property="courseTeamProject.regIp"/>
+        <result column="cs_upd_member_seq"          property="courseTeamProject.updMemberSeq"/>
+        <result column="cs_upd_dtime"               property="courseTeamProject.updDtime"/>
+        <result column="cs_upd_ip"                  property="courseTeamProject.updIp"/>
+        <result column="cx_download_yn"     		property="courseTeamProject.downloadYn"  />
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=cs_course_teamproject_seq,referenceTablename=referenceTablename}" property="courseTeamProject.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseTeamProjectCondition" resultMap="listResultMap">
+/* UIUnivCourseTeamProject.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY cs_reg_dtime ASC</when>
+            <when test='orderby == -1'>ORDER BY cs_reg_dtime DESC</when>
+            <when test='orderby == 2'>ORDER BY cs_teamproject_title ASC</when>
+            <when test='orderby == -2'>ORDER BY cs_teamproject_title DESC</when>
+            <when test='orderby == 3'>ORDER BY cs_start_dtime ASC</when>
+            <when test='orderby == -3'>ORDER BY cs_start_dtime DESC</when>
+            <when test='orderby == 4'>ORDER BY cs_homework_start_dtime ASC</when>
+            <when test='orderby == -4'>ORDER BY cs_homework_start_dtime DESC</when>
+            <when test='orderby == 5'>ORDER BY project_team_count ASC</when>
+            <when test='orderby == -5'>ORDER BY project_team_count DESC</when>
+            <otherwise>ORDER BY cs_course_teamproject_seq ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT cs_course_teamproject_seq, 
+       cs_course_active_seq, 
+       (SELECT COUNT(*) 
+          FROM cs_course_teamproject_team ctt 
+         WHERE ctt.cs_course_teamproject_seq = ct.cs_course_teamproject_seq 
+       ) AS project_team_count, 
+       cs_teamproject_title, 
+       cs_description,
+       cs_rate, 
+       cs_start_dtime, 
+       cs_end_dtime, 
+       cs_homework_start_dtime, 
+       cs_homework_end_dtime, 
+       cs_rate_homework, 
+       cs_rate_relation, 
+       cs_open_yn, 
+       CASE WHEN cs_start_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.TEAM_PROJECT_STATUS.R}'
+            WHEN cs_start_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() AND  cs_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.TEAM_PROJECT_STATUS.D}'
+            WHEN cs_end_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.TEAM_PROJECT_STATUS.E}' END AS team_project_status_cd,
+       cs_delete_yn, 
+       cs_reg_member_seq, 
+       cs_reg_dtime, 
+       cs_reg_ip, 
+       cs_upd_member_seq, 
+       cs_upd_dtime, 
+       cs_upd_ip,
+       cx_download_yn,
+       'cs_course_teamproject' AS "referenceTablename"
+  FROM cs_course_teamproject ct
+ WHERE cs_course_active_seq = #{srchCourseActiveSeq} 
+   AND cs_delete_yn = 'N'
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseMasterCondition" resultType="int">
+/* UIUnivCourseTeamProject.countList */
+SELECT COUNT(*) 
+  FROM cs_course_teamproject 
+ WHERE cs_course_active_seq = #{srchCourseActiveSeq} 
+   AND cs_delete_yn = 'N'
+    </select>
+    
+    <resultMap id="listAllResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseTeamProjectRS">
+        <result column="cs_course_teamproject_seq"  property="courseTeamProject.courseTeamProjectSeq"/>
+        <result column="cs_course_active_seq"       property="courseTeamProject.courseActiveSeq"/>
+        <result column="cs_teamproject_title"       property="courseTeamProject.teamProjectTitle"/>
+        <result column="cs_description"             property="courseTeamProject.description"/>
+        <result column="cs_rate"                    property="courseTeamProject.rate" />
+        <result column="cs_start_dtime"             property="courseTeamProject.startDtime"/>
+        <result column="cs_end_dtime"               property="courseTeamProject.endDtime"/>
+        <result column="cs_homework_start_dtime"    property="courseTeamProject.homeworkStartDtime"/>
+        <result column="cs_homework_end_dtime"      property="courseTeamProject.homeworkEndDtime"/>
+        <result column="cs_rate_homework"           property="courseTeamProject.rateHomework"/>
+        <result column="cs_rate_relation"           property="courseTeamProject.rateRelation"/>
+        <result column="project_team_count"         property="courseTeamProject.projectTeamCount"/>
+        <result column="cs_open_yn"                 property="courseTeamProject.openYn"/>
+        <result column="team_project_status_cd"     property="courseTeamProject.teamProjectStatusCd"/>
+        <result column="cs_member_count"            property="courseActiveSummary.memberCount"/>
+        <result column="cs_delete_yn"               property="courseTeamProject.deleteYn"/>
+        <result column="cs_reg_member_seq "         property="courseTeamProject.regMemberSeq"/>
+        <result column="cs_reg_dtime"               property="courseTeamProject.regDtime"/>
+        <result column="cs_reg_ip"                  property="courseTeamProject.regIp"/>
+        <result column="cs_upd_member_seq"          property="courseTeamProject.updMemberSeq"/>
+        <result column="cs_upd_dtime"               property="courseTeamProject.updDtime"/>
+        <result column="cs_upd_ip"                  property="courseTeamProject.updIp"/>
+        <result column="cx_download_yn"     		property="courseTeamProject.downloadYn"  />
+        <result column="cs_member_count"            property="courseActiveSummary.memberCount"/>
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=cs_course_teamproject_seq,referenceTablename=referenceTablename}" property="courseTeamProject.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getListAll" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectVO" resultMap="listAllResultMap">
+/* UIUnivCourseTeamProject.getListAll */
+SELECT cs_course_teamproject_seq, 
+       ct.cs_course_active_seq, 
+       (SELECT COUNT(*) 
+          FROM cs_course_teamproject_team ctt 
+         WHERE ctt.cs_course_teamproject_seq = ct.cs_course_teamproject_seq 
+           AND cs_delete_yn = 'N'
+       ) AS project_team_count, 
+       cs_teamproject_title,
+       cs_description, 
+       cs_rate, 
+       cs_start_dtime, 
+       cs_end_dtime, 
+       cs_homework_start_dtime, 
+       cs_homework_end_dtime, 
+       cs_rate_homework, 
+       cs_rate_relation, 
+       cs_open_yn, 
+       '${CD.TEAM_PROJECT_STATUS.D}' AS team_project_status_cd,
+       cs_delete_yn, 
+       cs_reg_member_seq, 
+       cs_reg_dtime, 
+       cs_reg_ip, 
+       cs_upd_member_seq, 
+       cs_upd_dtime, 
+       cs_upd_ip,
+       cx_download_yn,
+       'cs_course_teamproject' AS "referenceTablename",
+       cas.cs_member_count 
+  FROM cs_course_teamproject ct 
+ INNER JOIN cs_course_active_summary cas 
+    ON ct.cs_course_active_seq = cas.cs_course_active_seq
+ WHERE ct.cs_course_active_seq = #{courseActiveSeq} 
+   AND ct.cs_delete_yn = 'N'
+    </select>
+    
+    <resultMap id="listAllUserResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseTeamProjectRS">
+        <result column="cs_course_active_seq"       property="courseTeamProject.courseActiveSeq"/>
+        <result column="cs_course_teamproject_seq"  property="courseTeamProject.courseTeamProjectSeq"/>
+        <result column="cs_course_team_seq"  		property="courseTeamProjectTeam.courseTeamSeq"/>
+        <result column="cs_team_title"  			property="courseTeamProjectTeam.teamTitle"/>
+        <result column="cs_teamproject_title"       property="courseTeamProject.teamProjectTitle"/>
+        <result column="cs_start_dtime"             property="courseTeamProject.startDtime"/>
+        <result column="cs_end_dtime"               property="courseTeamProject.endDtime"/>
+        <result column="cs_homework_start_dtime"    property="courseTeamProject.homeworkStartDtime"/>
+        <result column="cs_homework_end_dtime"      property="courseTeamProject.homeworkEndDtime"/>
+        <result column="team_project_status_cd"     property="courseTeamProject.teamProjectStatusCd"/>
+        <result column="bbs_count"                  property="courseActiveBbs.bbsCount"/>
+        <result column="news_count"                 property="courseActiveBbs.newsCnt"/>
+        <result column="homework_count"             property="courseHomeworkAnswer.homeworkCount"/>
+        <result column="dday_count"                 property="courseTeamProject.dDayCount"/>
+        <result column="cx_download_yn"     		property="courseTeamProject.downloadYn"  />
+        <result column="cs_open_yn"     			property="courseTeamProject.openYn"  />
+    </resultMap>
+    <select id="getListAllUser" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectVO" resultMap="listAllUserResultMap">
+/* UIUnivCourseTeamProject.getListAllUser */
+SELECT a.cs_course_active_seq,
+       a.cs_course_teamproject_seq,
+	   a.cs_course_team_seq,
+       a.cs_team_title,
+       a.cs_teamproject_title,
+       a.cs_start_dtime,
+       a.cs_end_dtime,
+       a.cs_homework_start_dtime,
+       a.cs_homework_end_dtime,
+       a.cs_open_yn,
+       ISNULL(b.bbs_count, 0)        AS bbs_count,
+       ISNULL(c.homework_count, 0)   AS homework_count,
+       ISNULL(d.cx_news_count, 0)    AS news_count,
+       CASE WHEN cs_start_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR() THEN '${CD.TEAM_PROJECT_STATUS.R}'
+            WHEN cs_start_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() AND cs_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR()  THEN '${CD.TEAM_PROJECT_STATUS.D}'
+            WHEN cs_end_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR()  THEN '${CD.TEAM_PROJECT_STATUS.E}'
+       END AS team_project_status_cd,
+       DATEDIFF(DAY, GETDATE(), dbo.FN_TO_DATE(a.cs_homework_end_dtime)) AS dday_count,
+       a.cx_download_yn
+  FROM
+      (SELECT ct.cs_course_active_seq,
+              ct.cs_course_teamproject_seq,
+              ctt.cs_course_team_seq,
+              ctt.cs_team_title,
+              cs_teamproject_title,
+              cs_start_dtime,
+              cs_end_dtime,
+              ct.cs_homework_start_dtime,
+              ct.cs_homework_end_dtime,
+              ct.cx_download_yn,
+              ct.cs_open_yn
+         FROM cs_course_teamproject ct
+   INNER JOIN cs_course_teamproject_team ctt
+           ON ct.cs_course_teamproject_seq = ctt.cs_course_teamproject_seq
+          AND ctt.cs_delete_yn = 'N'
+         <if test='srchTotalTeamYn != null and !srchTotalTeamYn.equals("") and !srchTotalTeamYn.equals("Y") '>
+   INNER JOIN cs_course_teamproject_member ctm
+           ON ctm.cs_delete_yn = 'N'
+          AND ctm.cs_team_member_seq = #{regMemberSeq}
+          AND ctt.cs_course_team_seq = ctm.cs_course_team_seq
+          </if>          
+        WHERE ct.cs_delete_yn = 'N'
+          AND ct.cs_course_active_seq = #{courseActiveSeq}
+          <choose>
+          	<when test="courseTeamProjectSeq != null">
+          		AND ct.cs_course_teamproject_seq = #{courseTeamProjectSeq}
+          	</when>
+          	<otherwise>
+          		AND ct.cs_course_teamproject_seq = 
+			       (SELECT MIN(cs_course_teamproject_seq) 
+			         FROM cs_course_teamproject 
+			        WHERE cs_course_active_seq = #{courseActiveSeq} 
+			              AND cs_delete_yn = 'N'
+			       )	
+          	</otherwise>
+          </choose>
+       ) a
+  LEFT OUTER JOIN
+     (SELECT COUNT(*) AS bbs_count, 
+             cs_course_active_seq, 
+             cs_course_teamproject_seq,
+             cs_course_team_seq
+        FROM cs_course_teamproject_bbs 
+       WHERE cs_course_active_seq = #{courseActiveSeq}
+         <if test='srchTotalTeamYn != null and !srchTotalTeamYn.equals("") and !srchTotalTeamYn.equals("Y") '> 
+       	 AND cs_team_member_seq = #{regMemberSeq}
+       	 </if>
+       	 <choose>
+          	<when test="courseTeamProjectSeq != null">
+          		AND cs_course_teamproject_seq = #{courseTeamProjectSeq}
+          	</when>
+          	<otherwise>
+          		AND cs_course_teamproject_seq = 
+			       (SELECT MIN(cs_course_teamproject_seq) 
+			         FROM cs_course_teamproject 
+			        WHERE cs_course_active_seq = #{courseActiveSeq} 
+			              AND cs_delete_yn = 'N'
+			       )	
+          	</otherwise>
+          </choose>
+         AND cs_delete_yn = 'N' 
+    GROUP BY cs_course_active_seq, 
+             cs_course_teamproject_seq,
+             cs_course_team_seq
+       ) b
+     ON a.cs_course_active_seq = b.cs_course_active_seq
+    AND a.cs_course_teamproject_seq = b.cs_course_teamproject_seq
+    AND a.cs_course_team_seq = b.cs_course_team_seq
+   LEFT OUTER JOIN
+       (SELECT COUNT(*) AS homework_count,
+              cs_course_team_seq
+         FROM cs_course_homework_answer cha
+        WHERE cs_delete_yn = 'N'
+          AND cha.cs_course_active_seq = #{courseActiveSeq}
+          AND cha.cs_course_team_seq IS NOT NULL
+     GROUP BY cs_course_team_seq
+       ) c
+    ON a.cs_course_team_seq = c.cs_course_team_seq
+    LEFT OUTER JOIN
+     (SELECT COUNT(*) AS cx_news_count, 
+             cs_course_active_seq, 
+             cs_course_teamproject_seq,
+             cs_course_team_seq
+        FROM cs_course_teamproject_bbs 
+       WHERE cs_course_active_seq = #{courseActiveSeq}
+       	<choose>
+          	<when test="courseTeamProjectSeq != null">
+          		AND cs_course_teamproject_seq = #{courseTeamProjectSeq}
+          	</when>
+          	<otherwise>
+          		AND cs_course_teamproject_seq = 
+			       (SELECT MIN(cs_course_teamproject_seq) 
+			         FROM cs_course_teamproject 
+			        WHERE cs_course_active_seq = #{courseActiveSeq} 
+			              AND cs_delete_yn = 'N'
+			       )	
+          	</otherwise>
+          </choose>
+         AND cs_delete_yn = 'N' 
+         AND cs_reg_dtime <![CDATA[>=]]> convert(char(8) , dateadd(day , -1 , getdate()) , 112) +'000000' 
+		 AND cs_reg_dtime <![CDATA[<=]]> convert(char(8) , dateadd(day , 1 , getdate()) , 112) + '235959'
+    GROUP BY cs_course_active_seq, 
+             cs_course_teamproject_seq,
+             cs_course_team_seq
+       ) d
+     ON a.cs_course_active_seq = d.cs_course_active_seq
+    AND a.cs_course_teamproject_seq = d.cs_course_teamproject_seq
+    AND a.cs_course_team_seq = d.cs_course_team_seq
+ ORDER BY cs_course_teamproject_seq DESC
+    </select>
+    
+    <resultMap id="listCopyTeamProjectResultMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectVO">
+        <result column="cs_course_active_seq"       property="courseActiveSeq"/>
+        <result column="cs_course_teamproject_seq"  property="courseTeamProjectSeq"/>
+        <result column="cs_teamproject_title"       property="teamProjectTitle"/>
+        <result column="cs_description"             property="description"/>
+        <result column="cs_rate"                    property="rate" />
+        <result column="cs_rate_homework"           property="rateHomework"/>
+        <result column="cs_rate_relation"           property="rateRelation"/>
+        <result column="cs_open_yn"                 property="openYn"/>
+        <result column="cx_download_yn"     		property="downloadYn"  />
+    </resultMap>
+    
+    <select id="getListCopyTeamProject" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectVO" resultMap="listCopyTeamProjectResultMap">
+/* UIUnivCourseTeamProject.getListCopyTeamProject */
+SELECT #{targetCourseActiveSeq} AS cs_course_active_seq,
+       cs_course_teamproject_seq,
+       cs_teamproject_title,
+       cs_description,
+       cs_rate,
+       cs_rate_homework,
+       cs_rate_relation,
+       cs_open_yn,
+       cx_download_yn
+  FROM cs_course_teamproject
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{sourceCourseActiveSeq}
+    </select>
+    
+    <select id="countListCopyTeamProject" parameterType="Long" resultType="int">
+/* UIUnivCourseTeamProject.countListCopyTeamProject */
+SELECT COUNT(*) 
+  FROM cs_course_teamproject 
+ WHERE cs_course_active_seq = #{courseActiveSeq} 
+   AND cs_delete_yn = 'N'
+    </select>
+</mapper>

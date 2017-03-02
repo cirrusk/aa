@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.searchabo.service.impl.SearchAboMapper">
+
+	<select id="selectAboDataCount" parameterType="reqBox" resultType="int">
+        /* SearchAboSQL.xml  selectAboDataCount  */
+        SELECT   COUNT(*) AS TOTCNT
+          FROM   DBO.MEMBER
+		 WHERE ( ( '1'=#{searchType} AND UID = #{searchName} )
+		      OR ( '2'=#{searchType} AND UPPER(REPLACE(NAME, ' ','')) LIKE '%'+#{searchName}+'%' ))
+	</select>
+	
+	<select id="selectAboData" parameterType="reqBox" resultType="egovMap">
+		/* SearchAboSQL.xml  selectAboData  */
+        SELECT   A.UID
+               , A.NAME
+               , #{inputNm} AS rtnInputNm
+          FROM   DBO.MEMBER A
+		 WHERE ( ( '1'=#{searchType} AND A.UID = #{searchName} )
+		      OR ( '2'=#{searchType} AND UPPER(REPLACE(A.NAME, ' ','')) LIKE '%'+#{searchName}+'%' ))
+	</select>
+	
+	<select id="selectAboList" parameterType="reqBox" resultType="dataBox">
+		/* SearchAboSQL.xml  selectAboList  */
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM (
+				        SELECT   UID
+				               , NAME
+				               , GROUPS
+						      , ( SELECT   BB.TARGETCODENAME
+								    FROM   dbo.TARGETCODE BB
+								   WHERE   BB.TARGETMASTERSEQ = 'PINCODE'
+								     AND   BB.TARGETCODESEQ   = A.GROUPS) AS GROUPSNAME
+				               , #{rtnInputNm} AS rtnInputNm
+				          FROM   DBO.MEMBER A
+						 WHERE ( ( '1'=#{searchType} AND UID = #{searchName} )
+						      OR ( '2'=#{searchType} AND UPPER(REPLACE(NAME, ' ','')) LIKE '%'+#{searchName}+'%' ))
+						) AA
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+
+</mapper>

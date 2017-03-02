@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.targetCode.service.impl.TargetCodeMapper">
+
+    <select id="codeListScope" parameterType="reqBox" resultType="dataBox">
+        SELECT  TARGETMASTERSEQ AS CODE
+              , TARGETMASTERNAME AS NAME
+        FROM TARGETMASTER
+    </select>
+
+    <select id="targetCodeListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(TARGETMASTERSEQ) AS TOTAL_CNT
+        FROM TARGETMASTER
+        WHERE 1=1
+        <if test="targetmasterseq != null and !targetmasterseq.equals('')">
+            AND TARGETMASTERSEQ = #{targetmasterseq}
+        </if>
+    </select>
+
+    <select id="targetCodeList" parameterType="reqBox" resultType="dataBox">
+        SELECT AI. ROW_NUM
+             , AI.TARGETMASTERSEQ
+             , AI.TARGETMASTERNAME
+             , AI.TARGETMASTERACCOUNT
+             , AI.MODIFYDATE
+        FROM (
+        SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType} ) AS ROW_NUM
+             ,  TARGETMASTERSEQ
+             ,  TARGETMASTERNAME
+             ,  TARGETMASTERACCOUNT
+             ,  MODIFYDATE
+        FROM   TARGETMASTER
+        WHERE  1=1
+        <if test="targetmasterseq != null and !targetmasterseq.equals('')">
+            AND TARGETMASTERSEQ = #{targetmasterseq}
+        </if>
+        ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="targetCodeListPop" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETMASTERSEQ
+             , TARGETMASTERNAME
+             , TARGETMASTERACCOUNT
+        FROM   TARGETMASTER
+        WHERE  TARGETMASTERSEQ = #{targetmasterseq}
+    </select>
+
+    <insert id="targetCodeInsert" parameterType="reqBox">
+        INSERT INTO TARGETMASTER (
+               TARGETMASTERSEQ
+             , TARGETMASTERNAME
+             , TARGETMASTERACCOUNT
+             , REGISTRANT
+             , REGISTRANTDATE
+             , MODIFIER
+             , MODIFYDATE
+        ) VALUES (
+            #{targetmasterseq}
+        	, #{targetmastername}
+        	, #{targetmasteraccount}
+        	, #{sysId}
+	        , Getdate()
+	        , #{sysId}
+            , Getdate()
+        )
+    </insert>
+
+    <update id="targetCodeUpdate" parameterType="reqBox">
+        UPDATE TARGETMASTER SET
+               TARGETMASTERNAME = #{targetmastername}
+             , TARGETMASTERACCOUNT =  #{targetmasteraccount}
+             , MODIFIER = #{sysId}
+             , MODIFYDATE = Getdate()
+         WHERE TARGETMASTERSEQ = #{targetmasterseq}
+    </update>
+
+    <select id="existyn" parameterType="reqBox" resultType="int">
+        SELECT COUNT(TARGETMASTERSEQ) AS TARGETMASTERSEQ
+        FROM TARGETCODE
+        WHERE TARGETMASTERSEQ = #{targetmasterseq}
+    </select>
+
+    <delete id="targetCodeDelete" parameterType="reqBox">
+        DELETE FROM TARGETMASTER
+        WHERE TARGETMASTERSEQ = #{targetmasterseq}
+    </delete>
+
+    <select id="targetCodeDetail" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETMASTERSEQ
+             , TARGETMASTERNAME
+        FROM TARGETMASTER
+        WHERE TARGETMASTERSEQ = #{targetmasterseq}
+    </select>
+
+
+    <select id="targetCodeDetailList" parameterType="reqBox" resultType="dataBox">
+        SELECT ROW_NUMBER() OVER( ORDER BY TARGETCODEORDER ASC ) AS ROW_NUM
+		     ,  TARGETCODESEQ
+			 ,  TARGETCODENAME
+			 ,  TARGETCODEACCOUNT
+			 ,  TARGETCODEORDER
+			 ,  '' AS NEWORDER
+		  FROM  TARGETCODE
+		 WHERE  TARGETMASTERSEQ = #{targetmasterseq}
+    </select>
+
+    <select id="targetCodeDetailPop" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETCODESEQ
+             , TARGETCODENAME
+             , TARGETCODEACCOUNT
+             , USEYN
+             , CASEONE
+             , CASETWO
+        FROM   TARGETCODE
+        WHERE  TARGETMASTERSEQ = #{targetmasterseq}
+        AND    TARGETCODESEQ = #{targetcodeseq}
+    </select>
+
+    <insert id="targetCodeDetailInsert" parameterType="reqBox">
+        <selectKey resultType="integer" keyProperty="targetseq" order="BEFORE">
+            SELECT ISNULL(MAX(TARGETSEQ),0)+1 FROM TARGETCODE
+        </selectKey>
+        INSERT INTO TARGETCODE (
+               TARGETSEQ
+             , TARGETCODESEQ
+             , TARGETMASTERSEQ
+             , TARGETCODENAME
+             , TARGETCODEACCOUNT
+             , USEYN
+             , CASEONE
+             , CASETWO
+             , REGISTRANT
+             , REGISTRANTDATE
+             , MODIFIER
+             , MODIFYDATE
+        ) VALUES (
+              #{targetseq}
+            , #{targetcodeseq}
+            , #{targetmasterseq}
+            , #{targetcodename}
+            , #{targetcodeaccount}
+            , #{useyn}
+            , #{caseone}
+            , #{casetwo}
+            , #{sysId}
+            , Getdate()
+            , #{sysId}
+            , Getdate()
+        )
+    </insert>
+
+    <update id="targetCodeDetailUpdate" parameterType="reqBox">
+        UPDATE TARGETCODE SET
+               TARGETCODESEQ = #{targetcodeseq}
+             , TARGETCODENAME = #{targetcodename}
+             , TARGETCODEACCOUNT =  #{targetcodeaccount}
+             , USEYN =  #{useyn}
+             , CASEONE =  #{caseone}
+             , CASETWO =  #{casetwo}
+             , MODIFIER = #{sysId}
+             , MODIFYDATE = Getdate()
+        WHERE  TARGETMASTERSEQ = #{targetmasterseq}
+        AND    TARGETCODESEQ = #{targetcodeseq}
+    </update>
+
+    <delete id="targetCodeDetailDelete" parameterType="reqBox">
+        DELETE FROM TARGETCODE
+        WHERE  TARGETMASTERSEQ = #{targetmasterseq}
+        AND    TARGETCODESEQ = #{targetcodeseq}
+    </delete>
+
+    <update id="targetCodeDetailOrder"  parameterType="reqBox">
+        UPDATE TARGETCODE SET
+               TARGETCODEORDER = ${targetcodeorder}
+        WHERE  TARGETMASTERSEQ = #{targetmasterseq}
+        AND    TARGETCODESEQ = #{targetcodeseq}
+    </update>
+
+
+</mapper>

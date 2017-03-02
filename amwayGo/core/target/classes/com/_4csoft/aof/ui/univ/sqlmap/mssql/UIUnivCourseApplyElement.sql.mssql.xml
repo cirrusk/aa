@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseApplyElementMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO">
+			/* UIUnivCourseApplyElement.insert */
+			INSERT INTO cs_course_apply_element 
+			       ( 
+			           cs_course_active_seq ,
+					   cs_course_apply_seq ,
+					   cs_active_element_seq ,
+					   cs_basic_supplement_cd ,
+					   cs_complete_yn ,
+					   <if test='takeScore != null and !takeScore.equals("")'>
+					   cs_score_dtime ,
+					   </if>
+					   cs_end_dtime ,
+					   cs_start_dtime ,
+					   cs_choice_score ,
+					   cs_essay_score ,
+					   cs_short_score ,
+					   cs_take_score ,
+					   cs_evaluate_score ,
+					   cs_evaluate_yn ,
+					   cs_ip ,
+					   cs_other_score ,
+					   cs_replace_yn ,
+					   cs_running_time ,
+			           cs_delete_yn, 
+			           cs_reg_member_seq, 
+			           cs_upd_member_seq, 
+			           cs_reg_dtime, 
+			           cs_upd_dtime, 
+			           cs_reg_ip, 
+			           cs_upd_ip 
+			       ) 
+			   VALUES
+			   	   (
+			   	   	   #{courseActiveSeq ,		jdbcType=NUMERIC},
+					   #{courseApplySeq ,		jdbcType=NUMERIC},
+					   #{activeElementSeq ,		jdbcType=NUMERIC},
+					   #{basicSupplementCd ,	jdbcType=VARCHAR},
+					   #{completeYn ,			jdbcType=VARCHAR},
+					   <if test='takeScore != null and !takeScore.equals("")'>
+					   dbo.FN_NOW_TO_CHAR(),
+					   </if>
+					   #{endDtime ,				jdbcType=VARCHAR},
+					   <choose>
+					   	<when test='startDtime != null and !startDtime.equals("")'>
+					   #{startDtime ,			jdbcType=VARCHAR},
+					   	</when>
+					   	<otherwise>
+					   dbo.FN_NOW_TO_CHAR(),	
+					   	</otherwise>
+					   </choose>
+					   #{choiceScore ,			jdbcType=DOUBLE},
+					   #{essayScore ,			jdbcType=DOUBLE},
+					   #{shortScore ,			jdbcType=DOUBLE},
+					   #{takeScore , 			jdbcType=DOUBLE},
+					   #{evaluateScore ,		jdbcType=DOUBLE},
+					   #{evaluateYn ,			jdbcType=VARCHAR},
+					   #{ip ,					jdbcType=VARCHAR},
+					   #{otherScore ,			jdbcType=DOUBLE},
+					   #{replaceYn ,			jdbcType=VARCHAR},
+					   #{runningTime ,			jdbcType=NUMERIC},
+			   		   'N',
+			           #{regMemberSeq,   		jdbcType=NUMERIC},
+			           #{updMemberSeq,   		jdbcType=NUMERIC},
+			           dbo.FN_NOW_TO_CHAR(),
+			           dbo.FN_NOW_TO_CHAR(),
+			           #{regIp,         		jdbcType=VARCHAR},
+			           #{updIp,          		jdbcType=VARCHAR}
+			   	   )
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO">
+		/* UIUnivCourseApplyElement.update */
+		UPDATE cs_course_apply_element 
+		   SET 
+		   	<if test='basicSupplementCd != null and !basicSupplementCd.equals("")'>
+		   	   cs_basic_supplement_cd   = #{basicSupplementCd, jdbcType=VARCHAR} ,	
+		   	</if>
+		   	<if test='completeYn != null and !completeYn.equals("")'>
+			   cs_complete_yn 			= #{completeYn, jdbcType=VARCHAR} ,
+			</if>
+			<if test='completeYn != null and !completeYn.equals("")'>
+			   cs_end_dtime 			= dbo.FN_NOW_TO_CHAR() ,
+			</if>
+			<if test='startDtime != null and !startDtime.equals("")'>
+			   cs_start_dtime 			= #{startDtime, jdbcType=VARCHAR} ,
+			</if>
+			<if test='takeScore != null and !takeScore.equals("")'>
+			   cs_score_dtime 			= dbo.FN_NOW_TO_CHAR() ,
+			</if>
+			<if test='choiceScore != null and !choiceScore.equals("")'>
+			   cs_choice_score 			= #{choiceScore, jdbcType=DOUBLE} ,
+			</if>
+			<if test='essayScore != null and !essayScore.equals("")'>
+			   cs_essay_score 			= #{essayScore, jdbcType=DOUBLE} ,
+			</if>
+			<if test='shortScore != null and !shortScore.equals("")'>
+			   cs_short_score 			= #{shortScore, jdbcType=DOUBLE} ,
+			</if>
+			<if test='takeScore != null and !takeScore.equals("")'>
+			   cs_take_score 			= #{takeScore, jdbcType=DOUBLE} ,
+			</if>
+			<if test='evaluateScore != null and !evaluateScore.equals("")'>
+			   cs_evaluate_score 		= #{evaluateScore, jdbcType=DOUBLE} ,
+			</if>
+			<if test='evaluateYn != null and !evaluateYn.equals("")'>
+			   cs_evaluate_yn 			= #{evaluateYn, jdbcType=VARCHAR} ,
+			</if>
+			<if test='ip != null and !ip.equals("")'>
+			   cs_ip 					= #{ip, jdbcType=VARCHAR} ,
+			</if>
+			<if test='otherScore != null and !otherScore.equals("")'>
+			   cs_other_score 			= #{otherScore, jdbcType=DOUBLE} ,
+			</if>
+			<if test='replaceYn != null and !replaceYn.equals("")'>
+			   cs_replace_yn 			= #{replaceYn, jdbcType=VARCHAR} ,
+			</if>
+			<if test='runningTime != null and !runningTime.equals("")'>
+			   cs_running_time 			= #{runningTime, jdbcType=NUMERIC} ,
+			</if>
+		   	   cs_upd_dtime  			= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         		= #{updIp, jdbcType=VARCHAR} 
+		 WHERE cs_delete_yn = 'N'
+		   AND cs_course_active_seq 	= #{courseActiveSeq}
+		   AND cs_course_apply_seq 		= #{courseApplySeq}
+		   AND cs_active_element_seq 	= #{activeElementSeq}
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO">
+		/* UIUnivCourseApplyElement.delete */
+		UPDATE cs_course_apply_element 
+		   SET cs_upd_dtime  	 = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn      = 'Y' 
+		 WHERE cs_delete_yn = 'N'
+		   AND cs_course_active_seq 	= #{courseActiveSeq}
+		   AND cs_course_apply_seq 		= #{courseApplySeq}
+		   AND cs_active_element_seq 	= #{activeElementSeq}
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseApplyElementRS">
+        <result column="appel.seq"   				property="applyElement.seq"/>
+        <result column="appel.courseActiveSeq"   	property="applyElement.courseActiveSeq"/>
+        <result column="appel.courseApplySeq"   	property="applyElement.courseApplySeq"/>
+        <result column="appel.activeElementSeq"   	property="applyElement.activeElementSeq"/>
+        <result column="appel.basicSupplementCd"   	property="applyElement.basicSupplementCd"/>
+        <result column="appel.completeYn"   		property="applyElement.completeYn"/>
+        <result column="appel.endDtime"   			property="applyElement.endDtime"/>
+        <result column="appel.startDtime"   		property="applyElement.startDtime"/>
+        <result column="appel.scoreDtime"   		property="applyElement.scoreDtime"/>
+        <result column="appel.choiceScore"   		property="applyElement.choiceScore"/>
+        <result column="appel.essayScore"   		property="applyElement.essayScore"/>
+        <result column="appel.shortScore"   		property="applyElement.shortScore"/>
+        <result column="appel.takeScore"   			property="applyElement.takeScore"/>
+        <result column="appel.evaluateScore"   		property="applyElement.evaluateScore"/>
+        <result column="appel.evaluateYn"   		property="applyElement.evaluateYn"/>
+        <result column="appel.ip"   				property="applyElement.ip"/>
+        <result column="appel.otherScore"   		property="applyElement.otherScore"/>
+        <result column="appel.replaceYn"   			property="applyElement.replaceYn"/>
+        <result column="appel.runningTime"   		property="applyElement.runningTime"/>
+        <result column="appel.deleteYn"   			property="applyElement.deleteYn"/>
+        <result column="appel.regMemberSeq"   		property="applyElement.regMemberSeq"/>
+        <result column="appel.updMemberSeq"   		property="applyElement.updMemberSeq"/>
+        <result column="appel.regDtime"   			property="applyElement.regDtime"/>
+        <result column="appel.updDtime"   			property="applyElement.updDtime"/>
+        <result column="appel.regIp"   				property="applyElement.regIp"/>
+        <result column="appel.updIp"   				property="applyElement.updIp"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO" resultMap="detailResultMap">
+		/* UIUnivCourseApplyElement.getDetail */
+		SELECT
+			appel.cs_seq 					AS "appel.seq" ,
+		    appel.cs_course_active_seq 		AS "appel.courseActiveSeq" ,
+			appel.cs_course_apply_seq 		AS "appel.courseApplySeq" ,
+			appel.cs_active_element_seq 	AS "appel.activeElementSeq" ,
+			appel.cs_basic_supplement_cd 	AS "appel.basicSupplementCd" ,
+			appel.cs_complete_yn 			AS "appel.completeYn" ,
+			appel.cs_end_dtime 				AS "appel.endDtime" ,
+			appel.cs_start_dtime 			AS "appel.startDtime" ,
+			appel.cs_score_dtime 			AS "appel.scoreDtime" ,
+			appel.cs_choice_score 			AS "appel.choiceScore" ,
+			appel.cs_essay_score 			AS "appel.essayScore" ,
+			appel.cs_short_score 			AS "appel.shortScore" ,
+			appel.cs_take_score 			AS "appel.takeScore" ,
+			appel.cs_evaluate_score 		AS "appel.evaluateScore" ,
+			appel.cs_evaluate_yn 			AS "appel.evaluateYn" ,
+			appel.cs_ip 					AS "appel.ip" ,
+			appel.cs_other_score 			AS "appel.otherScore" ,
+			appel.cs_replace_yn 			AS "appel.replaceYn" ,
+			appel.cs_running_time 			AS "appel.runningTime" ,        
+			appel.cs_delete_yn				AS "appel.deleteYn" ,         
+			appel.cs_reg_member_seq			AS "appel.regMemberSeq" ,    
+			appel.cs_upd_member_seq			AS "appel.updMemberSeq" ,    
+			appel.cs_reg_dtime				AS "appel.regDtime" ,         
+			appel.cs_upd_dtime				AS "appel.updDtime" ,         
+			appel.cs_reg_ip					AS "appel.regIp" ,            
+			appel.cs_upd_ip                	AS "appel.updIp" 
+		FROM
+			   cs_course_apply_element appel
+		WHERE  cs_delete_yn = 'N'
+		   AND appel.cs_course_active_seq 	= #{courseActiveSeq}
+		   AND appel.cs_course_apply_seq 	= #{courseApplySeq}
+		   AND appel.cs_active_element_seq 	= #{activeElementSeq}
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseApplyElementRS">
+   	 	<result column="appel.seq"   				property="applyElement.seq"/>
+        <result column="appel.courseActiveSeq"   	property="applyElement.courseActiveSeq"/>
+        <result column="appel.courseApplySeq"   	property="applyElement.courseApplySeq"/>
+        <result column="appel.activeElementSeq"   	property="applyElement.activeElementSeq"/>
+        <result column="appel.basicSupplementCd"   	property="applyElement.basicSupplementCd"/>
+        <result column="appel.completeYn"   		property="applyElement.completeYn"/>
+        <result column="appel.endDtime"   			property="applyElement.endDtime"/>
+        <result column="appel.startDtime"   		property="applyElement.startDtime"/>
+        <result column="appel.scoreDtime"   		property="applyElement.scoreDtime"/>
+        <result column="appel.choiceScore"   		property="applyElement.choiceScore"/>
+        <result column="appel.essayScore"   		property="applyElement.essayScore"/>
+        <result column="appel.shortScore"   		property="applyElement.shortScore"/>
+        <result column="appel.takeScore"   			property="applyElement.takeScore"/>
+        <result column="appel.evaluateScore"   		property="applyElement.evaluateScore"/>
+        <result column="appel.evaluateYn"   		property="applyElement.evaluateYn"/>
+        <result column="appel.ip"   				property="applyElement.ip"/>
+        <result column="appel.otherScore"   		property="applyElement.otherScore"/>
+        <result column="appel.replaceYn"   			property="applyElement.replaceYn"/>
+        <result column="appel.runningTime"   		property="applyElement.runningTime"/>
+        <result column="appel.deleteYn"   			property="applyElement.deleteYn"/>
+        <result column="appel.regMemberSeq"   		property="applyElement.regMemberSeq"/>
+        <result column="appel.updMemberSeq"   		property="applyElement.updMemberSeq"/>
+        <result column="appel.regDtime"   			property="applyElement.regDtime"/>
+        <result column="appel.updDtime"   			property="applyElement.updDtime"/>
+        <result column="appel.regIp"   				property="applyElement.regIp"/>
+        <result column="appel.updIp"   				property="applyElement.updIp"/>
+        <result column="member.memberSeq"   		property="member.memberSeq"/>
+        <result column="member.memberName"   		property="member.memberName"/>
+        <result column="member.phoneMobile"   		property="member.phoneMobile"/>
+	</resultMap>
+	
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO" resultMap="listResultMap">
+		/* UIUnivCourseApplyElement.getList */
+		SELECT
+			appel.cs_seq 					AS "appel.seq" ,
+		    appel.cs_course_active_seq 		AS "appel.courseActiveSeq" ,
+			appel.cs_course_apply_seq 		AS "appel.courseApplySeq" ,
+			appel.cs_active_element_seq 	AS "appel.activeElementSeq" ,
+			appel.cs_basic_supplement_cd 	AS "appel.basicSupplementCd" ,
+			appel.cs_complete_yn 			AS "appel.completeYn" ,
+			appel.cs_end_dtime 				AS "appel.endDtime" ,
+			appel.cs_start_dtime 			AS "appel.startDtime" ,
+			appel.cs_score_dtime 			AS "appel.scoreDtime" ,
+			appel.cs_choice_score 			AS "appel.choiceScore" ,
+			appel.cs_essay_score 			AS "appel.essayScore" ,
+			appel.cs_short_score 			AS "appel.shortScore" ,
+			appel.cs_take_score 			AS "appel.takeScore" ,
+			appel.cs_evaluate_score 		AS "appel.evaluateScore" ,
+			appel.cs_evaluate_yn 			AS "appel.evaluateYn" ,
+			appel.cs_ip 					AS "appel.ip" ,
+			appel.cs_other_score 			AS "appel.otherScore" ,
+			appel.cs_replace_yn 			AS "appel.replaceYn" ,
+			appel.cs_running_time 			AS "appel.runningTime" ,        
+			appel.cs_delete_yn				AS "appel.deleteYn" ,         
+			appel.cs_reg_member_seq			AS "appel.regMemberSeq" ,    
+			appel.cs_upd_member_seq			AS "appel.updMemberSeq" ,    
+			appel.cs_reg_dtime				AS "appel.regDtime" ,         
+			appel.cs_upd_dtime				AS "appel.updDtime" ,         
+			appel.cs_reg_ip					AS "appel.regIp" ,            
+			appel.cs_upd_ip                	AS "appel.updIp" ,
+			member.cs_member_seq			AS "member.memberSeq" ,
+			member.cs_member_name			AS "member.memberName" ,
+			member.cs_phone_mobile			AS "member.phoneMobile"
+		FROM
+			   cs_course_apply_element appel
+			   INNER JOIN cs_course_apply apply
+			   		ON apply.cs_course_apply_seq = appel.cs_course_apply_seq
+			   		AND apply.cs_delete_yn = 'N'
+			   INNER JOIN cs_member member
+			   		ON member.cs_member_seq = apply.cs_member_seq
+			   		AND member.cs_delete_yn = 'N'
+		WHERE  appel.cs_delete_yn = 'N'
+		   AND appel.cs_course_active_seq 	= #{courseActiveSeq}
+		   <if test='courseApplySeq != null and !courseApplySeq.equals("")'>
+		   AND appel.cs_course_apply_seq 	= #{courseApplySeq}
+		   </if>
+		   <if test='activeElementSeq != null and !activeElementSeq.equals("")'>
+		   AND appel.cs_active_element_seq 	= #{activeElementSeq}
+		   </if>
+    </select>
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO" resultType="int">
+		/* UIUnivCourseApplyElement.countList */
+		SELECT
+		    COUNT(*) 
+		FROM
+			   cs_course_apply_element appel
+			   INNER JOIN cs_course_apply apply
+			   		ON apply.cs_course_apply_seq = appel.cs_course_apply_seq
+			   		AND apply.cs_delete_yn = 'N'
+			   INNER JOIN cs_member member
+			   		ON member.cs_member_seq = apply.cs_member_seq
+			   		AND member.cs_delete_yn = 'N'
+		WHERE  appel.cs_delete_yn = 'N'
+		   AND appel.cs_course_active_seq 	= #{courseActiveSeq}
+		   <if test='courseApplySeq != null and !courseApplySeq.equals("")'>
+		   AND appel.cs_course_apply_seq 	= #{courseApplySeq}
+		   </if>
+		   <if test='activeElementSeq != null and !activeElementSeq.equals("")'>
+		   AND appel.cs_active_element_seq 	= #{activeElementSeq}
+		   </if>
+    </select>
+    
+    <update id="updateEvaluateYnByLimitScore" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO">
+    	/* UIUnivCourseApplyElement.updateEvaluateYnByLimitScore */
+    	UPDATE a 
+		   SET a.cs_evaluate_yn 		= b.cs_evaluate_yn ,
+		       a.cs_upd_dtime  			= dbo.FN_NOW_TO_CHAR() ,
+		       a.cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       a.cs_upd_ip         		= #{updIp, jdbcType=VARCHAR} 
+		  FROM cs_course_apply_element a
+    INNER JOIN (
+					SELECT
+						appel.cs_seq,
+						CASE
+							WHEN appel.cs_evaluate_score <![CDATA[<=]]> #{limitScore, jdbcType=NUMERIC} THEN 'N'
+							ELSE 'Y'
+						END AS cs_evaluate_yn
+					FROM
+						cs_course_active_element el
+					INNER JOIN cs_course_apply_element appel
+						ON  el.cs_course_active_seq = appel.cs_course_active_seq
+						AND el.cs_active_element_seq = appel.cs_active_element_seq
+					WHERE
+						 	el.cs_delete_yn = 'N'
+						AND	el.cs_course_active_seq = #{courseActiveSeq}
+						AND el.cs_reference_seq     = #{referenceSeq}
+						AND el.cs_reference_type_cd = #{referenceTypeCd}
+			   ) b
+		    ON a.cs_seq = b.cs_seq
+    </update>
+    
+    <select id="getCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO" resultType="int">
+/* UIUnivCourseApplyElement.getCount */
+SELECT COUNT(*)
+  FROM cs_course_apply_element
+ WHERE cs_course_active_seq = #{courseActiveSeq}
+   AND cs_course_apply_seq = #{courseApplySeq}
+   AND cs_active_element_seq = #{activeElementSeq}
+   AND cs_delete_yn = 'N'     
+    </select>
+    
+    <select id="getSumScore" parameterType="map" resultType="Double">
+    	/* UIUnivCourseApplyElement.getSumScore */
+    	SELECT
+			SUM(CASE
+				WHEN apply.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' THEN apply.cs_evaluate_score * active.cs_rate / 100
+				ELSE ((apply.cs_evaluate_score * active.cs_rate / 100) * active.cs_supplement_rate / 100)
+			END) AS score
+		FROM
+			cs_course_apply_element apply
+			INNER JOIN cs_course_active_element active
+				ON apply.cs_course_active_seq = active.cs_course_active_seq
+				AND active.cs_active_element_seq = apply.cs_active_element_seq
+				AND active.cs_delete_yn = 'N'
+		WHERE
+			apply.cs_delete_yn = 'N'
+			AND apply.cs_course_apply_seq = #{courseApplySeq}
+			AND active.cs_reference_type_cd = #{referenceTypeCd}
+    </select>
+    
+    <resultMap id="listResultMemberElementMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseApplyElementRS">
+   	 	<result column="cs_active_element_title"	property="activeElement.activeElementTitle"/>
+        <result column="cs_reference_type_cd"   	property="activeElement.referenceTypeCd"/>
+        <result column="cs_start_dtime"				property="activeElement.startDtime"/>
+        <result column="cs_end_dtime"				property="activeElement.endDtime"/>
+        <result column="cs_course_week_type_cd"   	property="activeElement.courseWeekTypeCd"/>
+        <result column="cs_evaluate_score"			property="applyElement.evaluateScore"/>
+        <result column="cs_reg_dtime"				property="applyElement.regDtime"/>
+        <result column="cs_basic_supplement_cd"   	property="applyElement.basicSupplementCd"/>
+	</resultMap>
+    <select id="getListMemberElement" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO" resultMap="listResultMemberElementMap">
+    	/* UIUnivCourseApplyElement.getListMemberElement */
+    	SELECT a.cs_active_element_title, 
+		       a.cs_reference_type_cd, 
+		       a.cs_start_dtime, 
+		       a.cs_end_dtime, 
+		       a.cs_course_week_type_cd, 
+		       b.cs_evaluate_score, 
+		       b.cs_reg_dtime, 
+		       b.cs_basic_supplement_cd 
+		  FROM cs_course_active_element a 
+		   LEFT OUTER JOIN cs_course_apply_element b 
+		       ON b.cs_course_active_seq = a.cs_course_active_seq 
+		       AND b.cs_active_element_seq = a.cs_active_element_seq 
+		       AND b.cs_course_apply_seq = #{courseApplySeq}
+		       AND b.cs_delete_yn = 'N' 
+		 WHERE a.cs_delete_yn = 'N' 
+		       AND a.cs_course_active_seq = #{courseActiveSeq} 
+		ORDER BY a.cs_reference_type_cd,
+		       a.cs_active_element_seq 
+    </select>
+    
+    <resultMap id="listTeamprojectEvaluateScoreMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO">
+        <result column="cs_course_active_seq"    property="courseActiveSeq"/>
+        <result column="cs_course_apply_seq"     property="courseApplySeq"/>
+        <result column="cs_active_element_seq"   property="activeElementSeq"/>
+        <result column="cs_take_score"           property="takeScore"/>
+        <result column="cs_evaluate_score"       property="evaluateScore"/>
+        <result column="cs_basic_supplement_cd"  property="basicSupplementCd"/>
+        <result column="cs_evaluate_yn"          property="evaluateYn"/>
+    </resultMap>
+    
+    <select id="getListTeamprojectEvaluateScore" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyElementVO" resultMap="listTeamprojectEvaluateScoreMap">
+    /* UIUnivCourseApplyElement.getListTeamprojectEvaluateScore */
+        SELECT cs_course_active_seq, 
+               cs_course_apply_seq,
+               cs_active_element_seq, 
+               eval_score                     AS cs_take_score,
+               eval_score                     AS cs_evaluate_score,
+               '${CD.BASIC_SUPPLEMENT.BASIC}' AS cs_basic_supplement_cd,
+               'Y'                            AS cs_evaluate_yn
+          FROM 
+              (SELECT home.cs_course_active_seq, 
+                      home.cs_course_teamproject_seq, 
+                      home.cs_course_team_seq, 
+                      ele.cs_active_element_seq, 
+                      home.cs_team_member_seq, 
+                      mutual.cs_course_apply_seq, 
+                      home.cs_rate, 
+                      home.cs_rate_homework, 
+                      home.cs_rate_relation, 
+                      home.cs_homework_score, 
+                      home.cs_member_count, 
+                      mutual.mutual_sum_score, 
+                      ((home.cs_rate_homework * home.cs_homework_score) / 100) +
+                      ((mutual.mutual_sum_score) / (home.cs_member_count - 1) * home.cs_rate_relation) / 100 AS eval_score
+                 FROM 
+                     (SELECT ct.cs_course_active_seq, 
+                             ct.cs_course_teamproject_seq, 
+                             ctt.cs_course_team_seq, 
+                             ctm.cs_team_member_seq, 
+                             ct.cs_rate, 
+                             ct.cs_rate_relation, 
+                             ct.cs_rate_homework, 
+                             ctt.cs_member_count, 
+                             cha.cs_homework_score 
+                        FROM cs_course_teamproject ct 
+                  INNER JOIN cs_course_teamproject_team ctt 
+                          ON ct.cs_course_teamproject_seq = ctt.cs_course_teamproject_seq 
+                         AND ctt.cs_delete_yn = 'N' 
+                  INNER JOIN cs_course_teamproject_member ctm 
+                          ON ctt.cs_course_team_seq = ctm.cs_course_team_seq 
+                         AND ctm.cs_delete_yn = 'N' 
+             LEFT OUTER JOIN cs_course_homework_answer cha 
+                          ON cha.cs_course_team_seq = ctt.cs_course_team_seq 
+                         AND cha.cs_delete_yn = 'N' 
+                         AND cha.cs_course_active_seq = #{courseActiveSeq}
+                             <if test="courseApplySeq != null">
+                         AND cha.cs_course_apply_seq = #{courseApplySeq}
+                             </if> 
+                       WHERE ct.cs_course_active_seq = #{courseActiveSeq} 
+                         AND ct.cs_delete_yn = 'N'  
+                      ) home 
+            INNER JOIN 
+                     (SELECT cs_active_element_seq, 
+                             cs_course_active_seq, 
+                             cs_reference_seq 
+                        FROM cs_course_active_element 
+                       WHERE cs_course_active_seq = #{courseActiveSeq} 
+                         AND cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.TEAMPROJECT}' 
+                         AND cs_delete_yn = 'N' 
+                      ) ele 
+                    ON ele.cs_reference_seq = home.cs_course_teamproject_seq 
+       LEFT OUTER JOIN 
+                     (SELECT cs_course_team_seq, 
+                             cs_team_member_seq, 
+                             cs_course_apply_seq, 
+                             SUM(cs_mutual_score) AS mutual_sum_score 
+                        FROM cs_course_teamproject_mutualeval ctm 
+                       WHERE ctm.cs_delete_yn = 'N'
+                             <if test="courseApplySeq != null">
+                         AND ctm.cs_course_apply_seq = #{courseApplySeq}
+                             </if>
+                    GROUP BY cs_course_team_seq, 
+                             cs_team_member_seq, 
+                             cs_course_apply_seq 
+                      ) mutual  
+                   ON home.cs_team_member_seq = mutual.cs_team_member_seq 
+                  AND home.cs_course_team_seq = mutual.cs_course_team_seq
+                      <if test="courseApplySeq != null">
+                WHERE cs_course_apply_seq IS NOT NULL
+                      </if> 
+               ) score
+               WHERE score.eval_score IS NOT NULL 
+    </select>
+
+</mapper>

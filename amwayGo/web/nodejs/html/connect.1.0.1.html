@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title></title>
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="/html/js/client.1.0.1.js"></script>
+<script type="text/javascript">
+doStart = function() {
+    
+    // 내 정보 정의 - id는 필수
+    SOCKET.iam = {
+        id : "" + new Date().getTime(),
+        name : "" + new Date().getTime()
+    }
+    
+    // callback 함수 정의
+    SOCKET.callback.connect = function() { // 본인 접속 성공 수신.
+    };
+    SOCKET.callback.disconnect = function(data) { // 접속 해제 수신. (data) 
+        // data가 object 이면 다른 접속자가 disconnect, 아니면 본인 disconnect
+    };
+    SOCKET.callback.hello = function(data, success, error) { // 다른 접속자 정보 수신. (data, success, error)
+        // success 가 undefined 이면 다른 접속자 정보
+        // success 가 false 이면 본인 정보 전송 실패
+    };
+    SOCKET.callback.users = function(data, success, error) { // 접속자 목록 수신. (data, success, error)
+        // success 가 true 이면 성공, false 이면 실패
+    	var form = document.forms["FormAction1"];
+    	form.elements["result"].value = JSON.stringify(data);
+    };
+    SOCKET.callback.rooms = function(data, success, error) { // 채팅방 목록 수신. (data, success, error)
+        // success 가 true 이면 성공, false 이면 실패
+        var form = document.forms["FormAction2"];
+        form.elements["result"].value = JSON.stringify(data);
+    };
+    SOCKET.callback.roomJoin = function(data, success, error) { // 채팅방 입장 수신. (data, success, error)
+        // success 가 undefined 이면 다른 접속자가 채팅방에 입장
+        // success 가 true 이면 본인 채팅방에 입장, false 이면 실패
+        var form = document.forms["FormAction3"];
+        form.elements["result"].value = JSON.stringify(data);
+    };
+    SOCKET.callback.roomLeave = function(data, success, error) { // 채팅방 나가기 수신. (data, success, error)
+        // success 가 undefined 이면 다른 접속자가 채팅방 나감
+        // success 가 true 이면 본인 채팅방 나감, false 이면 실패
+        var form = document.forms["FormAction5"];
+        form.elements["result"].value = JSON.stringify(data);
+    };
+    SOCKET.callback.roomUsers = function(data, success, error) { // 채팅방 접속자 목록 수신. (data, success, error)
+        // success 가 true 이면 성공, false 이면 실패
+        var form = document.forms["FormAction6"];
+        form.elements["result"].value = JSON.stringify(data);
+    };
+    SOCKET.callback.roomSend = function(data, success, error) { // 채팅방 메시지 수신. (data, success, error)
+        // success 가 undefined 이면 다른 접속자 메시지
+        // success 가 true 이면 본인 메시지, false 이면 실패
+        var form = document.forms["FormAction7"];
+        form.elements["result"].value = JSON.stringify(data);
+    };
+    SOCKET.callback.roomMessages = function(data, success, error) { // 채팅방 접속자 목록 수신. (data, success, error)
+        // success 가 true 이면 성공, false 이면 실패
+        var form = document.forms["FormAction8"];
+        form.elements["result"].value = JSON.stringify(data);
+    };
+    SOCKET.callback.oneSend = function(data, success, error) { // 귓속말(1:1) 메시지 수신. (data, success, error)
+        // success 가 undefined 이면 다른 접속자 메시지
+        // success 가 true 이면 본인 메시지, false 이면 실패
+        var form = document.forms["FormAction9"];
+        form.elements["result"].value = JSON.stringify(data);
+    };
+    SOCKET.callback.allSend = function(data, success, error) { // 전체 메시지 수신. (data, success, error)
+        // success 가 undefined 이면 다른 접속자 메시지
+        // success 가 true 이면 본인 메시지, false 이면 실패
+        var form = document.forms["FormAction10"];
+        form.elements["result"].value = JSON.stringify(data);
+    };
+    
+    // 소켓 연결
+    SOCKET.connect();
+};
+doAction = function(action) {
+
+    switch(action) {
+    case "users":
+        var form = document.forms["FormAction1"];
+        var condition = JSON.parse(form.elements["condition"].value);
+        SOCKET.users(condition);
+        break;
+    case "rooms":
+        var form = document.forms["FormAction2"];
+        SOCKET.rooms();
+        break;
+    case "room-join":
+    	var form = document.forms["FormAction3"];
+        if (form.elements["room"].value == "") {
+            alert("room 값을 입력하십시오")
+            return;
+        }
+        var room = JSON.parse(form.elements["room"].value);
+        SOCKET.roomJoin(room);
+        break;
+    case "room-leave":
+    	var form = document.forms["FormAction5"];
+        if (form.elements["roomId"].value == "") {
+            alert("roomId 값을 입력하십시오")
+            return;
+        }
+        SOCKET.roomLeave(form.elements["roomId"].value);
+        break;
+    case "room-users":
+    	var form = document.forms["FormAction6"];
+        if (form.elements["roomId"].value == "") {
+            alert("roomId 값을 입력하십시오")
+            return;
+        }
+        SOCKET.roomUsers(form.elements["roomId"].value);
+        break;
+    case "room-send":
+    	var form = document.forms["FormAction7"];
+        if (form.elements["roomId"].value == "") {
+            alert("roomId 값을 입력하십시오")
+            return;
+        }
+        if (form.elements["message"].value == "") {
+            alert("message 값을 입력하십시오")
+            return;
+        }
+        var data = JSON.parse(form.elements["message"].value);
+        var msg = {
+            roomId : form.elements["roomId"].value, 
+            message : data
+        };
+        SOCKET.roomSend(msg);
+        break;
+    case "room-messages":
+        var form = document.forms["FormAction8"];
+        if (form.elements["roomId"].value == "") {
+            alert("roomId 값을 입력하십시오")
+            return;
+        }
+        if (form.elements["orderby"].value == "") {
+            alert("정렬 값을 입력하십시오")
+            return;
+        }
+        if (form.elements["perPage"].value == "") {
+            alert("페이지당개수 값을 입력하십시오")
+            return;
+        }
+        if (form.elements["page"].value == "") {
+            alert("페이지번호 값을 입력하십시오")
+            return;
+        }
+        SOCKET.roomMessages(form.elements["roomId"].value, JSON.parse(form.elements["condition"].value), form.elements["orderby"].value, form.elements["perPage"].value, form.elements["page"].value);
+        break;
+    case "one-send":
+    	var form = document.forms["FormAction9"];
+        if (form.elements["socketId"].value == "") {
+            alert("socketId 값을 입력하십시오")
+            return;
+        }
+        if (form.elements["message"].value == "") {
+            alert("message 값을 입력하십시오")
+            return;
+        }
+        var data = JSON.parse(form.elements["message"].value);
+        var msg = {
+            socketId : form.elements["socketId"].value, 
+            message : data
+        };
+        SOCKET.oneSend(msg);
+        break;
+    case "all-send":
+    	var form = document.forms["FormAction10"];
+        if (form.elements["message"].value == "") {
+            alert("message 값을 입력하십시오")
+            return;
+        }
+        var data = JSON.parse(form.elements["message"].value);
+        var msg = {
+            message : data
+        };
+        SOCKET.allSend(msg);
+        break;
+    }
+};
+</script>
+<style type="text/css">
+th {background-color:#000; color:#fff;}
+td {vertical-align:top;}
+textarea {width:400px; height:100px;}
+input    {width:200px;}
+.col-1 {width:200px}
+.col-2 {width:150px}
+.col-3 {width:200px}
+.col-4 {width:200px}
+.col-5 {width:400px;}
+.line  {background-color:#000;}
+</style>
+</head>
+<body onload="doStart()">
+
+    <table>
+    <tbody>
+	    <tr>
+	        <th class="col-1">이벤트</th>
+	        <th class="col-2">실행</th>
+	        <th colspan="2">파라미터</th>
+	        <th class="col-5">결과</th>
+	    </tr>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction1" method="post">
+		    <tr>
+		        <th class="col-1">접속자검색</th>
+		        <td class="col-2"><a href="javascript:void(0)" onclick="doAction('users')">Users</a></td>
+		        <td class="col-3">Condition(json object)</td>
+		        <td class="col-4"><input type="text" name="condition" value="{}"></td>
+		        <td class="col-5"><textarea name="result"></textarea></td>
+		    </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction2" method="post">
+		    <tr>
+		        <th class="col-1">채팅방 목록</th>
+		        <td class="col-2"><a href="javascript:void(0)" onclick="doAction('rooms')">Rooms</a></td>
+		        <td class="col-3">-</td>
+		        <td class="col-4">-</td>
+		        <td class="col-5"><textarea name="result"></textarea></td>
+		    </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction3" method="post">
+		    <tr>
+		        <th class="col-1">채팅방 입장</th>
+		        <td class="col-2"><a href="javascript:void(0)" onclick="doAction('room-join')">Join Room</a></td>
+		        <td class="col-3">Room 정보(json object)</td>
+		        <td class="col-4"><input type="text" name="room" value="{}"></td>
+                <td class="col-5"><textarea name="result"></textarea></td>
+		    </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction5" method="post">
+		    <tr>
+		        <th class="col-1">채팅방 퇴장</th>
+		        <td class="col-2"><a href="javascript:void(0)" onclick="doAction('room-leave')">Leave Room</a></td>
+		        <td class="col-3">RoomId(String)</td>
+		        <td class="col-4"><input type="text" name="roomId"></td>
+		        <td class="col-5"><textarea name="result"></textarea></td>
+		    </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction6" method="post">
+		    <tr>
+		        <th class="col-1">채팅방 접속자 목록</th>
+		        <td class="col-2"><a href="javascript:void(0)" onclick="doAction('room-users')">Room Users</a></td>
+		        <td class="col-3">RoomId(String)</td>
+		        <td class="col-4"><input type="text" name="roomId"></td>
+		        <td class="col-5"><textarea name="result"></textarea></td>
+		    </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction7" method="post">
+		    <tr>
+		        <th class="col-1" rowspan="2">채팅방 메시지 전송</th>
+		        <td class="col-2" rowspan="2"><a href="javascript:void(0)" onclick="doAction('room-send')">Room Send</a></td>
+		        <td class="col-3">RoomId(String)</td>
+		        <td class="col-4"><input type="text" name="roomId"></td>
+		        <td class="col-5" rowspan="2"><textarea name="result"></textarea></td>
+		    </tr>
+		    <tr>
+		        <td class="col-3">Message(json object)</td>
+		        <td class="col-4"><input type="text" name="message" value="{}"></td>
+		    </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction8" method="post">
+		    <tr>
+		        <th class="col-1" rowspan="5">채팅방 메시지 목록</th>
+		        <td class="col-2" rowspan="5"><a href="javascript:void(0)" onclick="doAction('room-messages')">Room Messages</a></td>
+		        <td class="col-3">RoomId(String)</td>
+		        <td class="col-4"><input type="text" name="roomId"></td>
+		        <td class="col-5" rowspan="5"><textarea name="result"></textarea></td>
+		    </tr>
+            <tr>
+                <td class="col-3">Condition(json object)</td>
+                <td class="col-4"><input type="text" name="condition" value="{}"></td>
+            </tr>
+            <tr>
+                <td class="col-3">정렬(1:날짜오름차순,-1:날짜내림차순)</td>
+                <td class="col-4"><input type="text" name="orderby" value="1"></td>
+            </tr>
+            <tr>
+                <td class="col-3">페이지당개수</td>
+                <td class="col-4"><input type="text" name="perPage" value="10"></td>
+            </tr>
+            <tr>
+                <td class="col-3">페이지번호</td>
+                <td class="col-4"><input type="text" name="page" value="1"></td>
+            </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction9" method="post">
+		    <tr>
+		        <th class="col-1" rowspan="2">1:1 메시지 전송</th>
+		        <td class="col-2" rowspan="2"><a href="javascript:void(0)" onclick="doAction('one-send')">One Send</a></td>
+		        <td class="col-3">SocketId(String)</td>
+		        <td class="col-4"><input type="text" name="socketId"></td>
+		        <td class="col-5" rowspan="2"><textarea name="result"></textarea></td>
+		    </tr>
+		    <tr>
+		        <td class="col-3">Message(json object)</td>
+		        <td class="col-4"><input type="text" name="message" value="{}"></td>
+		    </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+	    <form name="FormAction10" method="post">
+		    <tr>
+		        <th class="col-1">전체 메시지전송</th>
+		        <td class="col-2"><a href="javascript:void(0)" onclick="doAction('all-send')">All Send</a></td>
+		        <td class="col-3">Message(json object)</td>
+		        <td class="col-4"><input type="text" name="message" value="{}"></td>
+		        <td class="col-5"><textarea name="result"></textarea></td>
+		    </tr>
+	    </form>
+
+        <tr><td class="line" colspan="5"></td></tr>
+        
+    </tbody>
+    </table>
+
+</body>
+</html>

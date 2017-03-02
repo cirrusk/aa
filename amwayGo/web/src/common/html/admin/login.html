@@ -1,0 +1,103 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if (gte IE 9)]><html lang="ko" class="modern ie"><![endif]-->
+<!--[if !(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>AOF5-UNIV ADMIN DEMO</title>
+<link rel="stylesheet" href="../../css/admin/base.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/admin/common.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/admin/layout.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/admin/content.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/admin/style.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/admin/jquery.aos.ui.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/admin/login.css" type="text/css"/>
+</head>
+<body>
+
+	<div id="layout">
+		<form id="FormGlobalParameters" name="FormGlobalParameters" method="post" onsubmit="return false;">
+			<input type="hidden" name="currentMenuId" value=""/>
+		</form>
+		<form id="FormParameters" name="FormParameters" method="post" onsubmit="return false;">
+		</form>
+
+		<div id="security" class="login">
+			<div class="input">
+				<form id="FormLogin" name="FormLogin" method="post" onsubmit="return false;">
+				<table cellpadding="0" cellspacing="0">
+				<tr valign="top">
+					<td width="62" height="22"><img src="../../images/admin/common/txt_id.gif" title="아이디"  /></td>
+					<td width="145"><input type="text" name="j_username" tabindex="1"></td>
+					<td width="60"valign="middle" rowspan="2"><img src="../../images/admin/btn/login.gif" title="로그인" onclick="doLogin();" style="cursor:pointer;cursor:pointer;"  /></td>
+				</tr>
+				<tr>
+					<td><img src="../../images/admin/common/txt_pw.gif" title="비밀번호"  /></td>
+					<td><input type="password" name="j_password" tabindex="2" onkeyup="UT.callFunctionByEnter(event, doLogin)" /></td>
+				</tr>
+				</table>
+				</form>
+			</div>
+
+			<div class="installWrap">
+				<dl>
+					<dt>학습관련 프로그램 다운로드</dt>
+					<dd>최적의 강의시청을 위한 학습프로그램을 다운로드 받으십시오</dd>
+					<dd>설치되지 않은 학습프로그램이 있다면 다운로드 받아 설치해 주십시오</dd>
+				</dl>
+				<div class="instBox">
+					<div class="media">
+						<span>미디어플레이어</span>
+						<P id="wmpPluginNotfound" style="display: none"><a href="http://windows.microsoft.com/ko-KR/windows/download-windows-media-player" target="_blank"><img src="../../images/admin/btn/install.gif" title="설치하기"  /></a></P>
+						<p id="wmpPluginAvailable" style="display: none"><img src="http://aof5.web.active4c.4csoft.com:8188/images/admin/btn/installed.gif" title="설치완료"  /></p>
+					</div>
+					<div class="flash">
+						<span>플래시플레이어</span>
+						<P id="flashPluginNotfound" style="display: none"><a href="http://get.adobe.com/kr/flashplayer" target="_blank"><img src="../../images/admin/btn/install.gif" title="설치하기"  /></a></P>
+						<p id="flashPluginAvailable" style="display: none"><img src="../../images/admin/btn/installed.gif" title="설치완료"  /></p>
+					</div>
+				</div>
+			</div>
+
+			<script type="text/javascript">
+			(function() {
+				var flashInstalled = false;
+				var wmpInstalled = false;
+				// Shockwave Flash
+				if (parseFloat(UT.installedFlashPlugin()) >= 9) {  // 버전 9 이상.
+					jQuery("#flashPluginAvailable").show();
+					jQuery("#flashPluginNotfound").hide();
+					flashInstalled = true;
+				} else {
+					jQuery("#flashPluginAvailable").hide();
+					jQuery("#flashPluginNotfound").show();
+				}
+				
+				// Windows Media Player
+				if (UT.installedMediaPlayerPlugin()) {
+					jQuery("#wmpPluginAvailable").show();
+					jQuery("#wmpPluginNotfound").hide();
+					wmpInstalled = true;
+				} else {
+					jQuery("#wmpPluginAvailable").hide();
+					jQuery("#wmpPluginNotfound").show();
+				}
+				
+					if (flashInstalled == true && wmpInstalled) {
+						jQuery(".installWrap").hide();
+					}
+			})();
+			</script>
+		</div>
+
+		<div class="push_footer"></div>
+		<div class="footer">
+			<div class="copyright">Copyright ⓒ <strong>4csoft.</strong> All Rights Reserved.</div>
+		</div>
+	</div>
+	<iframe name="hiddenframe" id="hiddenframe" height="0" width="0" style="display:none;" title="hidden"></iframe>
+</body>
+</html>

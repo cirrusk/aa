@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="필드:게시판:게시판명">게시판명</entry>
+    <entry key="필드:게시판:게시판설명">Description of board</entry>
+    <entry key="필드:게시판:사용여부">Use Y/N</entry>
+    <entry key="필드:게시판:비밀글">Locked article</entry>
+    <entry key="필드:게시판:에디터">에디터</entry>
+    <entry key="필드:게시판:최상위글게시">최상위 글 게시</entry>
+    <entry key="필드:게시판:최상위">최상위</entry>
+    <entry key="필드:게시판:댓글">댓글</entry>
+    <entry key="필드:게시판:답글">답글</entry>
+    <entry key="필드:게시판:첨부파일">Attached file</entry>
+    <entry key="필드:게시판:제한용량">제한용량</entry>
+    <entry key="필드:게시판:여부">여부</entry>
+    <entry key="필드:게시판:제목">Title</entry>
+    <entry key="필드:게시판:내용">Content</entry>
+    <entry key="필드:게시판:구분">Classification</entry>
+    <entry key="필드:게시판:FAQ구분">Classification of FAQ</entry>
+    <entry key="필드:게시판:첨부파일">첨부파일</entry>
+    <entry key="필드:게시판:공지">Notice</entry>
+    <entry key="필드:게시판:조회수">Views</entry>
+    <entry key="필드:게시판:평가대상여부">Evaluation subject Y/N</entry>
+    <entry key="필드:게시판:복사대상여부">복사대상여부</entry>
+    <entry key="필드:게시판:추천">Recommend</entry>
+    <entry key="필드:게시판:반대">Oppose</entry>
+    <entry key="필드:게시판:질문">질문</entry>
+    <entry key="필드:게시판:답변">Reply</entry>
+    <entry key="필드:게시판:입력방식">입력방식</entry>
+    <entry key="필드:게시판:게시기간">Period of posting</entry>
+    <entry key="필드:게시판:팝업크기">Pop-up size</entry>
+    <entry key="필드:게시판:영역설정">영역설정</entry>
+    <entry key="필드:게시판:템플릿설정">템플릿설정</entry>
+    <entry key="필드:게시판:확인메시지">확인메시지</entry>
+    <entry key="필드:게시판:시작일">시작일</entry>
+    <entry key="필드:게시판:종료일">Closing date</entry>
+    <entry key="필드:게시판:이미지">이미지</entry>
+    <entry key="필드:게시판:URL">URL</entry>
+    <entry key="필드:게시판:대상자">대상자</entry>
+    <entry key="필드:게시판:평가대상">평가대상</entry>
+    <entry key="필드:게시판:복사대상">복사대상</entry>
+    <entry key="필드:게시판:팝업노출">팝업노출</entry>
+    <entry key="필드:게시판:성적상세정보">성적 상세 정보</entry>
+    <entry key="필드:게시판:답변여부">Reply Y/N</entry>
+
+    <entry key="글:게시판:원게시글">원 게시글</entry>
+    <entry key="글:게시판:답변게시글">답변 게시글</entry>
+    <entry key="글:게시판:답변등록">답변등록</entry>
+    <entry key="글:게시판:답변글이존재하여삭제할수없습니다">답변 글이 존재하여 삭제할 수 없습니다</entry>
+    <entry key="글:게시판:삭제된게시판입니다">Deleted board</entry>
+    <entry key="글:게시판:사용하지않는게시판입니다">사용하지않는 게시판입니다</entry>
+    <entry key="글:게시판:게시판설정">게시판설정</entry>
+    <entry key="글:게시판:댓글수정">Modify reply</entry>
+    <entry key="글:게시판:추천하시겠습니까">Would you recommend this?</entry>
+    <entry key="글:게시판:반대하시겠습니까">Would you oppose this?</entry>
+    <entry key="글:게시판:이미참여하셨습니다">Already participated</entry>
+    <entry key="글:게시판:사용하지않는게시판입니다">사용하지 않는 게시판입니다</entry>
+    <entry key="글:게시판:생성되지않은게시판입니다">생성되지 않은 게시판입니다</entry>
+    <entry key="글:게시판:생성된게시판이존재하지않습니다">생성된 게시판이 존재하지 않습니다</entry>
+    <entry key="글:게시판:관련글">관련글</entry>
+    <entry key="글:게시판:가로">가로</entry>
+    <entry key="글:게시판:세로">세로</entry>
+    <entry key="글:게시판:픽셀">픽셀</entry>
+    <entry key="글:게시판:변경된데이터가없습니다">변경된 데이터가 없습니다</entry>
+    <entry key="글:게시판:팝업노출을위해비밀글이해제되었습니다">팝업노출을 위해 비밀글이 해제 되었습니다</entry>
+    <entry key="글:게시판:비밀글">비밀글 입니다.</entry>
+    <entry key="글:게시판:비밀글은원글등록자또는게시글등록자만조회가가능합니다">비밀글은 원글 등록자 또는 게시글 등록자만 조회가 가능합니다.</entry>
+	<entry key="글:게시판:답변">Reply</entry>
+    <entry key="글:게시판:미답변">미답변</entry>
+    <entry key="글:게시판:성적이의신청기간이아닙니다">성적이의 신청기간이 아닙니다.</entry>
+    <entry key="글:게시판:외">외</entry>
+    
+    <entry key="버튼:게시판:설정확인">설정확인</entry>
+
+</properties>

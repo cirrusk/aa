@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsChargeMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsChargeVO">
+/* UICdmsChargeMapper.insert */
+INSERT INTO cs_cdms_charge 
+       ( 
+           cs_project_seq ,
+           cs_section_index ,
+           cs_output_index ,
+           cs_module_index ,
+           cs_member_seq ,
+           cs_member_cdms_type_cd ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{projectSeq, jdbcType=NUMERIC} ,
+           #{sectionIndex, jdbcType=NUMERIC} ,
+           #{outputIndex, jdbcType=NUMERIC} ,
+           #{moduleIndex, jdbcType=NUMERIC} ,
+           #{memberSeq, jdbcType=NUMERIC} ,
+           #{memberCdmsTypeCd, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR(),
+           #{updIp, jdbcType=VARCHAR} 
+       ) 
+    </insert>
+
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsChargeVO">
+/* UICdmsChargeMapper.insertCopy */
+INSERT INTO cs_cdms_charge 
+       ( 
+           cs_project_seq ,
+           cs_section_index ,
+           cs_output_index ,
+           cs_module_index ,
+           cs_member_seq ,
+           cs_member_cdms_type_cd ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+SELECT
+       #{newProjectSeq, jdbcType=NUMERIC} ,
+       cs_section_index ,
+       cs_output_index ,
+       cs_module_index ,
+       cs_member_seq ,
+       cs_member_cdms_type_cd ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR} 
+  FROM cs_cdms_charge
+ WHERE cs_project_seq = #{projectSeq, jdbcType=NUMERIC}
+       AND cs_delete_yn = 'N'
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsChargeVO">
+/* UICdmsChargeMapper.update */
+UPDATE cs_cdms_charge 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_member_seq = #{memberSeq, jdbcType=NUMERIC}
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_section_index = #{sectionIndex}
+       AND cs_output_index = #{outputIndex}
+        <if test='moduleIndex != null'>
+       AND cs_module_index = #{moduleIndex} 
+        </if>
+       AND cs_member_cdms_type_cd = #{memberCdmsTypeCd} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsChargeVO">
+/* UICdmsChargeMapper.delete */
+UPDATE cs_cdms_charge 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_section_index = #{sectionIndex}
+       AND cs_output_index = #{outputIndex}
+        <if test='moduleIndex != null'>
+       AND cs_module_index = #{moduleIndex} 
+        </if>
+       AND cs_member_cdms_type_cd = #{memberCdmsTypeCd}
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="deleteByProject" parameterType="map">
+/* UICdmsChargeMapper.deleteByProject */
+UPDATE cs_cdms_charge 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_project_seq = #{projectSeq} 
+        <if test='memberSeq != null'>
+       AND cs_member_seq = #{memberSeq}
+        </if>
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <select id="getCountMember" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsChargeVO" resultType="int">
+/* UICdmsChargeMapper.getCountMember */
+SELECT COUNT(*) 
+  FROM cs_cdms_charge 
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_section_index = #{sectionIndex}
+       AND cs_output_index = #{outputIndex}
+        <if test='moduleIndex != null'>
+       AND cs_module_index = #{moduleIndex} 
+        </if>
+       AND cs_member_cdms_type_cd = #{memberCdmsTypeCd}
+       AND cs_delete_yn = 'N'
+    </select>
+    
+    <resultMap id="getListByProject_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsChargeRS">
+        <result column="charge.projectSeq"        property="charge.projectSeq"/>
+        <result column="charge.sectionIndex"      property="charge.sectionIndex"/>
+        <result column="charge.outputIndex"       property="charge.outputIndex"/>
+        <result column="charge.moduleIndex"       property="charge.moduleIndex"/>
+        <result column="charge.memberSeq"         property="charge.memberSeq"/>
+        <result column="charge.memberCdmsTypeCd"  property="charge.memberCdmsTypeCd"/>
+        <result column="charge.deleteYn"          property="charge.deleteYn"/>
+        <result column="charge.regMemberSeq"      property="charge.regMemberSeq"/>
+        <result column="charge.regDtime"          property="charge.regDtime"/>
+        <result column="charge.regIp"             property="charge.regIp"/>
+        <result column="charge.updMemberSeq"      property="charge.updMemberSeq"/>
+        <result column="charge.updDtime"          property="charge.updDtime"/>
+        <result column="charge.updIp"             property="charge.updIp"/>
+        <result column="member.memberSeq"         property="member.memberSeq"/>
+        <result column="member.memberName"        property="member.memberName"/>
+        <result column="member.memberId"          property="member.memberId"/>
+        <result column="member.nickname"          property="member.nickname"/>
+        <result column="member.photo"             property="member.photo"/>
+        <result column="companyMember.companySeq"  property="companyMember.companySeq"/>
+    </resultMap>
+    <select id="getListByProject" parameterType="Long" resultMap="getListByProject_result">
+/* UICdmsChargeMapper.getListByProject */
+SELECT charge.cs_project_seq         AS "charge.projectSeq" ,
+       charge.cs_section_index       AS "charge.sectionIndex" ,
+       charge.cs_output_index        AS "charge.outputIndex" ,
+       charge.cs_module_index        AS "charge.moduleIndex" ,
+       charge.cs_member_seq          AS "charge.memberSeq" ,
+       charge.cs_member_cdms_type_cd AS "charge.memberCdmsTypeCd" ,
+       charge.cs_delete_yn           AS "charge.deleteYn" ,
+       charge.cs_reg_member_seq      AS "charge.regMemberSeq" ,
+       charge.cs_reg_dtime           AS "charge.regDtime" ,
+       charge.cs_reg_ip              AS "charge.regIp" ,
+       charge.cs_upd_member_seq      AS "charge.updMemberSeq" ,
+       charge.cs_upd_dtime           AS "charge.updDtime" ,
+       charge.cs_upd_ip              AS "charge.updIp" ,
+       member.cs_member_seq          AS "member.memberSeq" ,
+       member.cs_member_name         AS "member.memberName" ,
+       member.cs_member_id           AS "member.memberId" ,
+       member.cs_nickname            AS "member.nickname" ,
+       member.cs_photo               AS "member.photo" ,
+       compmemb.cs_company_seq       AS "companyMember.companySeq" 
+  FROM cs_cdms_charge charge 
+   LEFT OUTER JOIN cs_member member
+       ON charge.cs_member_seq = member.cs_member_seq 
+   LEFT OUTER JOIN cs_company_member compmemb 
+       ON member.cs_member_seq = compmemb.cs_member_seq
+      AND compmemb.cs_delete_yn = 'N'
+ WHERE charge.cs_project_seq = #{projectSeq} 
+       AND charge.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getListBySection_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsChargeRS">
+        <result column="charge.projectSeq"        property="charge.projectSeq"/>
+        <result column="charge.sectionIndex"      property="charge.sectionIndex"/>
+        <result column="charge.outputIndex"       property="charge.outputIndex"/>
+        <result column="charge.moduleIndex"       property="charge.moduleIndex"/>
+        <result column="charge.memberSeq"         property="charge.memberSeq"/>
+        <result column="charge.memberCdmsTypeCd"  property="charge.memberCdmsTypeCd"/>
+        <result column="charge.deleteYn"          property="charge.deleteYn"/>
+        <result column="charge.regMemberSeq"      property="charge.regMemberSeq"/>
+        <result column="charge.regDtime"          property="charge.regDtime"/>
+        <result column="charge.regIp"             property="charge.regIp"/>
+        <result column="charge.updMemberSeq"      property="charge.updMemberSeq"/>
+        <result column="charge.updDtime"          property="charge.updDtime"/>
+        <result column="charge.updIp"             property="charge.updIp"/>
+        <result column="member.memberSeq"         property="member.memberSeq"/>
+        <result column="member.memberName"        property="member.memberName"/>
+        <result column="member.memberId"          property="member.memberId"/>
+        <result column="member.nickname"          property="member.nickname"/>
+        <result column="member.photo"             property="member.photo"/>
+        <result column="companyMember.companySeq"  property="companyMember.companySeq"/>
+    </resultMap>
+    <select id="getListBySection" parameterType="map" resultMap="getListBySection_result">
+/* UICdmsChargeMapper.getListByProject */
+SELECT charge.cs_project_seq         AS "charge.projectSeq" ,
+       charge.cs_section_index       AS "charge.sectionIndex" ,
+       charge.cs_output_index        AS "charge.outputIndex" ,
+       charge.cs_module_index        AS "charge.moduleIndex" ,
+       charge.cs_member_seq          AS "charge.memberSeq" ,
+       charge.cs_member_cdms_type_cd AS "charge.memberCdmsTypeCd" ,
+       charge.cs_delete_yn           AS "charge.deleteYn" ,
+       charge.cs_reg_member_seq      AS "charge.regMemberSeq" ,
+       charge.cs_reg_dtime           AS "charge.regDtime" ,
+       charge.cs_reg_ip              AS "charge.regIp" ,
+       charge.cs_upd_member_seq      AS "charge.updMemberSeq" ,
+       charge.cs_upd_dtime           AS "charge.updDtime" ,
+       charge.cs_upd_ip              AS "charge.updIp" ,
+       member.cs_member_seq          AS "member.memberSeq" ,
+       member.cs_member_name         AS "member.memberName" ,
+       member.cs_member_id           AS "member.memberId" ,
+       member.cs_nickname            AS "member.nickname" ,
+       member.cs_photo               AS "member.photo" ,
+       compmemb.cs_company_seq       AS "companyMember.companySeq" 
+  FROM cs_cdms_charge charge 
+   LEFT OUTER JOIN cs_member member
+       ON charge.cs_member_seq = member.cs_member_seq 
+   LEFT OUTER JOIN cs_company_member compmemb 
+       ON member.cs_member_seq = compmemb.cs_member_seq
+      AND compmemb.cs_delete_yn = 'N'
+ WHERE charge.cs_project_seq = #{projectSeq} 
+       AND charge.cs_section_index = #{sectionIndex} 
+       AND charge.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getListByOutput_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsChargeRS">
+        <result column="charge.projectSeq"        property="charge.projectSeq"/>
+        <result column="charge.sectionIndex"      property="charge.sectionIndex"/>
+        <result column="charge.outputIndex"       property="charge.outputIndex"/>
+        <result column="charge.moduleIndex"       property="charge.moduleIndex"/>
+        <result column="charge.memberSeq"         property="charge.memberSeq"/>
+        <result column="charge.memberCdmsTypeCd"  property="charge.memberCdmsTypeCd"/>
+        <result column="charge.deleteYn"          property="charge.deleteYn"/>
+        <result column="charge.regMemberSeq"      property="charge.regMemberSeq"/>
+        <result column="charge.regDtime"          property="charge.regDtime"/>
+        <result column="charge.regIp"             property="charge.regIp"/>
+        <result column="charge.updMemberSeq"      property="charge.updMemberSeq"/>
+        <result column="charge.updDtime"          property="charge.updDtime"/>
+        <result column="charge.updIp"             property="charge.updIp"/>
+        <result column="member.memberSeq"         property="member.memberSeq"/>
+        <result column="member.memberName"        property="member.memberName"/>
+        <result column="member.memberId"          property="member.memberId"/>
+        <result column="member.nickname"          property="member.nickname"/>
+        <result column="member.photo"             property="member.photo"/>
+        <result column="companyMember.companySeq"  property="companyMember.companySeq"/>
+    </resultMap>
+    <select id="getListByOutput" parameterType="map" resultMap="getListByOutput_result">
+/* UICdmsChargeMapper.getListByOutput */
+SELECT charge.cs_project_seq         AS "charge.projectSeq" ,
+       charge.cs_section_index       AS "charge.sectionIndex" ,
+       charge.cs_output_index        AS "charge.outputIndex" ,
+       charge.cs_module_index        AS "charge.moduleIndex" ,
+       charge.cs_member_seq          AS "charge.memberSeq" ,
+       charge.cs_member_cdms_type_cd AS "charge.memberCdmsTypeCd" ,
+       charge.cs_delete_yn           AS "charge.deleteYn" ,
+       charge.cs_reg_member_seq      AS "charge.regMemberSeq" ,
+       charge.cs_reg_dtime           AS "charge.regDtime" ,
+       charge.cs_reg_ip              AS "charge.regIp" ,
+       charge.cs_upd_member_seq      AS "charge.updMemberSeq" ,
+       charge.cs_upd_dtime           AS "charge.updDtime" ,
+       charge.cs_upd_ip              AS "charge.updIp" ,
+       member.cs_member_seq          AS "member.memberSeq" ,
+       member.cs_member_name         AS "member.memberName" ,
+       member.cs_member_id           AS "member.memberId" ,
+       member.cs_nickname            AS "member.nickname" ,
+       member.cs_photo               AS "member.photo" ,
+       compmemb.cs_company_seq       AS "companyMember.companySeq" 
+  FROM cs_cdms_charge charge 
+   LEFT OUTER JOIN cs_member member
+       ON charge.cs_member_seq = member.cs_member_seq 
+   LEFT OUTER JOIN cs_company_member compmemb 
+       ON member.cs_member_seq = compmemb.cs_member_seq
+      AND compmemb.cs_delete_yn = 'N'
+ WHERE charge.cs_project_seq = #{projectSeq} 
+       AND charge.cs_section_index = #{sectionIndex}
+       AND charge.cs_output_index = #{outputIndex} 
+       AND charge.cs_delete_yn = 'N'
+    </select>
+    
+    <select id="getListByProjectVO" parameterType="Long" resultType="com._4csoft.aof.ui.cdms.vo.UICdmsChargeVO">
+/* UICdmsChargeMapper.getListByProjectVO */
+SELECT charge.cs_project_seq         AS "projectSeq" ,
+       charge.cs_section_index       AS "sectionIndex" ,
+       charge.cs_output_index        AS "outputIndex" ,
+       charge.cs_module_index        AS "moduleIndex" ,
+       charge.cs_member_seq          AS "memberSeq" ,
+       charge.cs_member_cdms_type_cd AS "memberCdmsTypeCd" ,
+       charge.cs_delete_yn           AS "deleteYn" ,
+       charge.cs_reg_member_seq      AS "regMemberSeq" ,
+       charge.cs_reg_dtime           AS "regDtime" ,
+       charge.cs_reg_ip              AS "regIp" ,
+       charge.cs_upd_member_seq      AS "updMemberSeq" ,
+       charge.cs_upd_dtime           AS "updDtime" ,
+       charge.cs_upd_ip              AS "updIp"
+  FROM cs_cdms_charge charge 
+ WHERE charge.cs_project_seq = #{projectSeq} 
+       AND charge.cs_delete_yn = 'N'
+    </select>
+
+</mapper>

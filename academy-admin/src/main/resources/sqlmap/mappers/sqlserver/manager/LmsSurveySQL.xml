@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.lms.survey.service.impl.LmsSurveyMapper">
+	
+	<sql id="selectlmsSurveyWhere">
+		WHERE USEFLAG='Y' 
+		AND COURSETYPE='V'
+		<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+			AND CATEGORYID = #{searchcategoryid}
+		</if>
+		<if test='searchstartdate != null and !searchstartdate.equals("")'>
+			AND FORMAT(ENDDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+		</if>
+		<if test='searchenddate != null and !searchenddate.equals("")'>
+			AND FORMAT(STARTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+	 		AND COURSENAME LIKE '%'+#{searchtext }+'%'  
+		</if>
+	</sql>
+	
+	<select id="selectLmsSurveyCount" resultType="int">
+		SELECT COUNT(*) AS CNT
+		FROM LMSCOURSE
+		<include refid="selectlmsSurveyWhere" />
+	</select>
+	
+	<select id="selectLmsSurveyResponseCount" resultType="int">
+		SELECT COUNT(*) AS CNT
+		FROM LMSSURVEYRESPONSE
+		WHERE COURSEID = #{courseid}
+	</select>
+	
+	<select id="selectLmsSurveyList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			#{totalCount} - ROW_NUM + 1 AS NO 
+			, AA.*
+			, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+			, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				COURSEID
+				, CATEGORYID
+				, COURSENAME
+				, STARTDATE
+				, ENDDATE
+			FROM LMSCOURSE
+			<include refid="selectlmsSurveyWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectLmsSurveyDetailList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			A.COURSEID
+			, A.SURVEYSEQ
+			, A.SURVEYNAME
+			, A.SURVEYTYPE
+			, CASE WHEN A.SURVEYTYPE = '1' THEN '선일형'
+				WHEN A.SURVEYTYPE = '2' THEN '선다형'
+				WHEN A.SURVEYTYPE = '3' THEN '단답형'
+				WHEN A.SURVEYTYPE = '4' THEN '서술형'
+				END AS SURVEYTYPENAME		
+			, (SELECT COUNT(*) FROM LMSSURVEYSAMPLE WHERE COURSEID = A.COURSEID AND SURVEYSEQ = A.SURVEYSEQ ) AS SAMPLECOUNT
+		FROM LMSSURVEY A
+		WHERE A.COURSEID = #{courseid}
+	</select>
+	
+	<select id="selectLmsSurveySampleList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			COURSEID
+			, SURVEYSEQ
+			, SAMPLESEQ
+			, SAMPLENAME
+			, SAMPLEVALUE
+			, DIRECTYN
+		FROM LMSSURVEYSAMPLE
+		WHERE COURSEID = #{courseid}
+	</select>
+	
+	<select id="selectLmsSurveyExcelList" parameterType="reqBox" resultType="hashmap">
+		SELECT
+			AA.*
+			, AA.ROW_NUM AS NO 
+			, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+			, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				COURSEID
+				, CATEGORYID
+				, COURSENAME
+				, STARTDATE
+				, ENDDATE
+			FROM LMSCOURSE
+			<include refid="selectlmsSurveyWhere" />
+		) AA	
+	</select>
+	
+	<update id="deleteLmsSurveyAjax" parameterType="reqBox">
+		/* deleteLmsCourse */
+		UPDATE LMSCOURSE
+			SET
+				 USEFLAG = 'N' 
+		WHERE COURSEID  IN
+			<foreach collection="courseids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+	
+	<select id="selectLmsSurveyDetail" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsSurvey */
+		SELECT
+			COURSEID
+			, SURVEYSEQ
+			, SURVEYNAME
+			, , SURVEYTYPE
+		FROM LMSSURVEY
+		WHERE COURSEID = #{courseid}
+	</select>
+	
+	<insert id="insertLmsSurvey" parameterType="reqBox">
+		INSERT INTO LMSSURVEY (
+			COURSEID
+			, SURVEYSEQ
+			, SURVEYNAME
+			, SURVEYTYPE
+		) VALUES (
+			#{courseid}
+			, #{surveyseq}
+			, #{surveyname}
+			, #{surveytype}
+		)
+	</insert>
+
+	<insert id="insertLmsSurveySample" parameterType="reqBox">
+		INSERT INTO LMSSURVEYSAMPLE (
+			COURSEID
+			, SURVEYSEQ
+			, SAMPLESEQ
+			, SAMPLENAME
+			, SAMPLEVALUE
+			, DIRECTYN
+		) VALUES (
+			#{courseid}
+			, #{surveyseq}
+			, #{sampleseq}
+			, #{samplename}
+			, #{samplevalue}
+			, #{directyn}
+		)
+	</insert>
+	
+	<delete id="deleteLmsSurveySample" parameterType="reqBox">
+		DELETE FROM LMSSURVEYSAMPLE
+		WHERE COURSEID = #{courseid}
+	</delete>
+	
+	<delete id="deleteLmsSurvey" parameterType="reqBox">
+		DELETE FROM LMSSURVEY
+		WHERE COURSEID = #{courseid}
+	</delete>
+	
+	<insert id="copyLmsSurveyCourseAjax" parameterType="reqBox">
+	    <selectKey resultType="int" keyProperty="maxcourseid" order="BEFORE">
+	        SELECT ISNULL(MAX(COURSEID),0)+1 AS MAXCOURSEID FROM LMSCOURSE        
+	    </selectKey> 
+		/* copyLmsCourse */
+			INSERT INTO LMSCOURSE(
+				COURSEID ,
+				CATEGORYID ,
+				COURSETYPE ,
+				COURSENAME ,
+				THEMENAME ,
+				THEMESEQ ,
+				OPENFLAG ,
+				REQUESTSTARTDATE ,
+				REQUESTENDDATE ,
+				STARTDATE ,
+				ENDDATE ,
+				REGISTRANTDATE ,
+				MODIFYDATE ,
+				COURSECONTENT ,
+				DATATYPE ,
+				PLAYTIME ,
+				COURSEIMAGE ,
+				COURSEIMAGENOTE ,
+				SNSFLAG ,
+				GROUPFLAG ,
+				USEFLAG ,
+				REGISTRANT ,
+				MODIFIER ,
+				TARGET ,
+				SEARCHWORD ,
+				CANCELTERM ,
+				LIKECOUNT ,
+				VIEWCOUNT 
+				)
+			SELECT 
+				#{maxcourseid} ,
+				CATEGORYID ,
+				COURSETYPE ,
+				'복사-' + COURSENAME ,
+				THEMENAME ,
+				THEMESEQ ,
+				OPENFLAG ,
+				REQUESTSTARTDATE ,
+				REQUESTENDDATE ,
+				STARTDATE ,
+				ENDDATE ,
+				getdate() ,
+				getdate() ,
+				COURSECONTENT ,
+				DATATYPE ,
+				PLAYTIME ,
+				COURSEIMAGE ,
+				COURSEIMAGENOTE ,
+				SNSFLAG ,
+				GROUPFLAG ,
+				USEFLAG ,
+				#{adminid} ,
+				#{adminid} ,
+				TARGET ,
+				SEARCHWORD ,
+				CANCELTERM ,
+				0 ,
+				0 
+			FROM LMSCOURSE
+			WHERE COURSEID = #{courseid}
+	</insert>
+	
+	<insert id="copyLmsSurveyAjax" parameterType="reqBox">
+		INSERT INTO LMSSURVEY (
+			COURSEID
+			, SURVEYSEQ
+			, SURVEYNAME
+			, SURVEYTYPE
+		) 
+		SELECT 
+			#{maxcourseid}
+			, SURVEYSEQ
+			, SURVEYNAME
+			, SURVEYTYPE
+		FROM LMSSURVEY
+		WHERE COURSEID = #{courseid}
+	</insert>
+	
+	<insert id="copyLmsSurveySampleAjax" parameterType="reqBox">
+		INSERT INTO LMSSURVEYSAMPLE (
+			COURSEID
+			, SURVEYSEQ
+			, SAMPLESEQ
+			, SAMPLENAME
+			, SAMPLEVALUE
+			, DIRECTYN
+		) 
+		SELECT
+			#{maxcourseid}
+			, SURVEYSEQ
+			, SAMPLESEQ
+			, SAMPLENAME
+			, SAMPLEVALUE
+			, DIRECTYN
+		FROM LMSSURVEYSAMPLE
+		WHERE COURSEID = #{courseid}
+	</insert>
+	
+</mapper>

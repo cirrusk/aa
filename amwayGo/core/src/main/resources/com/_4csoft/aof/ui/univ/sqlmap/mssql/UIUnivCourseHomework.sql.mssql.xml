@@ -1,0 +1,1441 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseHomeworkMapper">
+	<insert id="insert" useGeneratedKeys="true" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO">
+		<selectKey resultType="Long" keyProperty="homeworkSeq">
+        SELECT @@IDENTITY
+        </selectKey>
+            /* UnivCourseHomeworkMapper.insert */
+			INSERT INTO cs_course_homework
+			       ( 
+						cs_course_active_seq ,
+						cs_homework_title ,
+						cs_description ,
+						cs_start_dtime ,
+						cs_start2_dtime ,
+						cs_start_day ,
+						cs_end_dtime ,
+						cs_end2_dtime ,
+						cs_end_day ,
+						cs_middle_final_type_cd ,
+						cs_basic_supplement_cd ,
+						cs_onoff_cd ,
+						cs_open_yn ,
+						cs_prof_member_seq ,
+						cs_rate ,
+						cs_rate2 ,
+						cs_reference_seq ,
+						cs_reference_type ,
+						cs_replace_yn ,
+						cs_use_yn ,
+			           	cs_delete_yn , 
+			           	cs_reg_member_seq , 
+			           	cs_upd_member_seq , 
+			           	cs_reg_dtime , 
+			           	cs_upd_dtime , 
+			           	cs_reg_ip , 
+			           	cs_upd_ip 
+			       ) 
+			   VALUES
+			   	   (
+						#{courseActiveSeq ,		jdbcType=NUMERIC} ,
+						#{homeworkTitle ,		jdbcType=VARCHAR} ,
+						#{description ,			jdbcType=VARCHAR} ,
+						#{startDtime ,			jdbcType=VARCHAR} ,
+						#{start2Dtime ,			jdbcType=VARCHAR} ,
+						#{startDay ,			jdbcType=NUMERIC} ,
+						#{endDtime ,			jdbcType=VARCHAR} ,
+						#{end2Dtime ,			jdbcType=VARCHAR} ,
+						#{endDay ,				jdbcType=NUMERIC} ,
+						#{middleFinalTypeCd ,	jdbcType=VARCHAR} ,
+						#{basicSupplementCd ,	jdbcType=VARCHAR} ,
+						#{onoffCd ,				jdbcType=VARCHAR} ,
+						#{openYn ,				jdbcType=VARCHAR} ,
+						#{profMemberSeq ,		jdbcType=VARCHAR} ,
+						#{rate ,				jdbcType=DOUBLE } ,
+						#{rate2 ,				jdbcType=DOUBLE } ,
+						#{referenceSeq ,		jdbcType=NUMERIC} ,
+						#{referenceType ,		jdbcType=VARCHAR} ,
+						#{replaceYn ,			jdbcType=VARCHAR} ,
+						#{useYn ,				jdbcType=VARCHAR} ,
+			   		   	'N' ,
+			           	#{regMemberSeq,   jdbcType=NUMERIC} ,
+			           	#{updMemberSeq,   jdbcType=NUMERIC} ,
+			           	dbo.FN_NOW_TO_CHAR() ,
+			           	dbo.FN_NOW_TO_CHAR() ,
+			           	#{regIp,          jdbcType=VARCHAR} ,
+			            #{updIp,          jdbcType=VARCHAR}
+			   	   )
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO">
+		/* UnivCourseHomeworkMapper.update */
+		UPDATE cs_course_homework         
+		   SET 
+		   	<if test='homeworkTitle != null and !homeworkTitle.equals("")'>
+		   	   cs_homework_title 		= #{homeworkTitle ,		jdbcType=VARCHAR} ,
+		   	</if>
+		    <if test='description != null and !description.equals("")'>
+			   cs_description 			= #{description ,		jdbcType=VARCHAR} ,
+			</if>
+			<if test='startDtime != null and !startDtime.equals("")'>
+			   cs_start_dtime 			= #{startDtime ,		jdbcType=VARCHAR} ,
+			</if>
+			<if test='start2Dtime != null and !start2Dtime.equals("")'>
+			   cs_start2_dtime 			= #{start2Dtime ,		jdbcType=VARCHAR} ,
+			</if>
+			<if test='startDay != null and !startDay.equals("")'>
+			   cs_start_day 			= #{startDay ,		jdbcType=NUMERIC} ,
+			</if>
+			<if test='endDtime != null and !endDtime.equals("")'>
+			   cs_end_dtime 			= #{endDtime ,			jdbcType=VARCHAR} ,
+			</if>
+			<if test='end2Dtime != null and !end2Dtime.equals("")'>
+			   cs_end2_dtime 			= #{end2Dtime ,			jdbcType=VARCHAR} ,
+			</if>
+			<if test='endDay != null and !endDay.equals("")'>
+			   cs_end_day 				= #{endDay ,			jdbcType=NUMERIC} ,
+			</if>
+			<if test='middleFinalTypeCd != null and !middleFinalTypeCd.equals("")'>
+			   cs_middle_final_type_cd 	= #{middleFinalTypeCd ,	jdbcType=VARCHAR} ,
+			</if>
+			<if test='basicSupplementCd != null and !basicSupplementCd.equals("")'>
+			   cs_basic_supplement_cd 	= #{basicSupplementCd ,	jdbcType=VARCHAR} ,
+			</if>
+			<if test='onoffCd != null and !onoffCd.equals("")'>
+			   cs_onoff_cd 				= #{onoffCd ,			jdbcType=VARCHAR} ,
+			</if>
+			<if test='openYn != null and !openYn.equals("")'>
+			   cs_open_yn 				= #{openYn ,			jdbcType=VARCHAR} ,
+			</if>
+			<if test='rate != null and !rate.equals("")'>
+			   cs_rate 					= #{rate ,				jdbcType=DOUBLE } ,
+			</if>
+			<if test='rate2 != null and !rate2.equals("")'>
+			   cs_rate2 				= #{rate2 ,				jdbcType=DOUBLE } ,
+			</if>
+			<if test='referenceSeq != null and !referenceSeq.equals("")'>
+			   cs_reference_seq 		= #{referenceSeq ,		jdbcType=NUMERIC} ,
+			</if>
+			<if test='referenceType != null and !referenceType.equals("")'>
+			   cs_reference_type  		= #{referenceType ,	jdbcType=VARCHAR} ,
+			</if>
+			<if test='replaceYn != null and !replaceYn.equals("")'>
+			   cs_replace_yn 			= #{replaceYn ,			jdbcType=VARCHAR} ,
+			</if>
+			<if test='useYn != null and !useYn.equals("")'>
+			   cs_use_yn 				= #{useYn ,				jdbcType=VARCHAR} ,
+			</if>
+		   	   cs_upd_dtime  			= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         		= #{updIp, jdbcType=VARCHAR} 
+		 WHERE cs_homework_seq 			= #{homeworkSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="updateByReferenceSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO">
+    	/* UnivCourseHomeworkMapper.updateByReferenceSeq */
+    	UPDATE cs_course_homework         
+		   SET cs_reference_seq 		= #{homeworkSeq ,		jdbcType=NUMERIC} 
+		 WHERE cs_homework_seq 			= #{homeworkSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO">
+		/* UnivCourseHomeworkMapper.delete */
+		UPDATE cs_course_homework 
+		   SET cs_upd_dtime      = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn      = 'Y' 
+		 WHERE cs_homework_seq 	 = #{homeworkSeq}
+		   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="deleteBasicHomework" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO">
+        /* UnivCourseHomeworkMapper.deleteBasicHomework */
+        UPDATE cs_course_homework 
+           SET cs_upd_dtime      = dbo.FN_NOW_TO_CHAR() ,
+               cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+               cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+               cs_delete_yn      = 'Y' 
+         WHERE cs_course_active_seq   = #{courseActiveSeq}
+           AND cs_replace_yn = 'N'
+           AND cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}'
+           AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkRS">
+    	<result column="home.homeworkSeq"           property="courseHomework.homeworkSeq"       />
+   	 	<result column="home.courseActiveSeq"       property="courseHomework.courseActiveSeq"   />
+   	 	<result column="home.homeworkTitle"         property="courseHomework.homeworkTitle"     />
+   	 	<result column="home.description"           property="courseHomework.description"       />
+   	 	<result column="home.startDtime"            property="courseHomework.startDtime"        />
+   	 	<result column="home.start2Dtime"           property="courseHomework.start2Dtime"       />
+   	 	<result column="home.startDay"           	property="courseHomework.startDay"       />
+   	 	<result column="home.endDtime"              property="courseHomework.endDtime"          />
+   	 	<result column="home.end2Dtime"             property="courseHomework.end2Dtime"         />
+   	 	<result column="home.endDay"             	property="courseHomework.endDay"         />
+   	 	<result column="home.middleFinalTypeCd"     property="courseHomework.middleFinalTypeCd" />
+   	 	<result column="home.basicSupplementCd"     property="courseHomework.basicSupplementCd" />
+   	 	<result column="home.onoffCd"               property="courseHomework.onoffCd"           />
+   	 	<result column="home.openYn"                property="courseHomework.openYn"            />
+   	 	<result column="home.profMemberSeq"         property="courseHomework.profMemberSeq"     />
+   	 	<result column="home.rate"                  property="courseHomework.rate"              />
+   	 	<result column="home.rate2"                 property="courseHomework.rate2"             />
+   	 	<result column="home.referenceSeq"          property="courseHomework.referenceSeq"      />
+   	 	<result column="home.referenceType"         property="courseHomework.referenceType"      />
+   	 	<result column="home.replaceYn"             property="courseHomework.replaceYn"         />
+   	 	<result column="home.useYn"                 property="courseHomework.useYn"             />
+   	 	<result column="home.deleteYn"              property="courseHomework.deleteYn"          />
+   	 	<result column="home.regMemberSeq"          property="courseHomework.regMemberSeq"      />
+   	 	<result column="home.updMemberSeq"          property="courseHomework.updMemberSeq"      />
+   	 	<result column="home.regDtime"              property="courseHomework.regDtime"          />
+   	 	<result column="home.updDtime"              property="courseHomework.updDtime"          />
+   	 	<result column="home.regIp"                 property="courseHomework.regIp"             />
+   	 	<result column="home.updIp"          		property="courseHomework.updIp"          	/>
+   	 	<result column="home.targetCount"          	property="courseHomework.targetCount"        />
+   	 	<result column="home.finalEndDtime"         property="courseHomework.finalEndDtime"     />
+   	 	<result column="summary.memberCount"        property="summary.memberCount"    />
+   	 	<result column="home.answerSubmitCount"     property="courseHomework.answerSubmitCount"    />
+   	 	<result column="home.activeElementSeq"      property="courseHomework.activeElementSeq"    />
+   	 	<collection column="{referenceSeq=home.homeworkSeq,referenceTablename=referenceTablename}" property="courseHomework.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* UnivCourseHomeworkMapper.getDetail */
+    	SELECT
+    		home.cs_homework_seq 			AS "home.homeworkSeq" , 
+			home.cs_course_active_seq 		AS "home.courseActiveSeq" ,     
+			home.cs_homework_title 			AS "home.homeworkTitle" ,        
+			home.cs_description 			AS "home.description" ,           
+			home.cs_start_dtime 			AS "home.startDtime" ,           
+			home.cs_start2_dtime 			AS "home.start2Dtime" ,          
+			home.cs_start_day 				AS "home.startDay" ,          
+			home.cs_end_dtime 				AS "home.endDtime" ,             
+			home.cs_end2_dtime 				AS "home.end2Dtime" ,            
+			home.cs_end_day 				AS "home.endDay" ,            
+			home.cs_middle_final_type_cd 	AS "home.middleFinalTypeCd" ,  
+			home.cs_basic_supplement_cd 	AS "home.basicSupplementCd" ,   
+			home.cs_onoff_cd 				AS "home.onoffCd" ,              
+			home.cs_open_yn 				AS "home.openYn" ,               
+			home.cs_prof_member_seq 		AS "home.profMemberSeq" ,       
+			ISNULL(home.cs_rate, 0)			AS "home.rate" ,                  
+			ISNULL(home.cs_rate2, 0) 		AS "home.rate2" ,                 
+			home.cs_reference_seq 			AS "home.referenceSeq" ,         
+			home.cs_reference_type 			AS "home.referenceType" ,         
+			home.cs_replace_yn 				AS "home.replaceYn" ,            
+			home.cs_use_yn 					AS "home.useYn" ,                
+			home.cs_delete_yn 				AS "home.deleteYn" , 
+			home.cs_reg_member_seq			AS "home.regMemberSeq" , 
+		    home.cs_upd_member_seq			AS "home.updMemberSeq" , 
+		    home.cs_reg_dtime				AS "home.regDtime" , 
+		    home.cs_upd_dtime				AS "home.updDtime" , 
+		    home.cs_reg_ip					AS "home.regIp" , 
+		    home.cs_upd_ip					AS "home.updIp" ,
+		    CASE
+		    	WHEN home.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' THEN summary.cs_member_count
+		    	ELSE
+				    ISNULL(
+				    	(SELECT COUNT(*) FROM cs_course_homework_target sub WHERE sub.cs_delete_yn = 'N' AND sub.cs_homework_seq = home.cs_homework_seq)
+				    	, 0)						
+			END 							AS "home.targetCount" ,
+		    (
+		    	SELECT
+		    		CASE
+		    			WHEN sub.cs_use_yn = 'Y' THEN sub.cs_end2_dtime
+		    			ELSE cs_end_dtime
+		    		END AS finalEndDtime
+		    	FROM
+		    		cs_course_homework sub
+		    	WHERE
+		    		sub.cs_homework_seq = home.cs_reference_seq
+		    ) AS "home.finalEndDtime" ,
+		    summary.cs_member_count 	    AS "summary.memberCount" ,
+		    (
+			 	SELECT COUNT(*) 
+			 	  FROM cs_course_homework_answer ans 
+			 	 WHERE ans.cs_delete_yn = 'N' 
+			 	   AND ans.cs_course_active_seq = home.cs_course_active_seq 
+			 	   AND ans.cs_homework_seq = home.cs_homework_seq
+			 ) 								AS "home.answerSubmitCount" ,
+			ele.cs_active_element_seq 		AS "home.activeElementSeq" ,
+		    'cs_course_homework'   			AS "referenceTablename"
+		FROM
+			cs_course_homework home
+		INNER JOIN cs_course_active_summary summary
+				ON home.cs_course_active_seq = summary.cs_course_active_seq
+		INNER JOIN cs_course_active_element ele
+			 	ON home.cs_course_active_seq = ele.cs_course_active_seq
+		       AND home.cs_homework_seq = ele.cs_reference_seq
+		       AND ele.cs_reference_type_cd = (CASE
+													WHEN home.cs_replace_yn = 'Y' AND home.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}'
+													WHEN home.cs_replace_yn = 'Y' AND home.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.FINAL}' THEN '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}'
+													ELSE '${CD.COURSE_ELEMENT_TYPE.HOMEWORK}'
+												 END)
+		WHERE home.cs_delete_yn = 'N'
+		  AND home.cs_homework_seq = #{homeworkSeq}
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkRS">
+   	 	<result column="home.homeworkSeq"           property="courseHomework.homeworkSeq"       />
+   	 	<result column="home.courseActiveSeq"       property="courseHomework.courseActiveSeq"   />
+   	 	<result column="home.homeworkTitle"         property="courseHomework.homeworkTitle"     />
+   	 	<result column="home.description"           property="courseHomework.description"       />
+   	 	<result column="home.startDtime"            property="courseHomework.startDtime"        />
+   	 	<result column="home.start2Dtime"           property="courseHomework.start2Dtime"       />
+   	 	<result column="home.startDay"           	property="courseHomework.startDay"       />
+   	 	<result column="home.endDtime"              property="courseHomework.endDtime"          />
+   	 	<result column="home.end2Dtime"             property="courseHomework.end2Dtime"         />
+   	 	<result column="home.endDay"             	property="courseHomework.endDay"         />
+   	 	<result column="home.middleFinalTypeCd"     property="courseHomework.middleFinalTypeCd" />
+   	 	<result column="home.basicSupplementCd"     property="courseHomework.basicSupplementCd" />
+   	 	<result column="home.onoffCd"               property="courseHomework.onoffCd"           />
+   	 	<result column="home.openYn"                property="courseHomework.openYn"            />
+   	 	<result column="home.profMemberSeq"         property="courseHomework.profMemberSeq"     />
+   	 	<result column="home.rate"                  property="courseHomework.rate"              />
+   	 	<result column="home.rate2"                 property="courseHomework.rate2"             />
+   	 	<result column="home.referenceSeq"          property="courseHomework.referenceSeq"      />
+   	 	<result column="home.referenceType"         property="courseHomework.referenceType"     />
+   	 	<result column="home.replaceYn"             property="courseHomework.replaceYn"         />
+   	 	<result column="home.useYn"                 property="courseHomework.useYn"             />
+   	 	<result column="home.deleteYn"              property="courseHomework.deleteYn"          />
+   	 	<result column="home.regMemberSeq"          property="courseHomework.regMemberSeq"      />
+   	 	<result column="home.updMemberSeq"          property="courseHomework.updMemberSeq"      />
+   	 	<result column="home.regDtime"              property="courseHomework.regDtime"          />
+   	 	<result column="home.updDtime"              property="courseHomework.updDtime"          />
+   	 	<result column="home.regIp"                 property="courseHomework.regIp"             />
+   	 	<result column="home.updIp"          		property="courseHomework.updIp"          	/>
+   	 	<result column="home.targetCount"          	property="courseHomework.targetCount"        />
+   	 	<result column="home.referenceCount"        property="courseHomework.referenceCount"    />
+   	 	<result column="home.supplementUseYn"       property="courseHomework.supplementUseYn"    />
+   	 	<result column="summary.memberCount"        property="summary.memberCount"    />
+   	 	<result column="home.answerSubmitCount"     property="courseHomework.answerSubmitCount"    />
+   	 	<collection column="{referenceSeq=home.homeworkSeq,referenceTablename=referenceTablename}" property="courseHomework.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+	</resultMap>        
+	
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultMap="listResultMap">
+		/* UnivCourseHomeworkMapper.getList */
+    	SELECT
+    		home.cs_homework_seq 			AS "home.homeworkSeq" , 
+			home.cs_course_active_seq 		AS "home.courseActiveSeq" ,     
+			home.cs_homework_title 			AS "home.homeworkTitle" ,        
+			home.cs_description 			AS "home.description" ,           
+			home.cs_start_dtime 			AS "home.startDtime" ,           
+			home.cs_start2_dtime 			AS "home.start2Dtime" ,          
+			home.cs_start_day	 			AS "home.startDay" ,          
+			home.cs_end_dtime 				AS "home.endDtime" ,             
+			home.cs_end2_dtime 				AS "home.end2Dtime" ,            
+			home.cs_end_day 				AS "home.endDay" ,            
+			home.cs_middle_final_type_cd 	AS "home.middleFinalTypeCd" ,  
+			home.cs_basic_supplement_cd 	AS "home.basicSupplementCd" ,   
+			home.cs_onoff_cd 				AS "home.onoffCd" ,              
+			home.cs_open_yn 				AS "home.openYn" ,               
+			home.cs_prof_member_seq 		AS "home.profMemberSeq" ,       
+			ISNULL(home.cs_rate, 0)			AS "home.rate" ,                  
+			ISNULL(home.cs_rate2, 0) 		AS "home.rate2" ,                
+			home.cs_reference_seq 			AS "home.referenceSeq" , 
+			home.cs_reference_type 			AS "home.referenceType" ,    
+			home.cs_replace_yn 				AS "home.replaceYn" ,            
+			home.cs_use_yn 					AS "home.useYn" ,                
+			home.cs_delete_yn 				AS "home.deleteYn" , 
+			home.cs_reg_member_seq			AS "home.regMemberSeq" , 
+		    home.cs_upd_member_seq			AS "home.updMemberSeq" , 
+		    home.cs_reg_dtime				AS "home.regDtime" , 
+		    home.cs_upd_dtime				AS "home.updDtime" , 
+		    home.cs_reg_ip					AS "home.regIp" , 
+		    home.cs_upd_ip					AS "home.updIp" ,
+		    CASE
+		    	WHEN home.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' THEN summary.cs_member_count
+		    	ELSE
+				    ISNULL(
+				    	(SELECT COUNT(*) FROM cs_course_homework_target sub WHERE sub.cs_delete_yn = 'N' AND sub.cs_homework_seq = home.cs_homework_seq)
+				    	, 0)
+			END 							AS "home.targetCount" ,
+		    ISNULL(
+		    	(SELECT COUNT(*) FROM cs_course_homework sub WHERE sub.cs_delete_yn = 'N' AND sub.cs_reference_seq = home.cs_homework_seq)
+		    	, 0)						AS "home.referenceCount" ,
+		    CASE
+			<![CDATA[ WHEN home.cs_use_yn = 'Y' AND home.cs_end2_dtime < dbo.FN_NOW_TO_CHAR() THEN 'Y'
+					  WHEN home.cs_use_yn = 'N' AND home.cs_end_dtime < dbo.FN_NOW_TO_CHAR() THEN 'Y']]>
+				ELSE 'N'
+		    END AS "home.supplementUseYn" ,
+		    summary.cs_member_count 	    AS "summary.memberCount" ,
+		    (
+			 	SELECT COUNT(*) 
+			 	  FROM cs_course_homework_answer ans 
+			 	 WHERE ans.cs_delete_yn = 'N' 
+			 	   AND ans.cs_course_active_seq = home.cs_course_active_seq 
+			 	   AND ans.cs_homework_seq = home.cs_homework_seq
+			 ) 								AS "home.answerSubmitCount" ,
+		    'cs_course_homework'   			AS "referenceTablename"
+		FROM
+			cs_course_homework home
+			INNER JOIN cs_course_active_summary summary
+			ON home.cs_course_active_seq = summary.cs_course_active_seq
+		WHERE home.cs_delete_yn = 'N'
+		  <choose>
+		  	<when test='replaceYn != null and !replaceYn.equals("")'>
+		  AND home.cs_replace_yn = #{replaceYn}
+		  	</when>
+		  	<otherwise>
+		  AND home.cs_replace_yn = 'N'
+		  	</otherwise>
+		  </choose>
+		  <if test='middleFinalTypeCd != null and !middleFinalTypeCd.equals("")'>
+		  AND home.cs_middle_final_type_cd = #{middleFinalTypeCd}
+		  </if>
+		  AND home.cs_course_active_seq = #{courseActiveSeq}
+		ORDER BY home.cs_reference_seq DESC, home.cs_homework_seq ASC
+    </select>
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultType="int">
+		/* UnivCourseHomeworkMapper.countList */
+		SELECT
+			COUNT(*)
+		FROM
+			cs_course_homework home
+		WHERE home.cs_delete_yn = 'N'
+		  <choose>
+		  	<when test='replaceYn != null and !replaceYn.equals("")'>
+		  AND home.cs_replace_yn = #{replaceYn}
+		  	</when>
+		  	<otherwise>
+		  AND home.cs_replace_yn = 'N'
+		  	</otherwise>
+		  </choose>
+		  <if test='middleFinalTypeCd != null and !middleFinalTypeCd.equals("")'>
+		  AND home.cs_middle_final_type_cd = #{middleFinalTypeCd}
+		  </if>
+		  AND home.cs_course_active_seq = #{courseActiveSeq}
+    </select>
+    
+    <resultMap id="listResultMapUsr" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkRS">
+   	 	<result column="home.homeworkSeq"           property="courseHomework.homeworkSeq"       />
+   	 	<result column="home.courseActiveSeq"       property="courseHomework.courseActiveSeq"   />
+   	 	<result column="home.homeworkTitle"         property="courseHomework.homeworkTitle"     />
+   	 	<result column="home.description"           property="courseHomework.description"       />
+   	 	<result column="home.startDtime"            property="courseHomework.startDtime"        />
+   	 	<result column="home.start2Dtime"           property="courseHomework.start2Dtime"       />
+   	 	<result column="home.endDtime"              property="courseHomework.endDtime"          />
+   	 	<result column="home.end2Dtime"             property="courseHomework.end2Dtime"         />
+   	 	<result column="home.middleFinalTypeCd"     property="courseHomework.middleFinalTypeCd" />
+   	 	<result column="home.basicSupplementCd"     property="courseHomework.basicSupplementCd" />
+   	 	<result column="home.onoffCd"               property="courseHomework.onoffCd"           />
+   	 	<result column="home.openYn"                property="courseHomework.openYn"            />
+   	 	<result column="home.profMemberSeq"         property="courseHomework.profMemberSeq"     />
+   	 	<result column="home.rate"                  property="courseHomework.rate"              />
+   	 	<result column="home.rate2"                 property="courseHomework.rate2"             />
+   	 	<result column="home.referenceSeq"          property="courseHomework.referenceSeq"      />
+   	 	<result column="home.replaceYn"             property="courseHomework.replaceYn"         />
+   	 	<result column="home.useYn"                 property="courseHomework.useYn"             />
+   	 	<result column="home.deleteYn"              property="courseHomework.deleteYn"          />
+   	 	<result column="home.regMemberSeq"          property="courseHomework.regMemberSeq"      />
+   	 	<result column="home.updMemberSeq"          property="courseHomework.updMemberSeq"      />
+   	 	<result column="home.regDtime"              property="courseHomework.regDtime"          />
+   	 	<result column="home.updDtime"              property="courseHomework.updDtime"          />
+   	 	<result column="home.regIp"                 property="courseHomework.regIp"             />
+   	 	<result column="home.updIp"          		property="courseHomework.updIp"          	/>
+   	 	<result column="home.referenceCount"        property="courseHomework.referenceCount"    />
+   	 	<result column="home.supplementUseYn"       property="courseHomework.supplementUseYn"   />
+   	 	<result column="summary.memberCount"        property="summary.memberCount"    			/>
+   	 	<result column="home.homeworkStatus"         property="courseHomework.homeworkStatus"   />
+   	 	<result column="answer.homeworkAnswerSeq"   property="answer.homeworkAnswerSeq"     	/>
+   	 	<result column="answer.scoreDtime"   		property="answer.scoreDtime"				/>
+   	 	<result column="answer.sendDtime"   		property="answer.sendDtime"					/>
+   	 	<result column="home.dDayCount"   			property="courseHomework.dDayCount"			/>
+   	 	<result column="home.displayYn"   			property="courseHomework.displayYn"			/>
+   	 	<collection column="{referenceSeq=home.homeworkSeq,referenceTablename=referenceTablename}" property="courseHomework.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+	</resultMap>      
+    
+	<select id="getListUsr" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultMap="listResultMapUsr">
+		/* UnivCourseHomeworkMapper.getListUsr */
+		<if test='!"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+		SELECT
+			*
+		FROM
+		(
+			SELECT 
+				home.cs_homework_seq 				AS "home.homeworkSeq" , 
+				home.cs_course_active_seq 			AS "home.courseActiveSeq" , 
+				home.cs_homework_title 				AS "home.homeworkTitle" , 
+				home.cs_description 				AS "home.description" , 
+				home.cs_start_dtime 				AS "home.startDtime" , 
+				home.cs_start2_dtime 				AS "home.start2Dtime" , 
+				home.cs_end_dtime 					AS "home.endDtime" , 
+				home.cs_end2_dtime 					AS "home.end2Dtime" , 
+				home.cs_middle_final_type_cd 		AS "home.middleFinalTypeCd" , 
+				home.cs_basic_supplement_cd 		AS "home.basicSupplementCd" , 
+				home.cs_onoff_cd 					AS "home.onoffCd" , 
+				home.cs_open_yn 					AS "home.openYn" , 
+				home.cs_prof_member_seq 			AS "home.profMemberSeq" , 
+				ISNULL(home.cs_rate, 0) 			AS "home.rate" , 
+				ISNULL(home.cs_rate2, 0) 			AS "home.rate2" , 
+				home.cs_reference_seq 				AS "home.referenceSeq" , 
+				home.cs_replace_yn 					AS "home.replaceYn" , 
+				home.cs_use_yn 						AS "home.useYn" , 
+				home.cs_delete_yn 					AS "home.deleteYn" , 
+				home.cs_reg_member_seq 				AS "home.regMemberSeq" , 
+				home.cs_upd_member_seq				AS "home.updMemberSeq" , 
+				home.cs_reg_dtime 					AS "home.regDtime" , 
+				home.cs_upd_dtime 					AS "home.updDtime" , 
+				home.cs_reg_ip 						AS "home.regIp" , 
+				home.cs_upd_ip 						AS "home.updIp" , 
+				ISNULL( 
+					(SELECT COUNT(*) 
+				    FROM cs_course_homework sub 
+				    WHERE sub.cs_delete_yn = 'N' 
+				    AND sub.cs_reference_seq = home.cs_homework_seq
+				) , 0) 								AS "home.referenceCount" , 
+		        (CASE 
+		        	WHEN home.cs_use_yn = 'Y' AND home.cs_end2_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() 
+		            THEN 'Y' 
+		            WHEN home.cs_use_yn = 'N' AND home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() 
+		            THEN 'Y' 
+		            ELSE 'N' 
+		       	END) 								AS "home.supplementUseYn" , 
+		        summary.cs_member_count 			AS "summary.memberCount" , 
+		        'cs_course_homework' 				AS "referenceTablename" ,
+				(CASE
+					WHEN home.cs_use_yn = 'Y' AND home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+				  	THEN 
+				  		CASE 
+							WHEN home.cs_start2_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home.cs_end2_dtime >= dbo.FN_NOW_TO_CHAR()
+							THEN '1'
+							WHEN home.cs_start2_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR()
+							THEN '2'
+							WHEN home.cs_end2_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+							THEN '3'
+						END
+					ELSE
+						CASE 
+							WHEN home.cs_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home.cs_end_dtime >= dbo.FN_NOW_TO_CHAR()
+							THEN '1'
+							WHEN home.cs_start_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR()
+							THEN '2'
+							WHEN home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+							THEN '3'
+						END 
+				END) 								AS "home.homeworkStatus" ,
+		 		ISNULL(answer.cs_homework_answer_seq, 0) AS "answer.homeworkAnswerSeq" ,
+		 		ISNULL(answer.cs_score_dtime, 0) 	AS "answer.scoreDtime" ,
+		 		ISNULL(answer.cs_send_dtime, 0) 	AS "answer.sendDtime" ,
+		 		CASE
+					WHEN home.cs_use_yn = 'Y' THEN DATEDIFF(DAY, GETDATE(), DBO.FN_TO_DATE(home.cs_end2_dtime))
+					ELSE DATEDIFF(DAY, GETDATE(), DBO.FN_TO_DATE(home.cs_end_dtime))
+				END AS "home.dDayCount" ,
+				CASE 
+                    WHEN home.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' 
+					THEN(
+							SELECT 
+								CASE
+									WHEN COUNT(*) = 0 THEN 'Y'
+									ELSE 'N'
+								END
+							FROM cs_course_homework_target target
+							INNER JOIN cs_course_homework homesub
+								ON target.CS_HOMEWORK_SEQ = homesub.cs_homework_seq
+							WHERE homesub.cs_reference_seq = home.cs_reference_seq 
+								AND homesub.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.SUPPLEMENT}' 
+								AND target.cs_course_apply_seq = #{courseApplySeq}
+								AND target.cs_delete_yn = 'N'
+				 		)
+					ELSE 'Y'
+				END AS "home.displayYn"
+			FROM cs_course_homework home 
+	        INNER JOIN cs_course_active_summary summary 
+	        	ON home.cs_course_active_seq = summary.cs_course_active_seq
+	        LEFT OUTER JOIN cs_course_homework_answer answer
+		        ON home.cs_course_active_seq = answer.cs_course_active_seq
+		        AND home.cs_homework_seq = answer.cs_homework_seq
+		        AND answer.cs_course_apply_seq = #{courseApplySeq} 
+		        AND answer.cs_delete_yn = 'N' 
+	       	WHERE   home.cs_delete_yn = 'N' 
+		        AND home.cs_replace_yn = 'N' 
+		        AND home.cs_course_active_seq = #{courseActiveSeq}
+				AND 'Y' = (CASE  
+				 		WHEN home.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.SUPPLEMENT}' 
+						THEN (SELECT 
+								CASE
+									WHEN COUNT(*) = 0 THEN 'N'
+									ELSE 'Y'
+								END
+							FROM cs_course_homework_target target
+							WHERE target.cs_homework_seq = home.cs_homework_seq AND target.cs_course_apply_seq = #{courseApplySeq}
+							AND target.cs_delete_yn = 'N')  
+						ELSE
+							'Y'
+						END)
+				AND home.cs_start_dtime IS NOT NULL
+			) home
+    	ORDER BY "home.homeworkStatus" ASC, home."home.dDayCount" ASC
+    	</if>
+    	<if test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+    	SELECT
+			*
+		FROM
+		(
+			SELECT
+				home.*,
+				'N' AS "home.supplementUseYn" , 
+				(
+			      CASE 
+			         WHEN home."home.startDtime" <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() 
+			              AND home."home.endDtime" <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR() 
+			         THEN '1' 
+			         WHEN home."home.startDtime" <![CDATA[>]]> dbo.FN_NOW_TO_CHAR() 
+			              THEN '2' 
+			              WHEN home."home.endDtime" <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() 
+			              THEN '3' 
+			         END 
+			    ) AS "home.homeworkStatus" ,
+				DATEDIFF(DAY, GETDATE(), DBO.FN_TO_DATE(home."home.endDtime")) AS "home.dDayCount"  
+			FROM
+			(
+				SELECT home.cs_homework_seq AS "home.homeworkSeq" , 
+					   home.cs_course_active_seq AS "home.courseActiveSeq" , 
+					   home.cs_homework_title AS "home.homeworkTitle" , 
+					   home.cs_description AS "home.description" , 
+					   REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, home.cs_start_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "home.startDtime" ,
+					   home.cs_start2_dtime AS "home.start2Dtime" , 
+					   REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, home.cs_end_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "home.endDtime" ,
+					   home.cs_end2_dtime AS "home.end2Dtime" , 
+					   home.cs_middle_final_type_cd AS "home.middleFinalTypeCd" , 
+					   home.cs_basic_supplement_cd AS "home.basicSupplementCd" , 
+					   home.cs_onoff_cd AS "home.onoffCd" , 
+					   home.cs_open_yn AS "home.openYn" , 
+					   home.cs_prof_member_seq AS "home.profMemberSeq" , 
+					   ISNULL(home.cs_rate, 0) AS "home.rate" , 
+					   ISNULL(home.cs_rate2, 0) AS "home.rate2" , 
+					   home.cs_reference_seq AS "home.referenceSeq" , 
+					   home.cs_replace_yn AS "home.replaceYn" , 
+					   home.cs_use_yn AS "home.useYn" , 
+					   home.cs_delete_yn AS "home.deleteYn" , 
+					   home.cs_reg_member_seq AS "home.regMemberSeq" , 
+					   home.cs_upd_member_seq AS "home.updMemberSeq" , 
+					   home.cs_reg_dtime AS "home.regDtime" , 
+					   home.cs_upd_dtime AS "home.updDtime" , 
+					   home.cs_reg_ip AS "home.regIp" , 
+					   home.cs_upd_ip AS "home.updIp" , 
+					   ISNULL
+					   ( 
+							  (SELECT COUNT(*) 
+								FROM cs_course_homework sub 
+							   WHERE sub.cs_delete_yn = 'N' 
+									 AND sub.cs_reference_seq = home.cs_homework_seq 
+							  ) , 0
+						  ) AS "home.referenceCount" , 
+						  summary.cs_member_count AS "summary.memberCount" , 
+						  'cs_course_homework' AS "referenceTablename" , 
+						  ISNULL(answer.cs_homework_answer_seq, 0) AS "answer.homeworkAnswerSeq" , 
+						  ISNULL(answer.cs_score_dtime, 0) AS "answer.scoreDtime" , 
+						  ISNULL(answer.cs_send_dtime, 0) 	AS "answer.sendDtime" ,
+						  'Y' AS "home.displayYn" 
+					 FROM cs_course_homework home 
+					  INNER JOIN cs_course_apply app 
+						  ON home.cs_course_active_seq = app.cs_course_active_seq 
+						  AND app.cs_course_apply_seq = #{courseApplySeq}  
+					  INNER JOIN cs_course_active_summary summary 
+						  ON home.cs_course_active_seq = summary.cs_course_active_seq 
+					  LEFT OUTER JOIN cs_course_homework_answer answer 
+						  ON home.cs_course_active_seq = answer.cs_course_active_seq 
+						  AND home.cs_homework_seq = answer.cs_homework_seq 
+						  AND answer.cs_course_apply_seq = #{courseApplySeq}  
+						  AND answer.cs_delete_yn = 'N' 
+					WHERE home.cs_delete_yn = 'N' 
+						  AND home.cs_replace_yn = 'N' 
+						  AND home.cs_course_active_seq = #{courseActiveSeq} 
+			) home
+		) home
+    	ORDER BY "home.homeworkStatus" ASC, home."home.dDayCount" ASC
+    	</if>
+    </select>
+    
+    <resultMap id="detailResultMapUsr" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkRS">
+    	<result column="home.homeworkSeq"           property="courseHomework.homeworkSeq"       />
+   	 	<result column="home.courseActiveSeq"       property="courseHomework.courseActiveSeq"   />
+   	 	<result column="home.homeworkTitle"         property="courseHomework.homeworkTitle"     />
+   	 	<result column="home.description"           property="courseHomework.description"       />
+   	 	<result column="home.startDtime"            property="courseHomework.startDtime"        />
+   	 	<result column="home.start2Dtime"           property="courseHomework.start2Dtime"       />
+   	 	<result column="home.endDtime"              property="courseHomework.endDtime"          />
+   	 	<result column="home.end2Dtime"             property="courseHomework.end2Dtime"         />
+   	 	<result column="home.middleFinalTypeCd"     property="courseHomework.middleFinalTypeCd" />
+   	 	<result column="home.basicSupplementCd"     property="courseHomework.basicSupplementCd" />
+   	 	<result column="home.onoffCd"               property="courseHomework.onoffCd"           />
+   	 	<result column="home.openYn"                property="courseHomework.openYn"            />
+   	 	<result column="home.profMemberSeq"         property="courseHomework.profMemberSeq"     />
+   	 	<result column="home.rate"                  property="courseHomework.rate"              />
+   	 	<result column="home.rate2"                 property="courseHomework.rate2"             />
+   	 	<result column="home.referenceSeq"          property="courseHomework.referenceSeq"      />
+   	 	<result column="home.replaceYn"             property="courseHomework.replaceYn"         />
+   	 	<result column="home.useYn"                 property="courseHomework.useYn"             />
+   	 	<result column="home.deleteYn"              property="courseHomework.deleteYn"          />
+   	 	<result column="home.regMemberSeq"          property="courseHomework.regMemberSeq"      />
+   	 	<result column="home.updMemberSeq"          property="courseHomework.updMemberSeq"      />
+   	 	<result column="home.regDtime"              property="courseHomework.regDtime"          />
+   	 	<result column="home.updDtime"              property="courseHomework.updDtime"          />
+   	 	<result column="home.regIp"                 property="courseHomework.regIp"             />
+   	 	<result column="home.updIp"          		property="courseHomework.updIp"          	/>
+   	 	<result column="home.targetCount"          	property="courseHomework.targetCount"       />
+   	 	<result column="home.finalEndDtime"         property="courseHomework.finalEndDtime"     />
+   	 	<result column="summary.memberCount"        property="summary.memberCount"    			/>
+   	 	<result column="home.homeworkStatus"         property="courseHomework.homeworkStatus"    	/>
+   	 	<result column="answer.homeworkAnswerSeq"   property="answer.homeworkAnswerSeq"     	/>
+   	 	<result column="answer.scoreDtime"   		property="answer.scoreDtime"				/>   	 	
+   	 	<result column="home.activeElementSeq"   	property="courseHomework.activeElementSeq"	/>   	 	
+    	<collection column="{referenceSeq=home.homeworkSeq,referenceTablename=referenceTablename}" property="courseHomework.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+	</resultMap>
+	        
+   <select id="getDetailUsr" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultMap="detailResultMapUsr">
+		/* UnivCourseHomeworkMapper.getDetailUsr */
+    	<if test='!"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+    	SELECT
+    		home.cs_homework_seq 			AS "home.homeworkSeq" , 
+			home.cs_course_active_seq 		AS "home.courseActiveSeq" ,     
+			home.cs_homework_title 			AS "home.homeworkTitle" ,        
+			home.cs_description 			AS "home.description" ,           
+			home.cs_start_dtime 			AS "home.startDtime" ,           
+			home.cs_start2_dtime 			AS "home.start2Dtime" ,          
+			home.cs_end_dtime 				AS "home.endDtime" ,             
+			home.cs_end2_dtime 				AS "home.end2Dtime" ,            
+			home.cs_middle_final_type_cd 	AS "home.middleFinalTypeCd" ,  
+			home.cs_basic_supplement_cd 	AS "home.basicSupplementCd" ,   
+			home.cs_onoff_cd 				AS "home.onoffCd" ,              
+			home.cs_open_yn 				AS "home.openYn" ,               
+			home.cs_prof_member_seq 		AS "home.profMemberSeq" ,       
+			ISNULL(home.cs_rate, 0)			AS "home.rate" ,                  
+			ISNULL(home.cs_rate2, 0) 		AS "home.rate2" ,                 
+			home.cs_reference_seq 			AS "home.referenceSeq" ,         
+			home.cs_replace_yn 				AS "home.replaceYn" ,            
+			home.cs_use_yn 					AS "home.useYn" ,                
+			home.cs_delete_yn 				AS "home.deleteYn" , 
+			home.cs_reg_member_seq			AS "home.regMemberSeq" , 
+		    home.cs_upd_member_seq			AS "home.updMemberSeq" , 
+		    home.cs_reg_dtime				AS "home.regDtime" , 
+		    home.cs_upd_dtime				AS "home.updDtime" , 
+		    home.cs_reg_ip					AS "home.regIp" , 
+		    home.cs_upd_ip					AS "home.updIp" ,
+		    (CASE
+		    	WHEN home.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' THEN summary.cs_member_count
+		    	ELSE ISNULL(
+				    	(SELECT COUNT(*) FROM cs_course_homework_target sub 
+				    	WHERE sub.cs_delete_yn = 'N' AND sub.cs_homework_seq = home.cs_homework_seq)
+				     , 0)						
+			END)							AS "home.targetCount" ,
+		    (SELECT
+		    	CASE
+		    		WHEN sub.cs_use_yn = 'Y' THEN sub.cs_end2_dtime
+		    		ELSE cs_end_dtime
+		    		END AS finalEndDtime
+		    FROM cs_course_homework sub
+		    WHERE sub.cs_homework_seq = home.cs_reference_seq) AS "home.finalEndDtime" ,
+		    summary.cs_member_count 	    AS "summary.memberCount" ,
+		    'cs_course_homework'   			AS "referenceTablename" ,
+			(CASE
+				WHEN home.cs_use_yn = 'Y' AND home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+			  	THEN 
+			  		CASE 
+						WHEN home.cs_start2_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home.cs_end2_dtime >= dbo.FN_NOW_TO_CHAR()
+						THEN '1'
+						WHEN home.cs_start2_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR()
+						THEN '2'
+						WHEN home.cs_end2_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+						THEN '3'
+					END
+				ELSE
+					CASE 
+						WHEN home.cs_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home.cs_end_dtime >= dbo.FN_NOW_TO_CHAR()
+						THEN '1'
+						WHEN home.cs_start_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR()
+						THEN '2'
+						WHEN home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+						THEN '3'
+					END 	
+			END) AS "home.homeworkStatus" ,
+	 		answer.cs_homework_answer_seq 	AS "answer.homeworkAnswerSeq" ,
+	 		answer.cs_score_dtime 			AS "answer.scoreDtime" ,
+	 		ele.cs_active_element_seq 		AS "home.activeElementSeq"
+		FROM 
+			cs_course_homework home
+		INNER JOIN cs_course_active_summary summary
+			ON home.cs_course_active_seq = summary.cs_course_active_seq
+	    LEFT OUTER JOIN cs_course_homework_answer answer
+        	ON  home.cs_course_active_seq = answer.cs_course_active_seq
+	        AND home.cs_homework_seq = answer.cs_homework_seq
+	        AND answer.cs_course_apply_seq = #{courseApplySeq} 
+	        ANd answer.cs_delete_yn = 'N' 	
+	    INNER JOIN cs_course_active_element ele
+			ON  home.cs_course_active_seq = ele.cs_course_active_seq
+		    AND home.cs_homework_seq = ele.cs_reference_seq
+		    AND ele.cs_reference_type_cd = (CASE
+												WHEN home.cs_replace_yn = 'Y' AND home.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}'
+												WHEN home.cs_replace_yn = 'Y' AND home.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.FINAL}' THEN '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}'
+												ELSE '${CD.COURSE_ELEMENT_TYPE.HOMEWORK}'
+											 END)	
+		WHERE home.cs_delete_yn = 'N'
+		  AND home.cs_homework_seq = #{homeworkSeq}
+		</if>
+		<if test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+			SELECT
+				home.*,
+				home."home.endDtime" AS "home.finalEndDtime" ,
+				  (
+				  	CASE 
+						WHEN home."home.startDtime" <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home."home.endDtime" >= dbo.FN_NOW_TO_CHAR()
+						THEN '1'
+						WHEN home."home.startDtime" <![CDATA[>]]> dbo.FN_NOW_TO_CHAR()
+						THEN '2'
+						WHEN home."home.endDtime" <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+						THEN '3'
+					END 	
+				  ) AS "home.homeworkStatus" 
+			FROM	
+			(
+				SELECT
+		    		home.cs_homework_seq 			AS "home.homeworkSeq" , 
+					home.cs_course_active_seq 		AS "home.courseActiveSeq" ,     
+					home.cs_homework_title 			AS "home.homeworkTitle" ,        
+					home.cs_description 			AS "home.description" ,           
+					REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, home.cs_start_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "home.startDtime" ,           
+					home.cs_start2_dtime 			AS "home.start2Dtime" ,          
+					REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, home.cs_end_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') AS "home.endDtime" ,             
+					home.cs_end2_dtime 				AS "home.end2Dtime" ,            
+					home.cs_middle_final_type_cd 	AS "home.middleFinalTypeCd" ,  
+					home.cs_basic_supplement_cd 	AS "home.basicSupplementCd" ,   
+					home.cs_onoff_cd 				AS "home.onoffCd" ,              
+					home.cs_open_yn 				AS "home.openYn" ,               
+					home.cs_prof_member_seq 		AS "home.profMemberSeq" ,       
+					ISNULL(home.cs_rate, 0)			AS "home.rate" ,                  
+					ISNULL(home.cs_rate2, 0) 		AS "home.rate2" ,                 
+					home.cs_reference_seq 			AS "home.referenceSeq" ,         
+					home.cs_replace_yn 				AS "home.replaceYn" ,            
+					home.cs_use_yn 					AS "home.useYn" ,                
+					home.cs_delete_yn 				AS "home.deleteYn" , 
+					home.cs_reg_member_seq			AS "home.regMemberSeq" , 
+				    home.cs_upd_member_seq			AS "home.updMemberSeq" , 
+				    home.cs_reg_dtime				AS "home.regDtime" , 
+				    home.cs_upd_dtime				AS "home.updDtime" , 
+				    home.cs_reg_ip					AS "home.regIp" , 
+				    home.cs_upd_ip					AS "home.updIp" ,
+				    summary.cs_member_count			AS "home.targetCount" ,
+				    summary.cs_member_count 	    AS "summary.memberCount" ,
+				    'cs_course_homework'   			AS "referenceTablename" ,
+			 		answer.cs_homework_answer_seq 	AS "answer.homeworkAnswerSeq" ,
+			 		answer.cs_score_dtime 			AS "answer.scoreDtime" ,
+			 		ele.cs_active_element_seq 		AS "home.activeElementSeq"
+				FROM 
+					cs_course_homework home
+				INNER JOIN cs_course_active_summary summary
+					ON home.cs_course_active_seq = summary.cs_course_active_seq
+				INNER JOIN cs_course_apply app 
+					ON home.cs_course_active_seq = app.cs_course_active_seq 
+					AND app.cs_course_apply_seq = #{courseApplySeq} 
+			    LEFT OUTER JOIN cs_course_homework_answer answer
+		        	ON  home.cs_course_active_seq = answer.cs_course_active_seq
+			        AND home.cs_homework_seq = answer.cs_homework_seq
+			        AND answer.cs_course_apply_seq = #{courseApplySeq}  
+			        ANd answer.cs_delete_yn = 'N' 	
+			    INNER JOIN cs_course_active_element ele
+					ON  home.cs_course_active_seq = ele.cs_course_active_seq
+				    AND home.cs_homework_seq = ele.cs_reference_seq
+				WHERE home.cs_delete_yn = 'N'
+				  AND home.cs_homework_seq = #{homeworkSeq}
+			) home
+		</if>
+    </select>
+    
+    <resultMap id="listResultMapResult" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkRS">
+   	 	<result column="home.homeworkSeq"           property="courseHomework.homeworkSeq"       />
+   	 	<result column="home.courseActiveSeq"       property="courseHomework.courseActiveSeq"   />
+   	 	<result column="home.homeworkTitle"         property="courseHomework.homeworkTitle"     />
+   	 	<result column="home.description"           property="courseHomework.description"       />
+   	 	<result column="home.startDtime"            property="courseHomework.startDtime"        />
+   	 	<result column="home.start2Dtime"           property="courseHomework.start2Dtime"       />
+   	 	<result column="home.startDay"           	property="courseHomework.startDay"       	/>
+   	 	<result column="home.endDtime"              property="courseHomework.endDtime"          />
+   	 	<result column="home.end2Dtime"             property="courseHomework.end2Dtime"         />
+   	 	<result column="home.endDay"             	property="courseHomework.endDay"         />
+   	 	<result column="home.middleFinalTypeCd"     property="courseHomework.middleFinalTypeCd" />
+   	 	<result column="home.basicSupplementCd"     property="courseHomework.basicSupplementCd" />
+   	 	<result column="home.onoffCd"               property="courseHomework.onoffCd"           />
+   	 	<result column="home.openYn"                property="courseHomework.openYn"            />
+   	 	<result column="home.profMemberSeq"         property="courseHomework.profMemberSeq"     />
+   	 	<result column="home.rate"                  property="courseHomework.rate"              />
+   	 	<result column="home.rate2"                 property="courseHomework.rate2"             />
+   	 	<result column="home.referenceSeq"          property="courseHomework.referenceSeq"      />
+   	 	<result column="home.replaceYn"             property="courseHomework.replaceYn"         />
+   	 	<result column="home.useYn"                 property="courseHomework.useYn"             />
+   	 	<result column="home.deleteYn"              property="courseHomework.deleteYn"          />
+   	 	<result column="home.regMemberSeq"          property="courseHomework.regMemberSeq"      />
+   	 	<result column="home.updMemberSeq"          property="courseHomework.updMemberSeq"      />
+   	 	<result column="home.regDtime"              property="courseHomework.regDtime"          />
+   	 	<result column="home.updDtime"              property="courseHomework.updDtime"          />
+   	 	<result column="home.regIp"                 property="courseHomework.regIp"             />
+   	 	<result column="home.updIp"          		property="courseHomework.updIp"          	/>
+   	 	<result column="home.referenceCount"        property="courseHomework.referenceCount"    />
+   	 	<result column="home.supplementUseYn"       property="courseHomework.supplementUseYn"   />
+   	 	<result column="summary.memberCount"        property="summary.memberCount"    			/>
+   	 	<result column="home.homeworkStatus"         property="courseHomework.homeworkStatus"    	/>
+   	 	<result column="home.referenceCount"        property="courseHomework.referenceCount"    />
+   	 	<result column="home.answerSubmitCount"     property="courseHomework.answerSubmitCount" />
+   	 	<result column="home.answerScoreCount"      property="courseHomework.answerScoreCount"  />
+   	</resultMap>      
+    
+	<select id="getListResult" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultMap="listResultMapResult">
+			/* UIUnivCourseHomework.getListResult */
+	    	SELECT
+	    		home.cs_homework_seq 			AS "home.homeworkSeq" , 
+				home.cs_course_active_seq 		AS "home.courseActiveSeq" ,     
+				home.cs_homework_title 			AS "home.homeworkTitle" ,        
+				home.cs_description 			AS "home.description" ,           
+				home.cs_start_dtime 			AS "home.startDtime" ,           
+				home.cs_start2_dtime 			AS "home.start2Dtime" ,          
+				home.cs_start_day 				AS "home.startDay" ,          
+				home.cs_end_dtime 				AS "home.endDtime" ,             
+				home.cs_end2_dtime 				AS "home.end2Dtime" ,            
+				home.cs_end_day 				AS "home.endDay" ,            
+				home.cs_middle_final_type_cd 	AS "home.middleFinalTypeCd" ,  
+				home.cs_basic_supplement_cd 	AS "home.basicSupplementCd" ,   
+				home.cs_onoff_cd 				AS "home.onoffCd" ,              
+				home.cs_open_yn 				AS "home.openYn" ,               
+				home.cs_prof_member_seq 		AS "home.profMemberSeq" ,       
+				ISNULL(home.cs_rate, 0)			AS "home.rate" ,                  
+				ISNULL(home.cs_rate2, 0) 		AS "home.rate2" ,                
+				home.cs_reference_seq 			AS "home.referenceSeq" , 
+				home.cs_reference_type 			AS "home.referenceType" ,    
+				home.cs_replace_yn 				AS "home.replaceYn" ,            
+				home.cs_use_yn 					AS "home.useYn" ,                
+				home.cs_delete_yn 				AS "home.deleteYn" , 
+				home.cs_reg_member_seq			AS "home.regMemberSeq" , 
+			    home.cs_upd_member_seq			AS "home.updMemberSeq" , 
+			    home.cs_reg_dtime				AS "home.regDtime" , 
+			    home.cs_upd_dtime				AS "home.updDtime" , 
+			    home.cs_reg_ip					AS "home.regIp" , 
+			    home.cs_upd_ip					AS "home.updIp" ,
+			    (CASE
+			    	WHEN home.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' THEN summary.cs_member_count
+			    	ELSE ISNULL(
+						(SELECT COUNT(*) FROM cs_course_homework_target sub WHERE sub.cs_delete_yn = 'N' AND sub.cs_homework_seq = home.cs_homework_seq)
+					    , 0)
+				END) 							AS "home.targetCount" ,
+			    ISNULL(
+			    	(SELECT COUNT(*) FROM cs_course_homework sub WHERE sub.cs_delete_yn = 'N' AND sub.cs_reference_seq = home.cs_homework_seq)
+			    	, 0)						AS "home.referenceCount" ,
+			    (CASE
+			 		WHEN home.cs_use_yn = 'Y' AND home.cs_end2_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() THEN 'Y'
+					WHEN home.cs_use_yn = 'N' AND home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() THEN 'Y'
+					ELSE 'N'
+				
+			    END) 							AS "home.supplementUseYn" ,
+			    summary.cs_member_count 	    AS "summary.memberCount" ,
+				(CASE
+					WHEN home.cs_use_yn = 'Y' AND home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+				  	THEN 
+				  		CASE 
+							WHEN home.cs_start2_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home.cs_end2_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR()
+							THEN 'D'
+							WHEN home.cs_start2_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR()
+							THEN 'R'
+							WHEN home.cs_end2_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+							THEN 'E'
+						END
+					ELSE
+						CASE 
+							WHEN home.cs_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home.cs_end_dtime <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR()
+							THEN 'D'
+							WHEN home.cs_start_dtime <![CDATA[>]]> dbo.FN_NOW_TO_CHAR()
+							THEN 'R'
+							WHEN home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+							THEN 'E'
+						END 	
+				END) 								AS "home.homeworkStatus" ,
+				(SELECT COUNT(*) 
+				   FROM cs_course_homework_answer subAnswer 
+				  WHERE subAnswer.cs_homework_seq = home.cs_homework_seq 
+				    AND subAnswer.cs_delete_yn = 'N') AS "home.answerSubmitCount" ,
+				(SELECT COUNT(*) 
+				   FROM cs_course_homework_answer subAnswer 
+				  WHERE subAnswer.cs_homework_seq = home.cs_homework_seq 
+				    AND subAnswer.cs_score_dtime IS NOT NULL 
+				    AND subAnswer.cs_delete_yn = 'N') AS "home.answerScoreCount"
+			FROM cs_course_homework home
+	  INNER JOIN cs_course_active_summary summary
+		      ON home.cs_course_active_seq = summary.cs_course_active_seq
+		   WHERE home.cs_delete_yn = 'N'
+		     AND home.cs_course_active_seq = #{courseActiveSeq}
+		     <if test='replaceYn != null and !replaceYn.equals("")'>
+			 AND home.cs_replace_yn = #{replaceYn}
+		     </if>
+		     <if test='middleFinalTypeCd != null and !middleFinalTypeCd.equals("")'>
+			 AND home.cs_middle_final_type_cd = #{middleFinalTypeCd}
+			 </if>
+		ORDER BY home.cs_reference_seq DESC, home.cs_homework_seq ASC		
+			
+    </select>
+    
+	<select id="countListResult" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultType="int">
+		<![CDATA[
+	/* UIUnivCourseHomework.countListResult */
+	SELECT COUNT(*)
+	  FROM (SELECT
+				ISNULL(
+			    	(SELECT COUNT(*) FROM cs_course_homework sub WHERE sub.cs_delete_yn = 'N' AND sub.cs_reference_seq = home.cs_homework_seq)
+			    	, 0)						AS "referenceCount"
+			FROM cs_course_homework home
+	  INNER JOIN cs_course_active_summary summary
+		      ON home.cs_course_active_seq = summary.cs_course_active_seq
+		   WHERE home.cs_delete_yn = 'N'
+		     AND home.cs_course_active_seq = #{courseActiveSeq}
+		   ) total
+     WHERE total.referenceCount > 0
+		]]>	
+    </select>    
+    
+    <resultMap id="detailResultMapResult" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkRS">
+   	 	<result column="home.homeworkSeq"           property="courseHomework.homeworkSeq"       />
+   	 	<result column="home.courseActiveSeq"       property="courseHomework.courseActiveSeq"   />
+   	 	<result column="home.homeworkTitle"         property="courseHomework.homeworkTitle"     />
+   	 	<result column="home.description"           property="courseHomework.description"       />
+   	 	<result column="home.startDtime"            property="courseHomework.startDtime"        />
+   	 	<result column="home.start2Dtime"           property="courseHomework.start2Dtime"       />
+   	 	<result column="home.startDay"           	property="courseHomework.startDay"       />
+   	 	<result column="home.endDtime"              property="courseHomework.endDtime"          />
+   	 	<result column="home.end2Dtime"             property="courseHomework.end2Dtime"         />
+   	 	<result column="home.endDay"             	property="courseHomework.endDay"         />
+   	 	<result column="home.middleFinalTypeCd"     property="courseHomework.middleFinalTypeCd" />
+   	 	<result column="home.basicSupplementCd"     property="courseHomework.basicSupplementCd" />
+   	 	<result column="home.onoffCd"               property="courseHomework.onoffCd"           />
+   	 	<result column="home.openYn"                property="courseHomework.openYn"            />
+   	 	<result column="home.profMemberSeq"         property="courseHomework.profMemberSeq"     />
+   	 	<result column="home.rate"                  property="courseHomework.rate"              />
+   	 	<result column="home.rate2"                 property="courseHomework.rate2"             />
+   	 	<result column="home.referenceSeq"          property="courseHomework.referenceSeq"      />
+   	 	<result column="home.replaceYn"             property="courseHomework.replaceYn"         />
+   	 	<result column="home.useYn"                 property="courseHomework.useYn"             />
+   	 	<result column="home.deleteYn"              property="courseHomework.deleteYn"          />
+   	 	<result column="home.regMemberSeq"          property="courseHomework.regMemberSeq"      />
+   	 	<result column="home.updMemberSeq"          property="courseHomework.updMemberSeq"      />
+   	 	<result column="home.regDtime"              property="courseHomework.regDtime"          />
+   	 	<result column="home.updDtime"              property="courseHomework.updDtime"          />
+   	 	<result column="home.regIp"                 property="courseHomework.regIp"             />
+   	 	<result column="home.updIp"          		property="courseHomework.updIp"          	/>
+   	 	<result column="home.referenceCount"        property="courseHomework.referenceCount"    />
+   	 	<result column="home.supplementUseYn"       property="courseHomework.supplementUseYn"   />
+   	 	<result column="summary.memberCount"        property="summary.memberCount"    			/>
+   	 	<result column="home.homeworkStatus"         property="courseHomework.homeworkStatus"    	/>
+   	 	<result column="home.referenceCount"        property="courseHomework.referenceCount"    />
+   	 	<result column="home.answerSubmitCount"     property="courseHomework.answerSubmitCount" />
+   	 	<result column="home.answerScoreCount"      property="courseHomework.answerScoreCount"  />
+   	 	<result column="home.activeElementSeq"      property="courseHomework.activeElementSeq"  />
+   	 	<collection column="{referenceSeq=home.homeworkSeq,referenceTablename=referenceTablename}" property="courseHomework.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+   	</resultMap> 
+   	 
+	<select id="getDetailResult" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultMap="detailResultMapResult">
+			/* UIUnivCourseHomework.getDetailResult */
+	    	SELECT
+	    		home.cs_homework_seq 			AS "home.homeworkSeq" , 
+				home.cs_course_active_seq 		AS "home.courseActiveSeq" ,     
+				home.cs_homework_title 			AS "home.homeworkTitle" ,        
+				home.cs_description 			AS "home.description" ,           
+				home.cs_start_dtime 			AS "home.startDtime" ,           
+				home.cs_start2_dtime 			AS "home.start2Dtime" ,          
+				home.cs_start_day 				AS "home.startDay" ,          
+				home.cs_end_dtime 				AS "home.endDtime" ,             
+				home.cs_end2_dtime 				AS "home.end2Dtime" ,            
+				home.cs_end_day 				AS "home.endDay" ,            
+				home.cs_middle_final_type_cd 	AS "home.middleFinalTypeCd" ,  
+				home.cs_basic_supplement_cd 	AS "home.basicSupplementCd" ,   
+				home.cs_onoff_cd 				AS "home.onoffCd" ,              
+				home.cs_open_yn 				AS "home.openYn" ,               
+				home.cs_prof_member_seq 		AS "home.profMemberSeq" ,       
+				ISNULL(home.cs_rate, 0)			AS "home.rate" ,                  
+				ISNULL(home.cs_rate2, 0) 		AS "home.rate2" ,                
+				home.cs_reference_seq 			AS "home.referenceSeq" , 
+				home.cs_reference_type 			AS "home.referenceType" ,    
+				home.cs_replace_yn 				AS "home.replaceYn" ,            
+				home.cs_use_yn 					AS "home.useYn" ,                
+				home.cs_delete_yn 				AS "home.deleteYn" , 
+				home.cs_reg_member_seq			AS "home.regMemberSeq" , 
+			    home.cs_upd_member_seq			AS "home.updMemberSeq" , 
+			    home.cs_reg_dtime				AS "home.regDtime" , 
+			    home.cs_upd_dtime				AS "home.updDtime" , 
+			    home.cs_reg_ip					AS "home.regIp" , 
+			    home.cs_upd_ip					AS "home.updIp" ,
+			    'cs_course_homework'   			AS "referenceTablename" ,
+			    (CASE
+			    	WHEN home.cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}' THEN summary.cs_member_count
+			    	ELSE ISNULL(
+						(SELECT COUNT(*) FROM cs_course_homework_target sub WHERE sub.cs_delete_yn = 'N' AND sub.cs_homework_seq = home.cs_homework_seq)
+					    , 0)
+				END) 							AS "home.targetCount" ,
+			    ISNULL(
+			    	(SELECT COUNT(*) FROM cs_course_homework sub WHERE sub.cs_delete_yn = 'N' AND sub.cs_reference_seq = home.cs_homework_seq)
+			    	, 0)						AS "home.referenceCount" ,
+			    (CASE
+			 		WHEN home.cs_use_yn = 'Y' AND home.cs_end2_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() THEN 'Y'
+					WHEN home.cs_use_yn = 'N' AND home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR() THEN 'Y'
+					ELSE 'N'
+			    END) 							AS "home.supplementUseYn" ,
+			    summary.cs_member_count 	    AS "summary.memberCount" ,
+				(CASE
+					WHEN home.cs_use_yn = 'Y' AND home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+				  	THEN 
+				  		CASE 
+							WHEN home.cs_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home.cs_end2_dtime >= dbo.FN_NOW_TO_CHAR()
+							THEN 'D'
+							WHEN home.cs_start_dtime > dbo.FN_NOW_TO_CHAR()
+							THEN 'R'
+							WHEN home.cs_end2_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+							THEN 'E'
+						END
+					ELSE
+						CASE 
+							WHEN home.cs_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR() AND home.cs_end_dtime >= dbo.FN_NOW_TO_CHAR()
+							THEN 'D'
+							WHEN home.cs_start_dtime > dbo.FN_NOW_TO_CHAR()
+							THEN 'R'
+							WHEN home.cs_end_dtime <![CDATA[<]]> dbo.FN_NOW_TO_CHAR()
+							THEN 'E'
+						END 	
+				END) 								AS "home.homeworkStatus" ,
+				(SELECT COUNT(*) 
+				   FROM cs_course_homework_answer subAnswer 
+				  WHERE subAnswer.cs_homework_seq = home.cs_homework_seq 
+				    AND subAnswer.cs_delete_yn = 'N') AS "home.answerSubmitCount" ,
+				(SELECT COUNT(*) 
+				   FROM cs_course_homework_answer subAnswer 
+				  WHERE subAnswer.cs_homework_seq = home.cs_homework_seq 
+				    AND subAnswer.cs_score_dtime IS NOT NULL 
+				    AND subAnswer.cs_delete_yn = 'N') AS "home.answerScoreCount" ,
+				ele.cs_active_element_seq 			  AS "home.activeElementSeq"
+			FROM cs_course_homework home
+	  INNER JOIN cs_course_active_summary summary
+		      ON home.cs_course_active_seq = summary.cs_course_active_seq
+	  INNER JOIN cs_course_active_element ele
+			  ON home.cs_course_active_seq = ele.cs_course_active_seq
+		     AND home.cs_homework_seq = ele.cs_reference_seq
+		     AND ele.cs_reference_type_cd = (CASE
+												WHEN home.cs_replace_yn = 'Y' AND home.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}'
+												WHEN home.cs_replace_yn = 'Y' AND home.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.FINAL}'  THEN '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}'
+												ELSE '${CD.COURSE_ELEMENT_TYPE.HOMEWORK}'
+											 END)
+		   WHERE home.cs_delete_yn = 'N'
+		     AND home.cs_course_active_seq = #{courseActiveSeq}
+		     AND home.cs_homework_seq = #{homeworkSeq}
+		ORDER BY home.cs_reference_seq DESC, home.cs_homework_seq ASC		
+    </select>
+
+    <resultMap id="listResultMapMember" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkRS">
+		<result column="apply.cs_course_apply_seq"         	property="apply.courseApplySeq"/>
+		<result column="apply.cs_course_active_seq"         property="apply.courseActiveSeq"/>
+		<result column="apply.cs_member_seq"         		property="apply.memberSeq"/>
+		<result column="member.cs_member_id"         		property="member.memberId"/>
+		<result column="member.cs_member_name"         		property="member.memberName"/>
+		<result column="member.cs_category_seq"				property="member.categoryOrganizationSeq"/>
+		<result column="member.cs_phone_mobile"				property="member.phoneMobile"/>
+		<result column="category.cs_category_name"         	property="category.categoryName"/>
+		<result column="answer.cs_homework_answer_seq"      property="answer.homeworkAnswerSeq"/>
+		<result column="answer.cs_send_dtime"         		property="answer.sendDtime"/>
+		<result column="answer.cs_send_degree"         		property="answer.sendDegree"/>
+		<result column="answer.cs_homework_score"         	property="answer.homeworkScore"/>
+		<result column="answer.cs_score_dtime"         		property="answer.scoreDtime"/>
+		<result column="answer.cs_scaled_score"         	property="answer.scaledScore"/>
+    	<collection column="{referenceSeq=answer.cs_homework_answer_seq,referenceTablename=referenceTablename}" property="answer.unviAttachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>		
+   	</resultMap> 
+   	
+	<select id="getListMember" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseHomeworkCondition" resultMap="listResultMapMember">
+		/* UIUnivCourseHomework.getlistMember */
+		<if test='currentPage != 0'>
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "member.cs_member_name" ASC</when>
+            <when test='orderby ==-1'>ORDER BY "member.cs_member_name" DESC</when>
+            <when test='orderby == 2'>ORDER BY "member.cs_member_id" ASC</when>
+            <when test='orderby ==-2'>ORDER BY "member.cs_member_id" DESC</when>
+            <when test='orderby == 3'>ORDER BY "category.cs_category_name" ASC, "member.cs_member_name" ASC</when>
+            <when test='orderby ==-3'>ORDER BY "category.cs_category_name" DESC, "member.cs_member_name" ASC</when>
+            <when test='orderby == 4'>ORDER BY "answer.cs_send_dtime" ASC, "member.cs_member_name" ASC</when>
+            <when test='orderby ==-4'>ORDER BY "answer.cs_send_dtime" DESC, "member.cs_member_name" ASC</when>            
+            <when test='orderby == 5'>ORDER BY "answer.cs_send_degree" ASC, "member.cs_member_name" ASC</when>
+            <when test='orderby ==-5'>ORDER BY "answer.cs_send_degree" DESC, "member.cs_member_name" ASC</when>            
+            <when test='orderby == 6'>ORDER BY "answer.cs_homework_score" ASC, "member.cs_member_name" ASC</when>
+            <when test='orderby ==-6'>ORDER BY "answer.cs_homework_score" DESC, "member.cs_member_name" ASC</when>
+            <when test='orderby == 7'>ORDER BY "answer.cs_scaled_score" ASC, "member.cs_member_name" ASC</when>
+            <when test='orderby ==-7'>ORDER BY "answer.cs_scaled_score" DESC, "member.cs_member_name" ASC</when>                     
+            <when test='orderby == 8'>ORDER BY "answer.cs_score_dtime" ASC, "member.cs_member_name" ASC</when>
+            <when test='orderby ==-8'>ORDER BY "answer.cs_score_dtime" DESC, "member.cs_member_name" ASC</when>                          
+            <otherwise>ORDER BY "member.cs_member_name" ASC</otherwise>
+        </choose>
+		) AS rownumber, * FROM (
+        </if>
+		 SELECT apply.cs_course_apply_seq 				AS "apply.cs_course_apply_seq", 
+		       	apply.cs_course_active_seq 				AS "apply.cs_course_active_seq", 
+		       	apply.cs_member_seq 					AS "apply.cs_member_seq", 
+		       	member.cs_member_id 					AS "member.cs_member_id", 
+		       	member.cs_member_name 					AS "member.cs_member_name", 
+		       	member.cs_category_organization_seq 	AS "member.cs_category_seq", 
+		       	member.cs_phone_mobile 					AS "member.cs_phone_mobile",
+		       	category.cs_category_name 				AS "category.cs_category_name",
+		       	ISNULL(answer.cs_homework_answer_seq, 0)AS "answer.cs_homework_answer_seq", 
+		       	answer.cs_send_dtime 					AS "answer.cs_send_dtime", 
+		       	answer.cs_send_degree 					AS "answer.cs_send_degree", 
+		       	answer.cs_homework_score 				AS "answer.cs_homework_score", 
+		       	answer.cs_score_dtime					AS "answer.cs_score_dtime",
+		       	'cs_course_homework_answer'				AS "referenceTablename",
+		       	ISNULL(CASE
+					WHEN homework.cs_use_yn = 'Y' AND answer.cs_send_degree = 2 
+					THEN CONVERT(INT, (CONVERT(FLOAT, ISNULL(answer.cs_homework_score, 0)) / CONVERT(FLOAT, 100)) * ISNULL(homework.cs_rate2, 0))
+					ELSE answer.cs_homework_score 
+					END
+				, 0) 									AS "answer.cs_scaled_score"
+		   FROM cs_course_homework homework 
+		<if test='srchBasicSupplementCd.equals("${CD.BASIC_SUPPLEMENT.SUPPLEMENT}")'>
+  	 INNER JOIN cs_course_homework_target target
+             ON homework.cs_homework_seq = target.cs_homework_seq
+            AND target.cs_delete_yn = 'N'
+		</if>
+	 INNER JOIN cs_course_apply apply
+		     ON homework.cs_course_active_seq = apply.cs_course_active_seq 
+		    AND apply.cs_delete_yn = 'N'
+		    AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+		<if test='srchBasicSupplementCd.equals("${CD.BASIC_SUPPLEMENT.SUPPLEMENT}")'>
+		    AND target.cs_course_apply_seq = apply.cs_course_apply_seq
+		</if>
+     INNER JOIN cs_member member 
+		     ON apply.cs_member_seq = member.cs_member_seq 
+		    AND member.cs_delete_yn = 'N' 
+LEFT OUTER JOIN cs_category category 
+		     ON member.cs_category_organization_seq = category.cs_category_seq 
+		    AND category.cs_delete_yn = 'N' 
+LEFT OUTER JOIN cs_course_homework_answer answer 
+		     ON homework.cs_homework_seq = answer.cs_homework_seq 
+		    AND apply.cs_course_apply_seq = answer.cs_course_apply_seq 
+		    AND answer.cs_delete_yn = 'N' 
+		  WHERE homework.cs_homework_seq = #{homeworkSeq}
+		    AND homework.cs_delete_yn = 'N'
+		<if test='srchKey != null and !srchKey.equals("")'> 
+			<choose>
+				<when test='srchKey.equals("memberId")'>
+					<if test='srchWordDB != null and !srchWordDB.equals("")'> 
+			AND	member.cs_member_id = #{srchWordDB}
+					</if>
+				</when>
+		    	<when test='srchKey.equals("memberName")'>
+		    		<if test='srchWordDB != null and !srchWordDB.equals("")'> 
+		    AND	member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+		    		</if>
+		    	</when>
+		    </choose>
+		</if>
+		<if test='srchCategoryString != null and !srchCategoryString.equals("")'>
+			AND category.cs_category_string LIKE '%' + #{srchCategoryStringDB} + '%' 
+		</if>
+		<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+			AND category.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%' 
+		</if>
+        <if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>			
+    </select>
+
+	<select id="countListMember" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseHomeworkCondition" resultType="int">
+		/* UIUnivCourseHomework.countListMember */
+		 SELECT COUNT(*)
+		   FROM cs_course_homework homework 
+		<if test='srchBasicSupplementCd.equals("${CD.BASIC_SUPPLEMENT.SUPPLEMENT}")'>
+  	 INNER JOIN cs_course_homework_target target
+             ON homework.cs_homework_seq = target.cs_homework_seq
+            AND target.cs_delete_yn = 'N'
+		</if>
+	 INNER JOIN cs_course_apply apply
+		     ON homework.cs_course_active_seq = apply.cs_course_active_seq 
+		    AND apply.cs_delete_yn = 'N'
+		    AND apply.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+		<if test='srchBasicSupplementCd.equals("${CD.BASIC_SUPPLEMENT.SUPPLEMENT}")'>
+		    AND target.cs_course_apply_seq = apply.cs_course_apply_seq
+		</if>
+     INNER JOIN cs_member member 
+		     ON apply.cs_member_seq = member.cs_member_seq 
+		    AND member.cs_delete_yn = 'N' 
+LEFT OUTER JOIN cs_category category 
+		     ON member.cs_category_organization_seq = category.cs_category_seq 
+		    AND category.cs_delete_yn = 'N' 
+LEFT OUTER JOIN cs_course_homework_answer answer 
+		     ON homework.cs_homework_seq = answer.cs_homework_seq 
+		    AND apply.cs_course_apply_seq = answer.cs_course_apply_seq 
+		    AND answer.cs_delete_yn = 'N' 
+		  WHERE homework.cs_homework_seq = #{homeworkSeq}
+		    AND homework.cs_delete_yn = 'N'
+		<if test='srchKey != null and !srchKey.equals("")'> 
+			<choose>
+				<when test='srchKey.equals("memberId")'>
+					<if test='srchWordDB != null and !srchWordDB.equals("")'> 
+			AND	member.cs_member_id = #{srchWordDB}
+					</if>
+				</when>
+		    	<when test='srchKey.equals("memberName")'>
+		    		<if test='srchWordDB != null and !srchWordDB.equals("")'> 
+		    AND	member.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+		    		</if>
+		    	</when>
+		    </choose>
+		</if>
+		<if test='srchCategoryString != null and !srchCategoryString.equals("")'>
+			AND category.cs_category_string LIKE '%' + #{srchCategoryStringDB} + '%' 
+		</if>
+		<if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+			AND category.cs_category_name LIKE '%' + #{srchCategoryNameDB} + '%' 
+		</if>		
+	</select>        
+
+    <resultMap id="detailResultMapMember" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseHomeworkRS">
+   	 	<result column="homework.cs_homework_seq"           property="courseHomework.homeworkSeq"/>
+   	 	<result column="homework.cs_course_active_seq"      property="courseHomework.courseActiveSeq"/>
+   	 	<result column="homework.cs_rate"         			property="courseHomework.rate"/>
+		<result column="homework.cs_rate2"         			property="courseHomework.rate2"/>
+		<result column="homework.cs_use_yn"         		property="courseHomework.useYn"/>
+		<result column="homework.cs_open_yn"         		property="courseHomework.openYn"/>
+		<result column="homework.cs_onoff_cd"         		property="courseHomework.onoffCd"/>
+		<result column="homework.cs_start_dtime"         	property="courseHomework.startDtime"/>
+		<result column="homework.cs_end_dtime"         		property="courseHomework.endDtime"/>
+		<result column="homework.cs_start2_dtime"         	property="courseHomework.start2Dtime"/>
+		<result column="homework.cs_end2_dtime"         	property="courseHomework.end2Dtime"/>
+		<result column="homework.cs_middle_final_type_cd"   property="courseHomework.middleFinalTypeCd"/>
+		<result column="homework.cs_basic_supplement_cd"    property="courseHomework.basicSupplementCd"/>
+		<result column="homework.cs_replace_yn"         	property="courseHomework.replaceYn"/>
+		<result column="apply.cs_course_apply_seq"         	property="apply.courseApplySeq"/>
+		<result column="apply.cs_course_active_seq"         property="apply.courseActiveSeq"/>
+		<result column="apply.cs_member_seq"         		property="apply.memberSeq"/>
+		<result column="member.cs_member_id"         		property="member.memberId"/>
+		<result column="member.cs_member_name"         		property="member.memberName"/>
+		<result column="member.cs_category_seq"				property="member.categoryOrganizationSeq"/>
+		<result column="answer.cs_homework_answer_seq"      property="answer.homeworkAnswerSeq"/>
+		<result column="answer.cs_homework_answer_title"    property="answer.homeworkAnswerTitle"/>
+		<result column="answer.cs_description"      		property="answer.description"/>
+		<result column="answer.cs_comment"      			property="answer.comment"/>
+		<result column="answer.cs_send_dtime"         		property="answer.sendDtime"/>
+		<result column="answer.cs_send_degree"         		property="answer.sendDegree"/>
+		<result column="answer.cs_homework_score"         	property="answer.homeworkScore"/>
+		<result column="answer.cs_score_dtime"         		property="answer.scoreDtime"/>
+		<result column="homework.activeElementSeq"         	property="courseHomework.activeElementSeq"/>
+    	<collection column="{referenceSeq=answer.cs_homework_answer_seq,referenceTablename=referenceTablename}" property="answer.unviAttachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>		
+   	</resultMap> 
+   	 
+	<select id="getDetailMember" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultMap="detailResultMapMember">
+		/* UIUnivCourseHomework.getDetailMember */
+			SELECT homework.cs_homework_seq  				AS "homework.cs_homework_seq", 
+				   homework.cs_course_active_seq 			AS "homework.cs_course_active_seq",
+				   homework.cs_rate 						AS "homework.cs_rate", 
+				   homework.cs_rate2 						AS "homework.cs_rate2", 
+				   homework.cs_use_yn 						AS "homework.cs_use_yn", 
+				   homework.cs_open_yn 						AS "homework.cs_open_yn", 
+				   homework.cs_onoff_cd 					AS "homework.cs_onoff_cd", 
+				   CASE 
+				   	WHEN ISNULL(act.cs_course_type_cd, '') != '${CD.COURSE_TYPE.ALWAYS}' THEN homework.cs_start_dtime 
+					ELSE REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, homework.cs_start_day ,dbo.FN_TO_DATE(apply.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '')
+				   END AS "homework.cs_start_dtime" , 
+				   CASE 
+				   	WHEN ISNULL(act.cs_course_type_cd, '') != '${CD.COURSE_TYPE.ALWAYS}' THEN homework.cs_end_dtime 
+					ELSE REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, homework.cs_end_day ,dbo.FN_TO_DATE(apply.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '')
+				   END AS "homework.cs_end_dtime" ,
+				   homework.cs_start2_dtime					AS "homework.cs_start2_dtime", 
+				   homework.cs_end2_dtime					AS "homework.cs_end2_dtime", 
+				   homework.cs_middle_final_type_cd			AS "homework.cs_middle_final_type_cd", 
+				   homework.cs_basic_supplement_cd			AS "homework.cs_basic_supplement_cd",
+				   homework.cs_replace_yn					AS "homework.cs_replace_yn", 
+				   apply.cs_course_apply_seq 				AS "apply.cs_course_apply_seq", 
+				   apply.cs_course_active_seq 				AS "apply.cs_course_active_seq", 
+				   apply.cs_member_seq 						AS "apply.cs_member_seq", 
+				   member.cs_member_id 						AS "member.cs_member_id", 
+				   member.cs_member_name 					AS "member.cs_member_name", 
+				   member.cs_category_organization_seq 		AS "member.cs_category_seq", 
+				   ISNULL(answer.cs_homework_answer_seq, 0)	AS "answer.cs_homework_answer_seq", 
+				   answer.cs_homework_answer_title 			AS "answer.cs_homework_answer_title", 
+				   answer.cs_description 					AS "answer.cs_description", 
+				   answer.cs_comment 						AS "answer.cs_comment",
+				   answer.cs_send_dtime 					AS "answer.cs_send_dtime", 
+				   answer.cs_send_degree 					AS "answer.cs_send_degree", 
+				   answer.cs_homework_score 				AS "answer.cs_homework_score", 
+				   answer.cs_score_dtime					AS "answer.cs_score_dtime",
+				   ele.cs_active_element_seq 				AS "homework.activeElementSeq" ,
+				   'cs_course_homework_answer'				AS "referenceTablename"
+			  FROM cs_course_homework homework
+		INNER JOIN cs_course_active act
+		        ON act.cs_course_active_seq = homework.cs_course_active_seq
+		INNER JOIN cs_course_apply apply
+			    ON homework.cs_course_active_seq = apply.cs_course_active_seq
+			   AND apply.cs_course_apply_seq = #{courseApplySeq}
+			   AND apply.cs_delete_yn = 'N'
+		INNER JOIN cs_member member
+			    ON apply.cs_member_seq = member.cs_member_seq
+			   AND member.cs_delete_yn = 'N'
+		INNER JOIN cs_course_active_element ele
+			    ON homework.cs_course_active_seq = ele.cs_course_active_seq
+		       AND homework.cs_homework_seq = ele.cs_reference_seq
+		       AND ele.cs_reference_type_cd = (CASE
+													WHEN homework.cs_replace_yn = 'Y' AND homework.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.MIDDLE}' THEN '${CD.COURSE_ELEMENT_TYPE.MIDEXAM}'
+													WHEN homework.cs_replace_yn = 'Y' AND homework.cs_middle_final_type_cd = '${CD.MIDDLE_FINAL_TYPE.FINAL}' THEN '${CD.COURSE_ELEMENT_TYPE.FINALEXAM}'
+													ELSE '${CD.COURSE_ELEMENT_TYPE.HOMEWORK}'
+												 END)
+   LEFT OUTER JOIN cs_course_homework_answer answer
+			    ON homework.cs_homework_seq = answer.cs_homework_seq
+			   AND apply.cs_course_apply_seq = answer.cs_course_apply_seq
+			   AND answer.cs_delete_yn = 'N'
+			 WHERE homework.cs_homework_seq = #{homeworkSeq}
+			   AND homework.cs_delete_yn = 'N'	
+	</select>
+	
+    <resultMap id="detailBasucResultMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO">
+        <result column="cs_course_active_seq"      property="courseActiveSeq"/>
+        <result column="cs_homework_seq"           property="homeworkSeq"/>
+        <result column="cs_middle_final_type_cd"   property="middleFinalTypeCd"/>
+        <result column="cs_homework_title"         property="homeworkTitle"/>
+        <result column="cs_description"            property="description"/>
+        <result column="cs_basic_supplement_cd"    property="basicSupplementCd"/>
+        <result column="cs_prof_member_seq"        property="profMemberSeq"/>
+        <result column="cs_rate"                   property="rate"/>
+        <result column="cs_rate2"                  property="rate2"/>
+        <result column="cs_use_yn"                 property="useYn"/>
+        <result column="cs_open_yn"                property="openYn"/>
+        <result column="cs_onoff_cd"               property="onoffCd"/>
+        <result column="cs_replace_yn"             property="replaceYn"/>
+        <result column="cs_reference_seq"          property="referenceSeq"/>
+        <result column="cs_reference_type"         property="referenceType"/>
+        <result column="cs_start_day"         	   property="startDay"/>
+        <result column="cs_end_day"                property="endDay"/>
+    </resultMap> 
+    
+    <select id="getListCopyBasicHomework" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseHomeworkVO" resultMap="detailBasucResultMap">
+/* UIUnivCourseHomework.getListCopyBasicHomework */
+SELECT #{targetCourseActiveSeq} AS cs_course_active_seq,
+       cs_homework_seq,
+       cs_middle_final_type_cd,
+       cs_homework_title,
+       cs_description,
+       cs_basic_supplement_cd,
+       cs_prof_member_seq,
+       cs_rate,
+       cs_rate2,
+       cs_use_yn,
+       cs_onoff_cd,
+       cs_open_yn,
+       cs_replace_yn,
+       cs_reference_seq,
+       cs_reference_type,
+       cs_start_day,
+       cs_end_day
+  FROM cs_course_homework
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{sourceCourseActiveSeq}
+   AND cs_replace_yn = 'N'
+   AND cs_basic_supplement_cd = '${CD.BASIC_SUPPLEMENT.BASIC}'
+    </select>
+</mapper>

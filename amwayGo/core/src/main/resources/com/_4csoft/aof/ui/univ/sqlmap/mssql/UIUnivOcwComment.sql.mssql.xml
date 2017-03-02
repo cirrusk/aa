@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivOcwCommentMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwCommentVO">
+        <selectKey resultType="Long" keyProperty="ocwCommentSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UnivOcwCommentMapper.insert */
+INSERT INTO cs_ocw_comment 
+       ( 
+       	   cs_course_active_seq ,
+       	   cs_item_seq ,
+           cs_comment_type_cd ,
+           cs_description ,
+           cs_agree_count ,
+           cs_disagree_count ,
+           cs_secret_yn ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+       VALUES 
+       ( 
+           #{courseActiveSeq , jdbcType=NUMERIC} ,
+       	   #{itemSeq , jdbcType=NUMERIC} ,
+           #{commentTypeCd , jdbcType=NUMERIC} ,
+           #{description, jdbcType=VARCHAR} , 
+           0 ,
+           0 ,
+           #{secretYn, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwCommentVO">
+/* UnivOcwCommentMapper.update */
+UPDATE cs_ocw_comment 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_description = #{description, jdbcType=VARCHAR} ,
+       cs_secret_yn = #{secretYn, jdbcType=VARCHAR} 
+ WHERE cs_ocw_comment_seq = #{ocwCommentSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateAgreeCount" parameterType="Long">
+/* UnivOcwCommentMapper.updateAgreeCount */
+UPDATE cs_ocw_comment 
+   SET cs_agree_count = (
+       SELECT COUNT(*) 
+         FROM cs_ocw_comment_agree 
+        WHERE cs_ocw_comment_seq = #{ocwocwCommentSeq}
+          AND cs_agree_yn = 'Y'
+          AND cs_delete_yn = 'N'
+       )
+ WHERE cs_ocw_comment_seq = #{ocwCommentSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateDisagreeCount" parameterType="Long">
+/* UnivOcwCommentMapper.updateDisagreeCount */
+UPDATE cs_ocw_comment 
+   SET cs_disagree_count = (
+       SELECT COUNT(*) 
+         FROM cs_ocw_comment_agree 
+        WHERE cs_ocw_comment_seq = #{ocwCommentSeq}
+          AND cs_agree_yn = 'N'
+          AND cs_delete_yn = 'N'
+       ) 
+ WHERE cs_ocw_comment_seq = #{ocwCommentSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivOcwCommentVO">
+/* UnivOcwCommentMapper.delete */
+UPDATE cs_ocw_comment 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+ WHERE cs_ocw_comment_seq = #{ocwCommentSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivOcwCommentRS">
+        <result column="cmmt.ocwCommentSeq"     property="ocwComment.ocwCommentSeq"/>
+        <result column="cmmt.courseActiveSeq"   property="ocwComment.courseActiveSeq"/>
+        <result column="cmmt.itemSeq"       	property="ocwComment.itemSeq"/>
+        <result column="cmmt.commentTypeCd"     property="ocwComment.commentTypeCd"/>
+        <result column="cmmt.description"       property="ocwComment.description"/>
+        <result column="cmmt.agreeCount"        property="ocwComment.agreeCount"/>
+        <result column="cmmt.disagreeCount"     property="ocwComment.disagreeCount"/>
+        <result column="cmmt.secretYn"          property="ocwComment.secretYn"/>
+        <result column="cmmt.deleteYn"          property="ocwComment.deleteYn"/>
+        <result column="cmmt.regMemberSeq"      property="ocwComment.regMemberSeq"/>
+        <result column="cmmt.regDtime"          property="ocwComment.regDtime"/>
+        <result column="cmmt.regIp"          	property="ocwComment.regIp"/>
+        <result column="cmmt.updMemberSeq"      property="ocwComment.updMemberSeq"/>
+        <result column="cmmt.updDtime"          property="ocwComment.updDtime"/>
+        <result column="cmmt.updIp"          	property="ocwComment.updIp"/>
+        <result column="cmmt.regMemberName"     property="ocwComment.regMemberName"/>
+        <result column="cmmt.regMemberNickname" property="ocwComment.regMemberNickname"/>
+        <result column="cmmt.regMemberPhoto"    property="ocwComment.regMemberPhoto"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="Long" resultMap="getDetail_result">
+/* UnivOcwCommentMapper.getDetail */
+SELECT cmmt.cs_ocw_comment_seq    AS "cmmt.ocwCommentSeq" ,
+       cmmt.cs_course_active_seq  AS "cmmt.courseActiveSeq" ,
+       cmmt.cs_item_seq 		  AS "cmmt.itemSeq" ,
+       cmmt.cs_comment_type_cd AS "cmmt.commentTypeCd" ,
+       cmmt.cs_description    AS "cmmt.description" ,
+       cmmt.cs_agree_count    AS "cmmt.agreeCount" ,
+       cmmt.cs_disagree_count AS "cmmt.disagreeCount" ,
+       cmmt.cs_secret_yn      AS "cmmt.secretYn" ,
+       cmmt.cs_delete_yn      AS "cmmt.deleteYn" ,
+       cmmt.cs_reg_member_seq AS "cmmt.regMemberSeq" ,
+       cmmt.cs_reg_dtime      AS "cmmt.regDtime" ,
+       cmmt.cs_reg_ip         AS "cmmt.regIp" ,
+       cmmt.cs_upd_member_seq AS "cmmt.updMemberSeq" ,
+       cmmt.cs_upd_dtime      AS "cmmt.updDtime" ,
+       cmmt.cs_upd_ip         AS "cmmt.updIp" ,
+       memb.cs_member_name    AS "cmmt.regMemberName" ,
+       memb.cs_nickname       AS "cmmt.regMemberNickname" ,
+       memb.cs_photo          AS "cmmt.regMemberPhoto" 
+  FROM cs_ocw_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq 
+ WHERE cmmt.cs_ocw_comment_seq = #{ocwCommentSeq} 
+       AND cmmt.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivOcwCommentRS">
+        <result column="cmmt.ocwCommentSeq"     property="ocwComment.ocwCommentSeq"/>
+        <result column="cmmt.courseActiveSeq"   property="ocwComment.courseActiveSeq"/>
+        <result column="cmmt.itemSeq"       	property="ocwComment.itemSeq"/>
+        <result column="cmmt.commentTypeCd"  	property="ocwComment.commentTypeCd"/>
+        <result column="cmmt.description"       property="ocwComment.description"/>
+        <result column="cmmt.agreeCount"        property="ocwComment.agreeCount"/>
+        <result column="cmmt.disagreeCount"     property="ocwComment.disagreeCount"/>
+        <result column="cmmt.secretYn"          property="ocwComment.secretYn"/>
+        <result column="cmmt.deleteYn"          property="ocwComment.deleteYn"/>
+        <result column="cmmt.regMemberSeq"      property="ocwComment.regMemberSeq"/>
+        <result column="cmmt.regDtime"          property="ocwComment.regDtime"/>
+        <result column="cmmt.regIp"         	property="ocwComment.regIp"/>
+        <result column="cmmt.updMemberSeq"      property="ocwComment.updMemberSeq"/>
+        <result column="cmmt.updDtime"          property="ocwComment.updDtime"/>
+        <result column="cmmt.updId"         	property="ocwComment.updIp"/>
+        <result column="cmmt.regMemberName"     property="ocwComment.regMemberName"/>
+        <result column="cmmt.regMemberNickname" property="ocwComment.regMemberNickname"/>
+        <result column="cmmt.regMemberPhoto"    property="ocwComment.regMemberPhoto"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivOcwCommentCondition" resultMap="getList_result">
+/* UnivOcwCommentMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test="orderby == 1">ORDER BY "cmmt.regDtime" ASC</when>
+            <when test="orderby == -1">ORDER BY "cmmt.regDtime" DESC</when>
+            <otherwise>ORDER BY "cmmt.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT cmmt.cs_ocw_comment_seq    AS "cmmt.ocwCommentSeq" ,
+       cmmt.cs_course_active_seq  AS "cmmt.courseActiveSeq" ,
+       cmmt.cs_item_seq 		  AS "cmmt.itemSeq" ,
+       cmmt.cs_comment_type_cd AS "cmmt.commentTypeCd" ,
+       cmmt.cs_description    AS "cmmt.description" ,
+       cmmt.cs_agree_count    AS "cmmt.agreeCount" ,
+       cmmt.cs_disagree_count AS "cmmt.disagreeCount" ,
+       cmmt.cs_secret_yn      AS "cmmt.secretYn" ,
+       cmmt.cs_delete_yn      AS "cmmt.deleteYn" ,
+       cmmt.cs_reg_member_seq AS "cmmt.regMemberSeq" ,
+       cmmt.cs_reg_dtime      AS "cmmt.regDtime" ,
+       cmmt.cs_reg_ip         AS "cmmt.regIp" ,
+       cmmt.cs_upd_member_seq AS "cmmt.updMemberSeq" ,
+       cmmt.cs_upd_dtime      AS "cmmt.updDtime" ,
+       cmmt.cs_upd_ip         AS "cmmt.updIp" ,
+       memb.cs_member_name    AS "cmmt.regMemberName" ,
+       memb.cs_nickname       AS "cmmt.regMemberNickname" ,
+       memb.cs_photo          AS "cmmt.regMemberPhoto" 
+  FROM cs_ocw_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq 
+ WHERE cmmt.cs_delete_yn = 'N'
+ 	AND cmmt.cs_comment_type_cd = #{srchCommentTypeCd}
+ 	AND cmmt.cs_course_active_seq = #{srchCourseActiveSeq}
+ 	<if test='srchCommentTypeCd.equals("ORGANIZATION")'>
+ 	AND cmmt.cs_item_seq = #{srchItemSeq}
+ 	</if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivOcwCommentCondition" resultType="int">
+/* UnivOcwCommentMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_ocw_comment cmmt 
+   INNER JOIN cs_member memb 
+       ON memb.cs_member_seq = cmmt.cs_reg_member_seq 
+WHERE cmmt.cs_delete_yn = 'N'
+ 	AND cmmt.cs_comment_type_cd = #{srchCommentTypeCd}
+ 	AND cmmt.cs_course_active_seq = #{srchCourseActiveSeq}
+ 	<if test='srchCommentTypeCd.equals("ORGANIZATION")'>
+ 	AND cmmt.cs_item_seq = #{srchItemSeq}
+ 	</if>
+    </select>
+
+</mapper>

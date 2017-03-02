@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.noteSet.service.impl.NoteSetMapper">
+
+    <!-- 쪽지설정 리스트 카운트 -->
+    <select id="noteSetListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(NOTESETSEQ) AS TOTAL_CNT
+        FROM   NOTESET
+        WHERE 1=1
+        <if test="noteservice != null and !noteservice.equals('')">
+            AND NOTESERVICE = #{noteservice}
+        </if>
+        <if test="noteitem != null and !noteitem.equals('')">
+            AND NOTEITEM = #{noteitem}
+        </if>
+	</select>
+
+    <select id="noteSetList" parameterType="reqBox" resultType="dataBox">
+        SELECT AI.ROW_NUM
+             , AI.NOTESETSEQ
+             , AI.NOTESERVICE
+             , AI.NOTEITEM
+             , AI.SENDTIME
+             , AI.NOTECONTENT
+             , AI.REGISTRANT
+             , AI.REGISTRANTDATE
+        FROM (
+                SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType} ) AS ROW_NUM
+                     , NOTESETSEQ
+                     , CASE WHEN NOTESERVICE = '1' THEN '아카데미'
+                            WHEN NOTESERVICE = '2' THEN '비즈니스'
+                            WHEN NOTESERVICE = '3' THEN '쇼핑'
+                       END AS NOTESERVICE
+                     , NOTEITEM
+                     , SENDTIME
+                     , NOTECONTENT
+                     , REGISTRANT
+                     , REGISTRANTDATE
+                FROM   NOTESET
+                WHERE 1=1
+                <if test="noteservice != null and !noteservice.equals('')">
+                    AND NOTESERVICE = #{noteservice}
+                </if>
+                <if test="noteitem != null and !noteitem.equals('')">
+                    AND NOTEITEM = #{noteitem}
+                </if>
+            ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+
+    <select id="noteSetPop" parameterType="reqBox" resultType="dataBox">
+        SELECT NOTESETSEQ
+             , NOTESERVICE
+             , NOTEITEM
+             , SENDTIME
+             , NOTECONTENT
+        FROM   NOTESET
+        WHERE  NOTESETSEQ = #{notesetseq}
+    </select>
+
+    <insert id="noteSetInsert" parameterType="reqBox">
+        <selectKey resultType="integer" keyProperty="notesetseq" order="BEFORE">
+            SELECT ISNULL(MAX(NOTESETSEQ),0)+1 FROM NOTESET
+        </selectKey>
+        INSERT INTO NOTESET (
+               NOTESETSEQ
+             , NOTESERVICE
+             , NOTEITEM
+             , SENDTIME
+             , NOTECONTENT
+             , REGISTRANT
+             , REGISTRANTDATE
+             , MODIFIER
+             , MODIFYDATE
+        ) VALUES (
+        	#{notesetseq}
+        	, #{noteservice}
+        	, #{noteitem}
+            , #{sendtime}
+        	, #{notecontent}
+        	, #{sessionAccount}
+	        , Getdate()
+	        , #{sessionAccount}
+	        , Getdate()
+        )
+    </insert>
+
+    <update id="noteSetUpdate"  parameterType="reqBox">
+        UPDATE NOTESET SET
+               NOTESERVICE = #{noteservice}
+             , NOTEITEM = #{noteitem}
+             , SENDTIME = #{sendtime}
+             , NOTECONTENT = #{notecontent}
+             , MODIFIER = #{sessionAccount}
+             , MODIFYDATE = Getdate()
+        WHERE  NOTESETSEQ = #{notesetseq}
+    </update>
+
+    <delete id="noteSetDelete"  parameterType="reqBox">
+        DELETE FROM NOTESET
+        WHERE NOTESETSEQ = #{notesetseq}
+    </delete>
+
+</mapper>

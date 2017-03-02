@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseTeamProjectTemplateMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectTemplateVO">
+        <selectKey resultType="Long" keyProperty="templateSeq" order="AFTER">
+			SELECT @@IDENTITY
+        </selectKey>
+			/* UIUnivCourseTeamProjectTemplateMapper.insert */
+			INSERT INTO cs_course_teamproject_template 
+			       ( 
+			           cs_course_master_seq ,
+					   cs_template_title ,	
+					   cs_template_description ,
+					   cs_prof_member_seq ,
+					   cs_open_yn ,		
+					   cs_use_yn ,			 
+			           cs_delete_yn, 
+			           cs_reg_member_seq, 
+			           cs_upd_member_seq, 
+			           cs_reg_dtime, 
+			           cs_upd_dtime, 
+			           cs_reg_ip, 
+			           cs_upd_ip 
+			       ) 
+			   VALUES
+			   	   (
+			   	   	   #{courseMasterSeq,   jdbcType=NUMERIC} ,
+					   #{templateTitle,   jdbcType=VARCHAR} ,	
+					   #{templateDescription,   jdbcType=VARCHAR} ,
+					   #{profMemberSeq,   jdbcType=NUMERIC} ,
+					   <choose>
+						   	<when test='openYn == null or openYn.equals("")'>
+					   'N' ,  	
+						   	</when>
+						   	<otherwise>
+					   #{openYn,   jdbcType=VARCHAR} , 
+						   	</otherwise>
+					   </choose>	
+					   #{useYn,   jdbcType=VARCHAR} ,
+			   		   'N',
+			           #{regMemberSeq,   jdbcType=NUMERIC},
+			           #{updMemberSeq,   jdbcType=NUMERIC},
+			           dbo.FN_NOW_TO_CHAR(),
+			           dbo.FN_NOW_TO_CHAR(),
+			           #{regIp,          jdbcType=VARCHAR},
+			           #{updIp,          jdbcType=VARCHAR}
+			   	   )
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectTemplateVO">
+		/* UIUnivCourseTeamProjectTemplateMapper.update */
+		UPDATE cs_course_teamproject_template 
+		   SET cs_course_master_seq 	= #{courseMasterSeq, jdbcType=NUMERIC} ,
+		   	   cs_template_title 		= #{templateTitle, jdbcType=VARCHAR} ,
+		   	   cs_template_description  = #{templateDescription, jdbcType=VARCHAR} ,
+		   	   cs_prof_member_seq		= #{profMemberSeq, jdbcType=NUMERIC} ,
+		   <if test='openYn != null'>
+		   	   cs_open_yn				= #{openYn, jdbcType=VARCHAR} ,
+		   </if>
+		   <if test='openYn == null'>
+		   	   cs_open_yn				= 'N' ,
+		   </if>
+		   <if test='useYn != null'>
+		   	   cs_use_yn				= #{useYn, jdbcType=VARCHAR} ,
+		   </if>
+		   <if test='useYn == null'>
+		   	   cs_use_yn				= 'N' ,
+		   </if>
+		   	   cs_upd_dtime  			= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         		= #{updIp, jdbcType=VARCHAR} 
+		 WHERE cs_template_seq 			= #{templateSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectTemplateVO">
+		/* UIUnivCourseTeamProjectTemplateMapper.delete */
+		UPDATE cs_course_teamproject_template 
+		   SET cs_upd_dtime  = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         = #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn      = 'Y' 
+		 WHERE cs_template_seq = #{templateSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseTeamProjectTemplateRS">
+        <result column="teamp.templateSeq"          property="teamProjectTemplate.templateSeq"/>
+        <result column="teamp.templateTitle"        property="teamProjectTemplate.templateTitle"/>
+        <result column="teamp.templateDescription"  property="teamProjectTemplate.templateDescription"/>
+        <result column="teamp.openYn"            	property="teamProjectTemplate.openYn"/>
+        <result column="teamp.useYn"            	property="teamProjectTemplate.useYn"/>
+        <result column="teamp.courseMasterSeq"      property="teamProjectTemplate.courseMasterSeq"/>
+        <result column="teamp.profMemberSeq"        property="teamProjectTemplate.profMemberSeq"/>
+        <result column="teamp.deleteYn"            	property="teamProjectTemplate.deleteYn"/>
+        <result column="teamp.regMemberSeq"         property="teamProjectTemplate.regMemberSeq"/>
+        <result column="teamp.updMemberSeq"         property="teamProjectTemplate.updMemberSeq"/>
+        <result column="teamp.regDtime"            	property="teamProjectTemplate.regDtime"/>
+        <result column="teamp.updDtime"            	property="teamProjectTemplate.updDtime"/>
+        <result column="teamp.regIp"            	property="teamProjectTemplate.regIp"/>
+        <result column="teamp.updIp"            	property="teamProjectTemplate.updIp"/>
+        <result column="cmas.courseTitle"           property="courseMaster.courseTitle"/>
+        <result column="teamp.updMemberName"        property="teamProjectTemplate.updMemberName"/>
+        <result column="memb.memberName"            property="member.memberName"/>
+        <collection column="{referenceSeq=teamp.templateSeq,referenceTablename=referenceTablename}" property="teamProjectTemplate.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* UIUnivCourseTeamProjectTemplateMapper.getDetail */
+		SELECT teamp.cs_template_seq AS "teamp.templateSeq" , 
+		       teamp.cs_template_title AS "teamp.templateTitle" , 
+		       teamp.cs_template_description AS "teamp.templateDescription" , 
+		       teamp.cs_open_yn AS "teamp.openYn" , 
+		       teamp.cs_use_yn AS "teamp.useYn" , 
+		       teamp.cs_course_master_seq AS "teamp.courseMasterSeq" , 
+		       teamp.cs_prof_member_seq AS "teamp.profMemberSeq" , 
+		       teamp.cs_delete_yn AS "teamp.deleteYn" , 
+		       teamp.cs_reg_member_seq AS "teamp.regMemberSeq" , 
+		       teamp.cs_upd_member_seq AS "teamp.updMemberSeq" , 
+		       teamp.cs_reg_dtime AS "teamp.regDtime" , 
+		       teamp.cs_upd_dtime AS "teamp.updDtime" , 
+		       teamp.cs_reg_ip AS "teamp.regIp" , 
+		       teamp.cs_upd_ip AS "teamp.updIp" , 
+		       cmas.cs_course_title AS "cmas.courseTitle" , 
+		       memb.cs_member_name AS "memb.memberName" , 
+		       (SELECT cs_member_name 
+		         FROM cs_member 
+		        WHERE cs_member_seq = teamp.cs_upd_member_seq 
+		       ) AS "teamp.updMemberName" , 
+		       'cs_course_teamproject_template' AS "referenceTablename" 
+		  FROM cs_course_teamproject_template teamp 
+		   INNER JOIN cs_course_master cmas 
+		       ON teamp.cs_course_master_seq = cmas.cs_course_master_seq 
+		   INNER JOIN cs_member memb 
+		       ON teamp.cs_prof_member_seq = memb.cs_member_seq 
+		 WHERE teamp.cs_delete_yn = 'N' 
+		       AND teamp.cs_template_seq = #{templateSeq}  
+    </select>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseTeamProjectTemplateRS">
+   	 	<result column="teamp.templateSeq"          property="teamProjectTemplate.templateSeq"/>
+        <result column="teamp.templateTitle"        property="teamProjectTemplate.templateTitle"/>
+        <result column="teamp.templateDescription"  property="teamProjectTemplate.templateDescription"/>
+        <result column="teamp.openYn"            	property="teamProjectTemplate.openYn"/>
+        <result column="teamp.useYn"            	property="teamProjectTemplate.useYn"/>
+        <result column="teamp.courseMasterSeq"      property="teamProjectTemplate.courseMasterSeq"/>
+        <result column="teamp.profMemberSeq"        property="teamProjectTemplate.profMemberSeq"/>
+        <result column="teamp.deleteYn"            	property="teamProjectTemplate.deleteYn"/>
+        <result column="teamp.regMemberSeq"         property="teamProjectTemplate.regMemberSeq"/>
+        <result column="teamp.updMemberSeq"         property="teamProjectTemplate.updMemberSeq"/>
+        <result column="teamp.regDtime"            	property="teamProjectTemplate.regDtime"/>
+        <result column="teamp.updDtime"            	property="teamProjectTemplate.updDtime"/>
+        <result column="teamp.regIp"            	property="teamProjectTemplate.regIp"/>
+        <result column="teamp.updIp"            	property="teamProjectTemplate.updIp"/>
+        <result column="cmas.courseTitle"           property="courseMaster.courseTitle"/>
+        <result column="memb.memberName"            property="member.memberName"/>
+	</resultMap>
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseTeamProjectTemplateCondition" resultMap="listResultMap">
+		/* UIUnivCourseTeamProjectTemplateMapper.getList */
+    <if test='currentPage != 0'>
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'> ORDER BY "teamp.templateTitle" ASC</when>
+            <when test='orderby == -1'>ORDER BY "teamp.templateTitle" DESC</when>
+            <when test='orderby == 2'> ORDER BY "cmas.courseTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "cmas.courseTitle" DESC</when>
+            <when test='orderby == 3'> ORDER BY "memb.memberName" ASC</when>
+            <when test='orderby == -3'>ORDER BY "memb.memberName" DESC</when>
+            <when test='orderby == 4'> ORDER BY "teamp.regDtime" ASC</when>
+            <when test='orderby == -4'>ORDER BY "teamp.regDtime" DESC</when>
+            <otherwise>ORDER BY "teamp.regDtime" DESC</otherwise>
+        </choose>
+		) AS rownumber, * FROM (
+ 	</if>
+			SELECT
+				teamp.cs_template_seq 			AS "teamp.templateSeq" ,
+				teamp.cs_template_title 		AS "teamp.templateTitle" ,
+				teamp.cs_template_description 	AS "teamp.templateDescription" ,
+				teamp.cs_open_yn 				AS "teamp.openYn" ,
+				teamp.cs_use_yn 				AS "teamp.useYn" ,
+				teamp.cs_course_master_seq		AS "teamp.courseMasterSeq" ,
+				teamp.cs_prof_member_seq		AS "teamp.profMemberSeq" ,
+				teamp.cs_delete_yn				AS "teamp.deleteYn" , 
+			    teamp.cs_reg_member_seq			AS "teamp.regMemberSeq" , 
+			    teamp.cs_upd_member_seq			AS "teamp.updMemberSeq" , 
+			    teamp.cs_reg_dtime				AS "teamp.regDtime" , 
+			    teamp.cs_upd_dtime				AS "teamp.updDtime" , 
+			    teamp.cs_reg_ip					AS "teamp.regIp" , 
+			    teamp.cs_upd_ip					AS "teamp.updIp" ,
+				cmas.cs_course_title			AS "cmas.courseTitle",
+				memb.cs_member_name             AS "memb.memberName"
+			FROM
+				cs_course_teamproject_template teamp
+				INNER JOIN
+				cs_course_master cmas
+				ON teamp.cs_course_master_seq = cmas.cs_course_master_seq
+				INNER JOIN
+				cs_member memb
+				ON teamp.cs_prof_member_seq = memb.cs_member_seq
+			WHERE
+				teamp.cs_delete_yn = 'N'
+		<if test='srchUseYn != null and !srchUseYn.equals("")'>
+			AND teamp.cs_use_yn = #{srchUseYn}
+		</if>
+		<if test='srchProfMemberSeq != null and !srchProfMemberSeq.equals("")'>
+			AND teamp.cs_prof_member_seq = #{srchProfMemberSeq}
+		</if>
+		<if test='srchProfSessionMemberSeq != null and !srchProfSessionMemberSeq.equals("")'>
+			AND (teamp.cs_prof_member_seq = #{srchProfSessionMemberSeq} OR teamp.cs_open_yn = 'Y')
+		</if>
+		<if test='srchCourseMasterSeq != null and !srchCourseMasterSeq.equals("")'>
+			AND (cmas.cs_course_master_seq = #{srchCourseMasterSeq} OR teamp.cs_open_yn = 'Y')
+		</if>
+		<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+			AND (
+				teamp.cs_prof_member_seq IN (
+											SELECT 
+												sub.cs_prof_member_seq 
+											FROM 
+												cs_course_active_lecturer sub
+											WHERE sub.cs_delete_yn = 'N' 
+											  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+											GROUP BY sub.cs_prof_member_seq
+											)
+				 OR teamp.cs_reg_member_seq = #{srchAssistMemberSeq}
+				 OR teamp.cs_open_yn = 'Y')
+		</if>
+		
+		<if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("templateTitle")'>
+       		AND teamp.cs_template_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("templateDescription")'>
+       		AND teamp.cs_template_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        
+        <if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+    
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseTeamProjectTemplateCondition" resultType="int">
+		/* UIUnivCourseTeamProjectTemplateMapper.countList */
+		SELECT COUNT(*)
+			FROM
+				cs_course_teamproject_template teamp
+				INNER JOIN
+				cs_course_master cmas
+				ON teamp.cs_course_master_seq = cmas.cs_course_master_seq
+				INNER JOIN
+				cs_member memb
+				ON teamp.cs_prof_member_seq = memb.cs_member_seq
+			WHERE
+				teamp.cs_delete_yn = 'N'
+		<if test='srchUseYn != null and !srchUseYn.equals("")'>
+			AND teamp.cs_use_yn = #{srchUseYn}
+		</if>
+		<if test='srchProfMemberSeq != null and !srchProfMemberSeq.equals("")'>
+			AND teamp.cs_prof_member_seq = #{srchProfMemberSeq}
+		</if>
+		<if test='srchProfSessionMemberSeq != null and !srchProfSessionMemberSeq.equals("")'>
+			AND (teamp.cs_prof_member_seq = #{srchProfSessionMemberSeq} OR teamp.cs_open_yn = 'Y')
+		</if>
+		<if test='srchCourseMasterSeq != null and !srchCourseMasterSeq.equals("")'>
+			AND cmas.cs_course_master_seq = #{srchCourseMasterSeq}
+		</if>
+		<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+			AND (
+				teamp.cs_prof_member_seq IN (
+											SELECT 
+												sub.cs_prof_member_seq 
+											FROM 
+												cs_course_active_lecturer sub
+											WHERE sub.cs_delete_yn = 'N' 
+											  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+											GROUP BY sub.cs_prof_member_seq
+											)
+				 OR teamp.cs_reg_member_seq = #{srchAssistMemberSeq}
+				 OR teamp.cs_open_yn = 'Y')
+		</if>
+		
+		<if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("templateTitle")'>
+       		AND teamp.cs_template_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("templateDescription")'>
+       		AND teamp.cs_template_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.trainingFee.trainingFeeTarget.service.impl.TrainingFeeTargetMapper">
+
+	<!-- *********************************************************************************************** 마스터 정보관리 : 조회 -->
+	<select id="selectTargetListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeMaster.xml  selectTargetListCount  */
+		SELECT   COUNT(*) AS TOTAL_CNT
+		  FROM   DBO.TRFEETARGETMONTH A
+          JOIN   DBO.MEMBER B ON B.UID = A.ABO_NO
+		  JOIN   DBO.MEMBER C ON C.UID = A.DEPABO_NO
+		 WHERE  1=1
+		 <if test="searchGiveYear != null and !searchGiveYear.equals('') ">
+		   AND  GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+		   AND  GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+		 </if>
+		 <if test="searchCalculationNm != null and !searchCalculationNm.equals('') ">
+		 	<if test="searchCalSchType.equalsIgnoreCase('1') ">
+		 		AND A.ABO_NO = #{searchCalculationNm } 
+		 	</if>
+		 	<if test="searchCalSchType.equalsIgnoreCase('2') ">
+		 		AND B.NAME LIKE '%' + #{searchCalculationNm } + '%' 
+		 	</if>
+		 </if>
+		 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+		 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+		 		AND A.DEPABO_NO = #{searchDepositNm } 
+		 	</if>
+		 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+		 		AND C.NAME LIKE '%'+#{searchDepositNm }+'%' 
+		 	</if>
+		 </if>
+		 <if test="searchBR != null and !searchBR.equals('') ">
+		 	AND A.BR = #{searchBR } 
+		 </if>
+		 <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+		 	AND A.GROUPCODE = #{searchGrpCd }
+		 </if>
+		 <if test="searchCode != null and !searchCode.equals('') ">
+		 	AND A.CODE = #{searchCode }
+		 </if>
+		 <if test="searchLoa != null and !searchLoa.equals('') ">
+		 	AND B.LOANAMEKOR = #{searchLoa}
+		 </if>
+		 <if test="searchCPin != null and !searchCPin.equals('') ">
+		 	AND B.GROUPS = #{searchCPin}
+		 </if>
+		 <if test="searchDept != null and !searchDept.equals('') ">
+		 	AND A.DEPARTMENT = #{searchDept }
+		 </if>
+		 <if test="searchPass != null and !searchPass.equals('') ">
+		 	AND A.DELEGTYPECODE = #{searchPass }
+		 </if>
+		 <if test="searchFlag != null and searchFlag.equalsIgnoreCase('1') ">
+		 	AND A.ABO_NO = A.DEPABO_NO
+		 </if>
+		 <if test="searchFlag != null and searchFlag.equalsIgnoreCase('2') ">
+		 	AND A.ABO_NO != A.DEPABO_NO
+		 </if>
+	</select>
+	
+	<select id="selectTargetList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeMaster.xml  selectGiveTargetList  */
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM (
+							SELECT  A.GIVEYEAR
+							      , A.GIVEMONTH
+							      , A.ABO_NO
+							      , B.NAME AS ABO_NAME
+							      , A.CODE
+							      , B.HIGHESTACHIEVE
+							      , ( SELECT   BB.CASEONE
+									    FROM   dbo.TARGETCODE BB
+									   WHERE   BB.TARGETMASTERSEQ = 'PINCODE'
+									     AND   BB.TARGETCODESEQ   = B.HIGHESTACHIEVE) AS HIGHESTACHIEVENAME
+							      , B.GROUPS
+							      , ( SELECT   BB.CASEONE
+									    FROM   dbo.TARGETCODE BB
+									   WHERE   BB.TARGETMASTERSEQ = 'PINCODE'
+									     AND   BB.TARGETCODESEQ   = B.GROUPS) AS GROUPSNAME
+							      , B.LOANAMEKOR
+							      , B.QUALIFYDIA
+							      , dbo.F_GETABONAME(B.QUALIFYDIA) AS QUALIFYDIANAME
+							      , A.BR
+							      , A.DEPARTMENT
+							      , A.SALES
+							      , A.TRFEE
+							      , A.GROUPCODE
+							      , dbo.F_CMM_CODENAME('TR7', A.AUTHGROUP) AS AUTHGROUP
+							      , dbo.F_CMM_CODENAME('TR7', A.AUTHPERSON) AS AUTHPERSON
+							      , A.AUTHMANAGEFLAG
+							      , A.DELEGTYPECODE
+							      , dbo.F_CMM_CODENAME('TR5', A.DELEGTYPECODE) AS DELEGTYPENAME
+							      , A.DEPABO_NO
+							      , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+							      , A.DEPCODE
+							      , A.REJECTTEXT
+							      , A.SMSTEXT
+							      , A.PROCESSSTATUS
+							      , A.AS400UPLOADFALG
+							      , A.MODIFIER
+							      , A.MODIFYDATE
+							      , A.REGISTRANT
+							      , A.REGISTRANTDATE
+							      , NOTE							      
+							      , (SELECT B.REFERENCE
+							           FROM DBO.TRFEETARGETFULL B
+							          WHERE B.ABO_NO = A.ABO_NO) AS REFERENCE
+							      , #{searchCalculationNm } as searchCalculationNm
+							      , ( SELECT SUM(BB.TRFEE)
+							            FROM DBO.TRFEETARGETMONTH BB
+							           WHERE BB.GIVEYEAR  = A.GIVEYEAR
+							             AND BB.GIVEMONTH = A.GIVEMONTH
+							             AND BB.DEPABO_NO = A.DEPABO_NO ) AS TOTTRFEE
+							      , ( SELECT SUM(BB.TRFEE)
+							            FROM DBO.TRFEETARGETMONTH BB
+							           WHERE BB.GIVEYEAR  = A.GIVEYEAR
+							             AND BB.GIVEMONTH = A.GIVEMONTH ) AS MONTHTOTALTRFEE
+							      , ( SELECT COUNT(DISTINCT BB.ABO_NO)
+							            FROM DBO.TRFEETARGETMONTH BB
+							           WHERE BB.GIVEYEAR  = A.GIVEYEAR
+							             AND BB.GIVEMONTH = A.GIVEMONTH
+							             AND BB.DEPABO_NO = A.DEPABO_NO ) AS ABOCNT
+							  FROM  DBO.TRFEETARGETMONTH A
+						      JOIN  DBO.MEMBER B ON B.UID = A.ABO_NO
+						      JOIN  DBO.MEMBER C ON C.UID = A.DEPABO_NO
+							 WHERE  1=1
+							 <if test="searchGiveYear != null and !searchGiveYear.equals('') ">
+							   AND  GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							   AND  GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							 </if>
+							 <if test="searchCalculationNm != null and !searchCalculationNm.equalsIgnoreCase('') ">
+							 	<if test="searchCalSchType.equalsIgnoreCase('1') ">
+							 		AND A.ABO_NO = #{searchCalculationNm } 
+							 	</if>
+							 	<if test="searchCalSchType.equalsIgnoreCase('2') ">
+							 		AND B.NAME LIKE '%' + #{searchCalculationNm } + '%' 
+							 	</if>
+							 </if>
+							 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+							 		AND A.DEPABO_NO = #{searchDepositNm } 
+							 	</if>
+							 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+							 		AND C.NAME LIKE '%'+#{searchDepositNm }+'%' 
+							 	</if>
+							 </if>
+							 <if test="searchBR != null and !searchBR.equals('') ">
+							 	AND A.BR = #{searchBR } 
+							 </if>
+							 <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+							 	AND A.GROUPCODE = #{searchGrpCd }
+							 </if>
+							 <if test="searchCode != null and !searchCode.equals('') ">
+							 	AND A.CODE = #{searchCode }
+							 </if>
+							 <if test="searchLoa != null and !searchLoa.equals('') ">
+							 	AND B.LOANAMEKOR = #{searchLoa}
+							 </if>
+							 <if test="searchCPin != null and !searchCPin.equals('') ">
+							 	AND B.GROUPS = #{searchCPin}
+							 </if>
+							 <if test="searchDept != null and !searchDept.equals('') ">
+							 	AND A.DEPARTMENT = #{searchDept }
+							 </if>
+							 <if test="searchPass != null and !searchPass.equals('') ">
+							 	AND A.DELEGTYPECODE = #{searchPass }
+							 </if>
+							 <if test="searchFlag != null and searchFlag.equalsIgnoreCase('1') ">
+							 	AND A.ABO_NO = A.DEPABO_NO
+							 </if>
+							 <if test="searchFlag != null and searchFlag.equalsIgnoreCase('2') ">
+							 	AND A.ABO_NO != A.DEPABO_NO
+							 </if>
+						) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	<!-- *********************************************************************************************** 마스터 정보관리 : 조회 end -->
+	
+	<!-- *********************************************************************************************** 운영그룹 변경 -->
+	<update id="saveGiveTargetGroupCode" parameterType="java.util.Map">
+		/* TrainingFeeMaster.xml  saveGiveTargetGroupCode  */
+		UPDATE   DBO.TRFEETARGETMONTH
+		   SET   GROUPCODE  = #{groupcode}
+   		       , MODIFIER   = #{adminId} 
+		       , MODIFYDATE = getdate()
+		 WHERE   ABO_NO    = #{abono}
+		   AND   GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+		   AND   GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+	</update>
+	<!-- ******************************************************************************************************** -->
+	
+	<!-- *********************************************************************************************** 마스터 정보 관리 해당 ABO삭제 -->
+	<delete id="trainingFeeMasterGiveTargetDeleteAjax" parameterType="java.util.Map">
+		DELETE 
+		  FROM   dbo.TRFEETARGETMONTH 
+		 WHERE   GIVEYEAR  = #{giveyear} 
+		   AND   GIVEMONTH = #{givemonth} 
+		   AND   ABO_NO    = #{abono}
+	</delete>
+	<!-- ******************************************************************************************************** -->
+	
+	<!-- *********************************************************************************************** LayerPop 저장 프로세스 -->
+	<!-- 마스터 정보관리_레이어팝업  개별 대상자 추가전 TRFEETARGETFULL, TRFEETARGETMONTH 테이블에 해당 ABO존재 여부 체크 -->
+	<select id="trainingFeeMasterCheckedAboNoAjax" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeMaster.xml  trainingFeeMasterCheckedAboNoAjax  */
+		SELECT   COUNT(*) AS CNT,
+		         ( SELECT   COUNT(*)
+		             FROM   DBO.TRFEETARGETFULL
+		            WHERE   ABO_NO = #{popAbono} ) AS FULLCNT
+		  FROM   DBO.TRFEETARGETMONTH A
+		 WHERE   ABO_NO    = #{popAbono}
+		   AND   GIVEYEAR  = #{popGiveyear}
+		   AND   GIVEMONTH = #{popGivemonth}
+	</select>
+	
+	<!-- 마스터 정보관리 교육비 누적 대상자 수정_레이어팝업(TRFEETARGETFULL) -->
+	<update id="trainingFeeMasterTargetUpdateAjax" parameterType="reqBox">
+		/* TrainingFeeMaster.xml  trainingFeeMasterTargetUpdateAjax  */
+		UPDATE   DBO.TRFEETARGETFULL
+		   SET   CODE       = CASE WHEN #{popCode} = 'txt' THEN #{popInputCode}
+					   	           ELSE #{popCode}
+					           END
+			   , BR         = CASE WHEN #{popBr} = 'txt' THEN #{popInputBR}
+				 	        	   ELSE #{popBr}
+				 	           END
+			   , DEPARTMENT = CASE WHEN #{popDepartment} = 'txt' THEN #{popInputDept}
+					 			   ELSE #{popDepartment}
+				 			   END
+			   , MODIFIER   = #{adminId}
+			   , MODIFYDATE = Getdate()
+		WHERE ABO_NO  = #{popAbono}
+	</update>
+	
+	<!-- 마스터 정보관리 교육비 월별 대상자 수정_레이어팝업(TRAININGFEEGIVETARGET) -->
+	<update id="trainingFeeMasterGiveTargetUpdateAjax" parameterType="reqBox">
+		/* TrainingFeeMaster.xml  trainingFeeMasterGiveTargetUpdateAjax  */
+		UPDATE   dbo.TRFEETARGETMONTH
+		   SET   CODE           = #{popCode}
+			   , BR             = #{popBr}
+			   , DEPARTMENT     = #{popDepartment}
+			   , SALES          = REPLACE(#{popSalesfee}, ',', '')
+			   , TRFEE          = REPLACE(#{popTrainingfee}, ',', '')
+			   , GROUPCODE      = #{popGroupcode}
+			   , AUTHGROUP      = #{popAuthgroup}
+			   , AUTHPERSON     = #{popAuthperson}
+			   , AUTHMANAGEFLAG = #{popAuthmanagerflag}
+			   , DELEGTYPECODE  = #{popAuthorizetypecode}
+			   , DEPABO_NO      = #{popDepositabo_no}
+			   , DEPCODE        = #{popDepositcode}
+			   , MODIFIER       = #{adminId}
+			   , MODIFYDATE     = Getdate()
+		 WHERE   GIVEYEAR  = #{popGiveyear}
+		   AND   GIVEMONTH = #{popGivemonth}
+		   AND   ABO_NO    = #{popAbono}
+	</update>
+	
+	<insert id="trainingFeeMasterInsertAboTrainingfeetarget" parameterType="reqBox">
+		INSERT 
+		  INTO   dbo.TRFEETARGETFULL
+		       ( ABO_NO
+			   , CODE
+			   , BR
+			   , DEPARTMENT
+			   , MODIFIER
+			   , MODIFYDATE
+			   , REGISTRANT
+			   , REGISTRANTDATE )
+		VALUES ( #{popAbono}
+			   , CASE WHEN #{popCode} = 'txt' THEN #{popInputCode}
+			    	  ELSE #{popCode}
+		 	      END
+			   , CASE WHEN #{popBr} = 'txt' THEN #{popInputBR}
+		 	   		  ELSE #{popBr}
+		 	   	  END
+			   , CASE WHEN #{popDepartment} = 'txt' THEN #{popInputDept}
+		 	   		  ELSE #{popDepartment}
+	 		   	  END
+			   , 'admin'
+			   , Getdate()
+			   , 'admin'
+			   , Getdate()         	)
+	</insert>
+	
+	<insert id="trainingFeeMasterInsertAboTrainingfeegivetarget" parameterType="reqBox">
+		INSERT 
+		  INTO   dbo.TRFEETARGETMONTH
+		       ( GIVEYEAR
+			   , GIVEMONTH
+			   , ABO_NO
+			   , CODE
+			   , BR
+			   , DEPARTMENT
+			   , SALES
+			   , TRFEE
+			   , GROUPCODE
+			   , AUTHGROUP
+			   , AUTHPERSON
+			   , AUTHMANAGEFLAG
+			   , DELEGTYPECODE
+			   , DEPABO_NO
+			   , DEPCODE
+			   , MODIFIER
+			   , MODIFYDATE
+			   , REGISTRANT
+			   , REGISTRANTDATE   )
+		VALUES ( #{popGiveyear}
+			   , #{popGivemonth}
+			   , #{popAbono}
+			   , #{popCode}
+			   , #{popBr}
+			   , #{popDepartment}
+			   , REPLACE(#{popSalesfee}, ',', '')
+			   , REPLACE(#{popTrainingfee}, ',', '')
+			   , #{popGroupcode}
+			   , #{popAuthgroup}
+			   , #{popAuthperson}
+			   , #{popAuthmanagerflag}
+			   , #{popAuthorizetypecode}
+			   , #{popDepositabo_no}
+			   , #{popDepositcode}
+			   , 'admin'
+			   , Getdate()
+			   , 'admin'
+			   , Getdate()		)
+	</insert>
+	<!-- *********************************************************************************************** LayerPop 저장 프로세스 end -->
+	
+	<!-- *********************************************************************************************** LayerPop 참고사항 및 메모장 저장 -->
+	<update id="trainingFeeMasterMemoUpdateAjax" parameterType="reqBox">
+		UPDATE   <if test="mode.equals('reference') ">
+					dbo.TRFEETARGETFULL
+		   SET   REFERENCE = #{memo}
+				</if>
+				<if test="mode.equals('note') ">
+					dbo.TRFEETARGETMONTH
+		   SET   NOTE = #{memo}
+				</if>
+			   , MODIFIER = #{adminId}
+			   , MODIFYDATE = Getdate()
+	     WHERE   ABO_NO = #{abo_no}
+			<if test="giveyear != null and !giveyear.equals('') ">
+		   AND	 GIVEYEAR = #{giveyear} 
+			</if>
+			<if test="givemonth != null and !givemonth.equals('') ">
+		   AND   GIVEMONTH = #{givemonth}
+			</if>
+	</update>
+	<!-- *********************************************************************************************** LayerPop 참고사항 및 메모장 저장 end -->
+	
+	<!-- *********************************************************************************************** 지급대상자관리 tab1 list count -->
+	<select id="selectGiveTargetListCount" parameterType="reqBox" resultType="int">
+					SELECT  COUNT(*) AS TOTAL_CNT
+					  FROM  DBO.V_TRFEETARGET A
+							 WHERE  1=1
+							 <if test="searchGiveYear != null and !searchGiveYear.equals('') ">
+							   AND  A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							   AND  A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							 </if>
+							 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+							 		AND A.DEPABO_NO = #{searchDepositNm } 
+							 	</if>
+							 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+							 		AND A.DEPABONAME LIKE '%'+#{searchDepositNm }+'%' 
+							 	</if>
+							 </if>
+							 <if test="searchBR != null and !searchBR.equals('') ">
+							 	AND A.BR = #{searchBR } 
+							 </if>
+							 <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+							 	AND A.GROUPCODE = #{searchGrpCd }
+							 </if>
+							 <if test="searchCode != null and !searchCode.equals('') ">
+							 	AND A.DEPCODE = #{searchCode }
+							 </if>
+							 <if test="searchLoa != null and !searchLoa.equals('') ">
+							 	AND A.LOANAMEKOR = #{searchLoa}
+							 </if>
+							 <if test="searchCPin != null and !searchCPin.equals('') ">
+							 	AND A.GROUPS = #{searchCPin}
+							 </if>
+							 <if test="searchDept != null and !searchDept.equals('') ">
+							 	AND A.DEPARTMENT = #{searchDept }
+							 </if>
+	</select>
+	<!-- *********************************************************************************************** 지급대상자관리 tab1 list count end -->
+	
+	<!-- *********************************************************************************************** 지급대상자관리 tab1 list -->
+	<select id="selectGiveTargetList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeMaster.xml  selectGiveTargetList  */
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM (
+							SELECT  A.GIVEYEAR
+							      , A.GIVEMONTH
+								  , A.DEPABO_NO
+							      , A.DEPABONAME
+							      , A.DEPCODE
+							      , A.HIGHESTACHIEVE
+							      , ( SELECT   BB.CASEONE
+									    FROM   dbo.TARGETCODE BB
+									   WHERE   BB.TARGETMASTERSEQ = 'PINCODE'
+									     AND   BB.TARGETCODESEQ   = A.HIGHESTACHIEVE) AS HIGHESTACHIEVENAME
+							      , A.GROUPS
+							      , ( SELECT   BB.CASEONE
+									    FROM   dbo.TARGETCODE BB
+									   WHERE   BB.TARGETMASTERSEQ = 'PINCODE'
+									     AND   BB.TARGETCODESEQ   = A.GROUPS) AS GROUPSNAME
+							      , A.LOANAMEKOR
+							      , A.QUALIFYDIA
+							      , dbo.F_GETABONAME(A.QUALIFYDIA) AS QUALIFYDIANAME
+							      , A.BR
+							      , A.DEPARTMENT
+							      , A.GROUPCODE
+							      , A.TRFEE
+							      , dbo.F_CMM_CODENAME('TR7', A.AUTHGROUP) AS AUTHGROUP
+							      , dbo.F_CMM_CODENAME('TR7', A.AUTHPERSON) AS AUTHPERSON
+							      , A.AUTHMANAGEFLAG
+							      , ISNULL(A.NOTE, '-') AS NOTE
+							  FROM  DBO.V_TRFEETARGET A
+							 WHERE  1=1
+							 <if test="searchGiveYear != null and !searchGiveYear.equals('') ">
+							   AND  A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							   AND  A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							 </if>
+							 <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+							 		AND A.DEPABO_NO = #{searchDepositNm } 
+							 	</if>
+							 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+							 		AND A.DEPABONAME LIKE '%'+#{searchDepositNm }+'%' 
+							 	</if>
+							 </if>
+							 <if test="searchBR != null and !searchBR.equals('') ">
+							 	AND A.BR = #{searchBR } 
+							 </if>
+							 <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+							 	AND A.GROUPCODE = #{searchGrpCd }
+							 </if>
+							 <if test="searchCode != null and !searchCode.equals('') ">
+							 	AND A.DEPCODE = #{searchCode }
+							 </if>
+							 <if test="searchLoa != null and !searchLoa.equals('') ">
+							 	AND A.LOANAMEKOR = #{searchLoa}
+							 </if>
+							 <if test="searchCPin != null and !searchCPin.equals('') ">
+							 	AND A.GROUPS = #{searchCPin}
+							 </if>
+							 <if test="searchDept != null and !searchDept.equals('') ">
+							 	AND A.DEPARTMENT = #{searchDept }
+							 </if>
+						) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	<!-- *********************************************************************************************** 지급대상자관리 tab1 list end -->
+	
+	<!-- *********************************************************************************************** 지급대상자관리 tab2 운영그룹 list count -->
+	<select id="trainingFeeGiveTargetGrpListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeMaster.xml  trainingFeeGiveTargetGrpListCount  */
+		SELECT   COUNT(*) AS TOTAL_CNT
+		  FROM (
+				SELECT   DISTINCT
+				                   A.GIVEYEAR
+				                 , A.GIVEMONTH
+				                 , A.LOANAMEKOR AS LOAKOR
+								 , A.GROUPCODE
+							FROM   DBO.V_TRFEETARGET A
+						   WHERE   1=1
+							 AND   A.GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+							 AND   A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							 <if test="searchGroupCode != null and !searchGroupCode.equalsIgnoreCase('') ">
+						     AND   A.GROUPCODE = #{searchGroupCode}
+						     </if>
+							 <if test="searchLoa != null and !searchLoa.equals('') ">
+							 AND   A.LOANAMEKOR    = #{searchLoa}
+							 </if> ) A
+		   
+	</select>
+	<!-- *********************************************************************************************** 지급대상자관리 tab2 운영그룹 list count end-->
+	
+	<!-- *********************************************************************************************** 지급대상자관리 tab2 운영그룹 list -->
+	<select id="trainingFeeGiveTargetGrpList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeMaster.xml  trainingFeeGiveTargetGrpList  */
+		SELECT   BB.* 
+		  FROM ( SELECT   ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				        , AA.* 
+				   FROM ( SELECT   DISTINCT
+				                   A.GIVEYEAR
+				                 , A.GIVEMONTH
+				                 , A.LOANAMEKOR AS LOAKOR
+								 , A.GROUPCODE
+							FROM   DBO.V_TRFEETARGET A
+						   WHERE   1=1
+							 AND   A.GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+							 AND   A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							 <if test="searchGroupCode != null and !searchGroupCode.equalsIgnoreCase('') ">
+						     AND   A.GROUPCODE = #{searchGroupCode}
+						     </if>
+							 <if test="searchLoa != null and !searchLoa.equals('') ">
+							 AND   A.LOANAMEKOR    = #{searchLoa}
+							 </if>
+			            ) AA
+		       ) BB
+		 WHERE   ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	<!-- *********************************************************************************************** 지급대상자관리 tab2 운영그룹 list end -->
+	
+	<!-- *********************************************************************************************** 지급대상자관리 tab2 운영그룹 대상자 list count -->
+	<select id="trainingFeeGiveTargetGrpDetailListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeMaster.xml  trainingFeeGiveTargetGrpDetailListCount  */
+		SELECT   COUNT(*) AS TOTAL_CNT
+							  FROM  DBO.V_TRFEETARGET A
+						   WHERE   1=1
+							 AND   A.GIVEYEAR  = #{searchGiveYear}
+							 AND   A.GIVEMONTH = #{searchGiveMonth}
+							 AND   A.GROUPCODE = #{searchGroupCode}
+							 <if test="searchLoa != null and !searchLoa.equals('') ">
+							 AND   A.LOANAMEKOR    = #{searchLoa}
+							 </if>
+	</select>
+	<!-- *********************************************************************************************** 지급대상자관리 tab2 운영그룹 대상자 list count end -->
+	
+	<!-- *********************************************************************************************** 지급대상자관리 tab2 운영그룹 대상자 list -->
+	<select id="trainingFeeGiveTargetGrpDetailList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeMaster.xml  trainingFeeGiveTargetGrpDetailList  */
+		SELECT   BB.* 
+		  FROM ( SELECT   ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				        , AA.* 
+				   FROM ( SELECT    A.GIVEYEAR
+							      , A.GIVEMONTH
+								  , A.DEPABO_NO AS DEPOSITABO_NO
+							      , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPOSITABONAME
+							      , A.DEPCODE AS DEPOSITCODE
+							      , A.HIGHESTACHIEVE
+							      , ( SELECT   BB.CASEONE
+									    FROM   dbo.TARGETCODE BB
+									   WHERE   BB.TARGETMASTERSEQ = 'PINCODE'
+									     AND   BB.TARGETCODESEQ   = A.HIGHESTACHIEVE) AS HIGHESTACHIEVENAME
+							      , A.GROUPS
+							      , ( SELECT   BB.CASEONE
+									    FROM   dbo.TARGETCODE BB
+									   WHERE   BB.TARGETMASTERSEQ = 'PINCODE'
+									     AND   BB.TARGETCODESEQ   = A.GROUPS) AS GROUPSNAME
+							      , A.LOANAMEKOR AS LOAKOR
+							      , A.QUALIFYDIA AS CUPDIA
+							      , dbo.F_GETABONAME(A.QUALIFYDIA) AS CUPDIANAME
+							      , A.BR
+							      , A.DEPARTMENT
+							      , A.GROUPCODE
+							      , A.TRFEE AS REALTRAININGFEE
+							      , dbo.F_CMM_CODENAME('TR7', a.AUTHGROUP) AS AUTHGROUP
+							      , dbo.F_CMM_CODENAME('TR7', a.AUTHPERSON) AS AUTHPERSON
+							      , a.AUTHMANAGEFLAG
+							      , ISNULL(a.NOTE, '-') AS MEMO
+							  FROM  DBO.V_TRFEETARGET A
+						   WHERE   1=1
+							 AND   A.GIVEYEAR  = #{searchGiveYear}
+							 AND   A.GIVEMONTH = #{searchGiveMonth}
+							 AND   A.GROUPCODE = #{searchGroupCode}
+							 <if test="searchLoa != null and !searchLoa.equals('') ">
+							 AND   A.LOANAMEKOR    = #{searchLoa}
+							 </if>
+			            ) AA
+		       ) BB
+		 WHERE   ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	<!-- *********************************************************************************************** 지급대상자관리 tab2 운영그룹 대상자 list end -->
+	
+	
+</mapper>

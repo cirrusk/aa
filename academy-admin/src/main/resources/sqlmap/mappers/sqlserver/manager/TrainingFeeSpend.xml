@@ -1,0 +1,1625 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.trainingFee.proof.service.impl.TrainingFeeSpendMapper">
+
+	<select id="selectStatus" parameterType="reqBox" resultType="dataBox">
+		SELECT   <if test="giveRadio.equalsIgnoreCase('1') ">
+				 ISNULL(MIN(B.PLANSTATUS), 'Y') AS PLANSTATUS
+				 </if>
+				 <if test="giveRadio.equalsIgnoreCase('2') ">
+				 ISNULL(MIN(B.PLANSTATUS), 'N') AS PLANSTATUS
+				 </if>
+		       , ISNULL(MIN(C.SPENDSTATUS), 'N') AS SPENDSTATUS
+		  FROM   DBO.V_TRFEETARGET A
+	 LEFT JOIN   DBO.TRFEEPLAN B ON A.GIVEYEAR  = B.GIVEYEAR
+	                            AND A.GIVEMONTH = B.GIVEMONTH
+	                            AND A.DEPABO_NO = B.DEPABO_NO
+	 LEFT JOIN   DBO.TRFEESPEND C ON A.GIVEYEAR  = C.GIVEYEAR
+	                             AND A.GIVEMONTH = C.GIVEMONTH
+	                             AND A.DEPABO_NO = C.DEPABO_NO
+		 WHERE   A.GIVEYEAR  = #{giveyear}
+           AND   A.GIVEMONTH = #{givemonth} 
+           <if test="giveRadio.equalsIgnoreCase('1') ">
+           AND   A.DEPABO_NO = #{abono}
+           </if>
+           <if test="giveRadio.equalsIgnoreCase('2') ">
+           AND   A.DEPABO_NO IN ( SELECT   B.DEPABO_NO
+                                   FROM   DBO.V_TRFEETARGET A
+                             INNER JOIN   DBO.V_TRFEETARGET B ON A.GIVEYEAR   = B.GIVEYEAR
+                                                             AND A.GIVEMONTH  = B.GIVEMONTH
+                                                             AND A.GROUPCODE = B.GROUPCODE
+                                  WHERE   A.DEPABO_NO = #{abono}
+                                    AND   A.GIVEYEAR  = #{giveyear}
+                                    AND   A.GIVEMONTH = #{givemonth}
+                                    AND   B.AUTHMANAGEFLAG = 'Y'
+                                 UNION
+                                 SELECT #{abono} )
+            </if>
+	</select>
+	
+	<select id="selectTrainingFeeSpendListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeSpend.xml selectTrainingFeeSpendListCount*/
+		WITH PERSONSPEND AS (SELECT   A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , a.DEPABO_NO
+		                           , A.SPENDSTATUS
+		                           , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                      FROM   (  SELECT   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.SPENDSTATUS
+					                           , ( SELECT   SUM(B.SPENDAMOUNT)
+					                                 FROM   DBO.TRFEESPENDITEM B
+					                                WHERE   B.GIVEYEAR  = A.GIVEYEAR
+					                                  AND   B.GIVEMONTH = A.GIVEMONTH
+					                                  AND   B.SPENDID   = A.SPENDID ) SPENDAMOUNT
+					                      FROM  DBO.TRFEESPEND A
+					                     WHERE  SPENDTYPE = 'person'
+					                       AND  GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+										   AND  GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2) ) A
+					                    GROUP BY A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.SPENDSTATUS)
+          /* 사전계획서 금액 */
+        , PERSONPLAN AS (SELECT   A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , a.DEPABO_NO
+		                           , A.PLANSTATUS
+		                           , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                      FROM   (  SELECT   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.PLANSTATUS
+					                           , ( SELECT   SUM(B.SPENDAMOUNT)
+					                                 FROM   DBO.TRFEEPLANITEM B
+					                                WHERE   B.GIVEYEAR  = A.GIVEYEAR
+					                                  AND   B.GIVEMONTH = A.GIVEMONTH
+					                                  AND   B.PLANID    = A.PLANID ) SPENDAMOUNT
+					                      FROM  DBO.TRFEEPLAN A
+					                     WHERE  PLANTYPE  = 'person'
+					                       AND  GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+										   AND  GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2) ) A
+					                  GROUP BY   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.PLANSTATUS)
+		, GROUPMASTER AS ( SELECT   A.GIVEYEAR
+		                          , A.GIVEMONTH
+		                          , A.GROUPCODE
+		                          , SUM(A.TRFEE) AS TRFEE
+		                     FROM   DBO.V_TRFEETARGET A
+		                    WHERE   GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+							  AND   GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+		                    GROUP BY A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , A.GROUPCODE)
+		, GROUPTARGETLIST AS (
+		            SELECT   A.GIVEYEAR
+		                   , A.GIVEMONTH
+		                   , A.GROUPCODE
+		                   , B.DEPABO_NO
+		                   , B.TRFEE
+		                   , A.TRFEE AS GRPTRFEE
+		                   , ( CAST(B.TRFEE AS FLOAT)/CAST(A.TRFEE AS FLOAT) ) * 100 AS RATE
+		              FROM GROUPMASTER A
+		            INNER JOIN DBO.V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+		                                         AND A.GIVEMONTH = B.GIVEMONTH
+		                                         AND A.GROUPCODE = B.GROUPCODE )
+		, SPENDGROUPAMOUNT AS ( SELECT   A.GIVEYEAR
+		                               , A.GIVEMONTH
+		                               , A.SPENDID
+		                               , A.DEPABO_NO
+		                               , A.GROUPCODE
+		                               , A.SPENDSTATUS
+		                               , A.SPENDCONFIRMFLAG
+		                               , A.SPENDCONFIRMDT
+		                               , A.SPENDAMOUNT
+		                               , A.TRFEE
+		                               , A.TOTALTRFEE
+		                               , ( A.TRFEE * ( CAST(A.TRFEE AS FLOAT)/CAST(A.TOTALTRFEE AS FLOAT) ) * 100 ) * 0.01 AS GRTAMOUNT
+		                          FROM (  SELECT   A.GIVEYEAR
+		                                         , A.GIVEMONTH
+		                                         , A.SPENDID
+		                                         , B.DEPABO_NO
+		                                         , C.GROUPCODE
+		                                         , A.SPENDSTATUS
+		                                         , B.SPENDCONFIRMFLAG
+		                                         , B.SPENDCONFIRMDT
+		                                         , SUM(B.SPENDAMOUNT) AS SPENDAMOUNT
+		                                         , C.TRFEE
+		                                         , dbo.F_GETTRFEETOTALAMOUNT(A.GIVEYEAR, A.GIVEMONTH, B.DEPABO_NO, C.GROUPCODE, A.SPENDTYPE) AS TOTALTRFEE
+		                                    FROM dbo.TRFEESPEND A
+		                                  INNER JOIN dbo.TRFEESPENDITEMGROUP B ON A.GIVEYEAR = B.GIVEYEAR
+		                                                                      AND A.GIVEMONTH = B.GIVEMONTH
+		                                                                      AND A.SPENDID = B.SPENDID
+		                                  INNER JOIN dbo.V_TRFEETARGET C ON B.GIVEYEAR = C.GIVEYEAR
+		                                                                AND B.GIVEMONTH = C.GIVEMONTH
+		                                                                AND B.DEPABO_NO = C.DEPABO_NO
+		                                   WHERE A.GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+		                                     AND A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+		                                     AND A.SPENDTYPE = 'group'
+		                                  GROUP BY A.GIVEYEAR
+		                                         , A.GIVEMONTH
+		                                         , A.SPENDID
+		                                         , A.SPENDTYPE
+		                                         , A.SPENDSTATUS
+		                                         , B.DEPABO_NO
+		                                         , B.SPENDCONFIRMFLAG
+		                                         , B.SPENDCONFIRMDT
+		                                         , C.TRFEE
+		                                         , C.GROUPCODE ) A )
+		  /* 사전계획서 금액 */
+        , PLANGROUPLIST AS (SELECT   A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , a.groupcode
+		                           , A.PLANSTATUS
+		                           , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                      FROM   (
+		                              SELECT   A.GIVEYEAR
+		                                     , A.GIVEMONTH
+		                                     , a.groupcode
+		                                     , A.PLANSTATUS
+		                                     , ( SELECT   SUM(B.SPENDAMOUNT)
+		                                           FROM   DBO.TRFEEPLANITEM B
+		                                          WHERE   B.GIVEYEAR = A.GIVEYEAR
+		                                            AND   B.GIVEMONTH = A.GIVEMONTH
+		                                            AND   B.PLANID = A.PLANID ) SPENDAMOUNT
+		                                FROM  DBO.TRFEEPLAN A
+		                               WHERE  PLANTYPE = 'group'
+		                                 AND  GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							            AND  GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2) ) A
+		                  GROUP BY A.GIVEYEAR
+		                         , A.GIVEMONTH
+		                         , a.groupcode
+		                         , A.PLANSTATUS)
+		  /* 사전계획서 금액 */
+		, PLANGROUPAMOUNT AS (  SELECT   A.GIVEYEAR
+		                               , A.GIVEMONTH
+		                               , A.groupcode
+		                               , A.DEPABO_NO
+		                               , B.PLANSTATUS
+		                               , A.TRFEE
+		                               , A.GRPTRFEE
+		                               , CEILING(( A.GRPTRFEE * RATE ) * 0.01) AS GRTAMOUNT
+		                          FROM   GROUPTARGETLIST A
+		                    INNER JOIN   PLANGROUPLIST B ON B.GIVEYEAR = A.GIVEYEAR
+		                                                AND B.GIVEMONTH = A.GIVEMONTH
+		                                                AND B.GROUPCODE = A.GROUPCODE )
+		 , RENTPERSONAMOUNT AS ( SELECT   SUBSTRING(B.GIVEYEARMONTH, 1, 4) AS GIVEYEAR
+		                               , SUBSTRING(B.GIVEYEARMONTH, 5, 2) AS GIVEMONTH
+		                               , B.DEPABO_NO
+		                               , B.RENTAMOUNT + B.RENTDEPOSIT AS RENTAMOUNT
+		                               , A.RENTSTATUS
+		                               , B.REGISTRANTDATE
+		                          FROM   dbo.TRFEERENT A
+		                    INNER JOIN   dbo.TRFEERENTPERSON B ON A.FISCALYEAR = B.FISCALYEAR
+		                                                      AND A.DEPABO_NO = B.DEPABO_NO
+		                                                      AND A.RENTID = B.RENTID
+		                         WHERE   A.RENTSTATUS != 'R')
+		, MONTHLIST AS ( SELECT   1 NUM
+	                    UNION ALL
+	                    SELECT   NUM + 1 AS NUM
+	                      FROM   MONTHLIST
+	                     WHERE   NUM <![CDATA[ < ]]> 12 )
+	     , MONTHTOTALLIST AS ( SELECT CONVERT(VARCHAR, #{fiscalyear}-1) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							    FROM MONTHLIST
+							  UNION
+							  SELECT CONVERT(VARCHAR, #{fiscalyear}) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST )
+		, RENTGROUPAMOUNT AS ( select  SUBSTRING(A.GIVEMONTH, 1, 4) AS GIVEYEAR
+		                               , SUBSTRING(A.GIVEMONTH, 5, 2) AS GIVEMONTH
+		                             , D.DEPABO_NO
+		                             , D.DEPABONAME
+		                             , C.RENTAMOUNT + C.RENTDEPOSIT AS RENTAMOUNT
+		                             , C.RENTSTATUS
+		                             , C.REGISTRANTDATE
+		                        from MONTHTOTALLIST A
+		                      inner join   dbo.TRFEERENT B ON A.GIVEMONTH BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH AND B.RENTSTATUS != 'R'
+		                    INNER JOIN   dbo.TRFEERENTgroup C ON C.FISCALYEAR = B.FISCALYEAR
+		                                                      AND C.DEPABO_NO = B.DEPABO_NO
+		                                                      AND C.RENTID = B.RENTID
+		                    INNER JOIN   V_TRFEETARGET D ON D.GIVEYEAR = B.GIVEYEAR
+				                                            AND D.GIVEMONTH = B.GIVEMONTH
+				                                            AND D.GROUPCODE = B.GROUPCODE )
+				  SELECT COUNT(*) AS TOTAL_CNT
+				  FROM (SELECT   A.GIVEYEAR
+						       , A.GIVEMONTH
+						       , A.DEPABO_NO
+						       , A.DEPABONAME
+						       , A.TRFEE 
+						       , ISNULL( ( SELECT SUM(GRTAMOUNT) 
+						                     FROM PLANGROUPAMOUNT BB 
+						                    WHERE BB.GIVEYEAR  = A.GIVEYEAR
+						                      AND BB.GIVEMONTH = A.GIVEMONTH
+						                      AND BB.GROUPCODE = A.GROUPCODE ), 0)
+						       + ISNULL( ( SELECT SPENDAMOUNT 
+						                     FROM PERSONPLAN  BB 
+						                    WHERE BB.GIVEYEAR  = A.GIVEYEAR
+						                      AND BB.GIVEMONTH = A.GIVEMONTH
+						                      AND BB.DEPABO_NO = A.DEPABO_NO ), 0) AS PLANAMOUNT
+						       , A.SPENDAMOUNT
+						       , A.SPENDSTATUS
+						       , A.GROUPCODE
+						       , A.GRTAMOUNT
+						       , A.GRPSTATUS
+						       , CEILING(ISNULL(A.SPENDAMOUNT, 0) + ISNULL(CEILING(A.GRTAMOUNT),0)) AS TOTALAMOUNT
+						       , CONVERT(DATE, A.SPENDCONFIRMDT, 120) AS SPENDCONFIRMDT
+						       , SPENDCONFIRMFLAG 
+				          FROM (    SELECT   A.GIVEYEAR
+							               , A.GIVEMONTH
+							               , A.DEPABO_NO
+							               , A.DEPABONAME
+							               , b.TRFEE 
+							               , SUM(CASE A.SPENDTYPE WHEN 'person' THEN A.SPENDAMOUNT END) AS SPENDAMOUNT
+							               , ISNULL(MAX(CASE A.SPENDTYPE WHEN 'person' THEN A.SPENDSTATUS END), 'N') AS SPENDSTATUS
+							               , B.GROUPCODE
+							               , SUM(CASE A.SPENDTYPE WHEN 'group' THEN A.SPENDAMOUNT END) AS GRTAMOUNT
+							               , ISNULL(MAX(CASE A.SPENDTYPE WHEN 'group' THEN A.SPENDSTATUS END), 'N') AS GRPSTATUS
+							               , MAX(SPENDCONFIRMDT) AS SPENDCONFIRMDT
+							               , MAX(SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+							               , CASE WHEN ISNULL(MAX(CASE A.SPENDTYPE WHEN 'person' THEN A.SPENDSTATUS END), 'N') = 'Y' OR
+							                           ISNULL(MAX(CASE A.SPENDTYPE WHEN 'group' THEN A.SPENDSTATUS END), 'N') = 'Y' THEN 'Y' ELSE 'N' END AS STATUS
+							               
+									  FROM (  SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , A.SPENDTYPE
+									                 , B.DEPABO_NO as DEPABO_NO
+									                 , dbo.F_GETABONAME(B.DEPABO_NO) AS DEPABONAME
+									                 , B.SPENDAMOUNT
+									                 , B.SPENDSTATUS
+									                 , A.SPENDCONFIRMDT AS SPENDCONFIRMDT
+									                 , DBO.F_CMM_CODENAME('TR8',A.SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+									            FROM   DBO.TRFEESPEND A
+									           INNER JOIN PERSONSPEND B ON B.GIVEYEAR = A.GIVEYEAR
+									                                AND B.GIVEMONTH = A.GIVEMONTH
+									                                AND B.DEPABO_NO = A.DEPABO_NO
+									          WHERE A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+									            AND A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+									          UNION
+									          SELECT   A.GIVEYEAR
+											         , A.GIVEMONTH
+											         , 'group' AS SPENDTYPE
+											         , A.DEPABO_NO as DEPABO_NO
+											         , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+											         , A.SPENDAMOUNT  AS GRTAMOUN
+											         , A.SPENDSTATUS AS GRPSTATUS
+											         , A.SPENDCONFIRMDT
+											         , DBO.F_CMM_CODENAME('TR8',A.SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+											    FROM   SPENDGROUPAMOUNT A
+											    UNION
+									          SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , 'person' AS SPENDTYPE
+									                 , A.DEPABO_NO as DEPABO_NO
+									                 , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+									                 , A.RENTAMOUNT
+									                 , a.RENTSTATUS
+									                 , '' AS SPENDCONFIRMDT
+									                 , '' AS SPENDCONFIRMFLAG
+									            FROM   RENTPERSONAMOUNT A
+									           WHERE   A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+									             AND   A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+									          UNION
+									          SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , 'group' AS SPENDTYPE
+									                 , A.DEPABO_NO as DEPABO_NO
+									                 , DEPABONAME
+									                 , A.RENTAMOUNT
+									                 , a.RENTSTATUS
+									                 , '' AS SPENDCONFIRMDT
+									                 , '' AS SPENDCONFIRMFLAG
+									            FROM   RENTGROUPAMOUNT A
+									           WHERE   A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+									             AND   A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2) ) A
+									INNER JOIN DBO.V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+									                              AND A.GIVEMONTH = B.GIVEMONTH
+									                              AND A.DEPABO_NO = B.DEPABO_NO
+										 WHERE   1=1
+							               <if test="searchDepSchType != null and searchDepSchType.equalsIgnoreCase('1') ">
+							               	   <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							               		AND   b.DEPABO_NO = #{searchDepositNm}
+							               		</if>
+							               </if>
+							               <if test="searchDepSchType != null and searchDepSchType.equalsIgnoreCase('2') ">
+							                   <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							               		AND   b.DEPABONAME LIKE '%'+#{searchDepositNm}+'%'
+							               		</if>
+							               </if>
+							               <if test="searchBR != null and !searchBR.equals('') ">
+							               AND   b.BR = #{searchBR}
+							               </if>
+							               <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+							               AND   b.GROUPCODE = #{searchGrpCd}
+							               </if>
+							               <if test="searchCode != null and !searchCode.equals('') ">
+							               AND   b.CODE = #{searchCode}
+							               </if>
+							               <if test="searchLoa != null and !searchLoa.equals('') ">
+							               AND   b.LOANAMEKOR = #{searchLoa}
+							               </if>
+							               <if test="searchCPin != null and !searchCPin.equals('') ">
+							               AND   b.GROUPS = #{searchCPin}
+							               </if>
+							               <if test="searchDept != null and !searchDept.equals('') ">
+							               AND   b.DEPARTMENT = #{searchDept}
+							               </if> 
+							    GROUP BY A.GIVEYEAR
+						               , A.GIVEMONTH
+						               , A.DEPABO_NO
+						               , A.DEPABONAME
+						               , b.TRFEE
+						               , B.GROUPCODE
+							               ) A
+							               where 1=1
+				<if test="searchStateGrp != null and !searchStateGrp.equals('') ">
+							               AND   A.STATUS = #{searchStateGrp}
+							               </if>
+						) AA   
+	</select>
+	
+	<resultMap id="selectTrainingFeeSpendListResultMap" type="dataBox">
+		<result property="TRFEE" column="TRFEE" javaType="java.lang.Double" />
+		<result property="PLANAMOUNT" column="PLANAMOUNT" javaType="java.lang.Double" />
+		<result property="SPENDAMOUNT" column="SPENDAMOUNT" javaType="java.lang.Double" />
+		<result property="GRTAMOUNT" column="GRTAMOUNT" javaType="java.lang.Double" />
+		<result property="TOTALAMOUNT" column="TOTALAMOUNT" javaType="java.lang.Double" />
+	</resultMap>
+	
+	<select id="selectTrainingFeeSpendList" parameterType="reqBox" resultMap="selectTrainingFeeSpendListResultMap">
+		/* TrainingFeeSpend.xml  selectTrainingFeeSpendList  */
+		WITH PERSONSPEND AS (SELECT   A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , a.DEPABO_NO
+		                           , A.SPENDSTATUS
+		                           , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                      FROM   (  SELECT   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.SPENDSTATUS
+					                           , ( SELECT   SUM(B.SPENDAMOUNT)
+					                                 FROM   DBO.TRFEESPENDITEM B
+					                                WHERE   B.GIVEYEAR  = A.GIVEYEAR
+					                                  AND   B.GIVEMONTH = A.GIVEMONTH
+					                                  AND   B.SPENDID   = A.SPENDID ) SPENDAMOUNT
+					                      FROM  DBO.TRFEESPEND A
+					                     WHERE  SPENDTYPE = 'person'
+					                       AND  GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+										   AND  GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2) ) A
+					                    GROUP BY A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.SPENDSTATUS)
+          /* 사전계획서 금액 */
+        , PERSONPLAN AS (SELECT   A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , a.DEPABO_NO
+		                           , A.PLANSTATUS
+		                           , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                      FROM   (  SELECT   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.PLANSTATUS
+					                           , ( SELECT   SUM(B.SPENDAMOUNT)
+					                                 FROM   DBO.TRFEEPLANITEM B
+					                                WHERE   B.GIVEYEAR  = A.GIVEYEAR
+					                                  AND   B.GIVEMONTH = A.GIVEMONTH
+					                                  AND   B.PLANID    = A.PLANID ) SPENDAMOUNT
+					                      FROM  DBO.TRFEEPLAN A
+					                     WHERE  PLANTYPE  = 'person'
+					                       AND  GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+										   AND  GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2) ) A
+					                  GROUP BY   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.PLANSTATUS)
+		, GROUPMASTER AS ( SELECT   A.GIVEYEAR
+		                          , A.GIVEMONTH
+		                          , A.GROUPCODE
+		                          , SUM(A.TRFEE) AS TRFEE
+		                     FROM   DBO.V_TRFEETARGET A
+		                    WHERE   GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+							  AND   GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+		                    GROUP BY A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , A.GROUPCODE)
+		, GROUPTARGETLIST AS (
+		            SELECT   A.GIVEYEAR
+		                   , A.GIVEMONTH
+		                   , A.GROUPCODE
+		                   , B.DEPABO_NO
+		                   , B.TRFEE
+		                   , A.TRFEE AS GRPTRFEE
+		                   , ( CAST(B.TRFEE AS FLOAT)/CAST(A.TRFEE AS FLOAT) ) * 100 AS RATE
+		              FROM GROUPMASTER A
+		            INNER JOIN DBO.V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+		                                         AND A.GIVEMONTH = B.GIVEMONTH
+		                                         AND A.GROUPCODE = B.GROUPCODE )
+		, SPENDGROUPAMOUNT AS ( SELECT   A.GIVEYEAR
+		                               , A.GIVEMONTH
+		                               , A.SPENDID
+		                               , A.DEPABO_NO
+		                               , A.GROUPCODE
+		                               , A.SPENDSTATUS
+		                               , A.SPENDCONFIRMFLAG
+		                               , A.SPENDCONFIRMDT
+		                               , A.SPENDAMOUNT
+		                               , A.TRFEE
+		                               , A.TOTALTRFEE
+		                               , ( A.TRFEE * ( CAST(A.TRFEE AS FLOAT)/CAST(A.TOTALTRFEE AS FLOAT) ) * 100 ) * 0.01 AS GRTAMOUNT
+		                          FROM (  SELECT   A.GIVEYEAR
+		                                         , A.GIVEMONTH
+		                                         , A.SPENDID
+		                                         , B.DEPABO_NO
+		                                         , C.GROUPCODE
+		                                         , A.SPENDSTATUS
+		                                         , B.SPENDCONFIRMFLAG
+		                                         , B.SPENDCONFIRMDT
+		                                         , SUM(B.SPENDAMOUNT) AS SPENDAMOUNT
+		                                         , C.TRFEE
+		                                         , dbo.F_GETTRFEETOTALAMOUNT(A.GIVEYEAR, A.GIVEMONTH, B.DEPABO_NO, C.GROUPCODE, A.SPENDTYPE) AS TOTALTRFEE
+		                                    FROM dbo.TRFEESPEND A
+		                                  INNER JOIN dbo.TRFEESPENDITEMGROUP B ON A.GIVEYEAR = B.GIVEYEAR
+		                                                                      AND A.GIVEMONTH = B.GIVEMONTH
+		                                                                      AND A.SPENDID = B.SPENDID
+		                                  INNER JOIN dbo.V_TRFEETARGET C ON B.GIVEYEAR = C.GIVEYEAR
+		                                                                AND B.GIVEMONTH = C.GIVEMONTH
+		                                                                AND B.DEPABO_NO = C.DEPABO_NO
+		                                   WHERE A.GIVEYEAR  = SUBSTRING(#{searchGiveYear}, 1, 4)
+		                                     AND A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+		                                     AND A.SPENDTYPE = 'group'
+		                                  GROUP BY A.GIVEYEAR
+		                                         , A.GIVEMONTH
+		                                         , A.SPENDID
+		                                         , A.SPENDTYPE
+		                                         , A.SPENDSTATUS
+		                                         , B.DEPABO_NO
+		                                         , B.SPENDCONFIRMFLAG
+		                                         , B.SPENDCONFIRMDT
+		                                         , C.TRFEE
+		                                         , C.GROUPCODE ) A )
+		  /* 사전계획서 금액 */
+        , PLANGROUPLIST AS (SELECT   A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , a.groupcode
+		                           , A.PLANSTATUS
+		                           , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                      FROM   (
+		                              SELECT   A.GIVEYEAR
+		                                     , A.GIVEMONTH
+		                                     , a.groupcode
+		                                     , A.PLANSTATUS
+		                                     , ( SELECT   SUM(B.SPENDAMOUNT)
+		                                           FROM   DBO.TRFEEPLANITEM B
+		                                          WHERE   B.GIVEYEAR = A.GIVEYEAR
+		                                            AND   B.GIVEMONTH = A.GIVEMONTH
+		                                            AND   B.PLANID = A.PLANID ) SPENDAMOUNT
+		                                FROM  DBO.TRFEEPLAN A
+		                               WHERE  PLANTYPE = 'group'
+		                                 AND  GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							            AND  GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2) ) A
+		                  GROUP BY A.GIVEYEAR
+		                         , A.GIVEMONTH
+		                         , a.groupcode
+		                         , A.PLANSTATUS)
+		  /* 사전계획서 금액 */
+		, PLANGROUPAMOUNT AS (  SELECT   A.GIVEYEAR
+		                               , A.GIVEMONTH
+		                               , A.groupcode
+		                               , A.DEPABO_NO
+		                               , B.PLANSTATUS
+		                               , A.TRFEE
+		                               , A.GRPTRFEE
+		                               , CEILING(( A.GRPTRFEE * RATE ) * 0.01) AS GRTAMOUNT
+		                          FROM   GROUPTARGETLIST A
+		                    INNER JOIN   PLANGROUPLIST B ON B.GIVEYEAR = A.GIVEYEAR
+		                                                AND B.GIVEMONTH = A.GIVEMONTH
+		                                                AND B.GROUPCODE = A.GROUPCODE )
+		 , RENTPERSONAMOUNT AS ( SELECT   SUBSTRING(B.GIVEYEARMONTH, 1, 4) AS GIVEYEAR
+		                               , SUBSTRING(B.GIVEYEARMONTH, 5, 2) AS GIVEMONTH
+		                               , B.DEPABO_NO
+		                               , B.RENTAMOUNT + B.RENTDEPOSIT AS RENTAMOUNT
+		                               , A.RENTSTATUS
+		                               , B.REGISTRANTDATE
+		                          FROM   dbo.TRFEERENT A
+		                    INNER JOIN   dbo.TRFEERENTPERSON B ON A.FISCALYEAR = B.FISCALYEAR
+		                                                      AND A.DEPABO_NO = B.DEPABO_NO
+		                                                      AND A.RENTID = B.RENTID
+		                         WHERE   A.RENTSTATUS != 'R')
+		, MONTHLIST AS ( SELECT   1 NUM
+	                    UNION ALL
+	                    SELECT   NUM + 1 AS NUM
+	                      FROM   MONTHLIST
+	                     WHERE   NUM <![CDATA[ < ]]> 12 )
+	     , MONTHTOTALLIST AS ( SELECT CONVERT(VARCHAR, #{fiscalyear}-1) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							    FROM MONTHLIST
+							  UNION
+							  SELECT CONVERT(VARCHAR, #{fiscalyear}) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST )
+		, RENTGROUPAMOUNT AS ( select  SUBSTRING(A.GIVEMONTH, 1, 4) AS GIVEYEAR
+		                               , SUBSTRING(A.GIVEMONTH, 5, 2) AS GIVEMONTH
+		                             , D.DEPABO_NO
+		                             , D.DEPABONAME
+		                             , C.RENTAMOUNT + C.RENTDEPOSIT AS RENTAMOUNT
+		                             , C.RENTSTATUS
+		                             , C.REGISTRANTDATE
+		                        from MONTHTOTALLIST A
+		                      inner join   dbo.TRFEERENT B ON A.GIVEMONTH BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH AND B.RENTSTATUS != 'R'
+		                    INNER JOIN   dbo.TRFEERENTgroup C ON C.FISCALYEAR = B.FISCALYEAR
+		                                                      AND C.DEPABO_NO = B.DEPABO_NO
+		                                                      AND C.RENTID = B.RENTID
+		                    INNER JOIN   V_TRFEETARGET D ON D.GIVEYEAR = B.GIVEYEAR
+				                                            AND D.GIVEMONTH = B.GIVEMONTH
+				                                            AND D.GROUPCODE = B.GROUPCODE )
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM (SELECT   A.GIVEYEAR
+						       , A.GIVEMONTH
+						       , A.DEPABO_NO
+						       , A.DEPABONAME
+						       , A.TRFEE 
+						       , ISNULL( ( SELECT SUM(GRTAMOUNT) 
+						                     FROM PLANGROUPAMOUNT BB 
+						                    WHERE BB.GIVEYEAR  = A.GIVEYEAR
+						                      AND BB.GIVEMONTH = A.GIVEMONTH
+						                      AND BB.GROUPCODE = A.GROUPCODE ), 0)
+						       + ISNULL( ( SELECT SPENDAMOUNT 
+						                     FROM PERSONPLAN  BB 
+						                    WHERE BB.GIVEYEAR  = A.GIVEYEAR
+						                      AND BB.GIVEMONTH = A.GIVEMONTH
+						                      AND BB.DEPABO_NO = A.DEPABO_NO ), 0) AS PLANAMOUNT
+						       , A.SPENDAMOUNT
+						       , A.SPENDSTATUS
+						       , A.GROUPCODE
+						       , A.GRTAMOUNT
+						       , A.GRPSTATUS
+						       , CEILING(ISNULL(A.SPENDAMOUNT, 0) + ISNULL(CEILING(A.GRTAMOUNT),0)) AS TOTALAMOUNT
+						       , CONVERT(DATE, A.SPENDCONFIRMDT, 120) AS SPENDCONFIRMDT
+						       , SPENDCONFIRMFLAG 
+				          FROM (    SELECT   A.GIVEYEAR
+							               , A.GIVEMONTH
+							               , A.DEPABO_NO
+							               , A.DEPABONAME
+							               , b.TRFEE 
+							               , SUM(CASE A.SPENDTYPE WHEN 'person' THEN A.SPENDAMOUNT END) AS SPENDAMOUNT
+							               , ISNULL(MAX(CASE A.SPENDTYPE WHEN 'person' THEN A.SPENDSTATUS END), 'N') AS SPENDSTATUS
+							               , B.GROUPCODE
+							               , SUM(CASE A.SPENDTYPE WHEN 'group' THEN A.SPENDAMOUNT END) AS GRTAMOUNT
+							               , ISNULL(MAX(CASE A.SPENDTYPE WHEN 'group' THEN A.SPENDSTATUS END), 'N') AS GRPSTATUS
+							               , MAX(SPENDCONFIRMDT) AS SPENDCONFIRMDT
+							               , MAX(SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+							               , CASE WHEN ISNULL(MAX(CASE A.SPENDTYPE WHEN 'person' THEN A.SPENDSTATUS END), 'N') = 'Y' OR
+							                           ISNULL(MAX(CASE A.SPENDTYPE WHEN 'group' THEN A.SPENDSTATUS END), 'N') = 'Y' THEN 'Y' ELSE 'N' END AS STATUS
+							               
+									  FROM (  SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , A.SPENDTYPE
+									                 , B.DEPABO_NO as DEPABO_NO
+									                 , dbo.F_GETABONAME(B.DEPABO_NO) AS DEPABONAME
+									                 , B.SPENDAMOUNT
+									                 , B.SPENDSTATUS
+									                 , A.SPENDCONFIRMDT AS SPENDCONFIRMDT
+									                 , DBO.F_CMM_CODENAME('TR8',A.SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+									            FROM   DBO.TRFEESPEND A
+									           INNER JOIN PERSONSPEND B ON B.GIVEYEAR = A.GIVEYEAR
+									                                AND B.GIVEMONTH = A.GIVEMONTH
+									                                AND B.DEPABO_NO = A.DEPABO_NO
+									          WHERE A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+									            AND A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+									          UNION
+									          SELECT   A.GIVEYEAR
+											         , A.GIVEMONTH
+											         , 'group' AS SPENDTYPE
+											         , A.DEPABO_NO as DEPABO_NO
+											         , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+											         , A.SPENDAMOUNT  AS GRTAMOUN
+											         , A.SPENDSTATUS AS GRPSTATUS
+											         , A.SPENDCONFIRMDT
+											         , DBO.F_CMM_CODENAME('TR8',A.SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+											    FROM   SPENDGROUPAMOUNT A
+											    UNION
+									          SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , 'person' AS SPENDTYPE
+									                 , A.DEPABO_NO as DEPABO_NO
+									                 , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+									                 , A.RENTAMOUNT
+									                 , a.RENTSTATUS
+									                 , '' AS SPENDCONFIRMDT
+									                 , '' AS SPENDCONFIRMFLAG
+									            FROM   RENTPERSONAMOUNT A
+									           WHERE   A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+									             AND   A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+									          UNION
+									          SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , 'group' AS SPENDTYPE
+									                 , A.DEPABO_NO as DEPABO_NO
+									                 , DEPABONAME
+									                 , A.RENTAMOUNT
+									                 , a.RENTSTATUS
+									                 , '' AS SPENDCONFIRMDT
+									                 , '' AS SPENDCONFIRMFLAG
+									            FROM   RENTGROUPAMOUNT A
+									           WHERE   A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+									             AND   A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2) ) A
+									INNER JOIN DBO.V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+									                              AND A.GIVEMONTH = B.GIVEMONTH
+									                              AND A.DEPABO_NO = B.DEPABO_NO
+										 WHERE   1=1
+							               <if test="searchDepSchType != null and searchDepSchType.equalsIgnoreCase('1') ">
+							               	   <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							               		AND   b.DEPABO_NO = #{searchDepositNm}
+							               		</if>
+							               </if>
+							               <if test="searchDepSchType != null and searchDepSchType.equalsIgnoreCase('2') ">
+							                   <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+							               		AND   b.DEPABONAME LIKE '%'+#{searchDepositNm}+'%'
+							               		</if>
+							               </if>
+							               <if test="searchBR != null and !searchBR.equals('') ">
+							               AND   b.BR = #{searchBR}
+							               </if>
+							               <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+							               AND   b.GROUPCODE = #{searchGrpCd}
+							               </if>
+							               <if test="searchCode != null and !searchCode.equals('') ">
+							               AND   b.CODE = #{searchCode}
+							               </if>
+							               <if test="searchLoa != null and !searchLoa.equals('') ">
+							               AND   b.LOANAMEKOR = #{searchLoa}
+							               </if>
+							               <if test="searchCPin != null and !searchCPin.equals('') ">
+							               AND   b.GROUPS = #{searchCPin}
+							               </if>
+							               <if test="searchDept != null and !searchDept.equals('') ">
+							               AND   b.DEPARTMENT = #{searchDept}
+							               </if> 
+							    GROUP BY A.GIVEYEAR
+						               , A.GIVEMONTH
+						               , A.DEPABO_NO
+						               , A.DEPABONAME
+						               , b.TRFEE
+						               , B.GROUPCODE
+							               ) A
+							               where 1=1
+				<if test="searchStateGrp != null and !searchStateGrp.equals('') ">
+							               AND   A.STATUS = #{searchStateGrp}
+							               </if>
+						) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+
+	<select id="selectTrainingFeeSpendDetailListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeSpend.xml  selectTrainingFeeSpendDetailListCount  */
+		WITH SPENDPERSONLIST AS (  SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.SPENDID
+								       , A.SPENDDT
+								       , A.EDUKIND
+								       , A.EDUTITLE
+								       , A.PERSONCOUNT
+								       , A.PLANCOUNT
+								       , A.PLACE
+								       , A.EDUDESC
+								       , A.SPENDTYPE
+								       , B.SPENDITEM
+								       , B.SPENDAMOUNT
+								       , B.REGISTRANTDATE
+								       , A.GROUPCODE
+			                      FROM   DBO.TRFEESPEND A
+			                 LEFT JOIN   DBO.TRFEESPENDITEM B ON A.GIVEYEAR  = B.GIVEYEAR
+			                                                AND A.GIVEMONTH = B.GIVEMONTH
+			                                                AND A.SPENDID    = B.SPENDID
+			                    WHERE A.GIVEYEAR  = #{giveyear}
+			                      AND A.GIVEMONTH = #{givemonth}
+			                      AND A.DEPABO_NO = #{abono}
+			                      AND A.SPENDTYPE = 'person' )
+			, SPENDGROUPLIST AS (  SELECT   A.GIVEYEAR
+									       , A.GIVEMONTH
+									       , A.SPENDID
+									       , A.SPENDDT
+									       , A.EDUKIND
+									       , A.EDUTITLE
+									       , A.PERSONCOUNT
+									       , A.PLANCOUNT
+									       , A.PLACE
+									       , A.EDUDESC
+									       , A.SPENDTYPE
+									       , B.SPENDITEM
+									       , B.SPENDAMOUNT
+									       , B.REGISTRANTDATE
+									       , A.GROUPCODE
+				                      FROM   DBO.TRFEESPEND A
+				                 LEFT JOIN   DBO.TRFEESPENDITEMGROUP B ON A.GIVEYEAR  = B.GIVEYEAR
+				                                                AND A.GIVEMONTH = B.GIVEMONTH
+				                                                AND A.SPENDID    = B.SPENDID
+				                    WHERE A.GIVEYEAR  = #{giveyear}
+                                            AND A.GIVEMONTH = #{givemonth}
+				                      AND B.DEPABO_NO = #{abono}
+				                      AND A.SPENDTYPE = 'group' )
+			, GROUPMASTER AS (  SELECT   A.GIVEYEAR
+			                           , A.GIVEMONTH
+			                           , A.GROUPCODE
+			                           , SUM(A.TRFEE) AS TRFEE
+			                      FROM   DBO.V_TRFEETARGET A
+			                     WHERE   A.GIVEYEAR  = #{giveyear}
+			                       AND   A.GIVEMONTH = #{givemonth}
+			                  GROUP BY   A.GIVEYEAR
+			                           , A.GIVEMONTH
+			                           , A.GROUPCODE)
+			, RENTPERSONAMOUNT AS ( SELECT   SUBSTRING(B.GIVEYEARMONTH, 1, 4) AS GIVEYEAR
+			                               , SUBSTRING(B.GIVEYEARMONTH, 5, 2) AS GIVEMONTH
+			                               , B.DEPABO_NO
+			                               , B.RENTAMOUNT + B.RENTDEPOSIT AS RENTAMOUNT
+			                               , A.RENTSTATUS
+			                               , B.REGISTRANTDATE
+			                               , A.RENTID
+			                               , REPLACE(CONVERT(VARCHAR, A.REGISTRANTDATE, 120), '-','') AS RENTDT
+			                          FROM   dbo.TRFEERENT A
+			                    INNER JOIN   dbo.TRFEERENTPERSON B ON A.FISCALYEAR = B.FISCALYEAR
+			                                                      AND A.DEPABO_NO = B.DEPABO_NO
+			                                                      AND A.RENTID = B.RENTID
+			                         WHERE   A.DEPABO_NO = #{abono})
+		, MONTHLIST AS ( SELECT   1 NUM
+	                    UNION ALL
+	                    SELECT   NUM + 1 AS NUM
+	                      FROM   MONTHLIST
+	                     WHERE   NUM <![CDATA[ < ]]> 12 )
+	     , MONTHTOTALLIST AS ( SELECT CONVERT(VARCHAR, #{fiscalyear}-1) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							    FROM MONTHLIST
+							  UNION
+							  SELECT CONVERT(VARCHAR, #{fiscalyear}) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST )
+		, RENTGROUPAMOUNT AS ( select  SUBSTRING(A.GIVEMONTH, 1, 4) AS GIVEYEAR
+		                               , SUBSTRING(A.GIVEMONTH, 5, 2) AS GIVEMONTH
+		                             , D.DEPABO_NO
+		                             , D.DEPABONAME
+		                             , C.RENTAMOUNT + C.RENTDEPOSIT AS RENTAMOUNT
+		                             , C.RENTSTATUS
+		                             , C.REGISTRANTDATE
+		                             , B.RENTID
+	                                 , REPLACE(CONVERT(VARCHAR, B.REGISTRANTDATE, 120), '-','') AS RENTDT
+		                        from   MONTHTOTALLIST A
+		                  inner join   dbo.TRFEERENT B ON A.GIVEMONTH BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH
+		                    INNER JOIN   dbo.TRFEERENTgroup C ON C.FISCALYEAR = B.FISCALYEAR
+		                                                      AND C.DEPABO_NO = B.DEPABO_NO
+		                                                      AND C.RENTID = B.RENTID
+		                    INNER JOIN   V_TRFEETARGET D ON D.GIVEYEAR = B.GIVEYEAR
+				                                            AND D.GIVEMONTH = B.GIVEMONTH
+				                                            AND D.GROUPCODE = B.GROUPCODE 
+				               WHERE   D.DEPABO_NO = #{abono})
+				         SELECT   COUNT(*) AS TOTAL_CNT
+						   FROM (
+								SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.SPENDID
+								       , A.SPENDDT
+								       , A.EDUKIND
+								       , A.EDUTITLE
+								       , A.PERSONCOUNT
+								       , A.PLANCOUNT
+								       , A.PLACE
+								       , A.EDUDESC
+								       , A.SPENDTYPE
+								       , A.SPENDITEM
+								       , A.SPENDAMOUNT
+								       , A.REGISTRANTDATE
+								       , A.GROUPCODE
+								  FROM   SPENDPERSONLIST A
+								UNION
+								SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.SPENDID
+								       , A.SPENDDT
+								       , A.EDUKIND
+								       , A.EDUTITLE
+								       , A.PERSONCOUNT
+								       , A.PLANCOUNT
+								       , A.PLACE
+								       , A.EDUDESC
+								       , A.SPENDTYPE
+								       , A.SPENDITEM
+								       , A.SPENDAMOUNT
+								       , A.REGISTRANTDATE
+								       , A.GROUPCODE
+								  FROM   SPENDGROUPLIST A
+								UNION
+								SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.RENTID
+								       , A.RENTDT
+								       , '' EDUKIND
+								       , '(개인) 임대차 신청' EDUTITLE
+								       , NULL PERSONCOUNT
+								       , NULL PLANCOUNT
+								       , NULL PLACE
+								       , NULL EDUDESC
+								       , 'person' SPENDTYPE
+								       , '임대료' SPENDITEM
+								       , A.RENTAMOUNT
+								       , A.REGISTRANTDATE
+								       , (SELECT B.GROUPCODE FROM V_TRFEETARGET B WHERE B.DEPABO_NO = A.DEPABO_NO AND B.GIVEYEAR = A.GIVEYEAR AND B.GIVEMONTH = A.GIVEMONTH)
+								  FROM   RENTPERSONAMOUNT A
+								 WHERE   A.GIVEYEAR  = #{giveyear}
+			                       AND   A.GIVEMONTH = #{givemonth}
+								UNION
+								SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.RENTID
+								       , A.RENTDT
+								       , '' EDUKIND
+								       , '(그룹) 임대차 신청' EDUTITLE
+								       , NULL PERSONCOUNT
+								       , NULL PLANCOUNT
+								       , NULL PLACE
+								       , NULL EDUDESC
+								       , 'group' SPENDTYPE
+								       , '임대료' SPENDITEM
+								       , A.RENTAMOUNT
+								       , A.REGISTRANTDATE
+								       , (SELECT B.GROUPCODE FROM V_TRFEETARGET B WHERE B.DEPABO_NO = A.DEPABO_NO AND B.GIVEYEAR = A.GIVEYEAR AND B.GIVEMONTH = A.GIVEMONTH)
+								  FROM   RENTGROUPAMOUNT A
+								 WHERE   A.GIVEYEAR  = #{giveyear}
+			                       AND   A.GIVEMONTH = #{givemonth} 
+			                       ) A
+					LEFT OUTER JOIN  GROUPMASTER B ON B.GIVEYEAR = A.GIVEYEAR
+					                              AND B.GIVEMONTH = A.GIVEMONTH
+					                              AND B.GROUPCODE = A.GROUPCODE 
+	</select>
+
+	<select id="selectTrainingFeeSpendDetailList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeSpend.xml  selectTrainingFeeSpendDetailList  */
+		WITH SPENDPERSONLIST AS (  SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.SPENDID
+								       , A.SPENDDT
+								       , A.EDUKIND
+								       , A.EDUTITLE
+								       , A.PERSONCOUNT
+								       , A.PLANCOUNT
+								       , A.PLACE
+								       , A.EDUDESC
+								       , A.SPENDTYPE
+								       , B.SPENDITEM
+								       , B.SPENDAMOUNT
+								       , B.REGISTRANTDATE
+								       , A.GROUPCODE
+			                      FROM   DBO.TRFEESPEND A
+			                 LEFT JOIN   DBO.TRFEESPENDITEM B ON A.GIVEYEAR  = B.GIVEYEAR
+			                                                AND A.GIVEMONTH = B.GIVEMONTH
+			                                                AND A.SPENDID    = B.SPENDID
+			                    WHERE A.GIVEYEAR  = #{giveyear}
+			                      AND A.GIVEMONTH = #{givemonth}
+			                      AND A.DEPABO_NO = #{abono}
+			                      AND A.SPENDTYPE = 'person' )
+			, SPENDGROUPLIST AS (  SELECT   A.GIVEYEAR
+									       , A.GIVEMONTH
+									       , A.SPENDID
+									       , A.SPENDDT
+									       , A.EDUKIND
+									       , A.EDUTITLE
+									       , A.PERSONCOUNT
+									       , A.PLANCOUNT
+									       , A.PLACE
+									       , A.EDUDESC
+									       , A.SPENDTYPE
+									       , B.SPENDITEM
+									       , B.SPENDAMOUNT
+									       , B.REGISTRANTDATE
+									       , A.GROUPCODE
+				                      FROM   DBO.TRFEESPEND A
+				                 LEFT JOIN   DBO.TRFEESPENDITEMGROUP B ON A.GIVEYEAR  = B.GIVEYEAR
+				                                                AND A.GIVEMONTH = B.GIVEMONTH
+				                                                AND A.SPENDID    = B.SPENDID
+				                    WHERE A.GIVEYEAR  = #{giveyear}
+                                            AND A.GIVEMONTH = #{givemonth}
+				                      AND B.DEPABO_NO = #{abono}
+				                      AND A.SPENDTYPE = 'group' )
+			, GROUPMASTER AS (  SELECT   A.GIVEYEAR
+			                           , A.GIVEMONTH
+			                           , A.GROUPCODE
+			                           , SUM(A.TRFEE) AS TRFEE
+			                      FROM   DBO.V_TRFEETARGET A
+			                     WHERE   A.GIVEYEAR  = #{giveyear}
+			                       AND   A.GIVEMONTH = #{givemonth}
+			                  GROUP BY   A.GIVEYEAR
+			                           , A.GIVEMONTH
+			                           , A.GROUPCODE)
+			, RENTPERSONAMOUNT AS ( SELECT   SUBSTRING(B.GIVEYEARMONTH, 1, 4) AS GIVEYEAR
+			                               , SUBSTRING(B.GIVEYEARMONTH, 5, 2) AS GIVEMONTH
+			                               , B.DEPABO_NO
+			                               , B.RENTAMOUNT + B.RENTDEPOSIT AS RENTAMOUNT
+			                               , A.RENTSTATUS
+			                               , B.REGISTRANTDATE
+			                               , A.RENTID
+			                               , CONVERT(VARCHAR(7),CONVERT(DATETIME, A.RENTFROMMONTH+'01'),23)+'~'+
+                                             CONVERT(VARCHAR(7),CONVERT(DATETIME, A.RENTTOMONTH+'01'),23) as RENTDT
+			                          FROM   dbo.TRFEERENT A
+			                    INNER JOIN   dbo.TRFEERENTPERSON B ON A.FISCALYEAR = B.FISCALYEAR
+			                                                      AND A.DEPABO_NO = B.DEPABO_NO
+			                                                      AND A.RENTID = B.RENTID
+			                         WHERE   A.DEPABO_NO = #{abono})
+		, MONTHLIST AS ( SELECT   1 NUM
+	                    UNION ALL
+	                    SELECT   NUM + 1 AS NUM
+	                      FROM   MONTHLIST
+	                     WHERE   NUM <![CDATA[ < ]]> 12 )
+	     , MONTHTOTALLIST AS ( SELECT CONVERT(VARCHAR, #{fiscalyear}-1) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							    FROM MONTHLIST
+							  UNION
+							  SELECT CONVERT(VARCHAR, #{fiscalyear}) + CASE WHEN NUM <![CDATA[ < ]]> 10 THEN CONVERT(VARCHAR,'0')+CONVERT(VARCHAR,NUM)
+							                            ELSE CONVERT(VARCHAR,NUM) END AS GIVEMONTH
+							  FROM MONTHLIST )
+		, RENTGROUPAMOUNT AS ( select  SUBSTRING(A.GIVEMONTH, 1, 4) AS GIVEYEAR
+		                               , SUBSTRING(A.GIVEMONTH, 5, 2) AS GIVEMONTH
+		                             , D.DEPABO_NO
+		                             , D.DEPABONAME
+		                             , C.RENTAMOUNT + C.RENTDEPOSIT AS RENTAMOUNT
+		                             , C.RENTSTATUS
+		                             , C.REGISTRANTDATE
+		                             , B.RENTID
+	                                 , B.RENTFROMMONTH+'~'+B.RENTTOMONTH AS RENTDT
+		                        from   MONTHTOTALLIST A
+		                  inner join   dbo.TRFEERENT B ON A.GIVEMONTH BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH
+		                    INNER JOIN   dbo.TRFEERENTgroup C ON C.FISCALYEAR = B.FISCALYEAR
+		                                                      AND C.DEPABO_NO = B.DEPABO_NO
+		                                                      AND C.RENTID = B.RENTID
+		                    INNER JOIN   V_TRFEETARGET D ON D.GIVEYEAR = B.GIVEYEAR
+				                                            AND D.GIVEMONTH = B.GIVEMONTH
+				                                            AND D.GROUPCODE = B.GROUPCODE 
+				               WHERE   D.DEPABO_NO = #{abono})
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM ( SELECT   A.GIVEYEAR
+						        , A.GIVEMONTH
+						        , A.SPENDID
+						        , A.SPENDDT
+						        , A.EDUKIND
+						        , dbo.F_CMM_CODENAME('TR1',A.EDUKIND) EDUKINDNAME 
+						        , A.EDUTITLE
+						        , A.PERSONCOUNT
+						        , A.PLANCOUNT
+						        , A.PLACE
+						        , A.EDUDESC
+						        , CASE A.SPENDTYPE WHEN 'person' THEN '개인' ELSE '그룹' END AS SPENDTYPE
+						        , A.SPENDITEM
+						        , dbo.F_CMM_CODENAME('TR2',A.SPENDITEM) AS SPENDITEMNAME
+						        , A.SPENDAMOUNT
+						        , A.REGISTRANTDATE
+						        , CASE A.SPENDTYPE WHEN 'group' THEN ROUND((CAST(A.SPENDAMOUNT AS FLOAT)/CAST(B.TRFEE AS FLOAT)) * 100, 2) 
+						                          WHEN 'person' THEN ROUND((CAST(A.SPENDAMOUNT AS FLOAT)/CAST(#{trfee} AS FLOAT)) * 100, 2)
+						                          END AS RATE
+						   FROM (
+								SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.SPENDID
+								       , CONVERT(VARCHAR,CONVERT(DATETIME, A.SPENDDT),23) AS SPENDDT
+								       , A.EDUKIND
+								       , A.EDUTITLE
+								       , A.PERSONCOUNT
+								       , A.PLANCOUNT
+								       , A.PLACE
+								       , A.EDUDESC
+								       , A.SPENDTYPE
+								       , A.SPENDITEM
+								       , A.SPENDAMOUNT
+								       , A.REGISTRANTDATE
+								       , A.GROUPCODE
+								  FROM   SPENDPERSONLIST A
+								UNION
+								SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.SPENDID
+								       , CONVERT(VARCHAR,CONVERT(DATETIME, A.SPENDDT),23) AS SPENDDT
+								       , A.EDUKIND
+								       , A.EDUTITLE
+								       , A.PERSONCOUNT
+								       , A.PLANCOUNT
+								       , A.PLACE
+								       , A.EDUDESC
+								       , A.SPENDTYPE
+								       , A.SPENDITEM
+								       , A.SPENDAMOUNT
+								       , A.REGISTRANTDATE
+								       , A.GROUPCODE
+								  FROM   SPENDGROUPLIST A
+								UNION
+								SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.RENTID
+								       , A.RENTDT
+								       , '' EDUKIND
+								       , '(개인) 임대차 신청' EDUTITLE
+								       , NULL PERSONCOUNT
+								       , NULL PLANCOUNT
+								       , NULL PLACE
+								       , NULL EDUDESC
+								       , 'person' SPENDTYPE
+								       , '임대료' SPENDITEM
+								       , A.RENTAMOUNT
+								       , A.REGISTRANTDATE
+								       , (SELECT B.GROUPCODE FROM V_TRFEETARGET B WHERE B.DEPABO_NO = A.DEPABO_NO AND B.GIVEYEAR = A.GIVEYEAR AND B.GIVEMONTH = A.GIVEMONTH)
+								  FROM   RENTPERSONAMOUNT A
+								 WHERE   A.GIVEYEAR  = #{giveyear}
+			                       AND   A.GIVEMONTH = #{givemonth}
+								UNION
+								SELECT   A.GIVEYEAR
+								       , A.GIVEMONTH
+								       , A.RENTID
+								       , A.RENTDT
+								       , '' EDUKIND
+								       , '(그룹) 임대차 신청' EDUTITLE
+								       , NULL PERSONCOUNT
+								       , NULL PLANCOUNT
+								       , NULL PLACE
+								       , NULL EDUDESC
+								       , 'group' SPENDTYPE
+								       , '임대료' SPENDITEM
+								       , A.RENTAMOUNT
+								       , A.REGISTRANTDATE
+								       , (SELECT B.GROUPCODE FROM V_TRFEETARGET B WHERE B.DEPABO_NO = A.DEPABO_NO AND B.GIVEYEAR = A.GIVEYEAR AND B.GIVEMONTH = A.GIVEMONTH)
+								  FROM   RENTGROUPAMOUNT A
+								 WHERE   A.GIVEYEAR  = #{giveyear}
+			                       AND   A.GIVEMONTH = #{givemonth}
+								 ) A
+								  
+					LEFT OUTER JOIN  GROUPMASTER B ON B.GIVEYEAR = A.GIVEYEAR
+					                              AND B.GIVEMONTH = A.GIVEMONTH
+					                              AND B.GROUPCODE = A.GROUPCODE 
+						) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectTrainingFeeSpendReceiptList" parameterType="reqBox" resultType="dataBox">
+		SELECT   A.GIVEYEAR
+		       , A.GIVEMONTH
+		       , A.SPENDID
+		       , B.SPENDITEMID
+		       , A.SPENDTYPE
+		       , A.EDUTITLE
+		       , A.EDUKIND
+		       , DBO.F_CMM_CODENAME('TR1',A.EDUKIND) EDUKINDNAME
+		       , CONVERT(DATE, A.SPENDDT) AS SPENDDT
+		       , B.ATTACHFILE
+		       , C.UPLOADSEQ
+		       , C.REALFILENAME
+		       , C.STOREFILENAME
+		       , C.FILEFULLURL
+		       , C.FILEEXT
+		       , ( SELECT   SUM(D.TRFEE) AS TRFEE
+		                      FROM   DBO.V_TRFEETARGET D
+		                     WHERE   D.GIVEYEAR  = A.GIVEYEAR
+		                       AND   D.GIVEMONTH = A.GIVEMONTH
+		                       AND   D.DEPABO_NO = A.DEPABO_NO  ) AS GRPAMOUNT
+		       , ( SELECT SUM(D.SPENDAMOUNT)
+		             FROM DBO.TRFEESPENDITEM D
+		            WHERE D.GIVEYEAR = A.GIVEYEAR
+		              AND D.GIVEMONTH = A.GIVEMONTH
+		              AND D.SPENDID = A.SPENDID ) AS SPENDAMOUNT
+		  FROM DBO.TRFEESPEND A
+		LEFT JOIN DBO.TRFEESPENDITEM B ON B.GIVEYEAR = A.GIVEYEAR
+		                              AND B.GIVEMONTH = A.GIVEMONTH
+		                              AND B.SPENDID = A.SPENDID
+		LEFT JOIN DBO.FILEMANAGEMENT C ON B.ATTACHFILE = C.FILEKEY
+		                              AND C.WORK = 'TRFEE'
+		WHERE   A.GIVEYEAR  = #{giveyear}
+          AND   A.GIVEMONTH = #{givemonth} 
+          AND   A.DEPABO_NO = #{abono}
+          AND   B.ATTACHFILE > 0
+		          AND   A.SPENDTYPE = 'person' 
+		UNION
+		SELECT   A.GIVEYEAR
+		       , A.GIVEMONTH
+		       , A.SPENDID
+		       , B.SPENDITEMID
+		       , A.SPENDTYPE
+		       , A.EDUTITLE
+		       , A.EDUKIND
+		       , DBO.F_CMM_CODENAME('TR1',A.EDUKIND) EDUKINDNAME
+		       , CONVERT(DATE, A.SPENDDT) AS SPENDDT
+		       , B.ATTACHFILE
+		       , D.UPLOADSEQ
+		       , D.REALFILENAME
+		       , D.STOREFILENAME
+		       , D.FILEFULLURL
+		       , D.FILEEXT
+		       , ( SELECT   SUM(D.TRFEE) AS TRFEE
+		                      FROM   DBO.V_TRFEETARGET D
+		                     WHERE   D.GIVEYEAR  = A.GIVEYEAR
+		                       AND   D.GIVEMONTH = A.GIVEMONTH
+		                       AND   D.GROUPCODE = A.GROUPCODE  ) AS GRPAMOUNT
+		       , ( SELECT SUM(D.SPENDAMOUNT)
+		             FROM DBO.TRFEESPENDITEMGROUP D
+		            WHERE D.GIVEYEAR = A.GIVEYEAR
+		              AND D.GIVEMONTH = A.GIVEMONTH
+		              AND D.SPENDID   = A.SPENDID
+		              AND D.DEPABO_NO = #{abono} ) AS SPENDAMOUNT
+		  FROM   DBO.TRFEESPEND A
+		LEFT JOIN DBO.TRFEESPENDITEM B ON B.GIVEYEAR = A.GIVEYEAR
+		                              AND B.GIVEMONTH     = A.GIVEMONTH
+		                              AND B.SPENDID = A.SPENDID
+		LEFT JOIN DBO.TRFEESPENDITEMGROUP C ON C.GIVEYEAR = A.GIVEYEAR
+                                           AND C.GIVEMONTH     = A.GIVEMONTH
+                                           AND C.SPENDID = A.SPENDID
+		LEFT JOIN DBO.FILEMANAGEMENT D ON B.ATTACHFILE = D.FILEKEY
+		                              AND D.WORK = 'TRFEE'
+		WHERE   A.GIVEYEAR  = #{giveyear}
+          AND   A.GIVEMONTH = #{givemonth} 
+          AND   C.DEPABO_NO = #{abono}
+          AND   B.ATTACHFILE > 0
+          AND   A.SPENDTYPE = 'group'
+	</select>
+	
+	<update id="updateSpend" parameterType="reqBox">
+		UPDATE   DBO.TRFEESPEND
+		   SET   SPENDCONFIRMFLAG = #{spendconfirmflag}
+		       , SPENDSTATUS      = CASE #{spendconfirmflag} WHEN 'R' THEN 'N' ELSE 'Y' END
+		       , SPENDCONFIRMDT   = CONVERT(VARCHAR, GETDATE(), 112)
+		       , MODIFIER         = #{adminId}
+               , MODIFYDATE       = GETDATE()
+         WHERE   GIVEYEAR  = #{giveyear}
+           AND   GIVEMONTH = #{givemonth} 
+           <if test="giveRadio.equalsIgnoreCase('1') ">
+           AND   DEPABO_NO = #{abono}
+           </if>
+           <if test="giveRadio.equalsIgnoreCase('2') ">
+           AND   GROUPCODE = (SELECT GROUPCODE FROM DBO.V_TRFEETARGET WHERE GIVEYEAR = #{giveyear} AND GIVEMONTH = #{givemonth} AND DEPABO_NO = #{abono} )
+           </if>
+	</update>
+	
+	<update id="saveSpendChecking" parameterType="reqBox">
+		UPDATE   DBO.TRFEESPENDITEM
+		   SET   CHECKFLAG   = 'Y'
+		       , MODIFIER    = #{adminId}
+               , MODIFYDATE  = GETDATE()
+         WHERE   GIVEYEAR    = #{giveyear}
+           AND   GIVEMONTH   = #{givemonth} 
+           AND   SPENDID     = #{spendid}
+           AND   SPENDITEMID = #{spenditemid}
+	</update>
+	
+	<update id="updateSpendGroup" parameterType="reqBox">
+		UPDATE   DBO.TRFEESPENDITEMGROUP
+		   SET   SPENDCONFIRMFLAG = #{spendconfirmflag}
+		       , SPENDCONFIRMDT   = CONVERT(VARCHAR, GETDATE(), 112)
+		       , MODIFIER         = #{adminId} 
+               , MODIFYDATE       = GETDATE()
+         WHERE   GIVEYEAR  = #{giveyear}
+           AND   GIVEMONTH = #{givemonth} 
+           <if test="giveRadio.equalsIgnoreCase('1') ">
+           AND   DEPABO_NO = #{abono}
+           </if>
+           <if test="giveRadio.equalsIgnoreCase('2') ">
+           AND   DEPABO_NO IN ( SELECT DEPABO_NO 
+                                  FROM DBO.V_TRFEETARGET
+                                 WHERE GIVEYEAR  = #{giveyear} 
+                                   AND GIVEMONTH = #{givemonth} 
+                                   AND GROUPCODE = ( SELECT GROUPCODE 
+                                                       FROM DBO.V_TRFEETARGET 
+                                                      WHERE GIVEYEAR = #{giveyear} 
+                                                        AND GIVEMONTH = #{givemonth} 
+                                                        AND DEPABO_NO = #{abono}) )
+           </if>
+	</update>
+	
+	<update id="updateTrfeeTarget" parameterType="reqBox">
+		UPDATE   DBO.TRFEETARGETMONTH
+		   SET   PROCESSSTATUS    = #{spendconfirmflag}
+		       , PROCESSSTATUSDT  = CONVERT(VARCHAR,GETDATE(),112)
+		       , REJECTTEXT       = #{rejecttext}
+               , SMSTEXT          = #{smstext}
+		       , MODIFIER         = #{adminId}
+               , MODIFYDATE       = GETDATE()
+         WHERE   GIVEYEAR  = #{giveyear}
+           AND   GIVEMONTH = #{givemonth} 
+           <if test="giveRadio.equalsIgnoreCase('1') ">
+           AND   DEPABO_NO = #{abono}
+           </if>
+           <if test="giveRadio.equalsIgnoreCase('2') ">
+           AND   DEPABO_NO IN ( SELECT DEPABO_NO 
+                                  FROM DBO.V_TRFEETARGET
+                                 WHERE GIVEYEAR  = #{giveyear} 
+                                   AND GIVEMONTH = #{givemonth} 
+                                   AND GROUPCODE = ( SELECT GROUPCODE 
+                                                       FROM DBO.V_TRFEETARGET 
+                                                      WHERE GIVEYEAR = #{giveyear} 
+                                                        AND GIVEMONTH = #{givemonth} 
+                                                        AND DEPABO_NO = #{abono}) )
+           </if>
+	</update>
+	
+	<select id="selectSpendDoNotIt" parameterType="reqBox" resultType="int">
+		WITH   BASELIST AS ( SELECT   1 NUM
+                              UNION ALL
+                              SELECT   NUM + 1 AS NUM
+                                FROM   BASELIST
+                               WHERE   NUM <![CDATA[ < ]]> 3 )
+             , BASEMONTH AS ( SELECT   YEAR(DATEADD(MM, (A.NUM-1)*-1, convert(datetime, replace(#{searchGiveYear},'-','')+'01'))) AS GIVEYEAR
+					                 , CASE WHEN MONTH(DATEADD(MM, (A.NUM-1)*-1, replace(#{searchGiveYear},'-','')+'01')) <![CDATA[ < ]]> 10 THEN '0'+CONVERT(VARCHAR, MONTH(DATEADD(MM, (A.NUM-1)*-1, replace(#{searchGiveYear},'-','')+'01'))) 
+                                                                                                  ELSE CONVERT(VARCHAR, MONTH(DATEADD(MM, (A.NUM-1)*-1, replace(#{searchGiveYear},'-','')+'01'))) END AS GIVEMONTH
+                                     , CONVERT(VARCHAR, YEAR(DATEADD(MM, (A.NUM-1)*-1, replace(#{searchGiveYear},'-','')+'01'))) +
+					                   CASE WHEN MONTH(DATEADD(MM, (A.NUM-1)*-1, replace(#{searchGiveYear},'-','')+'01')) <![CDATA[ < ]]> 10 THEN '0'+CONVERT(VARCHAR, MONTH(DATEADD(MM, (A.NUM-1)*-1, replace(#{searchGiveYear},'-','')+'01'))) 
+                                                                                                  ELSE CONVERT(VARCHAR, MONTH(DATEADD(MM, (A.NUM-1)*-1, replace(#{searchGiveYear},'-','')+'01'))) END AS BASEYM
+					            FROM   BASELIST A )
+             , PERSONSPEND AS (SELECT   A.GIVEYEAR
+		                              , A.GIVEMONTH
+		                              , a.DEPABO_NO
+		                              , A.SPENDSTATUS
+		                              , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                         FROM ( SELECT   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.SPENDSTATUS
+					                           , ( SELECT   SUM(B.SPENDAMOUNT)
+					                                 FROM   DBO.TRFEESPENDITEM B
+					                                WHERE   B.GIVEYEAR  = A.GIVEYEAR
+					                                  AND   B.GIVEMONTH = A.GIVEMONTH
+					                                  AND   B.SPENDID   = A.SPENDID ) SPENDAMOUNT
+					                      FROM  DBO.TRFEESPEND A
+					                INNER JOIN  BASEMONTH B ON A.GIVEYEAR = B.GIVEYEAR
+					                                       AND A.GIVEMONTH = B.GIVEMONTH
+					                     WHERE  SPENDTYPE = 'person' ) A
+					                    GROUP BY A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.SPENDSTATUS)
+           /* 사전계획서 금액 */
+           , PERSONPLAN AS (SELECT   A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , a.DEPABO_NO
+		                           , A.PLANSTATUS
+		                           , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                      FROM   (  SELECT   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.PLANSTATUS
+					                           , ( SELECT   SUM(B.SPENDAMOUNT)
+					                                 FROM   DBO.TRFEEPLANITEM B
+					                                WHERE   B.GIVEYEAR  = A.GIVEYEAR
+					                                  AND   B.GIVEMONTH = A.GIVEMONTH
+					                                  AND   B.PLANID    = A.PLANID ) SPENDAMOUNT
+					                      FROM  DBO.TRFEEPLAN A
+					                INNER JOIN  BASEMONTH B ON A.GIVEYEAR = B.GIVEYEAR
+					                                       AND A.GIVEMONTH = B.GIVEMONTH
+					                     WHERE  PLANTYPE  = 'person' ) A
+					                  GROUP BY   A.GIVEYEAR
+					                           , A.GIVEMONTH
+					                           , a.DEPABO_NO
+					                           , A.PLANSTATUS)
+		, GROUPMASTER AS ( SELECT   A.GIVEYEAR
+		                          , A.GIVEMONTH
+		                          , A.GROUPCODE
+		                          , SUM(A.TRFEE) AS TRFEE
+		                     FROM   DBO.V_TRFEETARGET A
+		               INNER JOIN   BASEMONTH B ON A.GIVEYEAR = B.GIVEYEAR
+					                           AND A.GIVEMONTH = B.GIVEMONTH
+		                    GROUP BY A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , A.GROUPCODE)
+		, GROUPTARGETLIST AS (
+		            SELECT   A.GIVEYEAR
+		                   , A.GIVEMONTH
+		                   , A.GROUPCODE
+		                   , B.DEPABO_NO
+		                   , B.TRFEE
+		                   , A.TRFEE AS GRPTRFEE
+		                   , ( CAST(B.TRFEE AS FLOAT)/CAST(A.TRFEE AS FLOAT) ) * 100 AS RATE
+		              FROM GROUPMASTER A
+		            INNER JOIN DBO.V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+		                                         AND A.GIVEMONTH = B.GIVEMONTH
+		                                         AND A.GROUPCODE = B.GROUPCODE )
+		, SPENDGROUPAMOUNT AS ( SELECT   A.GIVEYEAR
+		                               , A.GIVEMONTH
+		                               , A.SPENDID
+		                               , A.DEPABO_NO
+		                               , A.GROUPCODE
+		                               , A.SPENDSTATUS
+		                               , A.SPENDCONFIRMFLAG
+		                               , A.SPENDCONFIRMDT
+		                               , A.SPENDAMOUNT
+		                               , A.TRFEE
+		                               , A.TOTALTRFEE
+		                               , ( A.TRFEE * ( CAST(A.TRFEE AS FLOAT)/CAST(A.TOTALTRFEE AS FLOAT) ) * 100 ) * 0.01 AS GRTAMOUNT
+		                          FROM (  SELECT   A.GIVEYEAR
+		                                         , A.GIVEMONTH
+		                                         , A.SPENDID
+		                                         , B.DEPABO_NO
+		                                         , C.GROUPCODE
+		                                         , A.SPENDSTATUS
+		                                         , B.SPENDCONFIRMFLAG
+		                                         , B.SPENDCONFIRMDT
+		                                         , SUM(B.SPENDAMOUNT) AS SPENDAMOUNT
+		                                         , C.TRFEE
+		                                         , dbo.F_GETTRFEETOTALAMOUNT(A.GIVEYEAR, A.GIVEMONTH, B.DEPABO_NO, C.GROUPCODE, A.SPENDTYPE) AS TOTALTRFEE
+		                                    FROM   BASEMONTH D
+		                              INNER JOIN   dbo.TRFEESPEND A ON A.GIVEYEAR  = D.GIVEYEAR
+					                                               AND A.GIVEMONTH = D.GIVEMONTH
+		                                  INNER JOIN dbo.TRFEESPENDITEMGROUP B ON A.GIVEYEAR = B.GIVEYEAR
+		                                                                      AND A.GIVEMONTH = B.GIVEMONTH
+		                                                                      AND A.SPENDID = B.SPENDID
+		                                  INNER JOIN dbo.V_TRFEETARGET C ON B.GIVEYEAR = C.GIVEYEAR
+		                                                                AND B.GIVEMONTH = C.GIVEMONTH
+		                                                                AND B.DEPABO_NO = C.DEPABO_NO
+		                                   WHERE A.SPENDTYPE = 'group'
+		                                  GROUP BY A.GIVEYEAR
+		                                         , A.GIVEMONTH
+		                                         , A.SPENDID
+		                                         , A.SPENDTYPE
+		                                         , A.SPENDSTATUS
+		                                         , B.DEPABO_NO
+		                                         , B.SPENDCONFIRMFLAG
+		                                         , B.SPENDCONFIRMDT
+		                                         , C.TRFEE
+		                                         , C.GROUPCODE ) A )
+		  /* 사전계획서 금액 */
+        , PLANGROUPLIST AS (SELECT   A.GIVEYEAR
+		                           , A.GIVEMONTH
+		                           , a.groupcode
+		                           , A.PLANSTATUS
+		                           , SUM(SPENDAMOUNT) AS SPENDAMOUNT
+		                      FROM   (
+		                              SELECT   A.GIVEYEAR
+		                                     , A.GIVEMONTH
+		                                     , a.groupcode
+		                                     , A.PLANSTATUS
+		                                     , ( SELECT   SUM(B.SPENDAMOUNT)
+		                                           FROM   DBO.TRFEEPLANITEM B
+		                                          WHERE   B.GIVEYEAR = A.GIVEYEAR
+		                                            AND   B.GIVEMONTH = A.GIVEMONTH
+		                                            AND   B.PLANID = A.PLANID ) SPENDAMOUNT
+		                                FROM  DBO.TRFEEPLAN A
+		                          INNER JOIN   BASEMONTH B ON A.GIVEYEAR = B.GIVEYEAR
+					                          AND A.GIVEMONTH = B.GIVEMONTH
+		                               WHERE  PLANTYPE = 'group' ) A
+		                  GROUP BY A.GIVEYEAR
+		                         , A.GIVEMONTH
+		                         , a.groupcode
+		                         , A.PLANSTATUS)
+		  /* 사전계획서 금액 */
+		, PLANGROUPAMOUNT AS (  SELECT   A.GIVEYEAR
+		                               , A.GIVEMONTH
+		                               , A.groupcode
+		                               , A.DEPABO_NO
+		                               , B.PLANSTATUS
+		                               , A.TRFEE
+		                               , A.GRPTRFEE
+		                               , CEILING(( A.GRPTRFEE * RATE ) * 0.01) AS GRTAMOUNT
+		                          FROM   GROUPTARGETLIST A
+		                    INNER JOIN   PLANGROUPLIST B ON B.GIVEYEAR = A.GIVEYEAR
+		                                                AND B.GIVEMONTH = A.GIVEMONTH
+		                                                AND B.GROUPCODE = A.GROUPCODE )
+		 , RENTPERSONAMOUNT AS ( SELECT   SUBSTRING(B.GIVEYEARMONTH, 1, 4) AS GIVEYEAR
+		                               , SUBSTRING(B.GIVEYEARMONTH, 5, 2) AS GIVEMONTH
+		                               , B.DEPABO_NO
+		                               , B.RENTAMOUNT + B.RENTDEPOSIT AS RENTAMOUNT
+		                               , A.RENTSTATUS
+		                               , B.REGISTRANTDATE
+		                          FROM   dbo.TRFEERENT A
+		                    INNER JOIN   dbo.TRFEERENTPERSON B ON A.FISCALYEAR = B.FISCALYEAR
+		                                                      AND A.DEPABO_NO = B.DEPABO_NO
+		                                                      AND A.RENTID = B.RENTID
+		                         WHERE   A.RENTSTATUS != 'R')
+		, RENTGROUPAMOUNT AS ( select  SUBSTRING(A.GIVEMONTH, 1, 4) AS GIVEYEAR
+		                               , SUBSTRING(A.GIVEMONTH, 5, 2) AS GIVEMONTH
+		                             , D.DEPABO_NO
+		                             , D.DEPABONAME
+		                             , C.RENTAMOUNT + C.RENTDEPOSIT AS RENTAMOUNT
+		                             , C.RENTSTATUS
+		                             , C.REGISTRANTDATE
+		                        from BASEMONTH A
+		                      inner join   dbo.TRFEERENT B ON A.BASEYM BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH AND B.RENTSTATUS != 'R'
+		                    INNER JOIN   dbo.TRFEERENTgroup C ON C.FISCALYEAR = B.FISCALYEAR
+		                                                      AND C.DEPABO_NO = B.DEPABO_NO
+		                                                      AND C.RENTID = B.RENTID
+		                    INNER JOIN   V_TRFEETARGET D ON D.GIVEYEAR = B.GIVEYEAR
+				                                            AND D.GIVEMONTH = B.GIVEMONTH
+				                                            AND D.GROUPCODE = B.GROUPCODE )
+                        SELECT   COUNT(DEPABO_NO) AS CNT
+				          FROM (    SELECT   A.GIVEYEAR
+							               , A.GIVEMONTH
+							               , A.DEPABO_NO
+							               , A.DEPABONAME
+							               , b.TRFEE 
+							               , SUM(CASE A.SPENDTYPE WHEN 'person' THEN A.SPENDAMOUNT END) AS SPENDAMOUNT
+							               , ISNULL(MAX(CASE A.SPENDTYPE WHEN 'person' THEN A.SPENDSTATUS END), 'N') AS SPENDSTATUS
+							               , B.GROUPCODE
+							               , SUM(CASE A.SPENDTYPE WHEN 'group' THEN A.SPENDAMOUNT END) AS GRTAMOUNT
+							               , ISNULL(MAX(CASE A.SPENDTYPE WHEN 'group' THEN A.SPENDSTATUS END), 'N') AS GRPSTATUS
+							               , MAX(SPENDCONFIRMDT) AS SPENDCONFIRMDT
+							               , MAX(SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+							               , MAX(PROCESSSTATUS) AS PROCESSSTATUS
+									  FROM (  SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , A.SPENDTYPE
+									                 , B.DEPABO_NO as DEPABO_NO
+									                 , dbo.F_GETABONAME(B.DEPABO_NO) AS DEPABONAME
+									                 , B.SPENDAMOUNT
+									                 , B.SPENDSTATUS
+									                 , A.SPENDCONFIRMDT AS SPENDCONFIRMDT
+									                 , DBO.F_CMM_CODENAME('TR8',A.SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+									            FROM   DBO.TRFEESPEND A
+									           INNER JOIN PERSONSPEND B ON B.GIVEYEAR = A.GIVEYEAR
+									                                AND B.GIVEMONTH = A.GIVEMONTH
+									                                AND B.DEPABO_NO = A.DEPABO_NO
+									           INNER JOIN BASEMONTH C ON A.GIVEYEAR = C.GIVEYEAR
+					                                                 AND A.GIVEMONTH = C.GIVEMONTH
+									          UNION
+									          SELECT   A.GIVEYEAR
+											         , A.GIVEMONTH
+											         , 'group' AS SPENDTYPE
+											         , A.DEPABO_NO as DEPABO_NO
+											         , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+											         , A.SPENDAMOUNT  AS GRTAMOUN
+											         , A.SPENDSTATUS AS GRPSTATUS
+											         , A.SPENDCONFIRMDT
+											         , DBO.F_CMM_CODENAME('TR8',A.SPENDCONFIRMFLAG) AS SPENDCONFIRMFLAG
+											    FROM   SPENDGROUPAMOUNT A
+										  INNER JOIN   BASEMONTH C ON A.GIVEYEAR = C.GIVEYEAR
+					                                              AND A.GIVEMONTH = C.GIVEMONTH
+											    UNION
+									          SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , 'person' AS SPENDTYPE
+									                 , A.DEPABO_NO as DEPABO_NO
+									                 , dbo.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+									                 , A.RENTAMOUNT
+									                 , A.RENTSTATUS
+									                 , '' AS SPENDCONFIRMDT
+									                 , '' AS SPENDCONFIRMFLAG
+									            FROM   RENTPERSONAMOUNT A
+									      INNER JOIN   BASEMONTH B ON A.GIVEYEAR = B.GIVEYEAR
+					                                              AND A.GIVEMONTH = B.GIVEMONTH
+									          UNION
+									          SELECT   A.GIVEYEAR
+									                 , A.GIVEMONTH
+									                 , 'group' AS SPENDTYPE
+									                 , A.DEPABO_NO as DEPABO_NO
+									                 , DEPABONAME
+									                 , A.RENTAMOUNT
+									                 , A.RENTSTATUS
+									                 , '' AS SPENDCONFIRMDT
+									                 , '' AS SPENDCONFIRMFLAG
+									            FROM   RENTGROUPAMOUNT A
+									      INNER JOIN   BASEMONTH B ON A.GIVEYEAR = B.GIVEYEAR
+					                                              AND A.GIVEMONTH = B.GIVEMONTH ) A
+									INNER JOIN DBO.V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+									                              AND A.GIVEMONTH = B.GIVEMONTH
+									                              AND A.DEPABO_NO = B.DEPABO_NO
+							    GROUP BY A.GIVEYEAR
+						               , A.GIVEMONTH
+						               , A.DEPABO_NO
+						               , A.DEPABONAME
+						               , b.TRFEE
+						               , B.GROUPCODE
+						               , PROCESSSTATUS
+							               ) A
+               where ISNULL(A.SPENDCONFIRMFLAG, 'N') != '승인'
+	</select>
+	
+	<insert id="insertNoteSend" parameterType="reqBox">
+		INSERT 
+		  INTO   dbo.NOTESEND
+		       ( NOTESERVICE
+               , NAME
+               , UID
+               , NOTEITEM
+               , NOTECONTENT
+               , SENDDATE
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE
+               , DELETEYN )
+        VALUES ( '2'
+               , ( SELECT NAME FROM dbo.MEMBER WHERE UID=#{abono})
+               , #{abono}
+               , '500'
+               , '리더님. 등록하신 교육비 지급이 반려되었으므로, 재 확인 바랍니다.'
+               , GETDATE()
+               , #{adminId}
+               , GETDATE()
+               , #{adminId}
+               , GETDATE()
+               , 'N' )               
+	</insert>
+	
+	<select id="callSmsRejectSend" parameterType="java.util.Map" statementType="CALLABLE">
+		{call
+            DBO.TRFEEREJECTSMSSEND(
+				 #{giveyear, mode=IN, jdbcType=VARCHAR}
+				,#{givemonth, mode=IN, jdbcType=VARCHAR}
+				,#{abono, mode=IN, jdbcType=VARCHAR}
+				,'SPEND'
+				,#{errCode, mode=OUT, jdbcType=INTEGER, javaType=java.lang.Integer}
+				,#{errMsg, mode=OUT, jdbcType=VARCHAR, javaType=String})
+       }
+	</select>
+	
+	<insert id="insertSMSSendHIST" parameterType="reqBox">
+		INSERT
+		  INTO   dbo.TRFEESMS
+               ( GIVEYEAR
+               , GIVEMONTH
+               , DEPABO_NO
+               , SENDSEQ
+               , SENDDATE
+               , NOTETEXT
+               , SMSTEXT
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE )
+        VALUES ( #{giveyear}
+               , #{givemonth}
+               , #{abono}
+               , ( SELECT   ISNULL(MAX(SENDSEQ),0) + 1
+                     FROM   dbo.TRFEESMS
+                    WHERE   GIVEYEAR = #{giveyear}
+				      AND   GIVEMONTH = #{givemonth} )
+			   , GETDATE()
+			   , '리더님. 등록하신 교육비 지급이 반려되었으므로, 재 확인 바랍니다.'
+		       , CONVERT(VARCHAR(80),'[한국암웨이] 안녕하세요 리더님. 등록하신 교육비 지급이 반려되었으므로, 자세한 내용은 ABN 사이트를 통해 재 확인 바랍니다. 감사합니다.')
+		       , #{adminId}
+		       , GETDATE()
+		       , #{adminId}
+		       , GETDATE()
+               )
+	</insert>
+	
+	<select id="selectNotRentConfrim" parameterType="reqBox" resultType="int">
+		WITH RENTBASE AS ( SELECT 1 MM
+                           UNION ALL
+                           SELECT MM+1 AS MM
+                             FROM RENTBASE
+                            WHERE MM <![CDATA[ < ]]> 12 )
+           , RENTBASELIST AS ( SELECT   #{giveyear} + CASE WHEN MM <![CDATA[ < ]]> 10 THEN '0'+CONVERT(VARCHAR, MM) ELSE CONVERT(VARCHAR(2), MM) END AS RENTBASE
+                                      , #{giveyear} AS GIVEYEAR
+                                      , CASE WHEN MM <![CDATA[ < ]]> 10 THEN '0'+CONVERT(VARCHAR, MM) ELSE CONVERT(VARCHAR(2), MM) END AS GIVEMONTH
+                                 FROM   RENTBASE )
+		SELECT COUNT(*)
+		  FROM (
+				SELECT B.FISCALYEAR
+				       , B.DEPABO_NO
+				       , B.RENTID
+				       , ISNULL(B.RENTSTATUS, 'NOT') AS RENTSTATUS
+				  FROM RENTBASELIST A
+				 INNER JOIN DBO.TRFEERENT B ON A.RENTBASE BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH
+				 INNER JOIN DBO.TRFEERENTPERSON C ON B.FISCALYEAR = C.FISCALYEAR
+				                                AND B.RENTID = C.RENTID 
+				WHERE C.DEPABO_NO = #{abono}
+				  AND A.GIVEYEAR = #{giveyear}
+				  AND A.GIVEMONTH = #{givemonth}
+				UNION
+				SELECT C.FISCALYEAR
+				       , C.DEPABO_NO
+				       , C.RENTID       
+				       , ISNULL(B.RENTSTATUS, 'NOT') AS RENTSTATUS
+				  FROM RENTBASELIST A
+				 INNER JOIN DBO.TRFEERENT B ON A.RENTBASE BETWEEN B.RENTFROMMONTH AND B.RENTTOMONTH
+				 INNER JOIN DBO.TRFEERENTGROUP C ON B.FISCALYEAR = C.FISCALYEAR
+				                                AND B.RENTID = C.RENTID
+				WHERE C.DEPABO_NO = #{abono}
+				  AND A.GIVEYEAR = #{giveyear}
+				  AND A.GIVEMONTH = #{givemonth} ) A
+		WHERE RENTSTATUS = 'NOT'
+		
+		  
+	</select>
+	
+</mapper>

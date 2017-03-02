@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.lms.log.service.impl.LmsLogMapper">
+	
+	<insert id="lmsInsertLogAjax" parameterType="reqBox">
+		<selectKey resultType="int" keyProperty="maxlogid" order="BEFORE">
+	        SELECT ISNULL(MAX(LOGID),0)+1 AS MAXLOGID FROM LMSLOG        
+	    </selectKey> 
+		INSERT INTO LMSLOG (
+			LOGID
+			, LOGTYPE
+			, WORKTYPE
+			, REGISRANTDATE
+			, REGISTRANT
+			, SUCCESSCOUNT
+			, FAILCOUNT
+			, COURSEID
+			, LOGCONTENT
+		) VALUES (
+			#{maxlogid}
+			, #{logtype}
+			, #{worktype}
+			, Getdate()
+			, #{adminid}
+			, #{successcount}
+			, #{failcount}
+			, #{courseid}
+			, #{logcontent}
+		)
+	</insert>
+	
+	<select id="lmsSelectLog" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			LOGID
+			, LOGTYPE
+			, WORKTYPE
+			, SUCCESSCOUNT
+			, FAILCOUNT
+			, COURSEID
+			, LOGCONTENT 
+		FROM LMSLOG
+		WHERE LOGID = #{logid}
+	</select>	
+</mapper>

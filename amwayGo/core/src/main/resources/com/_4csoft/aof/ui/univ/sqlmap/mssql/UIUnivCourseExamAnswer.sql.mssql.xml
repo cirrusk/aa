@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseExamAnswerMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamAnswerVO">
+/* UIUnivCourseExamAnswer.insert */
+	<selectKey resultType="Long" keyProperty="examAnswerSeq" order="AFTER">
+SELECT @@IDENTITY
+	</selectKey>
+INSERT INTO cs_course_exam_answer
+	(
+		cs_course_master_seq ,
+		cs_course_active_exam_paper_seq ,
+		cs_exam_seq ,
+		cs_exam_item_seq ,
+		cs_course_apply_seq ,
+		cs_take_score ,
+		cs_choice_answer ,
+		cs_short_answer ,
+		cs_essay_answer ,
+		cs_comment ,
+		cs_reg_member_seq ,
+        cs_reg_dtime ,
+        cs_reg_ip ,
+        cs_upd_member_seq ,
+        cs_upd_dtime ,
+        cs_upd_ip
+	)
+	VALUES
+	(
+		#{courseMasterSeq, jdbcType=NUMERIC} ,
+		#{courseActiveExamPaperSeq, jdbcType=NUMERIC} ,
+		#{examSeq, jdbcType=NUMERIC} ,
+		#{examItemSeq, jdbcType=NUMERIC} ,
+		#{courseApplySeq, jdbcType=NUMERIC} ,
+		#{takeScore, jdbcType=NUMERIC} ,
+		#{choiceAnswer, jdbcType=VARCHAR} ,
+		#{shortAnswer, jdbcType=VARCHAR} ,
+		#{essayAnswer, jdbcType=VARCHAR} ,
+		#{comment, jdbcType=VARCHAR} ,
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)		
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamAnswerVO">
+/* UIUnivCourseExamAnswer.update */
+UPDATE cs_course_exam_answer 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       <if test='takeScore != null'>
+       ,cs_take_score = #{takeScore, jdbcType=NUMERIC} 
+       </if>
+       <if test='choiceAnswer != null'>
+	   ,cs_choice_answer = #{choiceAnswer, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='shortAnswer != null'>
+	   ,cs_short_answer = #{shortAnswer, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='essayAnswer != null'>
+	   ,cs_essay_answer = #{essayAnswer, jdbcType=VARCHAR} 
+	   </if>
+	   <if test='comment != null'>
+	   ,cs_comment = #{comment, jdbcType=VARCHAR}  	
+	   </if>
+ WHERE cs_delete_yn = 'N'
+   AND cs_exam_answer_seq = #{examAnswerSeq}	   
+	</update>
+	
+	<update id="updateTargetSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamAnswerVO">
+/* UIUnivCourseExamAnswer.updateTargetSeq */
+UPDATE cs_course_exam_answer 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_active_exam_paper_target_seq = #{activeExamPaperTargetSeq, jdbcType=NUMERIC}
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+   AND cs_course_apply_seq = #{courseApplySeq}	
+	</update>
+	
+	<delete id="deleteRetry" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamAnswerVO" >
+/* UIUnivCourseExamAnswer.deleteRetry */
+DELETE
+  FROM cs_course_exam_answer
+ WHERE cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+   AND cs_course_apply_seq = #{courseApplySeq}	
+	</delete>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamAnswerRS">
+		<result column="answer.examAnswerSeq"              property="courseExamAnswer.examAnswerSeq"             />
+		<result column="answer.courseMasterSeq"            property="courseExamAnswer.courseMasterSeq"           />
+		<result column="answer.courseActiveExamPaperSeq"   property="courseExamAnswer.courseActiveExamPaperSeq"  />
+		<result column="answer.examSeq"                    property="courseExamAnswer.examSeq"                   />
+		<result column="answer.examItemSeq"                property="courseExamAnswer.examItemSeq"               />
+		<result column="answer.courseApplySeq"             property="courseExamAnswer.courseApplySeq"            />
+		<result column="answer.takeScore"                  property="courseExamAnswer.takeScore"                 />
+		<result column="answer.choiceAnswer"               property="courseExamAnswer.choiceAnswer"              />
+		<result column="answer.shortAnswer"                property="courseExamAnswer.shortAnswer"               />
+		<result column="answer.essayAnswer"                property="courseExamAnswer.essayAnswer"               />
+		<result column="answer.comment"                    property="courseExamAnswer.comment"                   />
+		<result column="exam.examSeq"                      property="courseExam.examSeq"                         />
+		<result column="exam.courseMasterSeq"              property="courseExam.courseMasterSeq"                 />
+		<result column="exam.profMemberSeq"                property="courseExam.profMemberSeq"                   />
+		<result column="exam.openYn"                       property="courseExam.openYn"                          />
+		<result column="exam.useYn"                        property="courseExam.useYn"                           />
+		<result column="exam.examTitle"                    property="courseExam.examTitle"                       />
+		<result column="exam.description"                  property="courseExam.description"                     />
+		<result column="exam.examFileTypeCd"               property="courseExam.examFileTypeCd"                  />
+		<result column="exam.filePath"                     property="courseExam.filePath"                        />
+		<result column="exam.filePathType"                 property="courseExam.filePathType"                    />
+		<result column="exam.examCount"                    property="courseExam.examCount"                       />
+		<result column="exam.groupKey"                     property="courseExam.groupKey"                        />
+		<result column="item.examItemSeq"                  property="courseExamItem.examItemSeq"                 />
+		<result column="item.examSeq"                      property="courseExamItem.examSeq"                     />
+		<result column="item.examItemTitle"                property="courseExamItem.examItemTitle"               />
+		<result column="item.description"                  property="courseExamItem.description"                 />
+		<result column="item.comment"                      property="courseExamItem.comment"                     />
+		<result column="item.examItemTypeCd"               property="courseExamItem.examItemTypeCd"              />
+		<result column="item.examItemDifficultyCd"         property="courseExamItem.examItemDifficultyCd"        />
+		<result column="item.examItemAlignCd"              property="courseExamItem.examItemAlignCd"             />
+		<result column="item.examFileTypeCd"               property="courseExamItem.examFileTypeCd"              />
+		<result column="item.filePath"                     property="courseExamItem.filePath"                    />
+		<result column="item.filePathType"                 property="courseExamItem.filePathType"                />
+		<result column="item.sortOrder"                    property="courseExamItem.sortOrder"                   />
+		<result column="item.correctAnswer"                property="courseExamItem.correctAnswer"               />
+		<result column="item.similarAnswer"                property="courseExamItem.similarAnswer"               />
+		<result column="item.examItemScore"                property="courseExamItem.examItemScore"               />
+		 <collection column="item.examItemSeq"       property="listCourseExamExample" javaType="List"
+		ofType="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamExampleRS" select="com._4csoft.aof.univ.mapper.UnivCourseExamExampleMapper.getList" />
+		<collection column="{referenceSeq=answer.examAnswerSeq,referenceTablename=referenceTablename}" property="courseExamAnswer.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+	</resultMap>
+	
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamAnswerVO" resultMap="listResultMap">
+/* UIUnivCourseExamAnswer.getList */
+SELECT answer.cs_exam_answer_seq 				AS "answer.examAnswerSeq" ,
+	   answer.cs_course_master_seq              AS "answer.courseMasterSeq" ,
+	   answer.cs_course_active_exam_paper_seq   AS "answer.courseActiveExamPaperSeq" ,
+	   answer.cs_exam_seq                       AS "answer.examSeq" ,
+	   answer.cs_exam_item_seq                  AS "answer.examItemSeq" ,
+	   answer.cs_course_apply_seq               AS "answer.courseApplySeq" ,
+	   answer.cs_take_score                     AS "answer.takeScore" ,
+	   answer.cs_choice_answer                  AS "answer.choiceAnswer" ,
+	   answer.cs_short_answer                   AS "answer.shortAnswer" ,
+	   answer.cs_essay_answer                   AS "answer.essayAnswer" ,
+	   answer.cs_comment                        AS "answer.comment" ,
+	   exam.cs_exam_seq                         AS "exam.examSeq" ,         
+	   exam.cs_course_master_seq                AS "exam.courseMasterSeq" ,
+	   exam.cs_prof_member_seq                  AS "exam.profMemberSeq" ,  
+	   exam.cs_open_yn                          AS "exam.openYn" ,          
+	   exam.cs_use_yn                           AS "exam.useYn" ,          
+	   exam.cs_exam_title                       AS "exam.examTitle" ,       
+	   exam.cs_description                      AS "exam.description" ,      
+	   exam.cs_exam_file_type_cd                AS "exam.examFileTypeCd" ,
+	   exam.cs_file_path                        AS "exam.filePath" ,        
+	   exam.cs_file_path_type                   AS "exam.filePathType" ,   
+	   exam.cs_exam_count                       AS "exam.examCount" ,       
+	   exam.cs_group_key                        AS "exam.groupKey" ,        
+	   item.cs_exam_item_seq                    AS "item.examItemSeq" ,          
+	   item.cs_exam_seq                         AS "item.examSeq" ,               
+	   item.cs_exam_item_title                  AS "item.examItemTitle" ,        
+	   item.cs_description                      AS "item.description" ,            
+	   item.cs_comment                          AS "item.comment" ,                
+	   item.cs_exam_item_type_cd                AS "item.examItemTypeCd" ,      
+	   item.cs_exam_item_difficulty_cd          AS "item.examItemDifficultyCd" ,
+	   item.cs_exam_item_align_cd               AS "item.examItemAlignCd" ,     
+	   item.cs_exam_file_type_cd                AS "item.examFileTypeCd" ,      
+	   item.cs_file_path                        AS "item.filePath" ,              
+	   item.cs_file_path_type                   AS "item.filePathType" ,         
+	   item.cs_sort_order                       AS "item.sortOrder" ,             
+	   item.cs_correct_answer                   AS "item.correctAnswer" ,         
+	   item.cs_similar_answer                   AS "item.similarAnswer" ,         
+	   item.cs_exam_item_score                  AS "item.examItemScore" ,
+	   'cs_course_exam_answer' 					AS "referenceTablename"         
+  FROM cs_course_exam_answer answer
+ INNER JOIN cs_course_exam exam
+    ON exam.cs_delete_yn = 'N'
+   AND answer.cs_exam_seq = exam.cs_exam_seq
+ INNER JOIN cs_course_exam_item item
+    ON item.cs_delete_yn = 'N'
+   AND answer.cs_exam_item_seq = item.cs_exam_item_seq
+ WHERE answer.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+   AND answer.cs_course_apply_seq = #{courseApplySeq}
+   AND answer.cs_delete_yn = 'N'
+ ORDER BY answer.cs_exam_answer_seq ASC	
+	</select>
+	
+	<select id="countExamAnswer" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamAnswerVO" resultType="int">
+/* UIUnivCourseExamAnswer.countExamAnswer */
+SELECT COUNT(*)
+  FROM cs_course_exam_answer answer
+ INNER JOIN cs_course_exam exam
+    ON exam.cs_delete_yn = 'N'
+   AND answer.cs_exam_seq = exam.cs_exam_seq
+ INNER JOIN cs_course_exam_item item
+    ON item.cs_delete_yn = 'N'
+   AND answer.cs_exam_item_seq = item.cs_exam_item_seq
+ WHERE answer.cs_course_active_exam_paper_seq = #{courseActiveExamPaperSeq}
+   AND answer.cs_course_apply_seq = #{courseApplySeq}
+   AND answer.cs_delete_yn = 'N'	
+	</select>
+	
+</mapper>

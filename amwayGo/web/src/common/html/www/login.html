@@ -1,0 +1,87 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if IE 9]><html lang="ko" class="modern ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>AOF5-UNIV WWW DEMO</title>
+<link href="../../css/www/base.css" rel="stylesheet" type="text/css" />
+<link href="../../css/www/common.css" rel="stylesheet" type="text/css" />
+<link href="../../css/www/content.css" rel="stylesheet" type="text/css" />
+<link href="../../css/www/style.css" rel="stylesheet" type="text/css" />
+<link href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" rel="stylesheet" type="text/css" />
+<link href="../../css/www/login.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<div class="wrap">
+	<div id="security">
+		<form id="FormLogin" name="FormLogin" method="post" onsubmit="return false;">
+			<div id="mlogin">
+				<div id="wrap_login">
+					<div id="header_login">
+						<h1><a href=""><img src="../../images/www/common/login_logo.gif" title="4csoft" /></a></h1>
+					</div>
+					<div id="container_login">
+						<div id="m_content_login">
+							<div class="m_visual">
+								<p class="welcome"><img src="../../images/www/common/login_welcome.png" title="4csoft"  /></p>
+							</div>
+							<div class="loginBox">
+								<div class="loginform">
+									<h2><img src="../../images/www/common/login_tit.png"  /></h2>
+									<dl>
+										<dt><img src="../../images/www/common/login_tit_id.png" title="아이디"  /></dt>
+										<dd><input name="j_username" type="text" class="login_input"  value=""/></dd>
+										<dt><img src="../../images/www/common/login_tit_pw.png" title="비밀번호"  /></dt>
+										<dd><input name="j_password" type="password" class="login_input" onkeyup="UT.callFunctionByEnter(event, doLogin)" value=""/></dd>
+									</dl>
+									<div class="logBtn"><a href="#"><img src="../../images/www/btn/btn_login.png" title="로그인" onclick="doLogin();" style="cursor:pointer;" /></a></div>
+								</div>
+								<div class="loginLink">
+									<dl>
+										<!-- jckim 20130422 : 회원가입, 비밀번호 찾기 비활성화 start -->
+										<dt>아이디 또는 비밀번호를 잊으셨나요?</dt>
+										<dd><a class="btn_login01" href="#" onclick="goPassword();"><strong>비밀번호찾기</strong></a></dd>
+										<dt>아직 회원이 아니신가요?<br />회원가입을 하셔야 사이트이용이 가능합니다.</dt>
+										<dd><a class="btn_login01" href="#" onclick="goEmployee();"><strong>회원가입하기</strong></a></dd>
+									</dl>
+								</div>
+							</div>
+							<div class="installWrap">
+								<div class="ocwBanner"><a href="#"><img src="../../images/www/common/ocw_banner.gif" alt="대학공개강의 OCW , Open Course Ware"></a></div>
+								<div class="installArea">
+									<dl>
+										<dt>학습관련 프로그램 다운로드</dt>
+										<dd>최적의 강의시청을 위한 학습프로그램을 다운로드 받으십시오</dd>
+										<dd>설치되지 않은 학습프로그램이 있다면 다운로드 받아 설치해 주십시오</dd>
+									</dl>
+									<div class="instBox">
+											<div class="media">
+												<span>미디어플레이어</span>
+												<p id="wmpPluginNotfound" style="display: block"><a href="http://windows.microsoft.com/ko-KR/windows/download-windows-media-player" target="_blank"><img src="../../images/www/btn/install.gif" title="설치하기"  /></a></p>
+												<p id="wmpPluginAvailable" style="display: none"><img src="../../images/www/btn/installed.gif" title="설치완료"  /></p>
+											</div>
+											<div class="flash">
+												<span>플래시플레이어</span>
+												<p id="flashPluginNotfound" style="display: none"><a href="http://get.adobe.com/kr/flashplayer" target="_blank"><img src="../../images/www/btn/install.gif" title="설치하기"  /></a></p>
+												<p id="flashPluginAvailable" style="display: block"><img src="../../images/www/btn/installed.gif" title="설치완료"  /></p>
+											</div>
+									</div>
+								</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<div id="footer">
+		<address>서울시 서초구 반포4동 59-4 송원빌딩 5층 / TEL:02-544-2822 / FAX:02-544-1009</address>
+		<p class="Copyright">Copyright ⓒ 1999-2013 4CSoftINC. All Rights Reserved</p>
+	</div>
+</div>
+
+</body>
+</html>

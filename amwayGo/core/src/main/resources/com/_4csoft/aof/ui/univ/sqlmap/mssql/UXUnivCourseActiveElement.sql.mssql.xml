@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.univ.mapper.UIUnivCourseActiveElementMapper">
+    
+    <resultMap id="listResultCopyMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO">
+        <result column="totalItemCnt"       property="totalItemCnt"     />
+        <result column="referenceTypeCd"        property="referenceTypeCd"      />
+    </resultMap>
+    <select id="getListElementCount" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveElementVO" resultMap="listResultCopyMap">
+		/* UXUnivCourseActiveElement.getListElementCount */
+		SELECT
+			COUNT(*) AS totalItemCnt,
+			cs_reference_type_cd AS referenceTypeCd
+		FROM
+			cs_course_active_element
+		WHERE
+			cs_delete_yn = 'N'
+		AND cs_reference_type_cd != 'COURSE_ELEMENT_TYPE::ORGANIZATION'
+		AND cs_reference_type_cd != 'COURSE_ELEMENT_TYPE::FINALEXAM'
+		AND cs_reference_type_cd != 'COURSE_ELEMENT_TYPE::MIDEXAM'
+		AND cs_course_active_seq = #{courseActiveSeq}
+		GROUP BY cs_reference_type_cd
+		UNION ALL
+		SELECT 
+			count(*) AS totalItemCnt,
+			CS_REFERENCE_TYPE_CD AS referenceTypeCd
+		FROM
+			(
+			SELECT
+				CHARINDEX('EXAM', cs_reference_type_cd) AS cs_reference_count,
+				'COURSE_ELEMENT_TYPE::EXAM' AS cs_reference_type_cd
+			FROM
+				cs_course_active_element
+			WHERE
+				cs_delete_yn = 'N'
+				AND cs_course_active_seq = #{courseActiveSeq}
+			) a
+		WHERE
+			a.CS_REFERENCE_COUNT > 0
+		GROUP BY a.CS_REFERENCE_TYPE_CD
+    </select>
+</mapper>

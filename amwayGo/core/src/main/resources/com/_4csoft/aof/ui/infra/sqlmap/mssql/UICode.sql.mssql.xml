@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.CodeMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UICodeVO">
+/* UICodeMapper.insert */
+INSERT INTO cs_code 
+       ( 
+           cs_code_group ,
+           cs_code ,
+           cs_code_name ,
+           cs_code_name_ex1 ,
+           cs_code_name_ex2 ,
+           cs_code_name_ex3 ,
+           cs_description ,
+           cs_sort_order ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+    SELECT #{codeGroup, jdbcType=VARCHAR} ,
+           <choose>
+                <when test="codeGroup == code">
+           #{codeGroup, jdbcType=VARCHAR},
+                </when>
+                <otherwise>
+           #{codeGroup, jdbcType=VARCHAR} + '::' +#{code, jdbcType=VARCHAR} ,
+                </otherwise>
+           </choose>
+           #{codeName, jdbcType=VARCHAR} ,
+           #{codeNameEx1, jdbcType=VARCHAR} ,
+           #{codeNameEx2, jdbcType=VARCHAR} ,
+           #{codeNameEx3, jdbcType=VARCHAR} ,
+           #{description, jdbcType=VARCHAR} ,
+        <choose>   
+            <when test='code == codeGroup'>
+           0 , 
+            </when> 
+            <otherwise>
+           (SELECT ISNULL(MAX(cs_sort_order) + 1, 1) 
+             FROM cs_code 
+            WHERE cs_code_group = #{codeGroup} 
+                  AND cs_delete_yn = 'N'
+           ) ,
+            </otherwise>
+        </choose> 
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UICodeVO">
+/* UICodeMapper.update */
+UPDATE cs_code 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+        <if test='codeName != null'>
+       ,cs_code_name = #{codeName, jdbcType=VARCHAR}
+        </if>
+        <if test='codeNameEx1 != null'>
+       ,cs_code_name_ex1 = #{codeNameEx1, jdbcType=VARCHAR}
+        </if>
+        <if test='codeNameEx2 != null'>
+       ,cs_code_name_ex2 = #{codeNameEx2, jdbcType=VARCHAR}
+        </if>
+        <if test='codeNameEx3 != null'>
+       ,cs_code_name_ex3 = #{codeNameEx3, jdbcType=VARCHAR}
+        </if>
+        <if test='description != null'>
+       ,cs_description = #{description, jdbcType=VARCHAR}
+        </if>
+        <if test='sortOrder != null'>
+       ,cs_sort_order = #{sortOrder, jdbcType=NUMERIC}
+        </if>
+        <if test='useYn != null'>
+       ,cs_use_yn = #{useYn, jdbcType=VARCHAR}
+        </if>
+ WHERE cs_code_group = #{codeGroup}
+   AND cs_code = #{code}
+   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UICodeVO">
+/* UICodeMapper.delete */
+UPDATE cs_code 
+       SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_code_group = #{codeGroup} 
+        <if test='code != null'>
+       AND cs_code = #{code}
+        </if>
+       AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="drop" parameterType="com._4csoft.aof.ui.infra.vo.UICodeVO">
+/* UICodeMapper.drop */
+DELETE cs_code
+ WHERE cs_code_group = #{codeGroup}
+       <if test='code != null'>
+   AND cs_code = #{code}
+       </if> 
+   AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UICodeRS">
+        <result column="code.codeGroup"    property="code.codeGroup"    />
+        <result column="code.code"         property="code.code"         />
+        <result column="code.codeName"     property="code.codeName"     />
+        <result column="code.codeNameEx1"  property="code.codeNameEx1"  />
+        <result column="code.codeNameEx2"  property="code.codeNameEx2"  />
+        <result column="code.codeNameEx3"  property="code.codeNameEx3"  />
+        <result column="code.description"  property="code.description"  />
+        <result column="code.sortOrder"    property="code.sortOrder"    />
+        <result column="code.useYn"        property="code.useYn"        />
+        <result column="code.deleteYn"     property="code.deleteYn"     />
+        <result column="code.regMemberSeq" property="code.regMemberSeq" />
+        <result column="code.regDtime"     property="code.regDtime"     />
+        <result column="code.regIp"        property="code.regIp"     />
+        <result column="code.updMemberSeq" property="code.updMemberSeq" />
+        <result column="code.updDtime"     property="code.updDtime"     />
+        <result column="code.updIp"        property="code.updIp"     />
+    </resultMap>
+    <select id="getDetail" parameterType="map" resultMap="detailResultMap">
+/* UICodeMapper.getDetail */
+SELECT code.cs_code_group     AS "code.codeGroup" ,
+       code.cs_code           AS "code.code" ,
+       code.cs_code_name      AS "code.codeName" ,
+       code.cs_code_name_ex1  AS "code.codeNameEx1" ,
+       code.cs_code_name_ex2  AS "code.codeNameEx2" ,
+       code.cs_code_name_ex3  AS "code.codeNameEx3" ,
+       code.cs_description    AS "code.description" ,
+       code.cs_sort_order     AS "code.sortOrder" ,
+       code.cs_use_yn         AS "code.useYn" ,
+       code.cs_delete_yn      AS "code.deleteYn" ,
+       code.cs_reg_member_seq AS "code.regMemberSeq" ,
+       code.cs_reg_dtime      AS "code.regDtime" ,
+       code.cs_reg_ip         AS "code.regIp" ,
+       code.cs_upd_member_seq AS "code.updMemberSeq" ,
+       code.cs_upd_dtime      AS "code.updDtime" , 
+       code.cs_upd_ip         AS "code.updIp" 
+  FROM cs_code code 
+ WHERE code.cs_delete_yn = 'N'
+  <if test='codeGroup != null and !codeGroup.equals("")'>
+   AND code.cs_code_group = #{codeGroup}
+  </if>
+  <if test='code != null and !code.equals("")'>
+   AND code.cs_code = #{code}
+  </if>
+    </select>
+
+<resultMap id="listCodeGroupResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UICodeRS">
+    <result column="code.codeGroup"    property="code.codeGroup"    />
+    <result column="code.code"         property="code.code"         />
+    <result column="code.codeName"     property="code.codeName"     />
+    <result column="code.codeNameEx1"  property="code.codeNameEx1"  />
+    <result column="code.codeNameEx2"  property="code.codeNameEx2"  />
+    <result column="code.codeNameEx3"  property="code.codeNameEx3"  />
+    <result column="code.description"  property="code.description"  />
+    <result column="code.sortOrder"    property="code.sortOrder"    />
+    <result column="code.useYn"        property="code.useYn"        />
+    <result column="code.deleteYn"     property="code.deleteYn"     />
+    <result column="code.regMemberSeq" property="code.regMemberSeq" />
+    <result column="code.regDtime"     property="code.regDtime"     />
+    <result column="code.regIp"        property="code.regIp"     />
+    <result column="code.updMemberSeq" property="code.updMemberSeq" />
+    <result column="code.updDtime"     property="code.updDtime"     />
+    <result column="code.updIp"        property="code.updIp"     />
+</resultMap>
+<select id="getListCodeGroup" parameterType="com._4csoft.aof.ui.infra.vo.condition.UICodeCondition" resultMap="listCodeGroupResultMap">
+/* UICodeMapper.getListCodeGroup */
+    <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "code.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "code.regDtime" DESC</when>
+            <when test='orderby ==  2'>ORDER BY "code.codeGroup" ASC</when>
+            <when test='orderby  == -2'>ORDER BY "code.codeGroup" DESC</when>
+            <when test='orderby ==  3'>ORDER BY "code.codeName" ASC</when>
+            <when test='orderby  == -3'>ORDER BY "code.codeName" DESC</when>
+            <otherwise>ORDER BY "code.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+    </if>
+SELECT code.cs_code_group     AS "code.codeGroup" ,
+       code.cs_code           AS "code.code" ,
+       code.cs_code_name      AS "code.codeName" ,
+       code.cs_code_name_ex1  AS "code.codeNameEx1" ,
+       code.cs_code_name_ex2  AS "code.codeNameEx2" ,
+       code.cs_code_name_ex3  AS "code.codeNameEx3" ,
+       code.cs_description    AS "code.description" ,
+       code.cs_sort_order     AS "code.sortOrder" ,
+       code.cs_use_yn         AS "code.useYn" ,
+       code.cs_delete_yn      AS "code.deleteYn" ,
+       code.cs_reg_member_seq AS "code.regMemberSeq" ,
+       code.cs_reg_dtime      AS "code.regDtime" ,
+       code.cs_reg_ip         AS "code.regIp" ,
+       code.cs_upd_member_seq AS "code.updMemberSeq" ,
+       code.cs_upd_dtime      AS "code.updDtime" , 
+       code.cs_upd_ip         AS "code.updIp" 
+  FROM cs_code code
+ WHERE code.cs_code_group = code.cs_code
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("codeGroup")'>
+       AND code.cs_code_group LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("codeName")'>
+       AND code.cs_code_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("codeNameEx")'>
+       AND (
+            code.cs_code_name_ex1 LIKE '%' + #{srchWordDB} + '%'
+            OR code.cs_code_name_ex2 LIKE '%' + #{srchWordDB} + '%'
+            OR code.cs_code_name_ex3 LIKE '%' + #{srchWordDB} + '%'
+       )         
+            </if>
+        </if>
+       AND code.cs_delete_yn = 'N'
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countListCodeGroup" parameterType="com._4csoft.aof.ui.infra.vo.condition.UICodeCondition" resultType="int">
+/* UICodeMapper.countListCodeGroup */
+SELECT COUNT(*)
+  FROM cs_code code
+ WHERE code.cs_code_group = code.cs_code
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("codeGroup")'>
+       AND code.cs_code_group LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("codeName")'>
+       AND code.cs_code_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("codeNameEx")'>
+       AND (
+            code.cs_code_name_ex1 LIKE '%' + #{srchWordDB} + '%'
+            OR code.cs_code_name_ex2 LIKE '%' + #{srchWordDB} + '%'
+            OR code.cs_code_name_ex3 LIKE '%' + #{srchWordDB} + '%'
+       )         
+            </if>
+        </if>
+       AND code.cs_delete_yn = 'N'
+    </select>
+
+    <select id="getListCode" parameterType="String" resultType="com._4csoft.aof.ui.infra.vo.UICodeVO">
+/* UICodeMapper.getListCode */
+SELECT cs_code_group     AS "codeGroup" ,
+       cs_code           AS "code" ,
+       cs_code_name      AS "codeName" ,
+       cs_code_name_ex1  AS "codeNameEx1" ,
+       cs_code_name_ex2  AS "codeNameEx2" ,
+       cs_code_name_ex3  AS "codeNameEx3" ,
+       cs_description    AS "description" ,
+       cs_sort_order     AS "sortOrder" ,
+       cs_use_yn         AS "useYn" ,
+       cs_delete_yn      AS "deleteYn" ,
+       cs_reg_member_seq AS "regMemberSeq" ,
+       cs_reg_dtime      AS "regDtime" ,
+       cs_reg_ip         AS "regIp" ,
+       cs_upd_member_seq AS "updMemberSeq" ,
+       cs_upd_dtime      AS "updDtime" , 
+       cs_upd_ip         AS "updIp" 
+  FROM cs_code 
+ WHERE cs_code_group = #{codeGroup} 
+       AND cs_code_group != cs_code 
+       AND cs_delete_yn = 'N' 
+ORDER BY cs_sort_order ASC 
+    </select>
+
+    <select id="countCode" parameterType="map" resultType="int">
+/* UICodeMapper.countCode */
+SELECT COUNT(*)
+  FROM cs_code code
+ WHERE code.cs_code_group = #{codeGroup}
+       <choose>
+          <when test="codeGroup.equals(code)">
+   AND code.cs_code = #{code}
+       </when>
+       <otherwise>
+   AND code.cs_code = #{codeGroup} + '::' + #{code}
+           </otherwise>
+        </choose> 
+   AND code.cs_delete_yn = 'N'
+    </select>
+    
+    <select id="countDeletedCode" parameterType="map" resultType="int">
+/* UICodeMapper.countDeletedCode */
+SELECT COUNT(*)
+  FROM cs_code code
+ WHERE code.cs_code_group = #{codeGroup}
+       <choose>
+          <when test="codeGroup.equals(code)">
+   AND code.cs_code = #{code}
+       </when>
+       <otherwise>
+   AND code.cs_code = #{codeGroup} + '::' + #{code}
+           </otherwise>
+        </choose> 
+   AND code.cs_delete_yn = 'Y'
+    </select>
+
+    <select id="countCodeGroup" parameterType="String" resultType="int">
+/* UICodeMapper.countCodeGroup */
+SELECT COUNT(*)
+  FROM cs_code code
+ WHERE code.cs_code_group = #{codeGroup}
+   AND code.cs_delete_yn = 'N'
+    </select>
+
+</mapper>

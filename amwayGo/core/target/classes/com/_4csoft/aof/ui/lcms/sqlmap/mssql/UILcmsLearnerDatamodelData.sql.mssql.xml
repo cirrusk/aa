@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsLearnerDatamodelDataMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsLearnerDatamodelDataVO">
+/* UILcmsLearnerDatamodelDataMapper.insert */
+INSERT INTO cs_lcms_learner_datamodel_data 
+       ( 
+           cs_learner_id ,
+           cs_course_active_seq ,
+           cs_course_apply_seq ,
+           cs_organization_seq ,
+           cs_item_seq ,
+           cs_data_name ,
+           cs_data_value ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{learnerId, jdbcType=VARCHAR} ,
+           #{courseActiveSeq, jdbcType=NUMERIC} ,
+           #{courseApplySeq, jdbcType=NUMERIC} ,
+           #{organizationSeq, jdbcType=NUMERIC} ,
+           #{itemSeq, jdbcType=NUMERIC} ,
+           #{dataName, jdbcType=VARCHAR} ,
+           #{dataValue, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       )
+    </insert>
+
+    <delete id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsLearnerDatamodelDataVO">
+/* UILcmsLearnerDatamodelDataMapper.delete */
+DELETE 
+  FROM cs_lcms_learner_datamodel_data 
+ WHERE cs_learner_id = #{learnerId} 
+       AND cs_course_active_seq = #{courseActiveSeq} 
+       AND cs_course_apply_seq = #{courseApplySeq} 
+       AND cs_organization_seq = #{organizationSeq} 
+       AND cs_item_seq = #{itemSeq} 
+       AND cs_data_name LIKE #{dataName} + '%'
+    </delete>
+    
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsLearnerDatamodelDataRS">
+        <result column="lmd.learnerId"          property="learnerDatamodelData.learnerId" />
+        <result column="lmd.learnerName"        property="learnerDatamodelData.learnerName" />
+        <result column="lmd.courseActiveSeq"    property="learnerDatamodelData.courseActiveSeq" />
+        <result column="lmd.courseApplySeq"     property="learnerDatamodelData.courseApplySeq" />
+        <result column="lmd.organizationSeq"    property="learnerDatamodelData.organizationSeq" />
+        <result column="lmd.itemSeq"            property="learnerDatamodelData.itemSeq" />
+        <result column="lmd.dataName"           property="learnerDatamodelData.dataName" />
+        <result column="lmd.dataValue"          property="learnerDatamodelData.dataValue" />
+        <result column="lmd.updDtime"           property="learnerDatamodelData.updDtime" />
+        <result column="lmd.updIp"              property="learnerDatamodelData.updIp" />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsLearnerDatamodelDataCondition" resultMap="getList_result">
+/* UILcmsLearnerDatamodelDataMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+ORDER BY "lm.updDtime" DESC
+) AS rownumber, * FROM (
+        </if>
+SELECT lmd.cs_learner_id                        AS "lmd.learnerId" ,
+       lmem.cs_member_name					    AS "lmd.learnerName" ,
+       lmd.cs_course_active_seq                 AS "lmd.courseActiveSeq" ,
+       lmd.cs_course_apply_seq                  AS "lmd.courseApplySeq" ,
+       lmd.cs_organization_seq                  AS "lmd.organizationSeq" ,
+       lmd.cs_item_seq                          AS "lmd.itemSeq" ,
+       lmd.cs_data_name                         AS "lmd.dataName" ,
+       lmd.cs_data_value                        AS "lmd.dataValue" ,
+       lm.cs_upd_dtime                          AS "lmd.updDtime" , 
+       lm.cs_upd_ip                             AS "lmd.updIp" 
+  FROM cs_lcms_learner_datamodel_data lmd 
+  INNER JOIN cs_lcms_learner_datamodel lm 
+     ON lm.cs_item_seq = lmd.cs_item_seq 
+       AND lm.cs_learner_id = lmd.cs_learner_id 
+       AND lm.cs_course_active_seq = lmd.cs_course_active_seq 
+       AND lm.cs_course_apply_seq = lmd.cs_course_apply_seq 
+       AND lm.cs_organization_seq = lmd.cs_organization_seq 
+       AND lm.cs_delete_yn = 'N'
+  INNER JOIN cs_member lmem
+     ON lmem.cs_member_seq = CONVERT(INT, lm.cs_learner_id)
+ WHERE lmd.cs_learner_id != #{srchLearnerId} 
+       AND lmd.cs_course_active_seq = #{srchCourseActiveSeq} 
+       AND lmd.cs_course_apply_seq != #{srchCourseApplySeq} 
+       AND lmd.cs_organization_seq = #{srchOrganizationSeq} 
+       AND lmd.cs_item_seq = #{srchItemSeq} 
+       AND lmd.cs_data_name = #{srchDataName} 
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsLearnerDatamodelDataCondition" resultType="int">
+/* UILcmsLearnerDatamodelDataMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_lcms_learner_datamodel_data lmd 
+ INNER JOIN cs_lcms_learner_datamodel lm 
+    ON lm.cs_item_seq = lmd.cs_item_seq 
+       AND lm.cs_learner_id = lmd.cs_learner_id 
+       AND lm.cs_course_active_seq = lmd.cs_course_active_seq 
+       AND lm.cs_course_apply_seq = lmd.cs_course_apply_seq 
+       AND lm.cs_organization_seq = lmd.cs_organization_seq 
+       AND lm.cs_delete_yn = 'N'
+ WHERE lmd.cs_learner_id != #{srchLearnerId} 
+       AND lmd.cs_course_active_seq = #{srchCourseActiveSeq} 
+       AND lmd.cs_course_apply_seq != #{srchCourseApplySeq} 
+       AND lmd.cs_organization_seq = #{srchOrganizationSeq} 
+       AND lmd.cs_item_seq = #{srchItemSeq} 
+       AND lmd.cs_data_name = #{srchDataName}
+    </select>
+
+</mapper>

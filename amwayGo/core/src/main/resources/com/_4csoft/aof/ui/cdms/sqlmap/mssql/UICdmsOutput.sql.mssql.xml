@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsOutputMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsOutputVO">
+        <selectKey resultType="Long" keyProperty="outputIndex" order="AFTER">
+SELECT 
+       MAX(cs_output_index) AS outputIndex 
+  FROM cs_cdms_output 
+ WHERE cs_project_seq = #{projectSeq} 
+   AND cs_section_index = #{sectionIndex}
+   AND cs_delete_yn = 'N'
+        </selectKey>
+/* UICdmsOutputMapper.insert */
+INSERT INTO cs_cdms_output 
+       ( 
+           cs_project_seq ,
+           cs_section_index ,
+           cs_output_index ,
+           cs_output_cd ,
+           cs_output_name ,
+           cs_output_status_cd ,
+           cs_end_date ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+SELECT
+       #{projectSeq, jdbcType=NUMERIC} ,
+       #{sectionIndex, jdbcType=NUMERIC} ,
+       (SELECT 
+               ISNULL(MAX(cs_output_index), 0) + 1 
+          FROM cs_cdms_output 
+         WHERE cs_project_seq = #{projectSeq} 
+           AND cs_section_index = #{sectionIndex}
+           AND cs_delete_yn = 'N'
+       ),
+       #{outputCd, jdbcType=VARCHAR} ,
+       #{outputName, jdbcType=VARCHAR} ,
+       #{outputStatusCd, jdbcType=VARCHAR} ,
+       #{endDate, jdbcType=VARCHAR} ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR} 
+    </insert>
+
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsOutputVO">
+/* UICdmsOutputMapper.insertCopy */
+INSERT INTO cs_cdms_output 
+       ( 
+           cs_project_seq ,
+           cs_section_index ,
+           cs_output_index ,
+           cs_output_cd ,
+           cs_output_name ,
+           cs_end_date ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+SELECT
+       #{newProjectSeq, jdbcType=NUMERIC} ,
+       cs_section_index ,
+       cs_output_index ,
+       cs_output_cd ,
+       cs_output_name ,
+       cs_end_date ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR} 
+  FROM cs_cdms_output
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_delete_yn = 'N'
+ORDER BY cs_section_index ASC, cs_output_index ASC
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsOutputVO">
+/* UICdmsOutputMapper.update */
+UPDATE cs_cdms_output 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+       <if test='outputCd != null'>
+       ,cs_output_cd = #{outputCd, jdbcType=VARCHAR}
+       </if>
+       <if test='outputName != null'>
+       ,cs_output_name = #{outputName, jdbcType=VARCHAR}
+       </if>
+       <if test='endDate != null'>
+       ,cs_end_date = #{endDate, jdbcType=VARCHAR}
+       </if>
+       <if test='moduleYn != null'>
+       ,cs_module_yn = #{moduleYn, jdbcType=VARCHAR}
+       </if>
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_section_index = #{sectionIndex}
+       AND cs_output_index = #{outputIndex} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateStatus" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsOutputVO">
+/* UICdmsOutputMapper.updateStatus */
+UPDATE cs_cdms_output 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_output_status_cd = #{outputStatusCd, jdbcType=VARCHAR} ,
+       cs_complete_yn = #{completeYn, jdbcType=VARCHAR}
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_section_index = #{sectionIndex}
+       AND cs_output_index = #{outputIndex} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateCompleteByModule" parameterType="map">
+/* UICdmsOutputMapper.updateCompleteByModule */
+UPDATE cs_cdms_output 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_complete_yn = (
+            SELECT
+                   CASE WHEN result.module_count = result.accept_count THEN 'Y'
+                   ELSE 'N' END AS complete_yn
+              FROM (
+                    SELECT 
+                           (SELECT cs_module_count 
+                              FROM cs_cdms_project 
+                             WHERE output.cs_project_seq = cs_project_seq
+                           ) AS module_count,
+                           (SELECT COUNT(*) 
+                              FROM cs_cdms_module 
+                             WHERE output.cs_project_seq = cs_project_seq
+                               AND output.cs_section_index = cs_section_index
+                               AND output.cs_output_index = cs_output_index
+                               AND cs_complete_yn = 'Y' 
+                               AND cs_delete_yn = 'N' 
+                           ) AS accept_count
+                      FROM cs_cdms_output output
+                     WHERE output.cs_project_seq = #{projectSeq}
+                           AND output.cs_section_index = #{sectionIndex}
+                           AND output.cs_output_index = #{outputIndex}
+                   ) result
+       )
+WHERE cs_project_seq = #{projectSeq}
+     AND cs_section_index = #{sectionIndex}
+     AND cs_output_index = #{outputIndex} 
+     AND cs_delete_yn = 'N'
+     AND cs_module_yn = 'Y'
+    </update>
+
+    <delete id="drop" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsOutputVO">
+/* UICdmsOutputMapper.drop */
+DELETE FROM cs_cdms_output 
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_section_index = #{sectionIndex}
+       AND cs_output_index = #{outputIndex} 
+       AND cs_delete_yn = 'N'
+    </delete>
+
+    <delete id="dropByProject" parameterType="map">
+/* UICdmsOutputMapper.dropByProject */
+DELETE FROM cs_cdms_output 
+ WHERE cs_project_seq = #{projectSeq} 
+       AND cs_delete_yn = 'N'
+    </delete>
+
+    <delete id="dropBySection" parameterType="map">
+/* UICdmsOutputMapper.dropBySection */
+DELETE FROM cs_cdms_output 
+ WHERE cs_project_seq = #{projectSeq}
+       AND cs_section_index = #{sectionIndex}
+       AND cs_delete_yn = 'N'
+    </delete>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsOutputRS">
+        <result column="output.projectSeq"         property="output.projectSeq"/>
+        <result column="output.sectionIndex"       property="output.sectionIndex"/>
+        <result column="output.outputIndex"        property="output.outputIndex"/>
+        <result column="output.outputCd"           property="output.outputCd"/>
+        <result column="output.outputName"         property="output.outputName"/>
+        <result column="output.outputStatusCd"     property="output.outputStatusCd"/>
+        <result column="output.endDate"            property="output.endDate"/>
+        <result column="output.moduleYn"           property="output.moduleYn"/>
+        <result column="output.completeYn"         property="output.completeYn"/>
+        <result column="output.deleteYn"           property="output.deleteYn"/>
+        <result column="output.regMemberSeq"       property="output.regMemberSeq"/>
+        <result column="output.regDtime"           property="output.regDtime"/>
+        <result column="output.regIp"              property="output.regIp"/>
+        <result column="output.updMemberSeq"       property="output.updMemberSeq"/>
+        <result column="output.updDtime"           property="output.updDtime"/>
+        <result column="output.updIp"              property="output.updIp"/>
+    </resultMap>
+    <select id="getDetail" parameterType="map" resultMap="getDetail_result">
+/* UICdmsOutputMapper.getDetail */
+SELECT output.cs_project_seq        AS "output.projectSeq" ,
+       output.cs_section_index      AS "output.sectionIndex" ,
+       output.cs_output_index       AS "output.outputIndex" ,
+       output.cs_output_cd          AS "output.outputCd" ,
+       output.cs_output_name        AS "output.outputName" ,
+       output.cs_output_status_cd   AS "output.outputStatusCd" ,
+       output.cs_end_date           AS "output.endDate" ,
+       output.cs_module_yn          AS "output.moduleYn" ,
+       output.cs_complete_yn        AS "output.completeYn" ,
+       output.cs_delete_yn          AS "output.deleteYn" ,
+       output.cs_reg_member_seq     AS "output.regMemberSeq" ,
+       output.cs_reg_dtime          AS "output.regDtime" ,
+       output.cs_reg_ip             AS "output.regIp" ,
+       output.cs_upd_member_seq     AS "output.updMemberSeq" ,
+       output.cs_upd_dtime          AS "output.updDtime" ,
+       output.cs_upd_ip             AS "output.updIp"
+  FROM cs_cdms_output output 
+ WHERE output.cs_project_seq = #{projectSeq}
+       AND output.cs_section_index = #{sectionIndex}
+       AND output.cs_output_index = #{outputIndex} 
+       AND output.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getListByProject_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsOutputRS">
+        <result column="output.projectSeq"         property="output.projectSeq"/>
+        <result column="output.sectionIndex"       property="output.sectionIndex"/>
+        <result column="output.outputIndex"        property="output.outputIndex"/>
+        <result column="output.outputCd"           property="output.outputCd"/>
+        <result column="output.outputName"         property="output.outputName"/>
+        <result column="output.outputStatusCd"     property="output.outputStatusCd"/>
+        <result column="output.endDate"            property="output.endDate"/>
+        <result column="output.moduleYn"           property="output.moduleYn"/>
+        <result column="output.completeYn"         property="output.completeYn"/>
+        <result column="output.deleteYn"           property="output.deleteYn"/>
+        <result column="output.regMemberSeq"       property="output.regMemberSeq"/>
+        <result column="output.regDtime"           property="output.regDtime"/>
+        <result column="output.regIp"              property="output.regIp"/>
+        <result column="output.updMemberSeq"       property="output.updMemberSeq"/>
+        <result column="output.updDtime"           property="output.updDtime"/>
+        <result column="output.updIp"              property="output.updIp"/>
+    </resultMap>
+    <select id="getListByProject" parameterType="Long" resultMap="getListByProject_result">
+/* UICdmsOutputMapper.getListByProject */
+SELECT output.cs_project_seq        AS "output.projectSeq" ,
+       output.cs_section_index      AS "output.sectionIndex" ,
+       output.cs_output_index       AS "output.outputIndex" ,
+       output.cs_output_cd          AS "output.outputCd" ,
+       output.cs_output_name        AS "output.outputName" ,
+       output.cs_output_status_cd   AS "output.outputStatusCd" ,
+       output.cs_end_date           AS "output.endDate" ,
+       output.cs_module_yn          AS "output.moduleYn" ,
+       output.cs_complete_yn        AS "output.completeYn" ,
+       output.cs_delete_yn          AS "output.deleteYn" ,
+       output.cs_reg_member_seq     AS "output.regMemberSeq" ,
+       output.cs_reg_dtime          AS "output.regDtime" ,
+       output.cs_reg_ip             AS "output.regIp" ,
+       output.cs_upd_member_seq     AS "output.updMemberSeq" ,
+       output.cs_upd_dtime          AS "output.updDtime" ,
+       output.cs_upd_ip             AS "output.updIp"
+  FROM cs_cdms_output output 
+  INNER JOIN cs_cdms_section section
+       ON section.cs_project_seq = output.cs_project_seq
+       AND section.cs_section_index = output.cs_section_index
+       AND section.cs_delete_yn = 'N'
+ WHERE output.cs_project_seq = #{projectSeq} 
+       AND output.cs_delete_yn = 'N'
+ORDER BY section.cs_section_index ASC, 
+         output.cs_output_index ASC 
+    </select>
+    
+    <resultMap id="getListBySection_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsOutputRS">
+        <result column="output.projectSeq"         property="output.projectSeq"/>
+        <result column="output.sectionIndex"       property="output.sectionIndex"/>
+        <result column="output.outputIndex"        property="output.outputIndex"/>
+        <result column="output.outputCd"           property="output.outputCd"/>
+        <result column="output.outputName"         property="output.outputName"/>
+        <result column="output.outputStatusCd"     property="output.outputStatusCd"/>
+        <result column="output.endDate"            property="output.endDate"/>
+        <result column="output.moduleYn"           property="output.moduleYn"/>
+        <result column="output.completeYn"         property="output.completeYn"/>
+        <result column="output.deleteYn"           property="output.deleteYn"/>
+        <result column="output.regMemberSeq"       property="output.regMemberSeq"/>
+        <result column="output.regDtime"           property="output.regDtime"/>
+        <result column="output.regIp"              property="output.regIp"/>
+        <result column="output.updMemberSeq"       property="output.updMemberSeq"/>
+        <result column="output.updDtime"           property="output.updDtime"/>
+        <result column="output.updIp"              property="output.updIp"/>
+    </resultMap>
+    <select id="getListBySection" parameterType="map" resultMap="getListBySection_result">
+/* UICdmsOutputMapper.getListByProject */
+SELECT output.cs_project_seq        AS "output.projectSeq" ,
+       output.cs_section_index      AS "output.sectionIndex" ,
+       output.cs_output_index       AS "output.outputIndex" ,
+       output.cs_output_cd          AS "output.outputCd" ,
+       output.cs_output_name        AS "output.outputName" ,
+       output.cs_output_status_cd   AS "output.outputStatusCd" ,
+       output.cs_end_date           AS "output.endDate" ,
+       output.cs_module_yn          AS "output.moduleYn" ,
+       output.cs_complete_yn        AS "output.completeYn" ,
+       output.cs_delete_yn          AS "output.deleteYn" ,
+       output.cs_reg_member_seq     AS "output.regMemberSeq" ,
+       output.cs_reg_dtime          AS "output.regDtime" ,
+       output.cs_reg_ip             AS "output.regIp" ,
+       output.cs_upd_member_seq     AS "output.updMemberSeq" ,
+       output.cs_upd_dtime          AS "output.updDtime" ,
+       output.cs_upd_ip             AS "output.updIp"
+  FROM cs_cdms_output output 
+  INNER JOIN cs_cdms_section section
+       ON section.cs_project_seq = output.cs_project_seq
+       AND section.cs_section_index = output.cs_section_index
+       AND section.cs_delete_yn = 'N'
+ WHERE output.cs_project_seq = #{projectSeq} 
+       AND output.cs_section_index = #{sectionIndex} 
+       AND output.cs_delete_yn = 'N'
+ORDER BY output.cs_output_index ASC 
+    </select>
+
+</mapper>

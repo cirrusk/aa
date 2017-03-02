@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.infra.mapper.UXCompetitionMapper">
+
+
+<resultMap id="competitionResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UXCompetitionRS">
+		<result column="competition.cx_competition_yn"      		property="competition.competitionYn"     />
+		<result column="competition.cx_competition_status_cd"       property="competition.competitionStatusCd"     />
+		<result column="competition.nowTime"       property="competition.nowTime"     />
+</resultMap>    
+<select id="getListCompetition" parameterType="Long" resultMap="competitionResultMap">
+/* UXCompetitonMapper.getListCompetition */
+SELECT 
+	CX_COMPETITION_YN 			AS "competition.cx_competition_yn",
+	CX_COMPETITION_STATUS_CD 	AS "competition.cx_competition_status_cd",
+	dbo.FN_NOW_TO_CHAR() 		AS "competition.nowTime"
+  FROM CX_COMPETITION_SETTING
+</select>
+
+<update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UICompanyVO">
+/* UICompanyMapper.update */
+UPDATE CX_COMPETITION_SETTING 
+   SET CX_COMPETITION_YN = #{competitionYn, jdbcType=VARCHAR}
+      ,CX_COMPETITION_STATUS_CD =#{competitionStatusCd, jdbcType=VARCHAR}
+ WHERE CX_COMPETITION_SETTING_SEQ = 1
+    </update>  
+
+</mapper>

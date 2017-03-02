@@ -1,0 +1,218 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if IE 9]><html lang="ko" class="modern ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>AOF5-UNIV WWW DEMO</title>
+<link rel="stylesheet" href="../../css/www/base.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/common.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/content.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/style.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/learning.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/classroom.css" type="text/css"/>
+<script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="../../js/select.js"></script>
+</head>
+<body>
+<div style="width:1006px;margin:0 auto;">
+	<div class="learning" style="height:738px;">
+		<!-- section-head -->
+		<!-- 
+		<div class="section-head">
+			<div class="title" style="width:920px;">설문 테스트</div>
+			<div class="close" title="닫기" onclick="SUB.doClose()"></div>
+			<a class="close" href="#"><img alt="팝업 닫기" src="../../images/www/common/pop_close.gif"></a>
+		</div>
+		-->
+		<div class="pop-header">
+			<h3><span class="pop-header-test"></span>중간고사,기말고사</h3>
+			<a class="close" href="#"><img alt="팝업 닫기" src="../../images/www/common/pop_close.gif" /></a>
+			</div>
+		<!-- //section-head -->
+		<!-- section-contents -->
+		<div class="section-contents">
+			<div class="data scroller" style="width:735px; height:653px;">
+				<!-- 컨텐츠 -->
+				<table width="100%" class="edit-table tbl-detail" style="margin-bottom:10px;">
+					<colgroup>
+						<col style="width:80px" />
+						<col style="width:auto" />
+						<col style="width:80px" />
+						<col style="width:auto" />
+						<col style="width:80px" />
+						<col style="width:auto" />
+						<col style="width:80px" />
+						<col style="width:auto" />
+					</colgroup>
+					<tbody>
+						<tr>
+							<th scope="row">시험지설명</th>
+							<td colspan="7">설명</td>
+						</tr>
+						<tr>
+							<th scope="row">총점</th>
+							<td>100</td>
+							<th scope="row">문항수</th>
+							<td>100</td>
+							<th scope="row">문항당점수</th>
+							<td>10</td>
+							<th scope="row">획득점수</th>
+							<td>100</td>
+						</tr>
+					</tbody>
+				</table>
+				<div id="question-1" class="question">
+					<div class="question-head">1.</div>
+					<div class="question-title">
+						일반 서술형 테스트
+						<span class="question-type"> [서술형] </span>
+					</div>
+					<ul class="question-body">
+						<li class="example-item">서술하십시오</li>
+					</ul>
+				</div>
+				<div id="question-2" class="question">
+					<div class="question-head"> 2. </div>
+					<div class="question-title">
+						일반테스트 복수 선택
+						<span class="question-type"> [복수선택] </span>
+					</div>
+					<ul class="question-body">
+						<li id="example-item-2-1" class="example-item">
+							<span style="margin-right:3px;">①</span>
+							1
+						</li>
+						<li id="example-item-2-2" class="example-item">
+							<span style="margin-right:3px;">②</span>
+							2
+						</li>
+						<li id="example-item-2-3" class="example-item">
+							<span style="margin-right:3px;">③</span>
+							3
+						</li>
+					</ul>
+				</div>
+				<div id="question-3" class="question">
+					<div class="question-head"> 3. </div>
+					<div class="question-title">
+						일반테스트 보기 줄이기
+						<span class="question-type"> [단일선택] </span>
+					</div>
+					<ul class="question-body">
+						<li id="example-item-3-1" class="example-item answer-selected">
+							<span style="margin-right:3px;">①</span>
+							1
+						</li>
+						<li id="example-item-3-2" class="example-item">
+							<span style="margin-right:3px;">②</span>
+							2
+						</li>
+						<li id="example-item-3-3" class="example-item">
+							<span style="margin-right:3px;">③</span>
+							3
+						</li>
+						<li id="example-item-3-4" class="example-item">
+							<span style="margin-right:3px;">④</span>
+							4
+						</li>
+						<li id="example-item-3-5" class="example-item">
+							<span style="margin-right:3px;">⑤</span>
+							5
+						</li>
+					</ul>
+				</div>
+				<div id="question-4" class="question">
+					<div class="question-head"> 4. </div>
+					<div class="question-title">
+						일반테스트
+						<span class="question-type"> [단일선택] </span>
+					</div>
+					<ul class="question-body">
+						<li id="example-item-4-1" class="example-item">
+							<span style="margin-right:3px;">①</span>
+							1
+						</li>
+						<li id="example-item-4-2" class="example-item">
+							<span style="margin-right:3px;">②</span>
+							2
+						</li>
+						<li id="example-item-4-3" class="example-item">
+							<span style="margin-right:3px;">③</span>
+							3
+						</li>
+						<li id="example-item-4-4" class="example-item">
+							<span style="margin-right:3px;">④</span>
+							4
+						</li>
+						<li id="example-item-4-5" class="example-item">
+							<span style="margin-right:3px;">⑤</span>
+							5
+						</li>
+					</ul>
+				</div>
+				<!-- //컨텐츠 -->
+			</div>
+		</div>
+		<!-- //section-contents -->
+		<!-- section-answer -->
+		<div class="section-answer">
+			<div class="scroller" style="height:637px; overflow-x:hidden; overflow-y:auto;">
+				<div class="answer" title="">
+					<div class="answer-head" onclick="SUB.doScroll('1')">1</div>
+					<ul class="answer-body">
+						<li class="answer-item answer-text">
+							<textarea name="essayAnswers"></textarea>
+						</li>
+					</ul>
+				</div>
+				<div class="answer" title="">
+					<div class="answer-head" onclick="SUB.doScroll('1')">1</div>
+					<ul class="answer-body">
+						<li class="answer-item answer-text">
+							<textarea name="essayAnswers"></textarea>
+						</li>
+					</ul>
+				</div>
+				<div class="answer" title="">
+					<div class="answer-head" onclick="SUB.doScroll('2')">2</div>
+					<ul class="answer-body">
+						<li class="answer-item answer-checkbox" question-index="2" example-index="1" onclick="SUB.doChoice(this)"> ①</li>
+						<li class="answer-item answer-checkbox" question-index="2" example-index="2" onclick="SUB.doChoice(this)"> ②</li>
+						<li class="answer-item answer-checkbox" question-index="2" example-index="3" onclick="SUB.doChoice(this)"> ③</li>
+					</ul>
+				</div>
+				<div class="answer" title="">
+					<div class="answer-head" onclick="SUB.doScroll('3')">3</div>
+					<ul class="answer-body">
+						<li class="answer-item answer-radio" question-index="3" example-index="1" onclick="SUB.doChoice(this)"> ①</li>
+						<li class="answer-item answer-radio" question-index="3" example-index="2" onclick="SUB.doChoice(this)"> ②</li>
+						<li class="answer-item answer-radio" question-index="3" example-index="3" onclick="SUB.doChoice(this)"> ③</li>
+						<li class="answer-item answer-radio" question-index="3" example-index="4" onclick="SUB.doChoice(this)"> ④</li>
+						<li class="answer-item answer-radio" question-index="3" example-index="5" onclick="SUB.doChoice(this)"> ⑤</li>
+					</ul>
+				</div>
+			</div>
+			<ul class="buttons" style="padding:5px; border-top:solid 1px #fff;">
+				<li class="align-c">
+					<a class="btn black" title="저장" onclick="SUB.doAnswer('Y')"><span class="small">저장</span></a>
+					<a class="btn black" title="취소" onclick="SUB.doAnswer('N');"><span class="small">취소</span></a>
+				</li>
+			</ul>
+		</div>
+		<!-- //section-answer -->
+		<!-- tabs-bottom-left -->
+		<div class="tabs-bottom-left">
+			<a class="tab" onclick="SUB.doToggleTab(this, 'exam-info')">시험지 정보</a>
+		</div>
+		<!-- //tabs-bottom-left -->
+		<!-- tabs-content -->
+		<div class="tabs-content"></div>
+		<!-- //tabs-content -->
+	</div>
+</div>
+</body>
+</html>

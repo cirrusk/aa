@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivMigEmsDbHistoryMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivMigEmsDbHistoryVO">
+/* UnivMigEmsDbHistoryMapper.insert */
+INSERT INTO cs_mig_emsdb_history
+		(
+			cs_mig_ems_seq ,
+			cs_mig_lasttime ,
+			cs_mig_info_item ,
+			cs_job_time ,
+			cs_yearterm	
+		)
+		VALUES
+		(
+			#{migEmsSeq, jdbcType=NUMERIC} ,
+			dbo.FN_NOW_TO_CHAR() ,
+			#{migInfoItem, jdbcType=VARCHAR} ,
+			#{jobTime, jdbcType=NUMERIC} ,
+			#{yearTerm, jdbcType=VARCHAR} 
+		)		
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivMigEmsDbHistoryVO">
+/* UnivMigEmsDbHistoryMapper.update */
+UPDATE cs_mig_emsdb_history
+   SET 
+       cs_mig_lasttime = dbo.FN_NOW_TO_CHAR()
+       <if test='migEmsSeq != null'>
+       ,cs_mig_ems_seq = #{migEmsSeq, jdbcType=NUMERIC}
+       </if>
+       <if test="migInfoItem != null">
+       ,cs_mig_info_item = #{migInfoItem, jdbcType=VARCHAR}
+       </if>
+       <if test="jobTime != null">
+       ,cs_job_time = #{jobTime, jdbcType=NUMERIC}
+       </if>
+       <if test="yearTerm != null">
+       ,cs_yearterm = #{yearTerm, jdbcType=VARCHAR}
+       </if>
+ WHERE seq = #{migEmsDbHistorySeq, jdbcType=NUMERIC}
+	</update>
+	
+	<resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivMigEmsDbHistoryRS">
+		<result column="mdbht.migEmsDbHistorySeq"  property="univMigEmsDbHistory.migEmsDbHistorySeq" />  
+		<result column="mdbht.migEmsSeq"           property="univMigEmsDbHistory.migEmsSeq"          />  
+		<result column="mdbht.migLastTime"         property="univMigEmsDbHistory.migLastTime"        />  
+		<result column="mdbht.migInfoItem"         property="univMigEmsDbHistory.migInfoItem"        />  
+		<result column="mdbht.jobTime"             property="univMigEmsDbHistory.jobTime"            />  
+		<result column="mdbht.yearTerm"            property="univMigEmsDbHistory.yearTerm"           />	
+	</resultMap>
+	
+	<select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UnivMigEmsDbHistoryMapper.getDetail */
+SELECT seq						AS "mdbht.migEmsDbHistorySeq" ,
+	   cs_mig_ems_seq			AS "mdbht.migEmsSeq" ,
+	   cs_mig_lasttime			AS "mdbht.migLastTime" ,
+	   cs_mig_info_item			AS "mdbht.migInfoItem" ,
+	   cs_job_time				AS "mdbht.jobTime" ,
+	   cs_yearterm				AS "mdbht.yearTerm"
+  FROM cs_mig_emsdb_history
+ WHERE seq = #{migEmsDbHistorySeq}  
+	</select>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivMigEmsDbHistoryRS">
+		<result column="mdbht.migEmsDbHistorySeq"  property="univMigEmsDbHistory.migEmsDbHistorySeq" />  
+		<result column="mdbht.migEmsSeq"           property="univMigEmsDbHistory.migEmsSeq"          />  
+		<result column="mdbht.migLastTime"         property="univMigEmsDbHistory.migLastTime"        />  
+		<result column="mdbht.migInfoItem"         property="univMigEmsDbHistory.migInfoItem"        />  
+		<result column="mdbht.jobTime"             property="univMigEmsDbHistory.jobTime"            />  
+		<result column="mdbht.yearTerm"            property="univMigEmsDbHistory.yearTerm"           />	
+	</resultMap>
+	
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivMigEmsDbHistoryCondition" resultMap="listResultMap">
+/* UnivMigEmsDbHistoryMapper.getList */
+		<if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "migdb.migLastTime" ASC</when>
+            <when test='orderby ==-1'>ORDER BY "migdb.migLastTime" DESC</when>
+            <otherwise>ORDER BY "migdb.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+		</if>
+SELECT seq						AS "mdbht.migEmsDbHistorySeq" ,
+	   cs_mig_ems_seq			AS "mdbht.migEmsSeq" ,
+	   cs_mig_lasttime			AS "mdbht.migLastTime" ,
+	   cs_mig_info_item			AS "mdbht.migInfoItem" ,
+	   cs_job_time				AS "mdbht.jobTime" ,
+	   cs_yearterm				AS "mdbht.yearTerm"
+  FROM cs_mig_emsdb_history 
+ 		<if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>	  	
+	</select>
+	
+	<select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivMigEmsDbHistoryCondition" resultType="int">
+/* UnivMigEmsDbHistoryMapper.countList */
+SELECT COUNT(*)
+  FROM cs_mig_emsdb_history 		
+	</select>
+	
+</mapper>
+

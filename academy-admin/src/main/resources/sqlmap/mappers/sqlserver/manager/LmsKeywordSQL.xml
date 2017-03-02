@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.course.service.impl.LmsKeywordMapper">
+
+
+<!-- SEARCHLMS 삭제 -->
+<update id="deleteLmsKeyword" parameterType="reqBox">
+/*deleteLmsKeyword*/
+UPDATE SEARCHLMS
+	SET
+		 DELETEYN = 'Y' 
+WHERE GUBUN='EDU' AND 
+<choose>
+	<when test="courseids != null">
+	COURSEID  IN
+		<foreach collection="courseids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</when>
+	<otherwise>
+	COURSEID = #{courseid}
+	</otherwise>
+</choose>
+
+</update>
+
+<!--  스탬프 SEARCHLMS 삭제 -->
+<update id="deleteLmsKeywordStamp" parameterType="reqBox">
+/*deleteLmsKeywordStamp*/
+UPDATE SEARCHLMS
+	SET
+		 DELETEYN = 'Y' 
+WHERE GUBUN='STP' AND COURSEID IN
+<foreach collection="stampids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+
+</update>
+
+<!-- searchLms merge문 -->
+<insert id="mergeKeywordSearchLms" parameterType="reqBox" >
+/*mergeKeywordSearchLms*/
+MERGE SEARCHLMS AS A
+		USING (SELECT MAX(COURSEID) AS COURSEID, MAX(GUBUN) AS GUBUN FROM SEARCHLMS WHERE COURSEID=#{maxcourseid} AND GUBUN='EDU') AS B
+		ON(A.GUBUN=B.GUBUN AND A.COURSEID=B.COURSEID)
+		WHEN NOT MATCHED THEN
+			INSERT (
+			   COURSEID
+			  ,GUBUN
+			  ,CATEGORYNAME
+			  ,COURSENAME
+			  ,COURSECONTENT
+			  ,DATETYPE
+			  ,CREATEDATE
+			  ,MODIFYDATE
+			  ,ACADEMYURL
+			  ,HYBRISURL
+			  ,KEYWORD
+			) VALUES (
+			   #{maxcourseid}
+			  ,'EDU'
+			  ,(SELECT CATEGORYNAME FROM LMSCATEGORY WHERE CATEGORYID=#{categoryid})
+			  ,#{coursename}
+			  ,#{coursecontent}
+			  ,#{datatype}
+			  ,getDate()
+			  ,getDate()
+			  ,#{academyurl}
+			  ,#{hybrisurl}
+			  ,#{keyword}
+			)
+		WHEN MATCHED THEN
+			UPDATE SET 
+				CATEGORYNAME = (SELECT CATEGORYNAME FROM LMSCATEGORY WHERE CATEGORYID=#{categoryid})
+				,COURSENAME = #{coursename}
+				,COURSECONTENT = #{coursecontent}
+				,DATETYPE = #{datatype}
+				,MODIFYDATE = getDate()
+				,KEYWORD = #{keyword}
+				,DELETEYN = 'N'
+		;
+</insert>
+
+<!-- searchLms merge문 STAMP-->
+<insert id="mergeKeywordSearchLmsStamp" parameterType="reqBox" >
+/*mergeKeywordSearchLms*/
+MERGE SEARCHLMS AS A
+		USING (SELECT MAX(COURSEID) AS COURSEID, MAX(GUBUN) AS GUBUN FROM SEARCHLMS WHERE COURSEID=#{maxstampid} AND GUBUN='STP') AS B
+		ON(A.GUBUN=B.GUBUN AND A.COURSEID=B.COURSEID)
+		WHEN NOT MATCHED THEN
+			INSERT (
+			     COURSEID
+				  ,GUBUN
+				  ,CREATEDATE
+				  ,MODIFYDATE
+				  ,ACADEMYURL
+				  ,HYBRISURL
+				  ,STAMPNAME
+				  ,STAMPCONDITION
+				) VALUES (
+				   #{maxstampid}
+				  ,'STP'
+				  ,getDate()
+				  ,getDate()
+				  ,#{academyurl}
+				  ,#{hybrisurl}
+				  ,#{stampname}
+				  ,#{stampcondition}
+				)
+		WHEN MATCHED THEN
+			UPDATE SET 
+				 STAMPNAME = #{stampname}
+		  		,STAMPCONDITION = #{stampcondition}
+				,MODIFYDATE = getDate()
+				,DELETEYN = 'N'
+		;
+</insert>
+
+<!-- SEARCHLMS INSERT용 과정이름 조회 -->
+<select id="selectLmsKeywordCourseName" parameterType="reqBox" resultType="String">
+	/*selectLmsKeywordCourseName*/
+	SELECT COURSENAME FROM LMSCOURSE WHERE COURSEID=#{stepcourseidunit}
+</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

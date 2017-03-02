@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <system>
+        <code>D</code>
+        <name>AmwayGo API</name>
+        <domain>http://dagq.abnkorea.co.kr</domain>
+        <defaultPerPage>10</defaultPerPage>
+        <random24>36159a1f5d64321b8811f919b7e2b5ab7ab489bbf849a4b4a5140600cc7421e1</random24>
+        <startPage>/usr/api/index.do</startPage>
+        <accessRoles type="OR">ROLE::USR</accessRoles> 
+        <!-- AND : 해당 ROLE이 모두 존재해야 로그인 가능, OR : 해당 ROLE이 하나만 존재해도 로그인 가능, XAND : 해당 ROLE이 모두 존재하면 로그인 불가능, XOR : 해당 ROLE이 하나만 존재해도 로그인 불가능 -->
+        <license>
+            <key>domain</key>
+            <ip>ip</ip>
+            <server>server</server>
+            <domain>domain</domain>
+            <limit>limit</limit>
+        </license>
+    </system>
+    <format>
+        <timezone>GMT+09:00</timezone>
+        <date>yyyy-MM-dd</date>
+        <datetimeHm>yyyy-MM-dd HH:mm</datetimeHm>
+        <datetime>yyyy-MM-dd HH:mm:ss</datetime>
+        <dbdate>yyyyMMdd</dbdate>
+        <dbdatetime>yyyyMMddHHmmss</dbdatetime>
+        <dbdatetimeStart>yyyyMMdd000000</dbdatetimeStart>
+        <dbdatetimeEnd>yyyyMMdd235959</dbdatetimeEnd>
+    </format>
+    <domain>
+        <www>http://dagq.abnkorea.co.kr</www>
+        <web>http://dagq.abnkorea.co.kr/web</web>
+        <nodejs>http://aof5univ.web.active4c.4csoft.com:18588</nodejs> <!-- demo page로 임시 연결 -->
+        <image>http://dagq.abnkorea.co.kr/web/common/images/admin</image>
+        <localeImage>http://dagq.abnkorea.co.kr/web/localeImages/admin</localeImage>
+    </domain>
+    <https><!-- https 사용시 사용포트와 사용여부(use)를 설정해줍니다. -->
+    	<port>8443</port><!-- https port -->
+    	<use>FALSE</use><!-- use 사용여부    TRUE : 사용  FALSE : 미사용   -->
+    </https>
+    <upload>
+        <path>
+            <file>/eGovPlatform/storage/file</file>
+            <image>/eGovPlatform/storage/web/image</image>
+            <media>/eGovPlatform/storage/web/media</media>
+            <lcms>/eGovPlatform/storage/contents</lcms>
+        </path>
+        <context>
+            <image>/storage/image</image>
+            <media>/storage/media</media>
+            <exam>/storage/exam</exam>
+            <lcms>/repository</lcms>
+            <file>/file</file>
+        </context>
+        <fileLimitType>exe;class;jsp;asp;php;sh;bat;war;jar</fileLimitType>
+        <mimeTypes>
+        	<white>video/x-msvideo</white>
+        	<white>video/x-ms-wmv</white>
+        	<white>application/zip</white>
+        	<white>application/msword</white>
+        	<white>application/vnd.ms-word</white>
+        	<white>application/vnd.ms-excel</white>
+        	<white>application/vnd.ms-powerpoint</white>
+        	<white>application/mspowerpoint</white>
+        	<white>application/x-tika-msoffice</white>
+        	<white>application/pdf</white>
+        	<white>application/x-pdf</white>
+        	<white>application/x-tika-ooxml</white>
+        	<white>image/gif</white>
+        	<white>image/jpeg</white>
+        	<white>image/png</white>
+        	<white>image/vnd.adobe.photoshop</white>
+        	<black>text/plain</black>
+        	<white>application/octet-stream</white>
+        	<white>application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</white>
+        	<white>application/vnd.openxmlformats-officedocument.wordprocessingml.document</white>
+        	<white>application/vnd.apple.mpegurl</white>
+        	<white>application/x-rar-compressed</white>
+        	<white>application/mp4</white>
+        	<white>video/mp4</white>
+        	<white>video/mpeg</white>
+        	<white>audio/x-wav</white>
+        	<white>image/bmp</white>
+        	<white>image/x-icon</white>
+        	<white>text/csv</white>
+        	<white>audio/mpeg</white>
+        </mimeTypes>
+    </upload>
+    <logger>
+        <path>/eGovPlatform/log</path>
+    </logger>
+    <member>
+        <joiningRolegroupSeq>2</joiningRolegroupSeq>
+        <fixedRolegroupSeq>10</fixedRolegroupSeq>
+    </member>
+    <category>
+        <degree>
+            <name>degree</name>
+            <limitLevel>3</limitLevel>
+        </degree>
+        <nondegree>
+            <name>nondegree</name>
+            <limitLevel>3</limitLevel>
+        </nondegree>
+        <ocw>
+            <name>ocw</name>
+            <limitLevel>3</limitLevel>
+        </ocw>
+        <contents>
+            <name>contents</name>
+            <limitLevel>3</limitLevel>
+        </contents>
+    </category>
+</config>

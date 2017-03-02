@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.banner.service.impl.LmsBannerMapper">
+	
+	<!-- 배너 목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsBannerWhere">
+		WHERE USEFLAG = 'Y'
+			<if test='searchposition != null and !searchposition.equals("")'>
+				AND POSITION = #{searchposition }
+			</if>
+			<if test='searchopenflag != null and !searchopenflag.equals("")'>
+				AND OPENFLAG = #{searchopenflag }
+			</if>
+			<if test='searchstartregistrantdate != null and !searchstartregistrantdate.equals("")'>
+				AND FORMAT(REGISTRANTDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartregistrantdate }
+			</if>
+			<if test='searchendregistrantdate != null and !searchendregistrantdate.equals("")'>
+				AND FORMAT(REGISTRANTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchendregistrantdate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( BANNERNAME LIKE '%'+#{searchtext }+'%' OR PCIMAGENOTE LIKE '%'+#{searchtext }+'%' OR MOBILEIMAGENOTE LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND BANNERNAME LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND (PCIMAGENOTE LIKE '%'+#{searchtext }+'%' OR MOBILEIMAGENOTE LIKE '%'+#{searchtext }+'%')  
+			 	</if>
+			</if>
+	</sql>
+	
+	<!-- 배너 목록 카운트 -->
+	<select id="selectLmsBannerCount" parameterType="reqBox" resultType="int">
+		/* selectLmsBannerCount */
+		SELECT  
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSBANNER A
+		<include refid="selectLmsBannerWhere" />
+	</select>
+	
+	<!-- 배너 목록 -->
+	<select id="selectLmsBannerList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsBannerList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO 
+		, AA.*
+		, AA.BANNERORDER AS BEFOREBANNERORDER
+		, CASE WHEN AA.OPENFLAG='Y' THEN '공개' WHEN AA.OPENFLAG='N' THEN '비공개' END AS OPENFLAGNAME
+		, CASE WHEN AA.POSITION='A' THEN '<![CDATA[PC&MOB]]>' WHEN AA.POSITION='P' THEN 'PC만 노출' WHEN AA.POSITION='M' THEN 'MOB만 노출' END AS POSITIONNAME
+		, FORMAT(AA.REGISTRANTDATE, 'yyyy-MM-dd HH:mm:ss') AS REGISTRANTDATE2 
+		, FORMAT(AA.MODIFYDATE, 'yyyy-MM-dd HH:mm:ss') AS MODIFYDATE2
+		, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm:ss') + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm:ss') AS BANNERDATE
+		, CASE WHEN GETDATE() > ENDDATE THEN 'N' ELSE 'Y' END AS BANNERDATEYN
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY OPENFLAG DESC, BANNERORDER ASC
+					</when>
+					<otherwise>
+						ORDER BY OPENFLAG DESC, BANNERORDER ASC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				BANNERID ,
+				POSITION ,
+				BANNERNAME ,
+				REGISTRANTDATE ,
+				MODIFYDATE ,
+				OPENFLAG ,
+				BANNERORDER ,
+				STARTDATE ,
+				ENDDATE
+			FROM LMSBANNER A
+			<include refid="selectLmsBannerWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 교육자료 목록 엑셀다운로드 -->
+	<select id="selectLmsBannerListExcelDown" parameterType="reqBox" resultType="hashmap">
+		/* selectLmsDataListExcelDown */
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY OPENFLAG DESC, BANNERORDER ASC
+					</when>
+					<otherwise>
+						ORDER BY OPENFLAG DESC, BANNERORDER ASC
+					</otherwise>
+				</choose>
+				) AS NO , 
+				BANNERID ,
+				POSITION ,
+				BANNERNAME ,
+				OPENFLAG ,
+				BANNERORDER ,
+				  CASE WHEN OPENFLAG='Y' THEN '공개' WHEN OPENFLAG='N' THEN '비공개' END AS OPENFLAGNAME
+				, CASE WHEN POSITION='A' THEN '<![CDATA[PC&MOB]]>' WHEN POSITION='P' THEN 'PC만 노출' WHEN POSITION='M' THEN 'MOB만 노출' END AS POSITIONNAME
+				, FORMAT(REGISTRANTDATE, 'yyyy-MM-dd HH:mm:ss') AS REGISTRANTDATE2
+				, FORMAT(STARTDATE, 'yyyy-MM-dd HH:mm:ss') + ' ~ ' + FORMAT(ENDDATE, 'yyyy-MM-dd HH:mm:ss') AS BANNERDATE
+			FROM LMSBANNER A
+			<include refid="selectLmsBannerWhere" />
+	</select>
+	
+	<!-- 배너 삭제 -->
+ 	<update id="deleteLmsBanner" parameterType="reqBox">
+		/* deleteLmsBanner */
+		UPDATE LMSBANNER
+			SET
+				 USEFLAG = 'N' 
+		WHERE BANNERID  IN
+			<foreach collection="bannerids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+
+
+	<!-- 배너 순서 업데이트 -->
+ 	<update id="updateLmsBannerOrder" parameterType="reqBox">
+		/* updateLmsBannerOrder */
+			UPDATE LMSBANNER SET
+				BANNERORDER = #{bannerorder}
+			WHERE BANNERID = #{bannerid}
+	</update>
+
+	<!-- 배너 상세 -->
+	<select id="selectLmsBanner" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsBanner */
+			SELECT
+				BANNERID ,
+				POSITION ,
+				OPENFLAG ,
+				BANNERORDER ,
+				BANNERNAME ,
+				PCLINK ,
+				PCTARGET ,
+				PCIMAGE ,
+				PCIMAGENOTE ,
+				MOBILELINK ,
+				MOBILETARGET ,
+				MOBILEIMAGE ,
+				MOBILEIMAGENOTE ,
+				STARTDATE ,
+				ENDDATE ,
+				REGISTRANTDATE ,
+				MODIFYDATE
+			FROM LMSBANNER
+			WHERE BANNERID = #{bannerid}
+				AND USEFLAG = 'Y'
+	</select>
+	
+	<!-- 배너 등록 -->
+ 	<insert id="insertLmsBanner" parameterType="reqBox">
+	    <selectKey resultType="int" keyProperty="maxbannerid" order="BEFORE">
+	        SELECT ISNULL(MAX(BANNERID),0)+1 AS MAXBANNERID FROM LMSBANNER        
+	    </selectKey> 
+			/* insertLmsBanner */
+			INSERT INTO LMSBANNER(
+				BANNERID ,
+				POSITION ,
+				OPENFLAG ,
+				BANNERORDER ,
+				BANNERNAME ,
+				PCLINK ,
+				PCTARGET ,
+				PCIMAGE ,
+				PCIMAGENOTE ,
+				MOBILELINK ,
+				MOBILETARGET ,
+				MOBILEIMAGE ,
+				MOBILEIMAGENOTE ,
+				STARTDATE ,
+				ENDDATE ,
+				REGISTRANTDATE ,
+				MODIFYDATE ,
+				USEFLAG ,
+				REGISTRANT ,
+				MODIFIER
+				)
+			VALUES(
+				#{maxbannerid} ,
+				#{position} ,
+				#{openflag} ,
+				#{bannerorder} ,
+				#{bannername} ,
+				#{pclink} ,
+				#{pctarget} ,
+				#{pcimagefile} ,
+				#{pcimagenote} ,
+				#{mobilelink} ,
+				#{mobiletarget} ,
+				#{mobileimagefile} ,
+				#{mobileimagenote} ,
+				getdate() ,
+				getdate() ,
+				getdate() ,
+				getdate() ,
+				'Y' ,
+				#{adminid} ,
+				#{adminid}
+				)
+	</insert>
+
+	<!-- 배너 출력일 업데이트 -->
+ 	<update id="updateLmsBannerDate" parameterType="reqBox">
+		/* updateLmsBannerDate */
+			UPDATE LMSBANNER SET
+				STARTDATE = (SELECT MIN(STARTDATE) FROM LMSBANNERCONDITION WHERE BANNERID = #{bannerid} ) ,
+				ENDDATE = (SELECT MAX(ENDDATE) FROM LMSBANNERCONDITION WHERE BANNERID = #{bannerid} )
+			WHERE BANNERID = #{bannerid}
+	</update>
+
+
+	<!-- 배너 정보 업데이트 -->
+ 	<update id="updateLmsBanner" parameterType="reqBox">
+		/* updateLmsBanner */
+			UPDATE LMSBANNER SET
+				POSITION = #{position} ,
+				OPENFLAG = #{openflag} ,
+				BANNERORDER = #{bannerorder} ,
+				BANNERNAME = #{bannername} ,
+				PCLINK = #{pclink} ,
+				PCTARGET = #{pctarget} ,
+				PCIMAGE = #{pcimagefile} ,
+				PCIMAGENOTE = #{pcimagenote} ,
+				MOBILELINK = #{mobilelink} ,
+				MOBILETARGET = #{mobiletarget} ,
+				MOBILEIMAGE = #{mobileimagefile} ,
+				MOBILEIMAGENOTE = #{mobileimagenote} ,
+				MODIFYDATE = GETDATE() ,
+				MODIFIER = #{adminid} 
+			WHERE BANNERID = #{bannerid}
+	</update>
+
+
+	<!-- 배너 노출 정보 입력 -->
+	<insert id="insertLmsBannerCondition" parameterType="reqBox">
+		/* insertLmsBannerCondition */
+			INSERT INTO LMSBANNERCONDITION(
+				BANNERID
+				, CONDITIONTYPE
+				, CONDITIONSEQ
+				, ABOTYPECODE
+				, ABOTYPEABOVE
+				, PINCODE
+				, PINUNDER
+				, PINABOVE
+				, BONUSCODE
+				, BONUSUNDER
+				, BONUSABOVE
+				, AGECODE
+				, AGEUNDER
+				, AGEABOVE
+				, LOACODE
+				, DIACODE
+				, CUSTOMERCODE
+				, CONSECUTIVECODE
+				, BUSINESSSTATUSCODE
+				, TARGETCODE
+				, TARGETMEMBER
+				, STARTDATE
+				, ENDDATE
+			) VALUES (
+				#{bannerid}
+				, #{conditiontype}
+				, #{conditionseq}
+				, #{abotypecode}
+				, #{abotypeabove}
+				, #{pincode}
+				, #{pinunder}
+				, #{pinabove}
+				, #{bonuscode}
+				, #{bonusunder}
+				, #{bonusabove}
+				, #{agecode}
+				, #{ageunder}
+				, #{ageabove}
+				, #{loacode}
+				, #{diacode}
+				, #{customercode}
+				, #{consecutivecode}
+				, #{businessstatuscode}
+				, #{targetcode}
+				, #{targetmember}
+				, #{startdate}
+				, #{enddate}
+			)
+	</insert>
+
+	<!-- 배너 노출 정보 삭제 -->
+	<delete id="deleteLmsBannerCondition" parameterType="reqBox">
+		/* deleteLmsBannerCondition */
+		DELETE FROM LMSBANNERCONDITION
+		WHERE BANNERID = #{bannerid}
+	</delete>
+	
+	<!-- 배너 노출 정보 -->
+	<select id="selectLmsBannerConditionList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsBannerConditionList */
+		SELECT
+			AA.*
+			, AA.ROW_NUM AS NO
+			, CASE WHEN AA.CONDITIONTYPE = '1' THEN '노출권한'
+				WHEN AA.CONDITIONTYPE = '2' THEN '이용권한'
+				ELSE '추천권한' END CONDITIONTYPENAME
+			, AA.STARTDATE + ' ~ ' + AA.ENDDATE AS EDUDATE
+			, SUBSTRING(
+				ABOTYPECODENAME+PINCODENAME+BONUSCODENAME+AGECODENAME+LOACODENAME+DIACODENAME+CUSTOMERCODENAME+CONSECUTIVECODENAME+BUSINESSSTATUSCODENAME+TARGETMEMBERNAME
+				,1,LEN(ABOTYPECODENAME+PINCODENAME+BONUSCODENAME+AGECODENAME+LOACODENAME+DIACODENAME+CUSTOMERCODENAME+CONSECUTIVECODENAME+BUSINESSSTATUSCODENAME+TARGETMEMBERNAME)-1
+			) AS CONDITIONNAME
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER ( 
+					ORDER BY CONDITIONTYPE ASC, CONDITIONSEQ ASC
+				) AS ROW_NUM 
+				, BANNERID
+				, CONDITIONTYPE
+				, CONDITIONSEQ
+				, ABOTYPECODE
+				, CASE WHEN LEN(ISNULL(ABOTYPECODE,'')) > 0 THEN '회원타입,' ELSE '' END ABOTYPECODENAME1
+				, CASE WHEN LEN(ISNULL(ABOTYPECODE,'')) > 0 THEN (SELECT MAX(TARGETCODENAME) + ',' FROM TARGETCODE WHERE TARGETMASTERSEQ='ABOTYPE' AND TARGETCODESEQ = A.ABOTYPECODE) ELSE '' END ABOTYPECODENAME
+				, ABOTYPEABOVE
+				, PINCODE
+				, CASE WHEN LEN(ISNULL(PINCODE,'')) > 0 THEN '핀레벨,' ELSE '' END PINCODENAME1
+				, CASE WHEN LEN(ISNULL(PINCODE,'')) > 0 THEN (SELECT TARGETRULENAME + ',' FROM TARGETRULE WHERE TARGETRULESEQ = A.PINCODE) ELSE '' END PINCODENAME
+				, PINABOVE
+				, PINUNDER
+				, BONUSCODE
+				, CASE WHEN LEN(ISNULL(BONUSCODE,'')) > 0 THEN '보너스레벨,' ELSE '' END BONUSCODENAME1
+				, CASE WHEN LEN(ISNULL(BONUSCODE,'')) > 0 THEN (SELECT TARGETRULENAME + ',' FROM TARGETRULE WHERE TARGETRULESEQ = A.BONUSCODE) ELSE '' END BONUSCODENAME
+				, BONUSUNDER
+				, BONUSABOVE
+				, AGECODE
+				, CASE WHEN LEN(ISNULL(AGECODE,'')) > 0 THEN '나이,' ELSE '' END AGECODENAME1
+				, CASE WHEN LEN(ISNULL(AGECODE,'')) > 0 THEN (SELECT TARGETRULENAME + ',' FROM TARGETRULE WHERE TARGETRULESEQ = A.AGECODE) ELSE '' END AGECODENAME
+				, AGEUNDER
+				, AGEABOVE
+				, LOACODE
+				, CASE WHEN LEN(ISNULL(LOACODE,'')) > 0 THEN 'LOA,' ELSE '' END LOACODENAME
+				, DIACODE
+				, CASE WHEN LEN(ISNULL(DIACODE,'')) > 0 THEN 'Diamond Group,' ELSE '' END DIACODENAME
+				, CUSTOMERCODE
+				, CASE WHEN LEN(ISNULL(CUSTOMERCODE,'')) > 0 THEN '다운라인구매,' ELSE '' END CUSTOMERCODENAME
+				, CONSECUTIVECODE
+				, CASE WHEN LEN(ISNULL(CONSECUTIVECODE,'')) > 0 THEN '연속주문횟수,' ELSE '' END CONSECUTIVECODENAME
+				, BUSINESSSTATUSCODE
+				, CASE WHEN LEN(ISNULL(BUSINESSSTATUSCODE,'')) > 0 THEN '비즈니스상태,' ELSE '' END BUSINESSSTATUSCODENAME
+				, TARGETCODE
+				, TARGETMEMBER
+				, CASE WHEN LEN(ISNULL(TARGETCODE,''))>0 THEN '대상자입력,' ELSE '' END TARGETMEMBERNAME
+				, FORMAT(STARTDATE, 'yyyy-MM-dd HH:mm') STARTDATE	  
+				, FORMAT(ENDDATE, 'yyyy-MM-dd HH:mm') ENDDATE
+			FROM LMSBANNERCONDITION AS A
+			WHERE BANNERID = #{bannerid}
+		) AA	
+	</select>
+
+	
+	
+</mapper>

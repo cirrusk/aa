@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workbook>
+	<worksheet idx="0">
+	   <section startRow="0" endRow="1" />
+		<loop startRow="1" endRow="1" items="courseApplys" var="courseApply" varType="com._4csoft.aof.ui.univ.vo.UIUnivCourseApplyVO">
+			<section startRow="2" endRow="2">
+			    <mapping row="2" col="0" nullAllowed="false">courseApply.courseActiveSeq</mapping>
+				<mapping row="2" col="1" nullAllowed="false">courseApply.memberId</mapping>
+				<mapping row="2" col="2" nullAllowed="false">courseApply.applyStatusCd</mapping>
+				<mapping row="2" col="3" nullAllowed="false">courseApply.hrPractice</mapping>
+				<mapping row="2" col="4" nullAllowed="false">courseApply.externelPractice</mapping>
+				<mapping row="2" col="5" nullAllowed="false">courseApply.panelDiscussion</mapping>
+			</section>
+			<loopbreakcondition>
+				<rowcheck offset="0">
+					<cellcheck offset="0"></cellcheck>
+				</rowcheck>
+			</loopbreakcondition>
+		</loop>
+	</worksheet>
+</workbook>

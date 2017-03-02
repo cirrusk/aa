@@ -1,0 +1,757 @@
+::-moz-focus-inner { border: 0px none transparent; }
+
+.Default_Form_ToolTip_OuterClass{
+	border-width : 1px;
+	background-color : #E5E6F0;
+	background-position : left top;
+	background-repeat : no-repeat;
+	border-color : #8E8E8E;
+	border-style : outset;
+	color : #555555;
+	font-family : GulimChe, Arial;
+	font-size : 8pt;
+	font-style : normal;
+	font-weight : normal;
+	opacity : 1;
+	filter : Alpha(Opacity=100);
+	-ms-filter:"alpha(opacity=100)";
+	padding : 2px;
+}
+
+.Default_Form_Class{
+	background-color : #ffffff;
+	background-image : url('/style/images/bg.jpg');
+	background-position : center top;
+	background-repeat : repeat-x;
+}
+
+.Default_UIControl_Class{
+	background-color : #FFFFFF;
+	color : #000000;
+}
+
+.Default_UIControl_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_ShapeControl_OuterClass{
+	cursor : auto;
+}
+
+.Default_DragDrop_OuterClass{
+	border-width : 2px;
+	background-color : #FFFFFF;
+	background-image : url('/eXria/controls/xhtml/images/bigWaiting.gif');
+	border-color : #317082;
+	border-style : solid;
+	font-size : 10pt;
+	opacity : 0.7;
+	filter : Alpha(Opacity=70);
+	-ms-filter:"alpha(opacity=70)";
+}
+
+.Default_Cover_OuterClass{
+	background-color : #A3A3A3;
+	opacity : 0.3;
+	filter : Alpha(Opacity=30);
+	-ms-filter:"alpha(opacity=30)";
+}
+
+.Default_Label_OuterClass{
+	border-width : 1px;
+	background-color : transparent;
+	background-position : center center;
+	background-repeat : no-repeat;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+	overflow : visible;
+}
+
+.Default_Label_Class{
+	color : #555B67;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	padding : 0px;
+	text-align : center;
+	text-decoration : none;
+}
+
+.Default_InputBox_Class{
+	background-color : #ffffff;
+	color : #555B67;
+	cursor : default;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	ime-mode : active;
+	padding : 0px;
+	padding-left : 2px;
+	padding-top : 1px;
+	text-align : left;
+	text-decoration : none;
+	text-transform : none;
+}
+
+.Default_InputBox_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+}
+
+.Default_SecretBox_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+}
+
+.Default_SecretBox_Class{
+	background-color : #ffffff;
+	color : #555B67;
+	cursor : default;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	ime-mode : auto;
+	padding : 0px;
+	padding-left : 2px;
+	padding-top : 1px;
+	text-align : left;
+	text-decoration : none;
+}
+
+.Default_DateInput_SubCalendar_OuterClass{
+	border-width : 0px;
+	border-color : silver;
+	border-style : none;
+}
+
+.Default_DateInput_SubCalendar_Class{
+	background-color : #DFEEF4;
+	color : #000000;
+	font-family : Arial;
+	font-size : 12pt;
+	font-style : normal;
+	font-weight : normal;
+}
+
+.Default_DateInput_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+}
+
+.Default_DateInput_Class{
+	background-color : #ffffff;
+	color : #555B67;
+	cursor : default;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	padding : 0px;
+	padding-left : 2px;
+	padding-top : 1px;
+	text-align : left;
+	text-decoration : none;
+}
+
+.Default_EditMask_Class{
+	background-color : #ffffff;
+	color : #555B67;
+	cursor : default;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	ime-mode : auto;
+	padding : 0px;
+	padding-left : 2px;
+	padding-right : 3px;
+	padding-top : 1px;
+	text-align : left;
+	text-decoration : none;
+	text-transform : none;
+}
+
+.Default_EditMask_SubCalendar_OuterClass{
+	border-width : 0px;
+	border-color : silver;
+	border-style : none;
+}
+
+.Default_EditMask_SubCalendar_Class{
+	background-color : #DFEEF4;
+	color : #000000;
+	font-family : Arial;
+	font-size : 12pt;
+	font-style : normal;
+	font-weight : normal;
+}
+
+.Default_EditMask_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+}
+
+.Default_Output_OuterClass{
+	border-width : 1px;
+	background-color : #ffffff;
+	border-color : #C5C5C5;
+	border-style : solid;
+}
+
+.Default_Output_Class{
+	color : #555B67;
+	cursor : default;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	letter-spacing : normal;
+	line-height : normal;
+	padding : 0px;
+	padding-left : 2px;
+	text-align : left;
+	text-decoration : none;
+}
+
+.Default_TextArea_OuterClass{
+	border-width : 1px;
+	background-color : #ffffff;
+	border-color : #C5C5C5;
+	border-style : solid;
+}
+
+.Default_TextArea_Class{
+	color : #555B67;
+	cursor : default;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	ime-mode : active;
+	overflow : auto;
+	padding : 0px;
+	padding-left : 2px;
+	padding-top : 2px;
+	text-align : left;
+	text-decoration : none;
+}
+
+.Default_Button_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+}
+
+.Default_Button_Class{
+	background-color : transparent;
+	background-image : url('/images/button/btnbg.gif');
+	background-position : center center;
+	background-repeat : no-repeat;
+	color : #555B67;
+	cursor : pointer;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	padding : 0px;
+	padding-top : 2px;
+	text-align : center;
+	text-decoration : none;
+}
+
+.Default_RadioButton_itemgroup_OuterClass{
+	border-width : 0px;
+	border-color : #000000;
+	border-style : none;
+}
+
+.Default_RadioButton_OuterClass{
+	border-width : 1px;
+	background-color : #ffffff;
+	border-color : #C5C5C5;
+	border-style : none;
+	cursor : default;
+	overflow : hidden;
+	overflow-y : visible;
+}
+
+.Default_RadioButton_Class{
+	color : #555B67;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+}
+
+.Default_RadioButton_itemgroup_Class{
+	background-color : transparent;
+	color : #555B67;
+	cursor : default;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	text-align : left;
+}
+
+.Default_CheckBox_Class{
+	color : #555B67;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+}
+
+.Default_CheckBox_OuterClass{
+	border-width : 1px;
+	background-color : #ffffff;
+	border-color : #C5C5C5;
+	border-style : none;
+	cursor : default;
+	overflow : hidden;
+	overflow-y : visible;
+}
+
+.Default_CheckBox_itemgroup_OuterClass{
+	border-width : 0px;
+	border-color : #000000;
+	border-style : none;
+}
+
+.Default_CheckBox_itemgroup_Class{
+	background-color : transparent;
+	color : #555B67;
+	cursor : default;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	text-align : left;
+}
+
+.Default_ComboBox_listarea_Class{
+	border-width : 1px;
+	background-color : #ffffff;
+	border-color : #C9C9C9;
+	border-style : solid;
+	color : #555B67;
+}
+
+.Default_ComboBox_itemgroup_Class{
+	border-width : 0px;
+	border-color : #000000;
+	border-style : none;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	padding : 0px;
+	padding-left : 2px;
+	text-align : left;
+}
+
+.Default_ComboBox_Button_Class{
+	background-color : #E7E7EB;
+	color : #000000;
+	cursor : default;
+}
+
+.Default_ComboBox_Class{
+	background-color : #ffffff;
+	color : #555B67;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	ime-mode : auto;
+	padding : 0px;
+	padding-left : 2px;
+	padding-top : 1px;
+}
+
+.Default_ComboBox_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_ListBox_OuterClass{
+	border-width : 1px;
+	background-color : #ffffff;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_ListBox_Class{
+	color : #555B67;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+}
+
+.Default_ListBox_itemgroup_Class{
+	border-width : 0px;
+	background-color : transparent;
+	border-color : #000000;
+	border-style : solid;
+	height : 25px;
+	padding : 0px;
+	padding-left : 2px;
+	text-align : left;
+}
+
+.Default_Image_Class{
+	background-color : #ffffff;
+	color : #000000;
+}
+
+.Default_Image_OuterClass{
+	border-width : 0px;
+	border-color : #C5C5C5;
+	border-style : none;
+	cursor : default;
+}
+
+.Default_FileSelector_OuterClass{
+	border-width : 0px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_FileSelector_BrowseButton_Class{
+	border-width : 1px;
+	background-color : transparent;
+	background-image : url('/images/button/btnbg.gif');
+	background-position : center center;
+	background-repeat : repeat-x;
+	border-bottom-width : 0px;
+	border-color : #C5C5C5;
+	border-left-width : 1px;
+	border-right-width : 0px;
+	border-style : outset;
+	border-top-width : 0px;
+	color : #424242;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+}
+
+.Default_FileSelector_Class{
+	background-color : #ffffff;
+	color : #555B67;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	padding : 0px;
+	padding-left : 2px;
+	padding-top : 2px;
+}
+
+.Default_SlideTab_SlideButtons_OuterClass{
+	border-width : 1px;
+	border-color : #7A7979;
+	border-style : solid;
+}
+
+.Default_SlideTab_OuterClass{
+	border-width : 0px;
+	border-color : #A5C47D;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_SlideTab_SlidePages_OuterClass{
+	background-color : transparent;
+	border-color : #DCD8DA;
+	border-style : solid;
+	overflow : hidden;
+}
+
+.Default_SlideTab_SlideButtons_Class{
+	background-color : #BABABA;
+	background-image : url('/style/images/tab_button_bg.gif');
+	background-position : left center;
+	background-repeat : repeat-x;
+	color : #555555;
+	cursor : default;
+	font-family : Gulimche, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	padding : 0px;
+	text-align : center;
+	text-decoration : none;
+}
+
+.Default_SlideTab_Class{
+	background-color : #ffffff;
+	color : #000000;
+}
+
+.Default_Group_Class{
+	background-color : transparent;
+	color : #000000;
+}
+
+.Default_Group_OuterClass{
+	border-width : 0px;
+	border-color : #A5C47D;
+	border-style : none;
+	cursor : default;
+	overflow : visible;
+}
+
+.Default_Tab_TabHeader_TabButtons_Class{
+	background-color : #ffffff;
+	background-image : url('/images/tab/tab_off.png');
+	background-position : left center;
+	background-repeat : repeat-x;
+	color : #555B67;
+	cursor : pointer;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : bold;
+	padding : 0px;
+	padding-bottom : 0px;
+	padding-top : 2px;
+	text-align : center;
+	text-decoration : none;
+}
+
+.Default_Tab_TabHeader_OuterClass{
+	border-width : 0px;
+	border-color : #000000;
+	border-style : none;
+}
+
+.Default_Tab_Class{
+	background-color : #ffffff;
+	color : #859CA9;
+}
+
+.Default_Tab_TabPages_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	overflow : hidden;
+}
+
+.Default_Tab_TabHeader_Class{
+	background-color : transparent;
+}
+
+.Default_Tab_OuterClass{
+	border-width : 0px;
+	border-color : #A5BACC;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_Tab_TabPages_Class{
+	background-color : transparent;
+}
+
+.Default_Tab_TabHeader_TabButtons_OuterClass{
+	border-width : 0px;
+	border-bottom-width : 0px;
+	border-color : #c0c0c0;
+	border-left-width : 1px;
+	border-right-width : 1px;
+	border-style : solid;
+	border-top-width : 1px;
+}
+
+.Default_Freeform_Class{
+	background-color : #ffffff;
+	color : #000000;
+}
+
+.Default_Freeform_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+	overflow : visible;
+	overflow-x : visible;
+	overflow-y : visible;
+}
+
+.Default_GridEx_Class{
+	background-color : #ffffff;
+	color : #555B67;
+}
+
+.Default_GridEx_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_TreeView_OuterClass{
+	border-width : 1px;
+	background-color : #FFFFFF;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+	overflow : auto;
+}
+
+.Default_TreeView_itemgroup_Class{
+	background-color : #FFFFFF;
+	color : #555555;
+	cursor : pointer;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+}
+
+.Default_Calendar_Class{
+	background-color : #FFFFFF;
+	color : #000000;
+	font-family : GulimChe, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+}
+
+.Default_Calendar_OuterClass{
+	border-width : 0px;
+	border-color : silver;
+	border-style : none;
+	cursor : default;
+}
+
+.Default_Object_OuterClass{
+	border-width : 3px;
+	border-color : silver;
+	border-style : ridge;
+}
+
+.Default_Object_Class{
+	background-color : #ffffff;
+	color : #000000;
+	cursor : default;
+}
+
+.Default_Import_OuterClass{
+	border-width : 0px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+	overflow : hidden;
+}
+
+.Default_Import_Class{
+	background-color : transparent;
+	color : #000000;
+}
+
+.Default_SubPage_OuterClass{
+	border-width : 0px;
+	border-color : #C5C5C5;
+	border-style : none;
+	cursor : default;
+	overflow : hidden;
+}
+
+.Default_Progress_Class{
+	background-color : #D4D0C9;
+	color : #000000;
+}
+
+.Default_Progress_OuterClass{
+	border-width : 1px;
+	border-color : #736A5E;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_ContextMenu_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+}
+
+.Default_ContextMenu_Class{
+	background-color : #FBFBF2;
+	color : #6D5732;
+}
+
+.Default_ContextMenu_Iconarea_Class{
+	background-color : #FBFBF2;
+}
+
+.Default_ContextMenu_itemgroup_Class{
+	background-color : #FBFBF2;
+	color : #6D5732;
+	font-family : Gulimche, Arial;
+	font-size : 9pt;
+	font-style : normal;
+	font-weight : normal;
+	height : 22px;
+	text-align : left;
+}
+
+.Default_Line_OuterClass{
+	cursor : auto;
+}
+
+.Default_Rectangle_OuterClass{
+	cursor : auto;
+}
+
+.Default_Roundrect_OuterClass{
+	cursor : auto;
+}
+
+.Default_Ellipse_OuterClass{
+	cursor : auto;
+}
+
+.Default_HtmlSnippet_OuterClass{
+	border-width : 1px;
+	border-color : #C5C5C5;
+	border-style : solid;
+	cursor : default;
+	overflow : hidden;
+}
+
+.Default_HtmlEditor_OuterClass{
+	border-width : 1px;
+	background-color : #ffffff;
+	border-color : #C5C5C5;
+	border-style : solid;
+}
+
+.Default_HtmlEditor_Class{
+	color : #000000;
+	font-family : Arial;
+	font-size : 10pt;
+	font-style : normal;
+	font-weight : normal;
+	padding : 0px;
+	text-align : left;
+	text-decoration : none;
+}
+

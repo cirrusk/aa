@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <system>
+        <code>D</code>
+        <name>AOF5-UNIV ADMIN DEV</name>
+        <domain>http://admin.4csoft.co.kr</domain>
+        <defaultPerPage>10</defaultPerPage>
+        <random24>36159a1f5d64321b8811f919b7e2b5ab7ab489bbf849a4b4a5140600cc7421e1</random24>
+        <startPage>/common/greeting.do</startPage>
+        <accessRoles type="OR">ROLE::ADM</accessRoles> 
+        <!-- AND : 해당 ROLE이 모두 존재해야 로그인 가능, OR : 해당 ROLE이 하나만 존재해도 로그인 가능, XAND : 해당 ROLE이 모두 존재하면 로그인 불가능, XOR : 해당 ROLE이 하나만 존재해도 로그인 불가능 -->
+        <license>
+            <key>domain</key>
+            <ip>ip</ip>
+            <server>server</server>
+            <domain>domain</domain>
+            <limit>limit</limit>
+        </license>
+    </system>
+    <format>
+        <timezone>GMT+09:00</timezone>
+        <date>yyyy-MM-dd</date>
+        <datetimeHm>yyyy-MM-dd HH:mm</datetimeHm>
+        <datetime>yyyy-MM-dd HH:mm:ss</datetime>
+        <dbdate>yyyyMMdd</dbdate>
+        <dbdatetime>yyyyMMddHHmmss</dbdatetime>
+        <dbdatetimeStart>yyyyMMdd000000</dbdatetimeStart>
+        <dbdatetimeEnd>yyyyMMdd235959</dbdatetimeEnd>
+    </format>
+    <domain>
+        <www>http://www.4csoft.co.kr</www>
+        <web>http://web.4csoft.co.kr</web>
+        <nodejs>http://aof5univ.web.active4c.4csoft.com:18588</nodejs>
+        <image>http://web.4csoft.co.kr/common/images/admin</image>
+        <localeImage>http://web.4csoft.co.kr/localeImages/admin</localeImage>
+        <https>https://admin.4csoft.co.kr:8443</https>
+    </domain>
+    <upload>
+        <path>
+            <file>/eGovPlatform/storage/file</file>
+            <image>/eGovPlatform/storage/web/image</image>
+            <media>/eGovPlatform/storage/web/media</media>
+            <lcms>/eGovPlatform/storage/contents</lcms>
+        </path>
+        <context>
+            <image>/storage/image</image>
+            <media>/storage/media</media>
+            <exam>/storage/exam</exam>
+            <lcms>/repository</lcms>
+        </context>
+        <fileLimitType>exe;class;jsp;asp;php;sh;bat</fileLimitType>
+    </upload>
+    <member>
+        <joiningRolegroupSeq>2</joiningRolegroupSeq>
+        <fixedRolegroupSeq>10</fixedRolegroupSeq>
+    </member>
+    <category>
+        <degree>
+            <name>degree</name>
+            <limitLevel>3</limitLevel>
+        </degree>
+        <nondegree>
+            <name>nondegree</name>
+            <limitLevel>3</limitLevel>
+        </nondegree>
+        <ocw>
+            <name>ocw</name>
+            <limitLevel>3</limitLevel>
+        </ocw>
+        <contents>
+            <name>contents</name>
+            <limitLevel>3</limitLevel>
+        </contents>
+    </category>
+    <rmi>
+        <url>rmi://127.0.0.1:1199/rmiCacheService</url>
+    </rmi>
+</config>

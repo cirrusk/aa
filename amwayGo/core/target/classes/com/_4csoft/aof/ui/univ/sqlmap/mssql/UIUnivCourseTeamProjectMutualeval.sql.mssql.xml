@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseTeamProjectMutualevalMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectMutualevalVO">
+/* UIUnivCourseTeamProjectMutualEval.insert */
+INSERT INTO cs_course_teamproject_mutualeval 
+       ( 
+           cs_course_team_seq,
+           cs_team_member_seq,
+           cs_course_apply_seq,
+           cs_mutual_member_seq,
+           cs_mutual_score,
+           cs_delete_yn,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+    SELECT #{courseTeamSeq, jdbcType=NUMERIC} ,
+           #{teamMemberSeq, jdbcType=NUMERIC} ,
+           #{courseApplySeq, jdbcType=NUMERIC} ,
+           #{mutualMemberSeq, jdbcType=NUMERIC} ,
+           #{mutualScore, jdbcType=DOUBLE} ,
+           'N',
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectMutualevalVO">
+/* UIUnivCourseTeamProjectMutualEval.update */
+UPDATE cs_course_teamproject_mutualeval 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+           <if test='courseTeamSeq != null'>
+       ,cs_course_team_seq  = #{courseTeamSeq, jdbcType=NUMERIC}
+           </if>
+           <if test='teamMemberSeq != null'>
+       ,cs_team_member_seq  = #{teamMemberSeq, jdbcType=NUMERIC}
+           </if>
+           <if test='courseApplySeq != null'>
+       ,cs_course_apply_seq  = #{courseApplySeq, jdbcType=NUMERIC}
+           </if>
+           <if test='mutualMemberSeq != null'>
+       ,cs_mutual_member_seq  = #{mutualMemberSeq, jdbcType=NUMERIC}
+           </if>
+           <if test='mutualScore != null'>
+       ,cs_mutual_score  = #{mutualScore, jdbcType=DOUBLE}
+           </if>
+ WHERE cs_course_team_seq = #{courseTeamSeq}
+   AND cs_team_member_seq = #{teamMemberSeq}
+   AND cs_course_apply_seq = #{courseApplySeq}
+   AND cs_mutual_member_seq = #{mutualMemberSeq}
+   AND cs_delete_yn = 'N'
+    </update>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectMutualevalVO">
+/* UIUnivCourseTeamProjectMutualEval.delete */
+UPDATE cs_course_teamproject_mutualeval 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y'  
+ WHERE cs_course_team_seq = #{courseTeamSeq}
+   AND cs_team_member_seq = #{teamMemberSeq}
+   AND cs_course_apply_seq = #{courseApplySeq}
+   AND cs_mutual_member_seq = #{mutualMemberSeq}
+   AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="listMutualMemberResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseTeamProjectMutualevalRS">
+        <result column="cs_course_apply_seq"        property="courseTeamProjectMutualeval.courseApplySeq"/>
+        <result column="cs_course_teamproject_seq"  property="courseTeamProject.courseTeamProjectSeq"/>
+        <result column="cs_course_team_seq"         property="courseTeamProjectMutualeval.courseTeamSeq"/>
+        <result column="cs_chief_yn"                property="courseTeamProjectMember.chiefYn"/>
+        <result column="cs_team_member_seq"         property="courseTeamProjectMutualeval.teamMemberSeq"/>
+        <result column="cs_member_name"             property="member.memberName"/>
+        <result column="cs_mutual_member_seq"       property="courseTeamProjectMutualeval.mutualMemberSeq"/>
+        <result column="bbs_count"                  property="courseTeamProjectMutualeval.bbsCount"/>
+        <result column="cs_mutual_score"            property="courseTeamProjectMutualeval.mutualScore"/>
+    </resultMap>
+    <select id="getListMutualMember" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectMutualevalVO" resultMap="listMutualMemberResultMap">
+/* UIUnivCourseTeamProjectMutualEval.getListMutualMember */
+SELECT cs_course_apply_seq,
+       cs_course_teamproject_seq, 
+       cs_course_team_seq, 
+       cs_chief_yn, 
+       cs_team_member_seq, 
+       cs_member_name, 
+       #{mutualMemberSeq}         AS cs_mutual_member_seq,
+       ISNULL(bbs_count, 0)       AS bbs_count, 
+       ISNULL(cs_mutual_score, 0) AS cs_mutual_score  
+  FROM 
+      (SELECT a.cs_course_apply_seq,
+              a.cs_course_teamproject_seq, 
+              a.cs_course_team_seq, 
+              a.cs_mutual_member_seq, 
+              a.cs_chief_yn,
+              a.cs_team_member_seq, 
+              a.cs_member_name, 
+              b.bbs_count, 
+              a.cs_mutual_score 
+         FROM 
+             (SELECT ca.cs_course_apply_seq,
+                     ctt.cs_course_teamproject_seq, 
+                     ctt.cs_course_team_seq, 
+                     ctm.cs_team_member_seq, 
+                     ctml.cs_mutual_member_seq, 
+                     ctml.cs_mutual_score, 
+                     ctm.cs_chief_yn,
+                     member.cs_member_name
+                FROM cs_course_teamproject ct
+          INNER JOIN cs_course_teamproject_team ctt
+                  ON ct.cs_course_teamproject_seq = ctt.cs_course_teamproject_seq 
+                 AND ctt.cs_course_teamproject_seq = #{courseTeamProjectSeq}
+                 AND ctt.cs_course_team_seq = #{courseTeamSeq}
+                 AND ctt.cs_delete_yn = 'N' 
+          INNER JOIN cs_course_teamproject_member ctm 
+                  ON ctm.cs_delete_yn = 'N' 
+                 AND ctm.cs_team_member_seq != #{mutualMemberSeq}
+                 AND ctt.cs_course_team_seq = ctm.cs_course_team_seq 
+          INNER JOIN cs_course_apply ca 
+                  ON ct.cs_course_active_seq = ca.cs_course_active_seq 
+                 AND ctm.cs_team_member_seq = ca.cs_member_seq 
+                 AND ca.cs_delete_yn = 'N' 
+                 AND ca.cs_course_active_seq = #{courseActiveSeq}
+          INNER JOIN cs_member member
+          		  ON member.cs_member_seq = ctm.cs_team_member_seq
+     LEFT OUTER JOIN cs_course_teamproject_mutualeval ctml 
+                  ON ctm.cs_delete_yn = 'N' 
+                 AND ctml.cs_course_team_seq = #{courseTeamSeq} 
+                 AND ctml.cs_mutual_member_seq = #{mutualMemberSeq}
+                 AND ctm.cs_course_team_seq = ctml.cs_course_team_seq 
+                 AND ctm.cs_team_member_seq = ctml.cs_team_member_seq 
+               WHERE ct.cs_delete_yn = 'N' 
+                 AND ct.cs_course_teamproject_seq = #{courseTeamProjectSeq}
+              ) a 
+	 LEFT OUTER JOIN 
+             (SELECT COUNT(*) AS bbs_count, 
+                     cs_course_active_seq, 
+                     cs_course_teamproject_seq, 
+                     cs_course_team_seq, 
+                     cs_team_member_seq 
+                FROM cs_course_teamproject_bbs 
+               WHERE cs_delete_yn = 'N' 
+                 AND cs_course_active_seq = #{courseActiveSeq}
+                 AND cs_course_teamproject_seq = #{courseTeamProjectSeq}
+                 AND cs_course_team_seq = #{courseTeamSeq} 
+            GROUP BY cs_course_active_seq, 
+                     cs_course_teamproject_seq, 
+                     cs_course_team_seq, 
+                     cs_team_member_seq 
+              ) b 
+           ON a.cs_course_teamproject_seq = b.cs_course_teamproject_seq 
+          AND a.cs_course_team_seq = b.cs_course_team_seq 
+          AND a.cs_team_member_seq = b.cs_team_member_seq 
+       ) c 
+ORDER BY cs_chief_yn desc,
+         cs_member_name
+    </select>
+    
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectMutualevalVO" resultType="int">
+/* UIUnivCourseTeamProjectMutualEval.countList */
+SELECT COUNT(*)
+  FROM cs_course_teamproject_mutualeval
+ WHERE cs_course_team_seq = #{courseTeamSeq}
+   AND cs_team_member_seq = #{teamMemberSeq}
+   AND cs_course_apply_seq = #{courseApplySeq}
+   AND cs_mutual_member_seq = #{mutualMemberSeq}
+   AND cs_delete_yn = 'N'
+    </select>
+    
+    <resultMap id="listMutualEvalResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseTeamProjectMutualevalRS">
+        <result column="cs_course_apply_seq"          property="courseTeamProjectMutualeval.courseApplySeq"/>
+        <result column="cs_course_teamproject_seq"    property="courseTeamProject.courseTeamProjectSeq"/>
+        <result column="cs_course_team_seq"           property="courseTeamProjectMutualeval.courseTeamSeq"/>
+        <result column="cs_team_member_seq"           property="courseTeamProjectMutualeval.teamMemberSeq"/>
+        <result column="cs_mutual_member_seq"         property="courseTeamProjectMutualeval.mutualMemberSeq"/>
+        <result column="cs_chief_yn"                  property="courseTeamProjectMember.chiefYn"/>
+        <result column="cs_member_id"                 property="member.memberId"/>
+        <result column="cs_member_name"               property="member.memberName"/>
+        <result column="cs_phone_mobile"              property="member.phoneMobile"/>
+        <result column="cs_organization_string"       property="member.organizationString"/>
+    </resultMap>
+    
+    <select id="getListMutualEvalOfProjectTeam" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseTeamProjectMutualevalVO" resultMap="listMutualEvalResultMap">
+/* UIUnivCourseTeamProjectMutualEval.getListMutualEvalOfProjectTeam */
+SELECT ca.cs_course_apply_seq, 
+       ctt.cs_course_teamproject_seq, 
+       ctt.cs_course_team_seq, 
+       ctm.cs_team_member_seq, 
+       ctml.cs_mutual_member_seq, 
+       ctm.cs_chief_yn, 
+       m.cs_member_id, 
+       m.cs_member_name,
+       m.cs_phone_mobile,
+       m.cs_category_organization_seq 
+  FROM cs_course_teamproject ct 
+ INNER JOIN cs_course_teamproject_team ctt 
+    ON ct.cs_course_teamproject_seq = ctt.cs_course_teamproject_seq 
+   AND ctt.cs_course_teamproject_seq = #{courseTeamProjectSeq}
+   AND ctt.cs_course_team_seq = #{courseTeamSeq} 
+   AND ctt.cs_delete_yn = 'N' 
+ INNER JOIN cs_course_teamproject_member ctm 
+    ON ctm.cs_delete_yn = 'N' 
+   AND ctt.cs_course_team_seq = ctm.cs_course_team_seq 
+   AND ctm.cs_course_team_seq = #{courseTeamSeq} 
+ INNER JOIN cs_member m 
+    ON ctm.cs_team_member_seq = m.cs_member_seq 
+   AND m.cs_delete_yn = 'N' 
+ INNER JOIN cs_course_apply ca 
+    ON ct.cs_course_active_seq = ca.cs_course_active_seq 
+   AND ctm.cs_team_member_seq = ca.cs_member_seq 
+   AND ca.cs_delete_yn = 'N' 
+   AND ca.cs_course_active_seq = #{courseActiveSeq} 
+  LEFT OUTER JOIN cs_course_teamproject_mutualeval ctml 
+    ON ctm.cs_delete_yn = 'N' 
+   AND ctml.cs_course_team_seq = #{courseTeamSeq} 
+   AND ctm.cs_course_team_seq = ctml.cs_course_team_seq 
+   AND ctm.cs_team_member_seq = ctml.cs_team_member_seq 
+ WHERE ct.cs_delete_yn = 'N' 
+   AND ct.cs_course_teamproject_seq = #{courseTeamProjectSeq}
+    </select>
+</mapper>

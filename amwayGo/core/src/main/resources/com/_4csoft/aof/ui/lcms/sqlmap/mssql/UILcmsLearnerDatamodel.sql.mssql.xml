@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsLearnerDatamodelMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsLearnerDatamodelVO">
+        <selectKey resultType="Long" keyProperty="datamodelSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UILcmsLearnerDatamodelMapper.insert */
+INSERT INTO cs_lcms_learner_datamodel 
+       ( 
+            cs_learner_id 
+           ,cs_course_active_seq 
+           ,cs_course_apply_seq 
+           ,cs_organization_seq 
+           ,cs_item_seq 
+           ,cs_attempt 
+           ,cs_progress_measure 
+           ,cs_completion_status
+        <if test='"Y".equals(completionDtime)'>
+           ,cs_completion_dtime
+        </if>
+           ,cs_score_scaled
+           ,cs_success_status
+           ,cs_location
+           ,cs_session_time
+           ,cs_suspend_data
+           ,cs_credit
+           ,cs_entry
+           ,cs_objective
+           ,cs_interaction
+           ,cs_comment_from_learner
+           ,cs_adl_data
+           ,cs_etc
+           ,cs_reg_member_seq
+           ,cs_reg_dtime
+           ,cs_reg_ip
+           ,cs_upd_member_seq
+           ,cs_upd_dtime
+           ,cs_upd_ip
+        )
+        VALUES
+        (
+            #{learnerId, jdbcType=VARCHAR}
+           ,#{courseActiveSeq, jdbcType=NUMERIC}
+           ,#{courseApplySeq, jdbcType=NUMERIC}
+           ,#{organizationSeq, jdbcType=NUMERIC}
+           ,#{itemSeq, jdbcType=NUMERIC}
+           ,#{attempt, jdbcType=VARCHAR}
+           ,#{progressMeasure, jdbcType=VARCHAR}
+           ,#{completionStatus, jdbcType=VARCHAR}
+        <if test='"Y".equals(completionDtime)'>
+           ,dbo.FN_NOW_TO_CHAR()
+        </if>
+           ,#{scoreScaled, jdbcType=VARCHAR}
+           ,#{successStatus, jdbcType=VARCHAR}
+           ,#{location, jdbcType=VARCHAR}
+           ,#{sessionTime, jdbcType=VARCHAR}
+           ,#{suspendData, jdbcType=VARCHAR}
+           ,#{credit, jdbcType=VARCHAR}
+           ,#{entry, jdbcType=VARCHAR}
+           ,#{objective, jdbcType=VARCHAR}
+           ,#{interaction, jdbcType=VARCHAR}
+           ,#{commentFromLearner, jdbcType=VARCHAR}
+           ,#{adlData, jdbcType=VARCHAR}
+           ,#{etc, jdbcType=VARCHAR}
+           ,#{regMemberSeq, jdbcType=NUMERIC}
+           ,dbo.FN_NOW_TO_CHAR()
+           ,#{regIp, jdbcType=VARCHAR}
+           ,#{updMemberSeq, jdbcType=NUMERIC}
+           ,dbo.FN_NOW_TO_CHAR()
+           ,#{updIp, jdbcType=VARCHAR} 
+        )
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsLearnerDatamodelVO">
+/* UILcmsLearnerDatamodelMapper.update */
+UPDATE cs_lcms_learner_datamodel 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+   	   ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+        <if test='adminUpdateYn != null and !adminUpdateYn.equals("")'>
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+        </if>
+        <if test='attempt != null and !attempt.equals("")'>
+       ,cs_attempt = #{attempt, jdbcType=VARCHAR}
+        </if>
+        <if test='progressMeasure != null and !progressMeasure.equals("")'>
+       ,cs_progress_measure = #{progressMeasure, jdbcType=VARCHAR}
+        </if>
+        <if test='completionStatus != null and !completionStatus.equals("")'>
+       ,cs_completion_status = #{completionStatus, jdbcType=VARCHAR}
+        </if>
+        <if test='"Y".equals(completionDtime)'>
+       ,cs_completion_dtime = dbo.FN_NOW_TO_CHAR()
+        </if>
+        <if test='scoreScaled != null and !scoreScaled.equals("")'>
+       ,cs_score_scaled = #{scoreScaled, jdbcType=VARCHAR}
+        </if>
+        <if test='successStatus != null and !successStatus.equals("")'>
+       ,cs_success_status = #{successStatus, jdbcType=VARCHAR}
+        </if>
+        <if test='location != null and !location.equals("")'>
+       ,cs_location = #{location, jdbcType=VARCHAR}
+        </if>
+        <if test='sessionTime != null and !sessionTime.equals("")'>
+       ,cs_session_time = #{sessionTime, jdbcType=VARCHAR}
+        </if>
+        <if test='suspendData != null and !suspendData.equals("")'>
+       ,cs_suspend_data = #{suspendData, jdbcType=VARCHAR}
+        </if>
+        <if test='credit != null and !credit.equals("")'>
+       ,cs_credit = #{credit, jdbcType=VARCHAR}
+        </if>
+        <if test='entry != null and !entry.equals("")'>
+       ,cs_entry = #{entry, jdbcType=VARCHAR}
+        </if>
+        <if test='objective != null and !objective.equals("")'>
+       ,cs_objective = #{objective, jdbcType=VARCHAR}
+        </if>
+        <if test='interaction != null and !interaction.equals("")'>
+       ,cs_interaction = #{interaction, jdbcType=VARCHAR}
+        </if>
+        <if test='commentFromLearner != null and !commentFromLearner.equals("")'>
+       ,cs_comment_from_learner = #{commentFromLearner, jdbcType=VARCHAR}
+        </if>
+        <if test='adlData != null and !adlData.equals("")'>
+       ,cs_adl_data = #{adlData, jdbcType=VARCHAR}
+        </if>
+        <if test='etc != null and !etc.equals("")'>
+       ,cs_etc = #{etc, jdbcType=VARCHAR}
+        </if>
+  WHERE cs_item_seq = #{itemSeq}
+        <choose>
+            <when test='datamodelSeq != null and !datamodelSeq.equals(0L)'>
+        AND cs_datamodel_seq = #{datamodelSeq}
+            </when>
+            <otherwise>
+        AND cs_learner_id = #{learnerId}
+        AND cs_course_active_seq = #{courseActiveSeq}
+        AND cs_course_apply_seq = #{courseApplySeq}
+        AND cs_organization_seq = #{organizationSeq}
+        AND cs_delete_yn = 'N'
+            </otherwise>
+        </choose>
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsLearnerDatamodelVO">
+/* UILcmsLearnerDatamodelMapper.delete */
+UPDATE cs_lcms_learner_datamodel 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+ WHERE cs_datamodel_seq = #{datamodelSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getList_result" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsLearnerDatamodelRS">
+        <result column="lm.datamodelSeq"        property="learnerDatamodel.datamodelSeq" />
+        <result column="lm.learnerId"           property="learnerDatamodel.learnerId" />
+        <result column="lm.learnerName"         property="learnerDatamodel.learnerName" />
+        <result column="lm.courseActiveSeq"     property="learnerDatamodel.courseActiveSeq" />
+        <result column="lm.courseApplySeq"      property="learnerDatamodel.courseApplySeq" />
+        <result column="lm.organizationSeq"     property="learnerDatamodel.organizationSeq" />
+        <result column="lm.itemSeq"             property="learnerDatamodel.itemSeq" />
+        <result column="lm.attempt"             property="learnerDatamodel.attempt" />
+        <result column="lm.progressMeasure"     property="learnerDatamodel.progressMeasure" />
+        <result column="lm.completionStatus"    property="learnerDatamodel.completionStatus" />
+        <result column="lm.scoreScaled"         property="learnerDatamodel.scoreScaled" />
+        <result column="lm.successStatus"       property="learnerDatamodel.successStatus" />
+        <result column="lm.location"            property="learnerDatamodel.location" />
+        <result column="lm.sessionTime"         property="learnerDatamodel.sessionTime" />
+        <result column="lm.suspendData"         property="learnerDatamodel.suspendData" />
+        <result column="lm.credit"              property="learnerDatamodel.credit" />
+        <result column="lm.entry"               property="learnerDatamodel.entry" />
+        <result column="lm.objective"           property="learnerDatamodel.objective" />
+        <result column="lm.interaction"         property="learnerDatamodel.interaction" />
+        <result column="lm.commentFromLearner"  property="learnerDatamodel.commentFromLearner" />
+        <result column="lm.adlData"             property="learnerDatamodel.adlData" />
+        <result column="lm.etc"                 property="learnerDatamodel.etc" />
+        <result column="lm.deleteYn"            property="learnerDatamodel.deleteYn" />
+        <result column="lm.regMemberSeq"        property="learnerDatamodel.regMemberSeq" />
+        <result column="lm.regDtime"            property="learnerDatamodel.regDtime" />
+        <result column="lm.regIp"               property="learnerDatamodel.regIp" />
+        <result column="lm.updMemberSeq"        property="learnerDatamodel.updMemberSeq" />
+        <result column="lm.updDtime"            property="learnerDatamodel.updDtime" />
+        <result column="lm.updIp"               property="learnerDatamodel.updIp" />
+        <result column="org.title"              property="organization.title" />
+        <result column="org.contentsTypeCd"     property="organization.contentsTypeCd" />
+        <result column="item.title"             property="item.title" />
+        <result column="item.completionThreshold" property="item.completionThreshold" />
+        <result column="item.keyword"           property="item.keyword" />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsLearnerDatamodelCondition" resultMap="getList_result">
+/* UILcmsLearnerDatamodelMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+ORDER BY "lm.updDtime" DESC
+) AS rownumber, * FROM (
+        </if>
+SELECT lm.cs_datamodel_seq          AS "lm.datamodelSeq" ,
+       lm.cs_learner_id             AS "lm.learnerId" ,
+       lmem.cs_member_name 			AS "lm.learnerName" ,
+       lm.cs_course_active_seq      AS "lm.courseActiveSeq" ,
+       lm.cs_course_apply_seq       AS "lm.courseApplySeq" ,
+       lm.cs_organization_seq       AS "lm.organizationSeq" ,
+       lm.cs_item_seq               AS "lm.itemSeq" ,
+       lm.cs_attempt                AS "lm.attempt" ,
+       lm.cs_progress_measure       AS "lm.progressMeasure" ,
+       lm.cs_completion_status      AS "lm.completionStatus" ,
+       lm.cs_completion_dtime       AS "lm.completionDtime" ,
+       lm.cs_score_scaled           AS "lm.scoreScaled" ,
+       lm.cs_success_status         AS "lm.successStatus" ,
+       lm.cs_location               AS "lm.location" ,
+       lm.cs_session_time           AS "lm.sessionTime" ,
+       lm.cs_suspend_data           AS "lm.suspendData" ,
+       lm.cs_credit                 AS "lm.credit" ,
+       lm.cs_entry                  AS "lm.entry" ,
+       lm.cs_objective              AS "lm.objective" ,
+       lm.cs_interaction            AS "lm.interaction" ,
+       lm.cs_comment_from_learner   AS "lm.commentFromLearner" ,
+       lm.cs_adl_data               AS "lm.adlData" ,
+       lm.cs_etc                    AS "lm.etc" ,
+       lm.cs_delete_yn              AS "lm.deleteYn" ,
+       lm.cs_reg_member_seq         AS "lm.regMemberSeq" ,
+       lm.cs_reg_dtime              AS "lm.regDtime" ,
+       lm.cs_reg_ip                 AS "lm.regIp" ,
+       lm.cs_upd_member_seq         AS "lm.updMemberSeq" ,
+       lm.cs_upd_dtime              AS "lm.updDtime" ,
+       lm.cs_upd_ip                 AS "lm.updIp" ,
+       org.cs_title                 AS "org.title" ,
+       org.cs_contents_type_cd      AS "org.contentsTypeCd" ,
+       item.cs_title                AS "item.title" ,
+       item.cs_completion_threshold AS "item.completionThreshold" ,
+       item.cs_keyword              AS "item.keyword" 
+  FROM cs_lcms_learner_datamodel lm 
+ INNER JOIN cs_lcms_organization org 
+    ON lm.cs_organization_seq = org.cs_organization_seq 
+ INNER JOIN cs_lcms_item item 
+    ON lm.cs_item_seq = item.cs_item_seq 
+ INNER JOIN cs_member lmem
+    ON lmem.cs_member_seq = CONVERT(INT, lm.cs_learner_id)
+ WHERE lm.cs_delete_yn = 'N'
+        <if test='srchLearnerId != null and !srchLearnerId.equals(0L)'>
+       AND lm.cs_learner_id = #{srchLearnerId}
+        </if>
+        <if test='srchStartUpdDate != null and !srchStartUpdDate.equals("")'>
+       AND lm.cs_upd_dtime &gt;= #{srchStartUpdDate}
+        </if>
+        <if test='srchEndUpdDate != null and !srchEndUpdDate.equals("")'>
+       AND lm.cs_upd_dtime &lt;= #{srchEndUpdDate}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("organizationTitle")'>
+       AND org.cs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("itemTitle")'>
+       AND item.cs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.lcms.vo.condition.UILcmsLearnerDatamodelCondition" resultType="int">
+/* UILcmsLearnerDatamodelMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_lcms_learner_datamodel lm 
+ INNER JOIN cs_lcms_organization org 
+    ON lm.cs_organization_seq = org.cs_organization_seq 
+ INNER JOIN cs_lcms_item item 
+    ON lm.cs_item_seq = item.cs_item_seq 
+ WHERE lm.cs_delete_yn = 'N'
+        <if test='srchLearnerId != null and !srchLearnerId.equals(0L)'>
+       AND lm.cs_learner_id = #{srchLearnerId}
+        </if>
+        <if test='srchStartUpdDate != null and !srchStartUpdDate.equals("")'>
+       AND lm.cs_upd_dtime &gt;= #{srchStartUpdDate}
+        </if>
+        <if test='srchEndUpdDate != null and !srchEndUpdDate.equals("")'>
+       AND lm.cs_upd_dtime &lt;= #{srchEndUpdDate}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("organizationTitle")'>
+       AND org.cs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("itemTitle")'>
+       AND item.cs_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsLearnerDatamodelRS">
+        <result column="lm.datamodelSeq"            property="learnerDatamodel.datamodelSeq" />
+        <result column="lm.learnerId"               property="learnerDatamodel.learnerId" />
+        <result column="lm.learnerName"             property="learnerDatamodel.learnerName" />
+        <result column="lm.courseActiveSeq"         property="learnerDatamodel.courseActiveSeq" />
+        <result column="lm.courseApplySeq"          property="learnerDatamodel.courseApplySeq" />
+        <result column="lm.organizationSeq"         property="learnerDatamodel.organizationSeq" />
+        <result column="lm.itemSeq"                 property="learnerDatamodel.itemSeq" />
+        <result column="lm.attempt"                 property="learnerDatamodel.attempt" />
+        <result column="lm.progressMeasure"         property="learnerDatamodel.progressMeasure" />
+        <result column="lm.completionStatus"        property="learnerDatamodel.completionStatus" />
+        <result column="lm.scoreScaled"             property="learnerDatamodel.scoreScaled" />
+        <result column="lm.successStatus"           property="learnerDatamodel.successStatus" />
+        <result column="lm.location"                property="learnerDatamodel.location" />
+        <result column="lm.sessionTime"             property="learnerDatamodel.sessionTime" />
+        <result column="lm.suspendData"             property="learnerDatamodel.suspendData" />
+        <result column="lm.credit"                  property="learnerDatamodel.credit" />
+        <result column="lm.entry"                   property="learnerDatamodel.entry" />
+        <result column="lm.objective"               property="learnerDatamodel.objective" />
+        <result column="lm.interaction"             property="learnerDatamodel.interaction" />
+        <result column="lm.commentFromLearner"      property="learnerDatamodel.commentFromLearner" />
+        <result column="lm.adlData"                 property="learnerDatamodel.adlData" />
+        <result column="lm.etc"                     property="learnerDatamodel.etc" />
+        <result column="lm.deleteYn"                property="learnerDatamodel.deleteYn" />
+        <result column="lm.regMemberSeq"            property="learnerDatamodel.regMemberSeq" />
+        <result column="lm.regDtime"                property="learnerDatamodel.regDtime" />
+        <result column="lm.regIp"                   property="learnerDatamodel.regIp" />
+        <result column="lm.updMemberSeq"            property="learnerDatamodel.updMemberSeq" />
+        <result column="lm.updDtime"                property="learnerDatamodel.updDtime" />
+        <result column="lm.updIp"                   property="learnerDatamodel.updIp" />
+        <result column="org.title"                  property="organization.title" />
+        <result column="org.contentsTypeCd"         property="organization.contentsTypeCd" />
+        <result column="item.title"                 property="item.title" />
+        <result column="item.completionThreshold"   property="item.completionThreshold" />
+        <result column="item.completionType"   		property="item.completionType" />
+        <result column="item.keyword"               property="item.keyword" />
+    </resultMap>
+    <select id="getDetail" parameterType="map" resultMap="getDetail_result">
+/* UILcmsLearnerDatamodelMapper.getDetail */
+SELECT lm.cs_datamodel_seq              AS "lm.datamodelSeq" ,
+       lm.cs_learner_id                 AS "lm.learnerId" ,
+       lmem.cs_member_name			    AS "lm.learnerName" ,
+       lm.cs_course_active_seq          AS "lm.courseActiveSeq" ,
+       lm.cs_course_apply_seq           AS "lm.courseApplySeq" ,
+       lm.cs_organization_seq           AS "lm.organizationSeq" ,
+       lm.cs_item_seq                   AS "lm.itemSeq" ,
+       lm.cs_attempt                    AS "lm.attempt" ,
+       lm.cs_progress_measure           AS "lm.progressMeasure" ,
+       lm.cs_completion_status          AS "lm.completionStatus" ,
+       lm.cs_completion_dtime           AS "lm.completionDtime" ,
+       lm.cs_score_scaled               AS "lm.scoreScaled" ,
+       lm.cs_success_status             AS "lm.successStatus" ,
+       lm.cs_location                   AS "lm.location" ,
+       lm.cs_session_time               AS "lm.sessionTime" ,
+       lm.cs_suspend_data               AS "lm.suspendData" ,
+       lm.cs_credit                     AS "lm.credit" ,
+       lm.cs_entry                      AS "lm.entry" ,
+       lm.cs_objective                  AS "lm.objective" ,
+       lm.cs_interaction                AS "lm.interaction" ,
+       lm.cs_comment_from_learner       AS "lm.commentFromLearner" ,
+       lm.cs_adl_data                   AS "lm.adlData" ,
+       lm.cs_etc                        AS "lm.etc" ,
+       lm.cs_delete_yn                  AS "lm.deleteYn" ,
+       lm.cs_reg_member_seq             AS "lm.regMemberSeq" ,
+       lm.cs_reg_dtime                  AS "lm.regDtime" ,
+       lm.cs_reg_ip                     AS "lm.regIp" ,
+       lm.cs_upd_member_seq             AS "lm.updMemberSeq" ,
+       lm.cs_upd_dtime                  AS "lm.updDtime" ,
+       lm.cs_upd_ip                     AS "lm.updIp" ,
+       org.cs_title                     AS "org.title" ,
+       org.cs_contents_type_cd          AS "org.contentsTypeCd" ,
+       item.cs_title                    AS "item.title" ,
+       item.cs_completion_threshold     AS "item.completionThreshold" ,
+       item.cs_completion_type     		AS "item.completionType" ,
+       item.cs_keyword                  AS "item.keyword" 
+  FROM cs_lcms_learner_datamodel lm 
+ INNER JOIN cs_lcms_organization org 
+    ON lm.cs_organization_seq = org.cs_organization_seq 
+ INNER JOIN cs_lcms_item item 
+       ON lm.cs_item_seq = item.cs_item_seq 
+       AND item.cs_delete_yn = 'N'
+ INNER JOIN cs_member lmem
+    ON lmem.cs_member_seq = CONVERT(INT, lm.cs_learner_id)
+ WHERE lm.cs_item_seq = #{itemSeq} 
+       AND lm.cs_learner_id = #{learnerId} 
+       AND lm.cs_course_active_seq = #{courseActiveSeq} 
+       AND lm.cs_course_apply_seq = #{courseApplySeq} 
+       AND lm.cs_organization_seq = #{organizationSeq} 
+       AND lm.cs_delete_yn = 'N'
+    </select>
+
+    <select id="getCount" parameterType="map" resultType="int">
+/* UILcmsLearnerDatamodelMapper.getCount */
+SELECT COUNT(*) 
+  FROM cs_lcms_learner_datamodel lm 
+ INNER JOIN cs_lcms_organization org 
+    ON lm.cs_organization_seq = org.cs_organization_seq 
+ INNER JOIN cs_lcms_item item 
+    ON lm.cs_item_seq = item.cs_item_seq 
+    AND item.cs_delete_yn = 'N'
+ WHERE lm.cs_item_seq = #{itemSeq} 
+       AND lm.cs_learner_id = #{learnerId} 
+       AND lm.cs_course_active_seq = #{courseActiveSeq} 
+       AND lm.cs_course_apply_seq = #{courseApplySeq} 
+       AND lm.cs_organization_seq = #{organizationSeq} 
+       AND lm.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="getListResult_result" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsLearnerDatamodelRS">
+        <result column="item.itemSeq"               property="item.itemSeq" />
+        <result column="item.organizationSeq"       property="item.organizationSeq" />
+        <result column="item.sortOrder"             property="item.sortOrder" />
+        <result column="item.level"                 property="item.level" />
+        <result column="item.title"                 property="item.title" />
+        <result column="item.identifier"            property="item.identifier" />
+        <result column="item.parameters"            property="item.parameters" />
+        <result column="item.dataFromLms"           property="item.dataFromLms" />
+        <result column="item.timeLimitAction"       property="item.timeLimitAction" />
+        <result column="item.minNormalizedMeasure"  property="item.minNormalizedMeasure" />
+        <result column="item.attemptDurationLimit"  property="item.attemptDurationLimit" />
+        <result column="item.completionThreshold"   property="item.completionThreshold" />
+        <result column="item.keyword"               property="item.keyword" />
+        <result column="item.deleteYn"              property="item.deleteYn" />
+        <result column="item.regMemberSeq"          property="item.regMemberSeq" />
+        <result column="item.regDtime"              property="item.regDtime" />
+        <result column="item.regIp"                 property="item.regIp" />
+        <result column="item.updMemberSeq"          property="item.updMemberSeq" />
+        <result column="item.updDtime"              property="item.updDtime" />
+        <result column="item.updIp"                 property="item.updIp" />
+        <result column="orga.width"                 property="organization.width" />
+        <result column="orga.height"                property="organization.height" />
+        <result column="lm.courseActiveSeq"         property="learnerDatamodel.courseActiveSeq" />
+        <result column="lm.courseApplySeq"          property="learnerDatamodel.courseApplySeq" />
+        <result column="lm.organizationSeq"         property="learnerDatamodel.organizationSeq" />
+        <result column="lm.itemSeq"                 property="learnerDatamodel.itemSeq" />
+        <result column="lm.attempt"                 property="learnerDatamodel.attempt" />
+        <result column="lm.progressMeasure"         property="learnerDatamodel.progressMeasure" />
+        <result column="lm.completionStatus"        property="learnerDatamodel.completionStatus" />
+        <result column="lm.scoreScaled"             property="learnerDatamodel.scoreScaled" />
+        <result column="lm.successStatus"           property="learnerDatamodel.successStatus" />
+        <result column="lm.location"                property="learnerDatamodel.location" />
+        <result column="lm.sessionTime"             property="learnerDatamodel.sessionTime" />
+        <result column="lm.suspendData"             property="learnerDatamodel.suspendData" />
+        <result column="lm.credit"                  property="learnerDatamodel.credit" />
+        <result column="lm.entry"                   property="learnerDatamodel.entry" />
+        <result column="lm.objective"               property="learnerDatamodel.objective" />
+        <result column="lm.interaction"             property="learnerDatamodel.interaction" />
+        <result column="lm.commentFromLearner"      property="learnerDatamodel.commentFromLearner" />
+        <result column="lm.adlData"                 property="learnerDatamodel.adlData" />
+        <result column="lm.etc"                     property="learnerDatamodel.etc" />
+        <result column="lm.deleteYn"                property="learnerDatamodel.deleteYn" />
+        <result column="lm.regMemberSeq"            property="learnerDatamodel.regMemberSeq" />
+        <result column="lm.regDtime"                property="learnerDatamodel.regDtime" />
+        <result column="lm.regIp"                   property="learnerDatamodel.regIp" />
+        <result column="lm.updMemberSeq"            property="learnerDatamodel.updMemberSeq" />
+        <result column="lm.updDtime"                property="learnerDatamodel.updDtime" />
+        <result column="lm.updIp"                   property="learnerDatamodel.updIp" />
+        <result column="attend.attendTypeCd"        property="attend.attendTypeCd" />
+        <collection column="{referenceSeq=activeItem.cs_organization_item_seq,referenceTablename=referenceTablename}" property="activeItem.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getListResult" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsLearnerDatamodelVO" resultMap="getListResult_result">
+/* UILcmsLearnerDatamodelMapper.getListResult */
+SELECT item.cs_item_seq                 AS "item.itemSeq" ,
+       item.cs_organization_seq         AS "item.organizationSeq" ,
+       item.cs_sort_order               AS "item.sortOrder" ,
+       item.cs_level                    AS "item.level" ,
+       item.cs_title                    AS "item.title" ,
+       item.cs_identifier               AS "item.identifier" ,
+       item.cs_parameters               AS "item.parameters" ,
+       item.cs_data_from_lms            AS "item.dataFromLms" ,
+       item.cs_time_limit_action        AS "item.timeLimitAction" ,
+       item.cs_min_normalized_measure   AS "item.minNormalizedMeasure" ,
+       item.cs_attempt_duration_limit   AS "item.attemptDurationLimit" ,
+       item.cs_completion_threshold     AS "item.completionThreshold" ,
+       item.cs_keyword                  AS "item.keyword" ,
+       item.cs_delete_yn                AS "item.deleteYn" ,
+       item.cs_reg_member_seq           AS "item.regMemberSeq" ,
+       item.cs_reg_dtime                AS "item.regDtime" ,
+       item.cs_reg_ip                   AS "item.regIp" ,
+       item.cs_upd_member_seq           AS "item.updMemberSeq" ,
+       item.cs_upd_dtime                AS "item.updDtime" ,
+       item.cs_upd_ip                   AS "item.updIp" ,
+       orga.cs_width					AS "orga.width" ,
+       orga.cs_height					AS "orga.height" ,
+       lm.cs_course_active_seq          AS "lm.courseActiveSeq" ,
+       lm.cs_course_apply_seq           AS "lm.courseApplySeq" ,
+       lm.cs_organization_seq           AS "lm.organizationSeq" ,
+       lm.cs_item_seq                   AS "lm.itemSeq" ,
+       ISNULL(lm.cs_attempt, 0)         AS "lm.attempt" ,
+       lm.cs_progress_measure           AS "lm.progressMeasure" ,
+       lm.cs_completion_status          AS "lm.completionStatus" ,
+       lm.cs_completion_dtime           AS "lm.completionDtime" ,
+       lm.cs_score_scaled               AS "lm.scoreScaled" ,
+       lm.cs_success_status             AS "lm.successStatus" ,
+       lm.cs_location                   AS "lm.location" ,
+       lm.cs_session_time               AS "lm.sessionTime" ,
+       lm.cs_suspend_data               AS "lm.suspendData" ,
+       lm.cs_credit                     AS "lm.credit" ,
+       lm.cs_entry                      AS "lm.entry" ,
+       lm.cs_objective                  AS "lm.objective" ,
+       lm.cs_interaction                AS "lm.interaction" ,
+       lm.cs_comment_from_learner       AS "lm.commentFromLearner" ,
+       lm.cs_adl_data                   AS "lm.adlData" ,
+       lm.cs_etc                        AS "lm.etc" ,
+       lm.cs_delete_yn                  AS "lm.deleteYn" ,
+       lm.cs_reg_member_seq             AS "lm.regMemberSeq" ,
+       lm.cs_reg_dtime                  AS "lm.regDtime" ,
+       lm.cs_reg_ip                     AS "lm.regIp" ,
+       lm.cs_upd_member_seq             AS "lm.updMemberSeq" ,
+       lm.cs_upd_dtime                  AS "lm.updDtime" ,
+       lm.cs_upd_ip                     AS "lm.updIp" ,
+       ISNULL(activeItem.cs_organization_item_seq, 0) AS "activeItem.cs_organization_item_seq",
+       'cs_course_active_organization_item' AS "referenceTablename" ,
+       ISNULL(attend.cs_attend_type_cd, '${CD.ATTEND_TYPE.002}') AS "attend.attendTypeCd"
+  FROM cs_lcms_item item 
+  INNER JOIN cs_lcms_organization orga
+    ON item.cs_organization_seq = orga.cs_organization_seq 
+  LEFT OUTER JOIN cs_lcms_learner_datamodel lm 
+    ON item.cs_organization_seq = lm.cs_organization_seq 
+       AND lm.cs_course_apply_seq = #{courseApplySeq} 
+       AND item.cs_item_seq = lm.cs_item_seq 
+       AND lm.cs_delete_yn = 'N'
+  LEFT OUTER JOIN cs_course_apply_attend attend
+	ON item.cs_item_seq = attend.cs_lesson_seq
+	   AND attend.cs_onoff_cd = '${CD.ONOFF_TYPE.ON}'
+	   AND attend.cs_delete_yn = 'N'
+	   AND attend.cs_course_apply_seq = #{courseApplySeq}
+  LEFT OUTER JOIN cs_course_active_organization_item activeItem
+	ON activeItem.cs_item_seq = item.cs_item_seq
+	   AND activeItem.cs_course_active_seq = #{courseActiveSeq} 
+	   AND activeItem.cs_organization_seq = item.cs_organization_seq
+	   AND activeItem.cs_delete_yn = 'N'
+ WHERE item.cs_organization_seq = #{organizationSeq} 
+       AND item.cs_delete_yn ='N'
+ORDER BY item.cs_sort_order ASC
+    </select>
+    
+	<resultMap id="getListWeekGroupResult_result" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsLearnerDatamodelRS">
+		<result column="item.sortOrder"             property="item.sortOrder" />
+        <result column="lm.courseActiveSeq"         property="learnerDatamodel.courseActiveSeq" />
+        <result column="lm.organizationSeq"         property="learnerDatamodel.organizationSeq" />
+        <result column="lm.itemSeq"                 property="learnerDatamodel.itemSeq" />
+        <result column="lm.progressMeasure"         property="learnerDatamodel.progressMeasure" />
+        <result column="lm.sessionTime"             property="learnerDatamodel.sessionTime" />
+    </resultMap>
+    
+    <select id="getListWeekGroupResult" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsLearnerDatamodelVO" resultMap="getListWeekGroupResult_result">
+/* UILcmsLearnerDatamodelMapper.getListWeekGroupResult */
+SELECT
+	el.cs_sort_order              	AS "item.sortOrder" ,
+	el.cs_title						AS "item.title" ,
+	el.cs_course_active_seq			AS "lm.courseActiveSeq" ,
+	el.cs_organization_seq			AS "lm.organizationSeq" ,
+	el.cs_item_seq					AS "lm.itemSeq" ,
+	AVG(el.cs_progress_measure) 	AS "lm.progressMeasure" ,
+	AVG(el.cs_session_time) 		AS "lm.sessionTime"
+FROM
+	(
+		SELECT
+			item.cs_sort_order,
+			item.cs_title,
+			el.cs_active_element_seq,
+			el.cs_course_active_seq,
+			item.cs_organization_seq,
+			item.cs_item_seq,
+			CONVERT(FLOAT,ISNULL(lm.cs_progress_measure,0)) AS cs_progress_measure,
+			ISNULL(CONVERT(INT, lm.cs_session_time), 0) AS cs_session_time
+		FROM
+			cs_course_active_element el
+			INNER JOIN cs_course_apply app
+				ON  el.cs_course_active_seq = app.cs_course_active_seq
+				AND app.cs_delete_yn = 'N'
+				AND app.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+				AND app.cs_course_active_seq = #{courseActiveSeq}
+			INNER JOIN cs_lcms_organization orga
+				ON  el.cs_reference_seq = orga.cs_organization_seq
+				AND orga.cs_organization_seq = #{organizationSeq} 
+			INNER JOIN cs_lcms_item item
+				ON item.cs_organization_seq = orga.cs_organization_seq
+				AND item.cs_delete_yn = 'N'
+			LEFT OUTER JOIN cs_lcms_learner_datamodel lm
+			    ON  item.cs_organization_seq = lm.cs_organization_seq
+			    AND item.cs_item_seq = lm.cs_item_seq
+			    AND app.cs_course_apply_seq = lm.cs_course_apply_seq
+			    AND app.cs_course_active_seq = #{courseActiveSeq}
+			    AND lm.cs_organization_seq = #{organizationSeq} 
+			    AND lm.cs_delete_yn = 'N'
+			    AND lm.cs_course_apply_seq != -1
+		WHERE
+				el.cs_course_active_seq = #{courseActiveSeq}
+			AND el.cs_delete_yn = 'N'
+			AND el.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+			AND el.cs_course_week_type_cd = '${CD.COURSE_WEEK_TYPE.LECTURE}'
+			AND el.cs_reference_seq = #{organizationSeq} 
+	) el
+GROUP BY 
+	el.cs_sort_order ,
+	el.cs_title ,
+	el.cs_active_element_seq ,
+	el.cs_course_active_seq ,
+	el.cs_organization_seq ,
+	el.cs_item_seq
+	</select>
+	
+	<resultMap id="getFirstStudyMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsLearnerDatamodelRS">
+		<result column="orga.organizationSeq"     property="organization.organizationSeq" />
+		<result column="item.itemSeq"             property="item.itemSeq" />
+		<result column="item.identifier"          property="item.identifier" />
+		<result column="orga.height"              property="organization.height" />
+		<result column="orga.width"               property="organization.width" />
+		<result column="lm.completionStatus"      property="learnerDatamodel.completionStatus" />
+    </resultMap>
+	
+	<select id="getFirstStudy" parameterType="map" resultMap="getFirstStudyMap">
+/* UILcmsLearnerDatamodelMapper.getFirstStudy */
+SELECT
+	TOP 1
+	orga.cs_organization_seq 	AS "orga.organizationSeq" ,
+	item.cs_item_seq			AS "item.itemSeq" ,
+	item.cs_identifier			AS "item.identifier" ,
+	orga.cs_height				AS "orga.height" ,
+	orga.cs_width				AS "orga.width" ,
+	ISNULL(lm.cs_completion_status,'incomplete')		AS "lm.completionStatus" 
+FROM
+	cs_course_active_element el
+	INNER JOIN cs_course_apply app
+		ON  el.cs_course_active_seq = app.cs_course_active_seq
+		AND app.cs_delete_yn = 'N'
+		AND app.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+		AND app.cs_course_apply_seq = #{courseApplySeq}
+		AND app.cs_course_active_seq = #{courseActiveSeq}
+	INNER JOIN cs_lcms_organization orga
+		ON el.cs_reference_seq = orga.cs_organization_seq
+	INNER JOIN cs_lcms_item item
+		ON item.cs_organization_seq = orga.cs_organization_seq
+		AND item.cs_delete_yn = 'N'
+	LEFT OUTER JOIN cs_lcms_learner_datamodel lm
+	   ON item.cs_organization_seq = lm.cs_organization_seq
+	   AND item.cs_item_seq = lm.cs_item_seq
+	   AND app.cs_course_apply_seq = lm.cs_course_apply_seq
+	   AND lm.cs_course_apply_seq = #{courseApplySeq}
+	   AND app.cs_course_active_seq = #{courseActiveSeq}
+	   AND lm.cs_delete_yn = 'N'
+	   AND lm.cs_course_apply_seq != -1
+WHERE
+		el.cs_course_active_seq = #{courseActiveSeq}
+	AND el.cs_delete_yn = 'N'
+	AND el.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+	AND el.cs_course_week_type_cd = '${CD.COURSE_WEEK_TYPE.LECTURE}'
+<if test='!"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+	AND el.cs_start_dtime <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR()
+	AND el.cs_end_dtime   <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR()
+</if>
+<if test='"${CD.COURSE_TYPE.ALWAYS}".equals(courseTypeCd)'>
+	AND REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, el.cs_start_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') <![CDATA[<=]]> dbo.FN_NOW_TO_CHAR()
+	AND REPLACE(REPLACE(REPLACE(CONVERT(VARCHAR(100), DATEADD(d, el.cs_end_day ,dbo.FN_TO_DATE(app.cs_study_start_date)), 120), '-', ''), ':', ''), ' ', '') <![CDATA[>=]]> dbo.FN_NOW_TO_CHAR()
+</if>
+	AND CONVERT(FLOAT,ISNULL(lm.cs_progress_measure,0)) <![CDATA[<]]> 1
+ORDER BY  el.cs_sort_order, item.cs_sort_order
+	</select>
+	
+	<select id="checkElementStydy" parameterType="map" resultType="String">
+		<if test='!courseApplySeq.equals("-1")'>
+SELECT 
+	CASE
+		WHEN MAX(app.cs_course_apply_seq) > 0 THEN 'Y'
+		ELSE 'N'
+	END checkResult
+FROM 
+	cs_course_apply app 
+   INNER JOIN cs_course_active act 
+       ON act.cs_course_active_seq = app.cs_course_active_seq 
+       AND act.cs_delete_yn = 'N' 
+   INNER JOIN cs_course_active_element ele
+       ON  act.cs_course_active_seq = ele.cs_course_active_seq
+	   AND ele.cs_reference_type_cd = '${CD.COURSE_ELEMENT_TYPE.ORGANIZATION}'
+	   AND ele.cs_delete_yn = 'N'
+   INNER JOIN cs_lcms_organization org 
+       ON  ele.cs_reference_seq = org.cs_organization_seq
+   INNER JOIN cs_lcms_item item
+       ON org.cs_organization_seq = item.cs_organization_seq
+       AND item.cs_delete_yn = 'N'
+WHERE
+		app.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+	AND org.cs_organization_seq = #{organizationSeq}
+	AND item.cs_item_seq = #{itemSeq} 
+		
+	AND app.cs_course_apply_seq = #{courseApplySeq}
+		</if>
+		<if test='courseApplySeq.equals("-1")'>
+SELECT 
+	CASE
+		WHEN MAX(org.cs_organization_seq) > 0 THEN 'Y'
+		ELSE 'N'
+	END checkResult
+FROM 
+   cs_lcms_organization org 
+   INNER JOIN cs_lcms_item item
+       ON org.cs_organization_seq = item.cs_organization_seq
+       AND item.cs_delete_yn = 'N'
+WHERE
+		org.cs_organization_seq = #{organizationSeq}
+	AND item.cs_item_seq = #{itemSeq} 
+		</if>
+    </select>
+</mapper>

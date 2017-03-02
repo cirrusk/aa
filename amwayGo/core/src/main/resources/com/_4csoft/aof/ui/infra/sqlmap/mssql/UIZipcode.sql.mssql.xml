@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.ZipcodeMapper">
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIZipcodeRS">
+        <result column="zipcode.zipcode"        property="zipcode.zipcode"        />
+        <result column="zipcode.sido"           property="zipcode.sido"           />
+        <result column="zipcode.sigungu"        property="zipcode.sigungu"        />
+        <result column="zipcode.dong"           property="zipcode.dong"           />
+        <result column="zipcode.ri"             property="zipcode.ri"             />
+        <result column="zipcode.street"         property="zipcode.street"         />
+        <result column="zipcode.streetCode"     property="zipcode.streetCode"     />
+        <result column="zipcode.building"       property="zipcode.building"       />
+        <result column="zipcode.buildingDetail" property="zipcode.buildingDetail" />
+        <result column="zipcode.buildingNum1"   property="zipcode.buildingNum1"   />
+        <result column="zipcode.buildingNum2"   property="zipcode.buildingNum2"   />
+        <result column="zipcode.san"            property="zipcode.san"            />
+        <result column="zipcode.jibun1"         property="zipcode.jibun1"         />
+        <result column="zipcode.jibun2"         property="zipcode.jibun2"         />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIZipcodeCondition" resultMap="listResultMap">
+/* UIZipcodeMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "zipcode.zipcode" ASC</when>
+            <when test='orderby == -1'>ORDER BY "zipcode.zipcode" DESC</when>
+            <otherwise>ORDER BY "zipcode.zipcode" ASC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT zipcode.cs_zipcode       AS "zipcode.zipcode" ,
+       zipcode.cs_sido          AS "zipcode.sido" ,
+       zipcode.cs_sigungu       AS "zipcode.sigungu" ,
+       zipcode.cs_dong          AS "zipcode.dong" ,
+       zipcode.cs_ri            AS "zipcode.ri" ,
+       zipcode.cs_street        AS "zipcode.street" ,
+       zipcode.cs_street_code   AS "zipcode.streetCode" ,
+       zipcode.cs_building      AS "zipcode.building" ,
+       zipcode.cs_building_detail AS "zipcode.buildingDetail" ,
+       zipcode.cs_building_num1 AS "zipcode.buildingNum1" ,
+       zipcode.cs_building_num2 AS "zipcode.buildingNum2" ,
+       zipcode.cs_san           AS "zipcode.san" ,
+       zipcode.cs_jibun1        AS "zipcode.jibun1" ,
+       zipcode.cs_jibun2        AS "zipcode.jibun2" 
+  FROM cs_zipcode zipcode 
+ WHERE 1 = 1 
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("street")'>
+       AND zipcode.cs_street LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("building")'>
+       AND zipcode.cs_building LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("buildingNum1")'>
+       AND zipcode.cs_building_num1 LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIZipcodeCondition" resultType="int">
+/* UIZipcodeMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_zipcode zipcode 
+ WHERE 1 = 1 
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("street")'>
+       AND zipcode.cs_street LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("building")'>
+       AND zipcode.cs_building LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("buildingNum1")'>
+       AND zipcode.cs_building_num1 LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+
+</mapper>

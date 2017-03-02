@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.RolegroupMemberMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIRolegroupMemberVO">
+		/* UIRolegroupMemberMapper.insert */
+		INSERT INTO cs_rolegroup_member 
+       ( 
+           cs_rolegroup_seq ,
+           cs_member_seq ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{rolegroupSeq, jdbcType=NUMERIC} ,
+           #{memberSeq, jdbcType=NUMERIC} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       ) 
+    </insert>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIRolegroupMemberVO">
+		/* UIRolegroupMemberMapper.delete */
+		UPDATE cs_rolegroup_member 
+		   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn = 'Y' 
+		 WHERE 	
+		 		   cs_rolegroup_seq = #{rolegroupSeq}
+		       AND cs_member_seq = #{memberSeq} 
+		       AND cs_delete_yn = 'N'  
+    </update>
+
+    <delete id="drop" parameterType="com._4csoft.aof.ui.infra.vo.UIRolegroupMemberVO">
+		/* UIRolegroupMemberMapper.drop */
+		DELETE FROM cs_rolegroup_member  
+		 WHERE 
+		 		   cs_rolegroup_seq = #{rolegroupSeq} 
+		       AND cs_member_seq = #{memberSeq} 
+    </delete>
+
+    <delete id="dropAllByRolegroup" parameterType="com._4csoft.aof.ui.infra.vo.UIRolegroupMemberVO">
+		/* UIRolegroupMemberMapper.dropAllByRolegroup */
+		DELETE FROM cs_rolegroup_member 
+		 WHERE cs_rolegroup_seq = #{rolegroupSeq}  
+    </delete>
+
+    <delete id="dropAllByMember" parameterType="com._4csoft.aof.ui.infra.vo.UIRolegroupMemberVO">
+		/* UIRolegroupMemberMapper.dropAllByMember */
+		DELETE FROM cs_rolegroup_member
+		 WHERE cs_member_seq = #{memberSeq} 
+    </delete>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIRolegroupRS">
+        <result column="rolm.rolegroupSeq" 			property="rolegroupMember.rolegroupSeq" />
+        <result column="rolm.memberSeq"    			property="rolegroupMember.memberSeq"    />
+        <result column="rolm.deleteYn"     			property="rolegroupMember.deleteYn"     />
+        <result column="rolm.regMemberSeq" 			property="rolegroupMember.regMemberSeq" />
+        <result column="rolm.regDtime"     			property="rolegroupMember.regDtime"     />
+        <result column="rolm.regIp"        			property="rolegroupMember.regIp"        />
+        <result column="rolm.updMemberSeq" 			property="rolegroupMember.updMemberSeq" />
+        <result column="rolm.updDtime"     			property="rolegroupMember.updDtime"     />
+        <result column="rolm.updIp"        			property="rolegroupMember.updIp"        />
+        <result column="memb.memberSeq"    			property="member.memberSeq"             />
+        <result column="memb.memberId"     			property="member.memberId"              />
+        <result column="memb.memberName"   			property="member.memberName"            />
+        <result column="memb.memberStatusCd"     	property="member.memberStatusCd"       />
+        <result column="memb.nickname"     			property="member.nickname"              />
+        <result column="memb.email"        			property="member.email"                 />
+        <result column="memb.photo"        			property="member.photo"                 />
+        <result column="memb.leaveDtime"   			property="member.leaveDtime"            />
+        <result column="comp.companySeq"   			property="company.companySeq"           />
+        <result column="comp.companyName"  			property="company.companyName"          />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIRolegroupCondition" resultMap="listResultMap">
+			/* UIRolegroupMemberMapper.getList */
+        <if test='currentPage != 0'>
+			SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "memb.memberName" ASC</when>
+            <when test='orderby == -1'>ORDER BY "memb.memberName" DESC</when>
+            <when test='orderby == 2'>ORDER BY "memb.memberId" ASC</when>
+            <when test='orderby == -2'>ORDER BY "memb.memberId" DESC</when>
+            <when test='orderby == 3'>ORDER BY "memb.email" ASC</when>
+            <when test='orderby == -3'>ORDER BY "memb.email" DESC</when>
+            <otherwise>ORDER BY "memb.memberName" ASC</otherwise>
+        </choose>
+			) AS rownumber, * FROM (
+        </if>
+			SELECT rolm.cs_rolegroup_seq  		AS "rolm.rolegroupSeq" ,
+			       rolm.cs_member_seq     		AS "rolm.memberSeq" ,
+			       rolm.cs_delete_yn      		AS "rolm.deleteYn" ,
+			       rolm.cs_reg_member_seq 		AS "rolm.regMemberSeq" ,
+			       rolm.cs_reg_dtime      		AS "rolm.regDtime" ,
+			       rolm.cs_reg_ip         		AS "rolm.regIp" ,
+			       rolm.cs_upd_member_seq 		AS "rolm.updMemberSeq" ,
+			       rolm.cs_upd_dtime      		AS "rolm.updDtime" ,
+			       rolm.cs_upd_ip         		AS "rolm.updIp" ,
+			       memb.cs_member_seq     		AS "memb.memberSeq" ,
+			       memb.cs_member_id      		AS "memb.memberId" ,
+			       memb.cs_member_name    		AS "memb.memberName" ,
+			       memb.cs_member_status_cd     AS "memb.memberStatusCd" ,
+			       memb.cs_nickname       		AS "memb.nickname" ,
+			       memb.cs_email          		AS "memb.email" ,
+			       memb.cs_photo          		AS "memb.photo" ,
+			       memb.cs_leave_dtime    		AS "memb.leaveDtime" ,
+			       comp.cs_company_seq    		AS "comp.companySeq" , 
+			       comp.cs_company_name   		AS "comp.companyName"
+			  FROM cs_rolegroup_member rolm 
+			   	INNER JOIN cs_member memb 
+			       ON memb.cs_member_seq = rolm.cs_member_seq 
+			       AND memb.cs_delete_yn = 'N' 
+				LEFT OUTER JOIN cs_company_member compm
+			   	   ON compm.cs_member_seq = memb.cs_member_seq 
+				   AND compm.cs_delete_yn = 'N'
+			   	LEFT OUTER JOIN cs_company comp 
+			       ON comp.cs_company_seq = compm.cs_company_seq 
+			       AND comp.cs_delete_yn = 'N' 
+			  WHERE rolm.cs_delete_yn = 'N'  
+        <if test='srchRolegroupSeq != null and !srchRolegroupSeq.equals("")'>
+       		 	AND rolm.cs_rolegroup_seq = #{srchRolegroupSeq}
+        </if>
+        <if test='srchMemberStatusCd != null and !srchMemberStatusCd.equals("")'>
+	   			AND memb.cs_member_status_cd = #{srchMemberStatusCd}
+	    </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("memberId")'>
+       			AND memb.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("memberName")'>
+       			AND memb.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("nickname")'>
+       			AND memb.cs_nickname LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+
+        <if test='currentPage != 0'>
+			) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIRolegroupCondition" resultType="int">
+		/* UIRolegroupMemberMapper.countList */
+		SELECT COUNT(*) 
+		  FROM cs_rolegroup_member rolm 
+		   	INNER JOIN cs_member memb 
+		       ON memb.cs_member_seq = rolm.cs_member_seq 
+		       AND memb.cs_delete_yn = 'N' 
+		 	LEFT OUTER JOIN cs_company_member compm
+		   	   ON compm.cs_member_seq = memb.cs_member_seq 
+			   AND compm.cs_delete_yn = 'N'
+		   	LEFT OUTER JOIN cs_company comp 
+		       ON comp.cs_company_seq = compm.cs_company_seq 
+		       AND comp.cs_delete_yn = 'N' 
+		 WHERE rolm.cs_delete_yn = 'N'  
+		    <if test='srchRolegroupSeq != null and !srchRolegroupSeq.equals("")'>
+       		 	AND rolm.cs_rolegroup_seq = #{srchRolegroupSeq}
+	        </if>
+	        <if test='srchMemberStatusCd != null and !srchMemberStatusCd.equals("")'>
+	       			AND memb.cs_member_status_cd = #{srchMemberStatusCd}
+	        </if>
+	        <if test='srchWord != null and !srchWord.equals("")'>
+	            <if test='srchKey.equals("memberId")'>
+	       			AND memb.cs_member_id LIKE '%' + #{srchWordDB} + '%'
+	            </if>
+	            <if test='srchKey.equals("memberName")'>
+	       			AND memb.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+	            </if>
+	            <if test='srchKey.equals("nickname")'>
+	       			AND memb.cs_nickname LIKE '%' + #{srchWordDB} + '%'
+	            </if>
+	        </if>
+    </select>
+
+    <select id="getListByMemberId" parameterType="String" resultType="com._4csoft.aof.ui.infra.vo.UIRolegroupVO">
+		/* UIRolegroupMemberMapper.getRolegroupListByMemberId */
+		SELECT rolg.cs_rolegroup_seq 	AS "rolegroupSeq" , 
+		       rolg.cs_parent_seq 		AS "parentSeq" , 
+		       rolg.cs_rolegroup_name 	AS "rolegroupName" , 
+			   rolg.cs_sort_order 		AS "sortOrder" ,
+			   rolg.cs_group_order 		AS "groupOrder",
+		       rolg.cs_role_cd 			AS "roleCd" , 
+		       rolg.cs_access_ftp_dir 	AS "accessFtpDir" ,
+		       rolg.cs_cf_string 	 	AS "cfString"
+		  FROM cs_rolegroup_member rolm 
+		   INNER JOIN cs_rolegroup rolg 
+		       ON rolg.cs_rolegroup_seq = rolm.cs_rolegroup_seq 
+		       AND rolg.cs_delete_yn = 'N' 
+		   INNER JOIN cs_member memb 
+		       ON rolm.cs_member_seq = memb.cs_member_seq 
+		       AND memb.cs_member_id = #{memberId} 
+		       AND memb.cs_delete_yn = 'N' 
+		 WHERE rolm.cs_delete_yn = 'N' 
+		ORDER BY rolg.cs_role_cd ASC, 
+		       rolg.cs_rolegroup_seq ASC 
+    </select>
+
+    <select id="countMemberSeq" parameterType="map" resultType="int">
+		/* UIRolegroupMemberMapper.countMemberSeq */
+		SELECT COUNT(*) 
+		  FROM cs_rolegroup_member 
+		 WHERE cs_rolegroup_seq = #{rolegroupSeq} 
+		       AND cs_member_seq = #{memberSeq} 
+    </select>
+
+</mapper>

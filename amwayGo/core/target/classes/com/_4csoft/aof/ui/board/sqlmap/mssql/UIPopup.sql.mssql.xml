@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.board.mapper.PopupMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.board.vo.UIPopupVO">
+        <selectKey resultType="Long" keyProperty="popupSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIPopupMapper.insert */
+INSERT INTO cs_popup 
+       ( 
+           cs_popup_type_cd,
+           cs_popup_input_type_cd,
+           cs_popup_title,
+           cs_description,
+           cs_file_path,
+           cs_url,
+           cs_start_dtime,
+           cs_end_dtime,
+           cs_width_size,
+           cs_height_size,
+           cs_area_setting,
+           cs_popup_template_type_cd,
+           cs_popup_confirm_type_cd,
+           cs_use_yn,
+           cs_reg_member_seq,
+           cs_reg_dtime,
+           cs_reg_ip,
+           cs_upd_member_seq,
+           cs_upd_dtime,
+           cs_upd_ip
+       ) 
+       VALUES 
+       ( 
+           #{popupTypeCd, jdbcType=VARCHAR}, 
+           #{popupInputTypeCd, jdbcType=VARCHAR}, 
+           #{popupTitle, jdbcType=VARCHAR}, 
+           #{description, jdbcType=VARCHAR}, 
+           #{filePath, jdbcType=VARCHAR}, 
+           #{url, jdbcType=VARCHAR}, 
+           #{startDtime, jdbcType=VARCHAR}, 
+           #{endDtime, jdbcType=VARCHAR}, 
+           #{widthSize, jdbcType=NUMERIC}, 
+           #{heightSize, jdbcType=NUMERIC}, 
+           #{areaSetting, jdbcType=VARCHAR}, 
+           #{popupTemplateTypeCd, jdbcType=VARCHAR}, 
+           #{popupConfirmTypeCd, jdbcType=VARCHAR}, 
+           #{useYn, jdbcType=VARCHAR}, 
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.board.vo.UIPopupVO">
+/* UIPopupMapper.update */
+UPDATE cs_popup 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() , 
+   	   cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_popup_type_cd = #{popupTypeCd, jdbcType=VARCHAR} , 
+       cs_popup_input_type_cd = #{popupInputTypeCd, jdbcType=VARCHAR} , 
+       cs_popup_title = #{popupTitle, jdbcType=VARCHAR} , 
+       cs_description = #{description, jdbcType=VARCHAR} , 
+       cs_file_path = #{filePath, jdbcType=VARCHAR} , 
+       cs_url = #{url, jdbcType=VARCHAR} , 
+       cs_start_dtime = #{startDtime, jdbcType=VARCHAR},
+       cs_end_dtime = #{endDtime, jdbcType=VARCHAR},
+       cs_width_size = #{widthSize, jdbcType=NUMERIC},
+       cs_height_size = #{heightSize, jdbcType=NUMERIC},
+       cs_area_setting = #{areaSetting, jdbcType=VARCHAR},
+       cs_popup_template_type_cd = #{popupTemplateTypeCd, jdbcType=VARCHAR},
+       cs_popup_confirm_type_cd = #{popupConfirmTypeCd, jdbcType=VARCHAR},
+       cs_use_yn = #{useYn, jdbcType=VARCHAR}
+ WHERE cs_popup_seq = #{popupSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.board.vo.UIPopupVO">
+/* UIPopUpMapper.delete */
+UPDATE cs_popup 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() , 
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+       cs_delete_yn = 'Y' 
+ WHERE cs_popup_seq = #{popupSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.board.vo.resultset.UIPopupRS">
+        <result column="popup.popupSeq"             property="popup.popupSeq"            />
+        <result column="popup.popupTypeCd"          property="popup.popupTypeCd"         />
+        <result column="popup.popupInputTypeCd"     property="popup.popupInputTypeCd"    />
+        <result column="popup.popupTitle"           property="popup.popupTitle"          />
+        <result column="popup.description"          property="popup.description"         />
+        <result column="popup.filePath"             property="popup.filePath"            />
+        <result column="popup.url"                  property="popup.url"                 />
+        <result column="popup.startDtime"           property="popup.startDtime"          />
+        <result column="popup.endDtime"             property="popup.endDtime"            />
+        <result column="popup.widthSize"            property="popup.widthSize"           />
+        <result column="popup.heightSize"           property="popup.heightSize"          />
+        <result column="popup.areaSetting"          property="popup.areaSetting"         />
+        <result column="popup.popupTemplateTypeCd"  property="popup.popupTemplateTypeCd" />
+        <result column="popup.popupConfirmTypeCd"   property="popup.popupConfirmTypeCd"  />
+        <result column="popup.useYn"                property="popup.useYn"               />
+        <result column="popup.deleteYn"             property="popup.deleteYn"            />
+        <result column="popup.regMemberSeq"         property="popup.regMemberSeq"        />
+        <result column="popup.regDtime"             property="popup.regDtime"            />
+        <result column="popup.regIp"                property="popup.regIp"               />
+        <result column="popup.updMemberSeq"         property="popup.updMemberSeq"        />
+        <result column="popup.updDtime"             property="popup.updDtime"            />
+        <result column="popup.updIp"                property="popup.updIp"               />
+        <result column="popup.regMemberName"        property="popup.regMemberName"       />
+        <result column="popup.updMemberName"        property="popup.updMemberName"       />
+        <result column="referenceTablename" />
+        <collection column="{referenceSeq=popup.popupSeq,referenceTablename=referenceTablename}" property="popup.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIPopupMapper.getDetail */
+SELECT cs_popup_seq              AS "popup.popupSeq",
+       cs_popup_type_cd          AS "popup.popupTypeCd",
+       cs_popup_input_type_cd    AS "popup.popupInputTypeCd",
+       cs_popup_title            AS "popup.popupTitle",
+       cs_description            AS "popup.description",
+       cs_file_path              AS "popup.filePath",
+       cs_url                    AS "popup.url",
+       cs_start_dtime            AS "popup.startDtime",
+       cs_end_dtime              AS "popup.endDtime",
+       cs_width_size             AS "popup.widthSize",
+       cs_height_size            AS "popup.heightSize",
+       cs_area_setting           AS "popup.areaSetting",
+       cs_popup_template_type_cd AS "popup.popupTemplateTypeCd",
+       cs_popup_confirm_type_cd  AS "popup.popupConfirmTypeCd",
+       cs_use_yn                 AS "popup.useYn",
+       cs_delete_yn              AS "popup.deleteYn",
+       cs_reg_member_seq         AS "popup.regMemberSeq",
+       cs_reg_dtime              AS "popup.regDtime",
+       cs_reg_ip                 AS "popup.regIp",
+       cs_upd_member_seq         AS "popup.updMemberSeq",
+       cs_upd_dtime              AS "popup.updDtime",
+       cs_upd_ip                 AS "popup.updIp",
+       (SELECT rmem.cs_member_name FROM cs_member rmem WHERE rmem.cs_member_seq = pop.cs_reg_member_seq) AS "popup.regMemberName",
+       (SELECT umem.cs_member_name FROM cs_member umem WHERE umem.cs_member_seq = pop.cs_upd_member_seq) AS "popup.updMemberName",
+       'cs_popup'             AS "referenceTablename"
+  FROM cs_popup pop
+ WHERE cs_popup_seq = #{popupSeq} 
+       AND cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.board.vo.resultset.UIPopupRS">
+        <result column="popup.popupSeq"             property="popup.popupSeq"            />
+        <result column="popup.popupTypeCd"          property="popup.popupTypeCd"         />
+        <result column="popup.popupInputTypeCd"     property="popup.popupInputTypeCd"    />
+        <result column="popup.popupTitle"           property="popup.popupTitle"          />
+        <result column="popup.description"          property="popup.description"         />
+        <result column="popup.filePath"             property="popup.filePath"            />
+        <result column="popup.url"                  property="popup.url"                 />
+        <result column="popup.startDtime"           property="popup.startDtime"          />
+        <result column="popup.endDtime"             property="popup.endDtime"            />
+        <result column="popup.widthSize"            property="popup.widthSize"           />
+        <result column="popup.heightSize"           property="popup.heightSize"          />
+        <result column="popup.areaSetting"          property="popup.areaSetting"         />
+        <result column="popup.popupTemplateTypeCd"  property="popup.popupTemplateTypeCd" />
+        <result column="popup.popupConfirmTypeCd"   property="popup.popupConfirmTypeCd"  />
+        <result column="popup.useYn"                property="popup.useYn"               />
+        <result column="popup.deleteYn"             property="popup.deleteYn"            />
+        <result column="popup.regMemberSeq"         property="popup.regMemberSeq"        />
+        <result column="popup.regDtime"             property="popup.regDtime"            />
+        <result column="popup.regIp"                property="popup.regIp"               />
+        <result column="popup.updMemberSeq"         property="popup.updMemberSeq"        />
+        <result column="popup.updDtime"             property="popup.updDtime"            />
+        <result column="popup.updIp"                property="popup.updIp"               />
+        <result column="popup.regMemberName"        property="popup.regMemberName"       />
+        <result column="popup.updMemberName"        property="popup.updMemberName"       />
+        <result column="popup.attachCount"      property="popup.attachCount"      />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.board.vo.condition.UIPopupCondition" resultMap="listResultMap">
+/* UIPopupMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "popup.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "popup.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "popup.popupTitle" ASC</when>
+            <when test='orderby == -2'>ORDER BY "popup.popupTitle" DESC</when>
+            <otherwise>ORDER BY "popup.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+	SELECT pop.cs_popup_seq              AS "popup.popupSeq",
+	       pop.cs_popup_type_cd          AS "popup.popupTypeCd",
+	       pop.cs_popup_input_type_cd    AS "popup.popupInputTypeCd",
+	       pop.cs_popup_title            AS "popup.popupTitle",
+	       pop.cs_description            AS "popup.description",
+	       pop.cs_file_path              AS "popup.filePath",
+	       pop.cs_url                    AS "popup.url",
+	       pop.cs_start_dtime            AS "popup.startDtime",
+	       pop.cs_end_dtime              AS "popup.endDtime",
+	       pop.cs_width_size             AS "popup.widthSize",
+	       pop.cs_height_size            AS "popup.heightSize",
+	       pop.cs_area_setting           AS "popup.areaSetting",
+	       pop.cs_popup_template_type_cd AS "popup.popupTemplateTypeCd",
+	       pop.cs_popup_confirm_type_cd  AS "popup.popupConfirmTypeCd",
+	       pop.cs_use_yn                 AS "popup.useYn",
+	       pop.cs_delete_yn              AS "popup.deleteYn",
+	       pop.cs_reg_member_seq         AS "popup.regMemberSeq",
+	       pop.cs_reg_dtime              AS "popup.regDtime",
+	       pop.cs_reg_ip                 AS "popup.regIp",
+	       pop.cs_upd_member_seq         AS "popup.updMemberSeq",
+	       pop.cs_upd_dtime              AS "popup.updDtime",
+	       pop.cs_upd_ip                 AS "popup.updIp",
+	       rmem.cs_member_name 			 AS "popup.regMemberName",
+	       umem.cs_member_name 			 AS "popup.updMemberName",
+	       (SELECT COUNT(*)
+	          FROM cs_attach
+	         WHERE cs_reference_seq = pop.cs_popup_seq
+	           AND cs_reference_tablename = 'cs_popup'
+	           AND cs_delete_yn = 'N'
+	       ) AS "popup.attachCount"
+  	  FROM cs_popup pop
+INNER JOIN cs_member rmem
+        ON rmem.cs_member_seq = pop.cs_reg_member_seq
+INNER JOIN cs_member umem
+        ON umem.cs_member_seq = pop.cs_reg_member_seq
+     WHERE pop.cs_delete_yn = 'N'
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("popupTitle")'>
+       AND pop.cs_popup_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND pop.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='srchUseYn != null and !srchUseYn.equals("")'>
+       AND pop.cs_use_yn = #{srchUseYn}       
+        </if>
+
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.board.vo.condition.UIPopupCondition" resultType="int">
+/* UIPopupMapper.countList */
+SELECT COUNT(*)
+   FROM cs_popup
+ WHERE cs_delete_yn = 'N'
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("popupTitle")'>
+       AND cs_popup_title LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("description")'>
+       AND cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='srchUseYn != null and !srchUseYn.equals("")'>
+       AND cs_use_yn = #{srchUseYn}       
+        </if>
+    </select>
+    
+    <resultMap id="listTodayResultMap" type="com._4csoft.aof.ui.board.vo.resultset.UIPopupRS">
+        <result column="popup.popupSeq"             property="popup.popupSeq"            />
+        <result column="popup.popupTypeCd"          property="popup.popupTypeCd"         />
+        <result column="popup.popupInputTypeCd"     property="popup.popupInputTypeCd"    />
+        <result column="popup.popupTitle"           property="popup.popupTitle"          />
+        <result column="popup.description"          property="popup.description"         />
+        <result column="popup.filePath"             property="popup.filePath"            />
+        <result column="popup.url"                  property="popup.url"                 />
+        <result column="popup.startDtime"           property="popup.startDtime"          />
+        <result column="popup.endDtime"             property="popup.endDtime"            />
+        <result column="popup.widthSize"            property="popup.widthSize"           />
+        <result column="popup.heightSize"           property="popup.heightSize"          />
+        <result column="popup.areaSetting"          property="popup.areaSetting"         />
+        <result column="popup.popupTemplateTypeCd"  property="popup.popupTemplateTypeCd" />
+        <result column="popup.popupConfirmTypeCd"   property="popup.popupConfirmTypeCd"  />
+        <result column="popup.useYn"                property="popup.useYn"               />
+        <result column="popup.deleteYn"             property="popup.deleteYn"            />
+        <result column="popup.regMemberSeq"         property="popup.regMemberSeq"        />
+        <result column="popup.regDtime"             property="popup.regDtime"            />
+        <result column="popup.regIp"                property="popup.regIp"               />
+        <result column="popup.updMemberSeq"         property="popup.updMemberSeq"        />
+        <result column="popup.updDtime"             property="popup.updDtime"            />
+        <result column="popup.updIp"                property="popup.updIp"               />
+        <result column="popup.regMemberName"        property="popup.regMemberName"       />
+        <result column="popup.updMemberName"        property="popup.updMemberName"       />
+    </resultMap>
+    <select id="getListToday" resultMap="listTodayResultMap">
+/* UIPopupMapper.getListToday */
+	SELECT pop.cs_popup_seq              AS "popup.popupSeq",
+	       pop.cs_popup_type_cd          AS "popup.popupTypeCd",
+	       pop.cs_popup_input_type_cd    AS "popup.popupInputTypeCd",
+	       pop.cs_popup_title            AS "popup.popupTitle",
+	       pop.cs_description            AS "popup.description",
+	       pop.cs_file_path              AS "popup.filePath",
+	       pop.cs_url                    AS "popup.url",
+	       pop.cs_start_dtime            AS "popup.startDtime",
+	       pop.cs_end_dtime              AS "popup.endDtime",
+	       pop.cs_width_size             AS "popup.widthSize",
+	       pop.cs_height_size            AS "popup.heightSize",
+	       pop.cs_area_setting           AS "popup.areaSetting",
+	       pop.cs_popup_template_type_cd AS "popup.popupTemplateTypeCd",
+	       pop.cs_popup_confirm_type_cd  AS "popup.popupConfirmTypeCd",
+	       pop.cs_use_yn                 AS "popup.useYn",
+	       pop.cs_delete_yn              AS "popup.deleteYn",
+	       pop.cs_reg_member_seq         AS "popup.regMemberSeq",
+	       pop.cs_reg_dtime              AS "popup.regDtime",
+	       pop.cs_reg_ip                 AS "popup.regIp",
+	       pop.cs_upd_member_seq         AS "popup.updMemberSeq",
+	       pop.cs_upd_dtime              AS "popup.updDtime",
+	       pop.cs_upd_ip                 AS "popup.updIp",
+	       rmem.cs_member_name  	 	 AS "popup.regMemberName",
+	       umem.cs_member_name  	 	 AS "popup.updMemberName"
+      FROM cs_popup pop
+INNER JOIN cs_member rmem
+        ON rmem.cs_member_seq = pop.cs_reg_member_seq
+INNER JOIN cs_member umem
+        ON umem.cs_member_seq = pop.cs_reg_member_seq
+	 WHERE pop.cs_delete_yn = 'N'
+	   AND GETDATE() BETWEEN dbo.FN_TO_DATE(pop.cs_start_dtime) AND dbo.FN_TO_DATE(pop.cs_end_dtime)  
+	   AND pop.cs_use_yn = 'Y'
+	ORDER BY pop.cs_start_dtime ASC
+    </select>
+    
+</mapper>

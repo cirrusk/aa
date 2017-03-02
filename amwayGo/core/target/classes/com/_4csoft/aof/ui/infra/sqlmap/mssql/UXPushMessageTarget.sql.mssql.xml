@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.infra.mapper.UIPushMessageTargetMapper">
+	
+    <insert id="insertlistMessageOfCourseApply" parameterType="com._4csoft.aof.ui.infra.vo.UIPushMessageTargetVO">
+/* UIPushMessageTargetMapper.insertlistMessageOfCourseApply */
+INSERT INTO dbo.cs_push_message_target 
+       ( 
+           cs_schedule_dtime , 
+           cs_member_seq , 
+           cs_push_message , 
+           cs_device_vendor_type , 
+           cs_device_type , 
+           cs_container_id , 
+           cs_push_message_type , 
+           cs_push_send_status , 
+           cs_device_id , 
+           cx_course_active_seq,
+           cs_push_title,
+           cs_reg_member_seq , 
+           cs_upd_member_seq , 
+           cs_reg_dtime , 
+           cs_upd_dtime , 
+           cs_reg_ip , 
+           cs_upd_ip 
+       ) 
+		SELECT dbo.FN_NOW_TO_CHAR() AS cs_schedule_dtime , 
+		       ca.cs_member_seq , 
+		       #{pushMessage} 		AS cs_push_message , 
+		       d.cs_device_vendor_type , 
+		       d.cs_device_type , 
+		       1 					AS cs_container_id , 
+		       #{pushMessageType} + (CASE  
+				 WHEN cac.cs_study_start_date <![CDATA[ <= ]]> dbo.fn_now_to_char() 
+				  AND cac.cs_study_end_date   <![CDATA[ >= ]]> dbo.fn_now_to_char() 
+				 THEN 'ING' 
+				 WHEN cac.cs_study_start_date <![CDATA[ > ]]> dbo.fn_now_to_char() 
+				 THEN 'WAIT' 
+				 WHEN cac.cs_study_end_date  <![CDATA[ <= ]]> dbo.fn_now_to_char() 
+				 THEN 'END' END) AS cs_push_message_type , 
+		       '00' 				AS cs_push_send_status , 
+		       d.cs_device_id,
+		       ca.cs_course_active_seq,
+		       cac.cs_course_active_title+' - ' + #{pushTitle,      jdbcType=NUMERIC},
+		       #{regMemberSeq,   jdbcType=NUMERIC},
+		       #{updMemberSeq,   jdbcType=NUMERIC},
+		       dbo.FN_NOW_TO_CHAR() ,
+		       dbo.FN_NOW_TO_CHAR() ,
+		       #{regIp,          jdbcType=VARCHAR},
+		       #{updIp,          jdbcType=VARCHAR}
+		  FROM cs_course_apply ca
+		  INNER JOIN cs_course_active cac
+	 	  ON cac.cs_course_active_seq = ca.cs_course_active_seq
+		  AND  cac.cs_delete_yn = 'N' 
+    INNER JOIN cs_device d 
+		    ON d.cs_delete_yn = 'N' 
+		   AND ca.cs_member_seq  = d.cs_member_seq 
+		 WHERE ca.cs_delete_yn   = 'N' 
+		   AND ca.cs_course_active_seq = #{courseActiveSeq}
+		   AND ca.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+	UNION ALL
+		SELECT dbo.FN_NOW_TO_CHAR() AS cs_schedule_dtime , 
+		       cal.cs_member_seq , 
+		       #{pushMessage} 		AS cs_push_message , 
+		       d.cs_device_vendor_type , 
+		       d.cs_device_type , 
+		       1 					AS cs_container_id , 
+		       #{pushMessageType} + (CASE  
+			  WHEN cac.cs_study_start_date <![CDATA[ <= ]]> dbo.fn_now_to_char() 
+			  AND cac.cs_study_end_date   <![CDATA[ >= ]]> dbo.fn_now_to_char() 
+			 THEN 'ING' 
+			 WHEN cac.cs_study_start_date <![CDATA[ > ]]> dbo.fn_now_to_char() 
+			 THEN 'WAIT' 
+			 WHEN cac.cs_study_end_date  <![CDATA[ <= ]]> dbo.fn_now_to_char() 
+			 THEN 'END' END)   AS cs_push_message_type , 
+		       '00' 				AS cs_push_send_status , 
+		       d.cs_device_id,
+		       cal.cs_course_active_seq,
+		       cac.cs_course_active_title+' - ' + #{pushTitle,      jdbcType=NUMERIC},
+		       #{regMemberSeq,   jdbcType=NUMERIC},
+		       #{updMemberSeq,   jdbcType=NUMERIC},
+		       dbo.FN_NOW_TO_CHAR() ,
+		       dbo.FN_NOW_TO_CHAR() ,
+		       #{regIp,          jdbcType=VARCHAR},
+		       #{updIp,          jdbcType=VARCHAR} 	   
+		FROM cs_member mem
+			INNER JOIN cs_course_active_lecturer cal
+			ON mem.CS_MEMBER_SEQ = cal.cs_member_seq
+			AND cal.cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.PROF}'
+			AND cal.cs_delete_yn = 'N'
+			INNER JOIN cs_course_active cac
+	 	    ON cac.cs_course_active_seq = cal.cs_course_active_seq
+		    AND  cac.cs_delete_yn = 'N'
+			INNER JOIN cs_device d
+			ON d.cs_delete_yn = 'N' 
+		    AND cal.cs_member_seq = d.cs_member_seq
+		WHERE mem.cs_delete_yn = 'N'
+			AND cal.cs_course_active_seq = #{courseActiveSeq}
+    </insert>
+    
+    <select id="countMessageOfCourseApply" parameterType="com._4csoft.aof.ui.infra.vo.UIPushMessageTargetVO" resultType="int">
+        /* UIPushMessageTargetMapper.countMessageOfCourseApply */
+		SELECT COUNT(*) 
+	  FROM 
+	       (SELECT ca.cs_member_seq 
+	         FROM cs_course_apply ca 
+	          INNER JOIN cs_device d 
+	              ON d.cs_delete_yn = 'N' 
+	              AND ca.cs_member_seq = d.cs_member_seq 
+	        WHERE ca.cs_delete_yn = 'N' 
+	              AND ca.cs_course_active_seq = #{courseActiveSeq} 
+	              AND ca.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+	           UNION ALL 
+	       SELECT mem.cs_member_seq 
+	         FROM cs_member mem 
+	          INNER JOIN cs_course_active_lecturer cal 
+	              ON mem.CS_MEMBER_SEQ = cal.cs_member_seq 
+	              AND cal.cs_active_lecturer_type_cd = '${CD.ACTIVE_LECTURER_TYPE.PROF}' 
+	              AND cal.cs_delete_yn = 'N' 
+	          INNER JOIN cs_device d 
+	              ON d.cs_delete_yn = 'N' 
+	              AND cal.cs_member_seq = d.cs_member_seq 
+	        WHERE mem.cs_delete_yn = 'N'
+	        	  AND cal.cs_course_active_seq = #{courseActiveSeq}
+	       ) a
+    </select>
+    
+    
+    <insert id="insertPushSendMember" parameterType="com._4csoft.aof.ui.infra.vo.UIPushMessageTargetVO">
+    	/* UIPushMessageTargetMapper.insertPushSendMember */
+    	INSERT 
+		  INTO dbo.cs_push_message_target 
+		       ( 
+		           cs_schedule_dtime , 
+		           cs_member_seq , 
+		           cs_push_message , 
+		           cs_device_vendor_type , 
+		           cs_device_type , 
+		           cs_container_id , 
+		           cs_push_message_type , 
+		           cs_push_send_status , 
+		           cs_device_id , 
+		           cs_push_title, 
+		           cs_reg_member_seq , 
+		           cs_upd_member_seq , 
+		           cs_reg_dtime , 
+		           cs_upd_dtime , 
+		           cs_reg_ip , 
+		           cs_upd_ip 
+		       )
+			SELECT dbo.FN_NOW_TO_CHAR() AS cs_schedule_dtime , 
+			       mem.cs_member_seq , 
+			       #{pushMessage} AS cs_push_message , 
+			       d.cs_device_vendor_type , 
+			       d.cs_device_type , 
+			       1 AS cs_container_id , 
+			       #{pushMessageType} AS cs_push_message_type , 
+			       '00' AS cs_push_send_status , 
+			       d.cs_device_id,  
+			       #{pushTitle,      jdbcType=NUMERIC},
+			       #{regMemberSeq,   jdbcType=NUMERIC},
+			       #{updMemberSeq,   jdbcType=NUMERIC},
+			       dbo.FN_NOW_TO_CHAR() , 
+			       dbo.FN_NOW_TO_CHAR() , 
+			       #{regIp,          jdbcType=VARCHAR},
+				   #{updIp,          jdbcType=VARCHAR}
+			  FROM cs_member mem 
+			   INNER JOIN cs_device d 
+			       ON d.cs_delete_yn = 'N' 
+			       AND mem.cs_member_seq = d.cs_member_seq 
+			 WHERE mem.cs_delete_yn = 'N'
+			 AND mem.cs_member_seq in 
+			 	<foreach collection="memberSeqs" item="item" open="(" separator="," close=")" index="index">
+			 		#{item}
+			 	</foreach>
+    </insert>
+    
+    <select id="countPushSendMember" parameterType="com._4csoft.aof.ui.infra.vo.UIPushMessageTargetVO" resultType="int">
+    	/* UIPushMessageTargetMapper.countPushSendMember */
+    	SELECT COUNT(*)
+			  FROM cs_member mem 
+			   INNER JOIN cs_device d 
+			       ON d.cs_delete_yn = 'N' 
+			       AND mem.cs_member_seq = d.cs_member_seq 
+			 WHERE mem.cs_delete_yn = 'N'
+			 AND mem.cs_member_seq in 
+			 	<foreach collection="memberSeqs" item="item" open="(" separator="," close=")" index="index">
+			 		#{item}
+			 	</foreach>
+    </select>
+</mapper>

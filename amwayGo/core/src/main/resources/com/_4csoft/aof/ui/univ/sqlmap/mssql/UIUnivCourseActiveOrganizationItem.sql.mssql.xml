@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveOrganizaionItemMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveOrganizationItemVO">
+        <selectKey resultType="Long" keyProperty="organizationItemSeq" order="AFTER">
+        SELECT @@IDENTITY
+        </selectKey>
+		/* UnivCourseActiveOrganizaionItemMapper.insert */
+		insert into cs_course_active_organization_item (
+			cs_course_active_element_seq,
+			cs_course_active_seq,
+			cs_organization_seq,
+			cs_item_seq,
+			cs_reg_member_seq,
+			cs_upd_member_seq,
+			cs_reg_dtime,
+			cs_upd_dtime,
+			cs_reg_ip,
+			cs_upd_ip
+		) values (
+			#{courseActiveElementSeq, jdbcType=NUMERIC},
+			#{courseActiveSeq, jdbcType=NUMERIC},
+			#{organizationSeq, jdbcType=NUMERIC},
+			#{itemSeq, jdbcType=NUMERIC},
+			#{regMemberSeq, jdbcType=NUMERIC} ,
+			#{updMemberSeq, jdbcType=NUMERIC} ,
+		    dbo.FN_NOW_TO_CHAR() ,
+			dbo.FN_NOW_TO_CHAR() ,
+		    #{regIp, jdbcType=VARCHAR} ,
+		    #{updIp, jdbcType=VARCHAR}
+		)
+    </insert>
+    
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveOrganizationItemRS">
+		<result column="item.cs_item_seq"						property="item.itemSeq"		/>
+		<result column="item.cs_organization_seq"				property="item.organizationSeq"		/>
+		<result column="item.cs_sort_order"						property="item.sortOrder"		/>
+		<result column="item.cs_level"							property="item.level"		/>
+		<result column="item.cs_title"							property="item.title"		/>
+		<result column="item.cs_identifier"						property="item.identifier"		/>
+		<result column="item.cs_parameters"						property="item.parameters"		/>
+		<result column="item.cs_data_from_lms"					property="item.dataFromLms"		/>
+		<result column="item.cs_time_limit_action"				property="item.timeLimitAction"		/>
+		<result column="item.cs_min_normalized_measure"			property="item.minNormalizedMeasure"		/>
+		<result column="item.cs_attempt_duration_limit"			property="item.attemptDurationLimit"		/>
+		<result column="item.cs_completion_threshold"			property="item.completionThreshold"		/>
+		<result column="item.cs_delete_yn"						property="item.deleteYn"		/>
+		<result column="item.cs_reg_member_seq"					property="item.regMemberSeq"		/>
+		<result column="item.cs_reg_dtime"						property="item.regDtime"		/>
+		<result column="item.cs_reg_ip"							property="item.regIp"		/>
+		<result column="item.cs_upd_member_seq"					property="item.updMemberSeq"		/>
+		<result column="item.cs_upd_dtime"						property="item.updDtime"		/>
+		<result column="item.cs_upd_ip"							property="item.updIp"		/>
+		<result column="activeItem.cs_organization_item_seq"	property="activeItem.organizationItemSeq" />
+		<result column="referenceTablename" />
+        <collection column="{referenceSeq=activeItem.cs_organization_item_seq,referenceTablename=referenceTablename}" property="activeItem.attachList" javaType="List" 
+            ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+	</resultMap>
+    <select id="getListActiveItemByOrganizationSeq" parameterType="map" resultMap="listResultMap">
+		/* UnivCourseActiveOrganizaionItemMapper.getListByOrganizationSeq */
+		SELECT item.cs_item_seq AS "item.cs_item_seq",
+		       item.cs_organization_seq AS "item.cs_organization_seq",
+		       item.cs_sort_order AS "item.cs_sort_order",
+		       item.cs_level AS "item.cs_level",
+		       item.cs_title AS "item.cs_title",
+		       item.cs_identifier AS "item.cs_identifier",
+		       item.cs_parameters AS "item.cs_parameters",
+		       item.cs_data_from_lms AS "item.cs_data_from_lms",
+		       item.cs_time_limit_action AS "item.cs_time_limit_action",
+		       item.cs_min_normalized_measure AS "item.cs_min_normalized_measure",
+		       item.cs_attempt_duration_limit AS "item.cs_attempt_duration_limit",
+		       item.cs_completion_threshold AS "item.cs_completion_threshold",
+		       item.cs_delete_yn AS "item.cs_delete_yn",
+		       item.cs_reg_member_seq AS "item.cs_reg_member_seq",
+		       item.cs_reg_dtime AS "item.cs_reg_dtime",
+		       item.cs_reg_ip AS "item.cs_reg_ip",
+		       item.cs_upd_member_seq AS "item.cs_upd_member_seq",
+		       item.cs_upd_dtime AS "item.cs_upd_dtime",
+		       item.cs_upd_ip  AS "item.cs_upd_ip",
+		       isnull(activeItem.cs_organization_item_seq,0) AS "activeItem.cs_organization_item_seq",
+		       'cs_course_active_organization_item' AS "referenceTablename"
+		  FROM cs_lcms_item item 
+			  LEFT OUTER JOIN cs_course_active_organization_item activeItem
+				ON activeItem.cs_item_seq = item.cs_item_seq
+				AND activeItem.cs_course_active_seq = #{courseActiveSeq}
+				AND activeItem.cs_organization_seq = item.cs_organization_seq
+				AND activeItem.cs_delete_yn = 'N'
+		 WHERE item.cs_organization_seq = #{organizationSeq} 
+		       AND item.cs_delete_yn = 'N'
+		ORDER BY item.cs_sort_order ASC
+	</select>
+    
+    <update id="deleteByCourseActiveSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveOrganizationItemVO">
+        /* UnivCourseActiveOrganizaionItemMapper.deleteByCourseActiveSeq */
+        UPDATE cs_course_active_organization_item 
+          SET 
+              cs_delete_yn         = 'Y' ,
+              cs_upd_dtime         = dbo.FN_NOW_TO_CHAR() ,
+              cs_upd_member_seq    = #{updMemberSeq, jdbcType=NUMERIC} ,
+              cs_upd_ip            = #{updIp, jdbcType=VARCHAR} 
+        WHERE cs_course_active_seq = #{courseActiveSeq}
+          AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="listResultCopyMap" type="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveOrganizationItemVO">
+        <result column="cs_organization_item_seq"      property="organizationItemSeq"/>
+        <result column="cs_course_active_element_seq"  property="courseActiveElementSeq"/>
+        <result column="cs_course_active_seq"          property="courseActiveSeq"/>
+        <result column="cs_organization_seq"           property="organizationSeq"/>
+        <result column="cs_item_seq"                   property="itemSeq"        />
+    </resultMap>
+    <select id="getListCopy" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveOrganizationItemVO" resultMap="listResultCopyMap">
+        /* UnivCourseActiveOrganizaionItemMapper.getListCopy */
+        SELECT cs_organization_item_seq,
+               cs_course_active_element_seq,
+               cs_course_active_seq,
+               cs_organization_seq,
+               cs_item_seq
+          FROM cs_course_active_organization_item
+         WHERE cs_course_active_element_seq = #{courseActiveElementSeq} 
+           AND cs_delete_yn = 'N'
+    </select>
+</mapper>

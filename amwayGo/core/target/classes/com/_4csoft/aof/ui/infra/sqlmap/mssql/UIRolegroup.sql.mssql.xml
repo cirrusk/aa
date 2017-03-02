@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.RolegroupMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIRolegroupVO">
+		/* UIRolegroupMapper.insert */
+		INSERT INTO cs_rolegroup 
+        ( 
+           cs_parent_seq ,
+           cs_rolegroup_name ,
+           cs_role_cd ,
+           cs_sort_order ,
+           cs_group_order ,
+           cs_cf_string ,
+           cs_access_ftp_dir ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+        ) 
+        SELECT
+           #{parentSeq, jdbcType=NUMERIC} ,
+           #{rolegroupName, jdbcType=VARCHAR} ,
+           #{roleCd, jdbcType=VARCHAR} ,
+           (SELECT ISNULL(MAX(cs_sort_order) + 1, 1) as sortOrderValue FROM cs_rolegroup WHERE cs_parent_seq = #{parentSeq}) ,
+           #{groupOrder, jdbcType=VARCHAR} + dbo.FN_LPAD((SELECT ISNULL(MAX(cs_sort_order) + 1, 1) as sortOrderValue FROM cs_rolegroup WHERE cs_parent_seq = #{parentSeq}),3,'0') ,
+           (SELECT sub.cs_cf_string FROM cs_rolegroup sub WHERE sub.cs_rolegroup_seq = #{parentSeq, jdbcType=NUMERIC}) ,
+           #{accessFtpDir, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.infra.vo.UIRolegroupVO">
+		/* UIRolegroupMapper.update */
+		UPDATE cs_rolegroup 
+		   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+		       cs_rolegroup_name = #{rolegroupName, jdbcType=VARCHAR} ,
+		       cs_role_cd = #{roleCd, jdbcType=VARCHAR} ,
+		       cs_access_ftp_dir = #{accessFtpDir, jdbcType=VARCHAR} 
+		 WHERE cs_rolegroup_seq = #{rolegroupSeq} 
+		       AND cs_delete_yn = 'N'  
+    </update>
+
+    <update id="updateGroupSeq" parameterType="Long">
+		/* UIRolegroupMapper.updateGroupSeq */
+		UPDATE cs_rolegroup 
+		   SET cs_group_seq = #{rolegroupSeq, jdbcType=NUMERIC} 
+		 WHERE cs_rolegroup_seq = #{rolegroupSeq}
+		       AND cs_group_level = '1' 
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIRolegroupVO">
+		/* UIRolegroupMapper.delete */
+		UPDATE cs_rolegroup 
+		   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+		       cs_delete_yn = 'Y' 
+		 WHERE cs_rolegroup_seq = #{rolegroupSeq} 
+		       AND cs_delete_yn = 'N'  
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIRolegroupRS">
+        <result column="rolg.rolegroupSeq"   property="rolegroup.rolegroupSeq"  />
+        <result column="rolg.parentSeq"      property="rolegroup.parentSeq"     />
+        <result column="rolg.rolegroupName"  property="rolegroup.rolegroupName" />
+        <result column="rolg.roleCd"         property="rolegroup.roleCd"        />
+        <result column="rolg.sortOrder"      property="rolegroup.sortOrder"    />
+        <result column="rolg.groupOrder"     property="rolegroup.groupOrder"   />
+        <result column="rolg.cfString"       property="rolegroup.cfString"    />
+        <result column="rolg.accessFtpDir"   property="rolegroup.accessFtpDir"  />
+        <result column="rolg.deleteYn"       property="rolegroup.deleteYn"      />
+        <result column="rolg.regMemberSeq"   property="rolegroup.regMemberSeq"  />
+        <result column="rolg.regDtime"       property="rolegroup.regDtime"      />
+        <result column="rolg.regIp"          property="rolegroup.regIp"         />
+        <result column="rolg.updMemberSeq"   property="rolegroup.updMemberSeq"  />
+        <result column="rolg.updDtime"       property="rolegroup.updDtime"      />
+        <result column="rolg.updIp"          property="rolegroup.updIp"         />
+        <result column="rolg.updMemberName"  property="rolegroup.updMemberName" />
+        <result column="prolg.rolegroupName" property="rolegroup.parentRolegroupName" />
+        <result column="rolg.sonCount" 		 property="rolegroup.sonCount" />
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* UIRolegroupMapper.getDetail */
+		SELECT rolg.cs_rolegroup_seq   AS "rolg.rolegroupSeq" ,
+		       rolg.cs_parent_seq      AS "rolg.parentSeq" ,
+		       rolg.cs_rolegroup_name  AS "rolg.rolegroupName" ,
+		       rolg.cs_role_cd         AS "rolg.roleCd" ,
+		       rolg.cs_sort_order 	   AS "rolg.sortOrder",
+		       rolg.cs_group_order 	   AS "rolg.groupOrder",
+	   		   rolg.cs_cf_string 	   AS "rolg.cfString",
+		       rolg.cs_access_ftp_dir  AS "rolg.accessFtpDir" ,
+		       rolg.cs_delete_yn       AS "rolg.deleteYn" ,
+		       rolg.cs_reg_member_seq  AS "rolg.regMemberSeq" ,
+		       rolg.cs_reg_dtime       AS "rolg.regDtime" ,
+		       rolg.cs_reg_ip          AS "rolg.regIp" ,
+		       rolg.cs_upd_member_seq  AS "rolg.updMemberSeq" ,
+		       rolg.cs_upd_dtime       AS "rolg.updDtime" ,
+		       rolg.cs_upd_ip          AS "rolg.updIp" ,
+		       umem.cs_member_name 	   AS "rolg.updMemberName",
+		       prolg.cs_rolegroup_name AS "prolg.rolegroupName" ,
+		       (SELECT COUNT(*) FROM cs_rolegroup sub WHERE sub.cs_parent_seq = rolg.cs_rolegroup_seq AND sub.cs_delete_yn = 'N') AS "rolg.sonCount"
+		  FROM cs_rolegroup rolg 
+		  INNER JOIN cs_member umem
+		  	   ON umem.cs_member_seq = rolg.cs_upd_member_seq
+		  LEFT OUTER JOIN cs_rolegroup prolg
+		       ON prolg.cs_rolegroup_seq = rolg.cs_parent_seq
+		       AND prolg.cs_delete_yn = 'N'
+		 WHERE rolg.cs_rolegroup_seq = #{rolegroupSeq} 
+		       AND rolg.cs_delete_yn = 'N'  
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIRolegroupRS">
+        <result column="rolg.rolegroupSeq"   property="rolegroup.rolegroupSeq"  />
+        <result column="rolg.parentSeq"      property="rolegroup.parentSeq"    />
+        <result column="rolg.rolegroupName"  property="rolegroup.rolegroupName" />
+        <result column="rolg.roleCd"         property="rolegroup.roleCd"        />
+        <result column="rolg.sortOrder"      property="rolegroup.sortOrder"    />
+        <result column="rolg.groupOrder"     property="rolegroup.groupOrder"   />
+        <result column="rolg.cfString"       property="rolegroup.cfString"    />
+        <result column="rolg.accessFtpDir"   property="rolegroup.accessFtpDir"  />
+        <result column="rolg.deleteYn"       property="rolegroup.deleteYn"      />
+        <result column="rolg.regMemberSeq"   property="rolegroup.regMemberSeq"  />
+        <result column="rolg.regDtime"       property="rolegroup.regDtime"      />
+        <result column="rolg.regIp"          property="rolegroup.regIp"         />
+        <result column="rolg.updMemberSeq"   property="rolegroup.updMemberSeq"  />
+        <result column="rolg.updDtime"       property="rolegroup.updDtime"      />
+        <result column="rolg.updIp"          property="rolegroup.updIp"         />
+        <result column="prolg.rolegroupName" property="rolegroup.parentRolegroupName" />
+        <result column="rolg.sonCount" 		 property="rolegroup.sonCount" />
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIRolegroupCondition" resultMap="listResultMap">
+		/* UIRolegroupMapper.getList */
+        <if test='currentPage != 0'>
+			SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "rolg.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "rolg.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "rolg.roleCd" ASC</when>
+            <when test='orderby == -2'>ORDER BY "rolg.roleCd" DESC</when>
+            <when test='orderby == 3'>ORDER BY "rolg.rolegroupName" ASC</when>
+            <when test='orderby == -3'>ORDER BY "rolg.rolegroupName" DESC</when>
+            <when test='orderby == 4'>ORDER BY "rolg.parentSeq" ASC, "rolg.sortOrder" ASC</when>
+            <when test='orderby == -4'>ORDER BY "rolg.parentSeq" DESC, "rolg.sortOrder" DESC</when>
+            <otherwise>ORDER BY "rolg.regDtime" DESC, "rolg.rolegroupSeq" DESC</otherwise>
+        </choose>
+			) AS rownumber, * FROM (
+        </if>
+			SELECT rolg.cs_rolegroup_seq    AS "rolg.rolegroupSeq" ,
+			       rolg.cs_parent_seq       AS "rolg.parentSeq" ,
+			       rolg.cs_rolegroup_name   AS "rolg.rolegroupName" ,
+			       rolg.cs_role_cd          AS "rolg.roleCd" ,
+			       rolg.cs_sort_order 		AS "rolg.sortOrder",
+			       rolg.cs_group_order 	    AS "rolg.groupOrder",
+	   			   rolg.cs_cf_string 		AS "rolg.cfString",
+			       rolg.cs_access_ftp_dir   AS "rolg.accessFtpDir" ,
+			       rolg.cs_delete_yn        AS "rolg.deleteYn" ,
+			       rolg.cs_reg_member_seq   AS "rolg.regMemberSeq" ,
+			       rolg.cs_reg_dtime        AS "rolg.regDtime" ,
+			       rolg.cs_reg_ip           AS "rolg.regIp" ,
+			       rolg.cs_upd_member_seq   AS "rolg.updMemberSeq" ,
+			       rolg.cs_upd_dtime        AS "rolg.updDtime" ,
+			       rolg.cs_upd_ip           AS "rolg.updIp" ,
+			       prolg.cs_rolegroup_name  AS "prolg.rolegroupName" ,
+			       (SELECT COUNT(*) FROM cs_rolegroup sub WHERE sub.cs_parent_seq = rolg.cs_rolegroup_seq AND sub.cs_delete_yn = 'N') AS "rolg.sonCount"
+			  FROM cs_rolegroup rolg 
+			  LEFT OUTER JOIN cs_rolegroup prolg
+			       ON prolg.cs_rolegroup_seq = rolg.cs_parent_seq
+			       AND prolg.cs_delete_yn = 'N'
+			 WHERE rolg.cs_delete_yn = 'N'
+        <if test='srchRoleCd != null and !srchRoleCd.equals("")'>
+       			AND rolg.cs_role_cd = #{srchRoleCd}
+        </if>
+        <if test='srchGroupOrder != null and !srchGroupOrder.equals("")'>
+       			AND rolg.cs_group_order Like #{srchGroupOrder} + '%'
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("rolegroupName")'>
+       			AND rolg.cs_rolegroup_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        
+        <if test='currentPage != 0'>
+			) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIRolegroupCondition" resultType="int">
+		/* UIRolegroupMapper.countList */
+			SELECT COUNT(*) 
+			  FROM cs_rolegroup rolg 
+			 WHERE rolg.cs_delete_yn = 'N'
+			<if test='srchRoleCd != null and !srchRoleCd.equals("")'>
+			       AND rolg.cs_role_cd = #{srchRoleCd}
+			</if>
+			<if test='srchGroupOrder != null and !srchGroupOrder.equals("")'>
+       			   AND rolg.cs_group_order Like #{srchGroupOrder} + '%'
+        	</if>
+			<if test='srchWord != null and !srchWord.equals("")'>
+			    <if test='srchKey.equals("rolegroupName")'>
+			       AND rolg.cs_rolegroup_name LIKE '%' + #{srchWordDB} + '%'
+	            </if>
+	        </if>
+    </select>
+
+    <resultMap id="listAllResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIRolegroupRS">
+        <result column="rolg.rolegroupSeq"   property="rolegroup.rolegroupSeq"  />
+        <result column="rolg.parentSeq"      property="rolegroup.parentSeq"     />
+        <result column="rolg.rolegroupName"  property="rolegroup.rolegroupName" />
+        <result column="rolg.roleCd"         property="rolegroup.roleCd"        />
+        <result column="rolg.sortOrder"  	 property="rolegroup.sortOrder"        />
+        <result column="rolg.groupOrder"     property="rolegroup.groupOrder"        />
+        <result column="rolg.accessFtpDir"   property="rolegroup.accessFtpDir"  />
+        <result column="rolg.deleteYn"       property="rolegroup.deleteYn"      />
+        <result column="rolg.regMemberSeq"   property="rolegroup.regMemberSeq"  />
+        <result column="rolg.regDtime"       property="rolegroup.regDtime"      />
+        <result column="rolg.regIp"          property="rolegroup.regIp"         />
+        <result column="rolg.updMemberSeq"   property="rolegroup.updMemberSeq"  />
+        <result column="rolg.updDtime"       property="rolegroup.updDtime"      />
+        <result column="rolg.updIp"          property="rolegroup.updIp"         />
+        <result column="prolg.rolegroupName" property="rolegroup.parentRolegroupName" />
+    </resultMap>
+    <select id="getListAll" resultMap="listAllResultMap">
+		/* UIRolegroupMapper.getListAll */
+		SELECT rolg.cs_rolegroup_seq   AS "rolg.rolegroupSeq" ,
+		       rolg.cs_parent_seq      AS "rolg.parentSeq" ,
+		       rolg.cs_rolegroup_name  AS "rolg.rolegroupName" ,
+		       rolg.cs_role_cd         AS "rolg.roleCd" ,
+		       rolg.cs_sort_order 	   AS "rolg.sortOrder",
+		       rolg.cs_group_order 	   AS "rolg.groupOrder",
+	   		   rolg.cs_cf_string 	   AS "rolg.cfString",
+		       rolg.cs_access_ftp_dir  AS "rolg.accessFtpDir" ,
+		       rolg.cs_delete_yn       AS "rolg.deleteYn" ,
+		       rolg.cs_reg_member_seq  AS "rolg.regMemberSeq" ,
+		       rolg.cs_reg_dtime       AS "rolg.regDtime" ,
+		       rolg.cs_reg_ip          AS "rolg.regIp" ,
+		       rolg.cs_upd_member_seq  AS "rolg.updMemberSeq" ,
+		       rolg.cs_upd_dtime       AS "rolg.updDtime" ,
+		       rolg.cs_upd_ip          AS "rolg.updIp" ,
+		       prolg.cs_rolegroup_name AS "prolg.rolegroupName" 
+		  FROM cs_rolegroup rolg 
+		  LEFT OUTER JOIN cs_rolegroup prolg
+		       ON prolg.cs_rolegroup_seq = rolg.cs_parent_seq
+		       AND prolg.cs_delete_yn = 'N'
+		 WHERE rolg.cs_delete_yn = 'N'  
+    </select>
+
+</mapper>

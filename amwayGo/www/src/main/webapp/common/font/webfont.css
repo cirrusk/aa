@@ -1,0 +1,31 @@
+@charset "utf-8";
+@font-face {
+  font-family: ng;
+  font-style: normal;
+  font-weight: normal;
+  src: url('/font/NanumGothic.eot'); 	
+  src: local('☺'), url('/common/font/NanumGothic.woff') format('woff'), url('/common/font/NanumGothic.ttf') format('truetype'); 
+
+}
+@font-face {
+  font-family: '나눔고딕';
+  font-style: normal;
+  font-weight: normal;
+  src: url('/font/NanumGothic.eot'); 	
+  src: local('☺'), url('/common/font/NanumGothic.woff') format('woff'), url('/common/font/NanumGothic.ttf') format('truetype'); 
+
+}
+@font-face {
+  font-family: ng;
+  font-style: normal;
+  font-weight: bold;
+  src: url('/font/NanumGothicBold.eot'); 	
+  src: local('☺'), url('/common/font/NanumGothicBold.woff') format('woff'), url('/common/font/NanumGothicBold.ttf') format('truetype'); 
+}
+@font-face {
+  font-family: '나눔고딕';
+  font-style: normal;
+  font-weight: bold;
+  src: url('/font/NanumGothicBold.eot'); 	
+  src: local('☺'), url('/common/font/NanumGothicBold.woff') format('woff'), url('/common/font/NanumGothicBold.ttf') format('truetype'); 
+}

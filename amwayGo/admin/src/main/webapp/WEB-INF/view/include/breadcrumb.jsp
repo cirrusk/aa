@@ -1,0 +1,2 @@
+<%@ page pageEncoding="utf-8" %><%@ include file="/WEB-INF/view/include/taglibs.jspf" %>
+<h3 class="content-title"><c:out value="${!empty appCurrentMenu ? appCurrentMenu.menu.menuName : ''}"/>&nbsp;<c:out value="${!empty param['suffix'] ? param['suffix'] : ''}" escapeXml="false"/></h3>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActivePlanMapper">
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActivePlanVO">
+			/* UnivCourseActivePlanMapper.insert */
+			INSERT INTO cs_course_active_plan 
+			       ( 
+			       	   cs_course_active_seq ,
+			           cs_course_active_plan ,
+			           cs_delete_yn, 
+			           cs_reg_member_seq, 
+			           cs_upd_member_seq, 
+			           cs_reg_dtime, 
+			           cs_upd_dtime, 
+			           cs_reg_ip, 
+			           cs_upd_ip 
+			       ) 
+			   VALUES
+			   	   (
+			   	   	   #{courseActiveSeq, jdbcType=NUMERIC},
+			   	   	   #{courseActivePlan, jdbcType=VARCHAR},
+			   		   'N',
+			           #{regMemberSeq,   jdbcType=NUMERIC},
+			           #{updMemberSeq,   jdbcType=NUMERIC},
+			           dbo.FN_NOW_TO_CHAR(),
+			           dbo.FN_NOW_TO_CHAR(),
+			           #{regIp,          jdbcType=VARCHAR},
+			           #{updIp,          jdbcType=VARCHAR}
+			   	   )
+    </insert>
+    
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActivePlanVO">
+		/* UnivCourseActivePlanMapper.update */
+		UPDATE cs_course_active_plan 
+		   SET 
+		   	   cs_course_active_plan	= #{courseActivePlan, jdbcType=VARCHAR} ,
+		   	   cs_upd_dtime  			= dbo.FN_NOW_TO_CHAR() ,
+		       cs_upd_member_seq 		= #{updMemberSeq, jdbcType=NUMERIC} ,
+		       cs_upd_ip         		= #{updIp, jdbcType=VARCHAR} 
+		 WHERE cs_course_active_seq 	= #{courseActiveSeq} 
+		   AND cs_delete_yn = 'N'
+    </update>
+
+    <delete id="drop" parameterType="Long">
+		/* UnivCourseActivePlanMapper.drop */
+        DELETE FROM cs_course_active_plan WHERE cs_course_active_seq = #{courseActiveSeq} 
+    </delete>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActivePlanRS">
+        <result column="aplan.courseActiveSeq"        property="courseActivePlan.courseActiveSeq"/>
+        <result column="aplan.courseActivePlan"       property="courseActivePlan.courseActivePlan"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+		/* UnivCourseActivePlanMapper.getDetail */
+		SELECT 
+			 aplan.cs_course_active_seq 	AS "aplan.courseActiveSeq" ,
+			 aplan.cs_course_active_plan	AS "aplan.courseActivePlan"
+		FROM 
+			cs_course_active_plan aplan
+		WHERE
+				aplan.cs_delete_yn = 'N'
+			AND aplan.cs_course_active_seq = #{courseActiveSeq}
+    </select>
+    
+    <select id="countList" parameterType="Long" resultType="int">
+		/* UnivCourseActivePlanMapper.countList */
+		SELECT 
+			COUNT(*) 
+		FROM 
+			cs_course_active_plan aplan
+		WHERE
+				aplan.cs_delete_yn = 'N'
+			AND aplan.cs_course_active_seq = #{courseActiveSeq}
+    </select>
+    
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActivePlanVO">
+/* UnivCourseActivePlanMapper.insertCopy */
+INSERT INTO cs_course_active_plan
+       (
+       cs_course_active_seq,
+       cs_course_active_plan,
+       cs_delete_yn,
+       cs_reg_member_seq,
+       cs_reg_dtime,
+       cs_reg_ip,
+       cs_upd_member_seq,
+       cs_upd_dtime,
+       cs_upd_ip
+       )
+SELECT #{targetCourseActiveSeq, jdbcType=NUMERIC},
+       cs_course_active_plan,
+       'N',
+       #{regMemberSeq, jdbcType=NUMERIC},
+       dbo.FN_NOW_TO_CHAR(),
+       #{regIp, jdbcType=VARCHAR},
+       #{updMemberSeq, jdbcType=NUMERIC},
+       dbo.FN_NOW_TO_CHAR(),
+       #{updIp, jdbcType=VARCHAR}
+  FROM cs_course_active_plan
+ WHERE cs_delete_yn = 'N'
+   AND cs_course_active_seq = #{sourceCourseActiveSeq}
+    </insert>
+</mapper>

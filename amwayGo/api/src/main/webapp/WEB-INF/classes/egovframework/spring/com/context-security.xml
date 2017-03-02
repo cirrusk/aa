@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:sec="http://www.springframework.org/schema/security"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+
+	<!-- 인증 성공 처리 -->
+    <bean id="authenticationSuccessHandler" class="com._4csoft.aof.infra.support.security.AuthenticationSuccessHandler">
+        <property name="defaultTargetUrl" value="/login/process.do" />
+    </bean>
+    
+    <!-- 인증 실패 처리 -->
+    <bean id="authenticationFailureHandler" class="com._4csoft.aof.infra.support.security.AuthenticationFailureHandler">
+        <property name="defaultFailureUrl" value="/login/process.do" />
+    </bean>
+
+	<!-- 로그아웃 핸들러 -->
+    <bean id="logoutHandler" class="com._4csoft.aof.infra.support.security.LogoutHandler">
+        <property name="loginStatusService" ref="LoginStatusService" />
+        <!-- loginStatusService를 설정하지 않은 경우 : default (spring security 검사) -->
+        <!-- loginStatusService를 설정한 경우 : aof 검사:session clustering 안될 때 설정한다) -->
+    </bean>
+    
+    <!-- 로그아웃 성공시 처리 -->
+    <bean id="logoutSuccessHandler" class="com._4csoft.aof.infra.support.security.LogoutSuccessHandler">
+        <property name="defaultTargetUrl"   value="/login/process.do" />
+    </bean>
+
+	<!-- 로그아웃 필터 -->
+    <bean id="logoutFilter" class="com._4csoft.aof.infra.support.security.LogoutFilter">
+        <property name="filterProcessesUrl" value="/security/logout" />
+        <constructor-arg index="0" ref="logoutSuccessHandler"/>
+        <constructor-arg index="1">
+            <list>
+                <ref bean="logoutHandler"/>
+            </list>
+        </constructor-arg>
+    </bean>
+
+	<!-- 동시접속 필터 -->
+    <bean id="concurrencyFilter" class="com._4csoft.aof.infra.support.security.ConcurrencyFilter">
+        <property name="sessionRegistry"    ref="sessionRegistry" />
+        <property name="expiredUrl"         value="/login/process.do" />
+        <property name="loginStatusService" ref="LoginStatusService" />
+        <property name="excludeUrl">
+            <list>
+                <value>/**/ajax.do</value>
+                <value>/**/**.jsp</value>
+                <value>/**/**.swf</value>
+                <value>/app</value>
+                <value>/attach/**/save.do</value>
+                <value>/message/receive/unread.do</value>
+            </list>
+        </property>
+        <!-- loginStatusService를 설정하지 않은 경우 : default (spring security 검사) -->
+        <!-- loginStatusService를 설정한 경우 : aof 검사:session clustering 안될 때 설정한다) -->
+    </bean>
+
+	<!-- 세션 인증 처리 -->
+    <bean id="sessionAuthenticationStrategy" class="com._4csoft.aof.infra.support.security.SessionAuthenticationStrategy">
+        <constructor-arg name="sessionRegistry"            ref="sessionRegistry" />
+        <property        name="maximumSessions"            value="-1" />
+        <property        name="exceptionIfMaximumExceeded" value="false" />
+        <!-- true  : maximum session을 초과될 때 마지막 user가 로그인이 되지 않는다.-->
+        <!-- false : maximum session을 초과될 때 첫 user가 USER_CONCURRENT로 로그아웃 된다.-->
+        <property        name="concurrentConfirm"          value="false" />
+        <!-- exceptionIfMaximumExceeded 가 false 일 경우에만 유효하다 -->
+        <!-- true  : 첫 user의 세션을 끊고 로그인 할 것인지에 대한 확인 메시지를 출력한다 -->
+        <!-- false : 확인 메시지 출력없이 첫 user의 세션을 끊고 로그인한다.  -->
+        <property name="loginStatusService" ref="LoginStatusService" />
+        <!-- loginStatusService를 설정하지 않은 경우 : default (spring security 검사) -->
+        <!-- loginStatusService를 설정한 경우 : aof 검사:session clustering 안될 때 설정한다) -->
+    </bean>
+
+    <bean id="rememberMeServices" class="com._4csoft.aof.infra.support.security.RememberMeServices">
+        <property name="userDetailsService" ref="MemberService"/>
+        <property name="key"                value="!@#12345abcdefghijklmnopqrstuvwxyz67890$%^"/>
+        <property name="parameter"          value="rememberme"/>
+        <property name="cookieName"         value="REMEMBERME"/>
+    </bean>
+    
+    <bean id="sessionRegistry" class="com._4csoft.aof.infra.support.security.SessionRegistry" />
+
+	<!-- 인증 처리 후 수행 -->
+    <bean id="afterAuthenticationProcessing" class="com._4csoft.aof.ui.infra.security.UIAfterAuthenticationProcessing" />
+    <!-- 인증 처리 전 수행 -->
+    <bean id="previousAuthenticationProcessing" class="com._4csoft.aof.ui.infra.security.UIPreviousAuthenticationProcessing" >
+        <property name="password" value="111111" />
+    </bean>
+
+	<!-- 인증 처리 -->
+    <bean id="authenticationProcessingFilter" class="com._4csoft.aof.infra.support.security.AuthenticationProcessingFilter">
+        <property name="authenticationManager"         ref="authenticationManager" />
+        <property name="authenticationSuccessHandler"  ref="authenticationSuccessHandler" />
+        <property name="authenticationFailureHandler"  ref="authenticationFailureHandler" />
+        <property name="sessionAuthenticationStrategy" ref="sessionAuthenticationStrategy" />
+        <property name="rememberMeServices"            ref="rememberMeServices" />
+        <property name="filterProcessesUrl"            value="/security/login" />
+        <property name="afterAuthenticationProcessing" ref="afterAuthenticationProcessing" />
+        <property name="previousAuthenticationProcessing" ref="previousAuthenticationProcessing" />
+    </bean>
+    
+    <bean id="UIPasswordEncoder" class="com._4csoft.aof.ui.infra.support.UIAPIPasswordEncoder">
+        <constructor-arg value="256"/>
+        <property name="useSalt" value="true" />
+    </bean>
+
+    <sec:authentication-manager alias="authenticationManager">
+        <sec:authentication-provider user-service-ref="MemberService">
+            <sec:password-encoder ref="UIPasswordEncoder">
+                <sec:salt-source user-property="salt"/>
+            </sec:password-encoder>
+        </sec:authentication-provider>
+    </sec:authentication-manager>
+
+    <sec:http 
+        auto-config="false"
+        lowercase-comparisons="true"
+        use-expressions="true"
+        >
+
+        <sec:port-mappings>
+            <sec:port-mapping http="80" https="8443"/>
+        </sec:port-mappings>
+<!-- 
+	ssl 사용시
+        <sec:intercept-url pattern="/usr/member/edit.do"  		requires-channel="https" 		access="permitAll"/>
+         -->
+        <sec:intercept-url pattern="/login/process.do"  		requires-channel="any" 		access="permitAll"/>
+        <sec:intercept-url pattern="/attach/**/save.do" 		requires-channel="any" 		access="permitAll"/>
+        <sec:intercept-url pattern="/usr/**/**.do"      		requires-channel="any" 		access="hasRole('ROLE::USR')"/>
+        <sec:intercept-url pattern="/**"                		requires-channel="any" 		access="permitAll"/>
+
+        <!-- 로그인  -->
+        <sec:form-login 
+            login-page="/common/security.jsp"
+            always-use-default-target="false"
+        />
+
+        <!-- 접근거부 -->
+        <sec:access-denied-handler error-page="/common/error.jsp"/>
+
+        <!-- custom filters -->
+        <sec:custom-filter before="FORM_LOGIN_FILTER"           ref="authenticationProcessingFilter" />
+        <sec:custom-filter position="CONCURRENT_SESSION_FILTER" ref="concurrencyFilter" />
+        <sec:custom-filter position="LOGOUT_FILTER"             ref="logoutFilter" />
+
+        <sec:session-management session-fixation-protection="migrateSession"/>
+
+    </sec:http>
+
+</beans>

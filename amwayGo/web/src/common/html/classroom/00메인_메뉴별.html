@@ -1,0 +1,379 @@
+<!doctype html>
+<!--[if IE 7]><html lang="ko" class="old ie7"><![endif]-->
+<!--[if IE 8]><html lang="ko" class="old ie8"><![endif]-->
+<!--[if IE 9]><html lang="ko" class="modern ie9"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+<html lang="ko" class="modern">
+<!--<![endif]--><head>
+<meta charset="utf-8">
+<title>강의실</title>
+<link rel="stylesheet" href="../../css/www/base.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/common.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/content.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/xcss/jquery/redmond/jquery-ui-1.8.23.custom.css" type="text/css"/>
+<link rel="stylesheet" href="../../css/www/style.css" type="text/css"/>
+<link type="text/css" rel="stylesheet" href="../../css/www/classroom.css" />
+<script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="../../js/select.js"></script>
+<script type="text/javascript">
+jQuery(function($){
+	$('.my-subject .view, .nav .array').click(function(){
+		$(this).next().toggle();
+		return false;
+	});
+	$('.my-course .close, .array-list .close').click(function(){
+		$(this).parent().css('display', 'none');
+		return false;
+	});
+});
+</script>
+</head>
+<body>
+	<!-- classroom -->
+	<div class="classroom">
+		<!-- header -->
+		<div class="header">
+			<div class="my-info">
+				<div class="average">
+					<strong>평균진도</strong>
+					<div class="progress">
+						<!-- 진척율 % = style(width) -->
+						<p class="bar" style="width:80%;"><img src="../../images/www/bg/bar_blue.png" alt="진척율 그래프" /><span class="left"></span><span class="right"></span></p>
+					</div>
+					<p class="percent"><span>90%</span> (10.2/45)</p>
+				</div>
+				<div class="my">
+					<strong>나의진도</strong>
+					<div class="progress">
+						<!-- 진척율 % = style(width) -->
+						<p class="bar" style="width:100%;"><img src="../../images/www/bg/bar_red.png" alt="진척율 그래프" /><span class="left"></span><span class="right"></span></p>
+					</div>
+					<p class="percent"><span>90%</span> (4/45)</p>
+				</div>
+				<p class="attend">출석 : <span>4회</span> 지각 : <span>1회</span> 결석 : 0회</p>
+			</div>
+			<div class="my-subject">
+				<!-- h1 타이틀은 2줄까지 늘어남 -->
+				<h1>2014년 1학기 아동 문학 창작론2014년 1학기 아동 문학 창작론</h1>
+				<p class="info"><span>전공필수</span><span>3학점</span><span>안재현,김명수</span><a href="#" class="plan">강의계획서 보기</a></p>
+				<p class="view">과정더보기 <a href="#"><img src="../../images/www/common/icon_view.png" alt="과정 더보기" /></a></p>
+				<!-- my-course -->
+				<div class="my-course">
+					<h3>수강중인 과정이동</h3>
+					<div class="course-list">
+						<ul>
+							<li><a href="#">2014년 1학기 아동문학 창작론아동문학 창작론아동문학 창작론아동문학 창작론</a></li>
+							<!--
+							<li><a href="#">2014년 1학기 아동문학 창작론</a></li>
+							<li><a href="#">2014년 1학기 아동문학 창작론</a></li>
+							<li><a href="#">2014년 1학기 아동문학 창작론</a></li>
+							<li><a href="#">2014년 1학기 아동문학 창작론</a></li>
+							<li><a href="#">2014년 1학기 아동문학 창작론</a></li>
+							<li><a href="#">2014년 1학기 아동문학 창작론</a></li>
+							<li><a href="#">2014년 1학기 아동문학 창작론</a></li>
+							<li><a href="#">2014년 1학기 아동문학 창작론</a></li>
+							-->
+						</ul>
+					</div>
+					<a href="#" class="close"><img src="../../images/www/btn/btn_layer_close.gif" alt="닫기" /></a>
+				</div>
+				<!-- //my-course -->
+			</div>
+			<a href="#" class="out">강의실 나가기</a>
+		</div>
+		<!-- //header -->
+		<!-- container -->
+		<div class="container">
+			<div class="nav m01"><!-- 메뉴 활성화 : on 된 목록(li) 에 클래스(m01..)를 div.nav 에 추가 -->
+				<ul>
+					<li class="m01 on"><a href="#">Home</a></li>
+					<li class="m02"><a href="#">온라인학습</a></li>
+					<li class="m03"><a href="#">과정게시판</a></li>
+				</ul>
+				<a href="#" class="array"><img src="../../images/www/btn/btn_array.gif" alt="정렬" /></a>
+				<!-- array-list -->
+				<div class="array-list">
+					<strong>정렬</strong>
+					<ul>
+						<li><a href="#" class="on">제출종료일순<span class="check"></span></a></li>
+						<li><a href="#" class="on">분류순(과제, 시험, 팀프로젝트, 토론)<span class="check"></span></a></li>
+						<li><a href="#">분류순(과제, 시험, 팀프로젝트, 토론)</a></li>
+					</ul>
+					<a href="#" class="close"><img src="../../images/www/btn/btn_array_list.gif" alt="닫기" /></a>
+				</div>
+				<!-- //array-list -->
+			</div>
+			<!-- slides : 개발 적용 -->
+			<div style="position:relative;">
+				<div class="slides">
+					<!-- content -->
+					<div class="content main"><!-- 강의실 main -->
+						<div class="article">
+							<h3><span class="online"></span>온라인학습</h3>
+							<div class="sub img">
+								<a href="#" class="icon" ><img src="../../images/www/icon/icon_article_study.gif" alt="학습하기" /></a>
+								<p class="info">총 52주차 15강<br />학습횟수 : 20회</p>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<h3><span class="offline"></span>오프라인출석</h3>
+							<div class="sub img">
+								<a href="#" class="icon"><img src="../../images/www/icon/icon_article_off.gif" alt="" /></a>
+								<p class="info">총 수업 횟수 6회<br />출석 4회, 지각 1회</p>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<h3><span class="notice"></span>공지사항</h3>
+							<div class="sub">
+								<ul class="notice">
+									<li>[공지]중간고사 기간 안내 중간고사 기간 안내<span class="date">2014.03.18</span></li>
+									<li>[공지]중간고사 기간 안내<span class="date">2014.03.18</span></li>
+									<li>[공지]중간고사 기간 안내<span class="date">2014.03.18</span></li>
+									<li>[공지]중간고사 기간 안내 중간고사 기간 안내 중간고사 기간 안내<span class="date">2014.03.18</span></li>
+								</ul>
+								<a href="#" class="more" title="공지사항 더보기">더보기</a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<div class="board">
+								<h3><span class="news"></span>새소식</h3>
+								<ul>
+									<li class="board-notice"><span>공지사항</span><a href="#">1</a></li>
+									<li class="board-resource"><span>자료실</span><a href="#">12</a></li>
+									<li class="board-qna"><span>Q&amp;A</span><a href="#">342</a></li>
+									<li class="board-free"><span>자유게시판 <br /></span><a href="#">3</a></li>
+								</ul>
+							</div>
+							<div class="bg"></div>
+						</div>
+
+						<!-- 중간고사 -->
+						<div class="article">
+							<h3><span class="test"></span>중간고사</h3>
+							<p class="com">대기</p>
+							<div class="sub">
+								<p class="top"><span class="timer">60분</span></p>
+								<p class="inform">2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<a href="#" class="thum"><span class="enter">응시</span></a>
+								<a href="#" class="thum"><span class="result">결과보기</span></a>
+							</div>
+							<div class="bg"></div>
+							<div class="must">필수</div><!-- 필수탭 -->
+							<a class="tap-task sup" href="#">보충과제</a><!-- 보충과제 -->
+						</div>
+						<div class="article">
+							<h3><span class="test"></span>기말고사</h3>
+							<div class="sub">
+								<p class="top"><span class="timer">60분</span></p>
+								<p class="inform">2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<a href="#" class="thum"><span class="enter">응시</span></a>
+								<a href="#" class="thum"><span class="result">결과보기</span></a>
+								<a class="tap-task" href="#">일반과제</a><!-- 일반과제 -->
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<h3><span class="mantoman"></span>1:1상담</h3>
+							<p class="d-day">D<span class="first">2</span><span>9</span></p>
+							<div class="sub">
+								<p class="top"><span class="timer">60분</span></p>
+								<p class="inform">2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<a href="#" class="thum"><span class="enter">응시</span></a>
+								<a href="#" class="thum active"><span class="result">결과보기</span></a>
+								<a class="tap-task mid" href="#">중간고사</a><!-- 중간고사 -->
+								<a class="tap-task end" href="#">기말고사</a><!-- 기말고사 -->
+								<a class="tap-task rep" href="#">보충</a><!-- 보충 -->
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<h3><span class="result"></span>성적이의 신청</h3>
+							<p class="d-day">D<span class="first">2</span><span>9</span></p>
+							<div class="sub">
+								<p class="top"><span class="timer on">60분</span></p><!-- 임시저장 클래스 timer + on -->
+								<p class="inform">2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<a href="#" class="thum active"><span class="enter">응시</span></a>
+								<a href="#" class="thum active"><span class="result">결과보기</span></a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<h3><span class="qna"></span>Q&amp;A</h3>
+							<p class="com">완료</p>
+							<div class="sub">
+								<p class="top"></p>
+								<p class="inform">2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<a class="thum" href="#"><span class="result">결과보기</span></a>
+							</div>
+							<div class="bg"></div>
+							<div class="overlay"></div><!-- overlay -->
+						</div>
+						<!-- //중간고사 -->
+						
+						<!-- 퀴즈 -->
+						<div class="article">
+							<h3><span class="quiz"></span>퀴즈</h3>
+							<p class="d-day">D<span class="first">2</span><span>9</span></p>
+							<div class="sub">
+								<span class="timer on">60분</span>
+								<p class="inform">2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<a href="#" class="thum active"><span class="enter">응시</span></a>
+								<a href="#" class="thum active"><span class="result">결과보기</span></a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<!-- //퀴즈 -->
+						
+						<!-- 설문 -->
+						<div class="article">
+							<h3><span class="board"></span>자유게시판</h3>
+							<p class="d-day">D<span class="first">2</span><span>9</span></p>
+							<div class="sub">
+								<p class="top">2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<p class="inform">문학의 이해 관련 설문 </p>
+								<a href="#" class="thum active"><span class="join">참여</span></a>
+							</div>
+							<div class="bg"></div>
+							<div class="must">필수</div><!-- 필수 이미지 탭 -->
+						</div>
+						<div class="article">
+							<h3><span class="survey"></span>설문</h3>
+							<p class="com">완료</p>
+							<div class="sub">
+								<p class="top">2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<p class="inform">문학의 이해 관련 설문 </p>
+								<a href="#" class="thum"><span class="join">참여</span></a>
+							</div>
+							<div class="bg"></div>
+							<div class="overlay"></div>
+						</div>
+						<!-- //설문 -->
+
+						<!-- 팀프로젝트 -->
+						<div class="article">
+							<h3><span class="team"></span>팀프로젝트</h3>
+							<p class="com">대기</p>
+							<div class="sub">
+								<p>2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<p class="inform">팀프로젝트 명칭</p>
+								<a href="#" class="thum"><span class="join">참여</span></a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<h3><span class="team"></span>팀프로젝트</h3>
+							<p class="d-day">D<span class="first">2</span><span>9</span></p>
+							<div class="sub">
+								<p>2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<p class="inform">팀프로젝트 명칭</p>
+								<a href="#" class="thum active"><span class="join">참여</span></a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<!-- //팀프로젝트 -->
+
+						<!-- 토론 -->
+						<div class="article">
+							<h3><span class="discussion"></span>토론</h3>
+							<p class="com">대기</p>
+							<div class="sub">
+								<p>2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<p class="inform"></p>
+								<a href="#" class="thum"><span class="join">참여</span></a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<h3><span class="discussion"></span>토론</h3>
+							<p class="d-day">D<span class="first">2</span><span>9</span></p>
+							<div class="sub">
+								<p>2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<p class="inform">토론 주제</p>
+								<a href="#" class="thum active"><span class="join">참여</span></a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<div class="article">
+							<h3>토론</h3>
+							<p class="com">완료</p>
+							<div class="sub">
+								<p>2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<p class="inform">토론 주제</p>
+								<a href="#" class="thum"><span class="result">결과보기</span></a>
+							</div>
+							<div class="bg"></div>
+							<div class="overlay"></div>
+						</div>
+						<!-- //토론 -->
+
+						<!-- 일반 과제 : 2차가 없을때 -->
+						<div class="article">
+							<h3><span class="task"></span>일반과제</h3>
+							<p class="com">대기</p>
+							<div class="sub">
+								<p>2014.12.01  09시30분<br />2014.12.29  11시59분</p>
+								<p class="inform">과제 주제</p>
+								<a href="#" class="thum"><span class="enter">응시</span></a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<!-- //일반 과제 : 2차가 없을때 -->
+						<!-- 일반 과제 : 2차가 있을때 -->
+						<div class="article">
+							<h3><span class="task"></span>일반과제</h3>
+							<p class="d-day">D<span class="first">2</span><span>9</span></p>
+							<div class="sub">
+								<p>2014.12.01  09시30분<br />2014.12.29  11시59분<br />(2차) 2014.12.29  11시59분</p>
+								<p class="inform normal">과제 주제과제 주제과제 주제과제 주제과제 주제과제 주제</p><!-- <!-- 일반과제 제목 normal -->
+								<a href="#" class="thum active"><span class="enter">응시</span></a>
+							</div>
+							<div class="bg"></div>
+						</div>
+						<!-- //일반 과제 : 2차가 있을때 -->
+						<div class="article">
+							<h3><span class="data"></span>자료실</h3>
+							<p class="com">종료</p>
+							<div class="sub">
+								<p>2014.12.01  09시30분<br />2014.12.29  11시59분<br />(2차) 2014.12.29  11시59분</p>
+								<p class="inform normal">과제 주제과제 주제과제 주제과제 주제과제 주제과제 주제</p><!-- 제목 한줄, css 말줄임 -->
+								<a href="#" class="thum active"><span class="enter">응시</span></a>
+								<a class="tap-task sup" href="#">보충과제</a><!-- 보충과제 -->
+							</div>
+							<div class="bg"></div>
+						</div>
+						<!-- //일반 과제 -->
+						
+						<!-- 보충과제 -->
+						<div class="article">
+							<h3><span class="sup-task"></span>보충과제</h3>
+							<p class="com">완료</p>
+							<div class="sub">
+								<p>2014.12.01 09시30분<br />2014.12.29 11시59분</p>
+								<p class="inform">보충과제 주제</p>
+								<a href="#" class="thum active"><span class="enter">응시</span></a>
+								<a class="tap-task" href="#">일반과제</a><!-- 일반과제 -->
+							</div>
+							<div class="bg"></div>
+						</div>
+						<!-- //보충과제 -->
+					</div>
+					<div class="content"><h2 class="heading">온라인학습</h2></div>
+					<div class="content"><h2 class="heading">과정게시판</h2></div>
+					<!-- //content -->
+				</div>
+				<div class="slides-cover"></div>
+			</div>
+			<!-- //slides : 개발 적용 -->
+			<div class="slides-nav">
+				<a href="#" class="prev">이전</a>
+				<a href="#" class="next">다음</a>
+			</div>
+		</div>
+		<!-- //container -->
+	</div>
+	<!-- //classroom -->
+</body>
+</html>

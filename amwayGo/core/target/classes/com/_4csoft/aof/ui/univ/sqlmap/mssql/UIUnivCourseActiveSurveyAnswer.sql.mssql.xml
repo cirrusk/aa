@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseActiveSurveyAnswerMapper">
+
+<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSurveyAnswerVO">
+		<selectKey resultType="Long" keyProperty="surveyAnswerSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseActiveSurveyAnswer.insert */
+INSERT INTO cs_course_active_survey_answer
+	(
+		cs_survey_paper_answer_seq ,
+		cs_survey_seq ,
+		cs_member_seq ,
+		cs_survey_item_type_cd ,
+		<if test='profMemberSeq != null and !profMemberSeq.equals("")'>
+		cs_prof_member_seq ,
+		</if>
+		cs_essay_answer ,
+		cs_survey_answer1_yn ,
+		cs_survey_answer2_yn ,
+		cs_survey_answer3_yn ,
+		cs_survey_answer4_yn ,
+		cs_survey_answer5_yn ,
+		cs_survey_answer6_yn ,
+		cs_survey_answer7_yn ,
+		cs_survey_answer8_yn ,
+		cs_survey_answer9_yn ,
+		cs_survey_answer10_yn ,
+		cs_survey_answer11_yn ,
+		cs_survey_answer12_yn ,
+		cs_survey_answer13_yn ,
+		cs_survey_answer14_yn ,
+		cs_survey_answer15_yn ,
+		cs_survey_answer16_yn ,
+		cs_survey_answer17_yn ,
+		cs_survey_answer18_yn ,
+		cs_survey_answer19_yn ,
+		cs_survey_answer20_yn ,
+		cs_reg_member_seq ,
+		cs_reg_dtime ,
+		cs_reg_ip ,
+		cs_upd_member_seq ,
+		cs_upd_dtime ,
+		cs_upd_ip	
+	)
+	VALUES
+	(
+		#{surveyPaperAnswerSeq, jdbcType=NUMERIC} ,
+		#{surveySeq, jdbcType=NUMERIC} ,
+		#{memberSeq, jdbcType=NUMERIC} ,
+		#{surveyItemTypeCd, jdbcType=VARCHAR} ,
+		<if test='profMemberSeq != null and !profMemberSeq.equals("")'>
+		#{profMemberSeq, jdbcType=NUMERIC} ,
+		</if>
+		#{essayAnswer, jdbcType=VARCHAR} ,
+		#{surveyAnswer1Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer2Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer3Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer4Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer5Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer6Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer7Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer8Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer9Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer10Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer11Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer12Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer13Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer14Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer15Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer16Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer17Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer18Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer19Yn, jdbcType=VARCHAR} ,
+		#{surveyAnswer20Yn, jdbcType=VARCHAR} ,
+		
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+		dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)       
+	</insert>
+	
+	<resultMap id="choiceAnswerResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveSurveyAnswerRS">
+		<result column="sanswer.surveyAnswer1Count" property="courseActiveSurveyAnswer.surveyAnswer1Count"/>
+		<result column="sanswer.surveyAnswer2Count" property="courseActiveSurveyAnswer.surveyAnswer2Count"/>
+		<result column="sanswer.surveyAnswer3Count" property="courseActiveSurveyAnswer.surveyAnswer3Count"/>
+		<result column="sanswer.surveyAnswer4Count" property="courseActiveSurveyAnswer.surveyAnswer4Count"/>
+		<result column="sanswer.surveyAnswer5Count" property="courseActiveSurveyAnswer.surveyAnswer5Count"/>
+		<result column="sanswer.surveyAnswer6Count" property="courseActiveSurveyAnswer.surveyAnswer6Count"/>
+		<result column="sanswer.surveyAnswer7Count" property="courseActiveSurveyAnswer.surveyAnswer7Count"/>
+		<result column="sanswer.surveyAnswer8Count" property="courseActiveSurveyAnswer.surveyAnswer8Count"/>
+		<result column="sanswer.surveyAnswer9Count" property="courseActiveSurveyAnswer.surveyAnswer9Count"/>
+		<result column="sanswer.surveyAnswer10Count" property="courseActiveSurveyAnswer.surveyAnswer10Count"/>
+		<result column="sanswer.surveyAnswer11Count" property="courseActiveSurveyAnswer.surveyAnswer11Count"/>
+		<result column="sanswer.surveyAnswer12Count" property="courseActiveSurveyAnswer.surveyAnswer12Count"/>
+		<result column="sanswer.surveyAnswer13Count" property="courseActiveSurveyAnswer.surveyAnswer13Count"/>
+		<result column="sanswer.surveyAnswer14Count" property="courseActiveSurveyAnswer.surveyAnswer14Count"/>
+		<result column="sanswer.surveyAnswer15Count" property="courseActiveSurveyAnswer.surveyAnswer15Count"/>
+		<result column="sanswer.surveyAnswer16Count" property="courseActiveSurveyAnswer.surveyAnswer16Count"/>
+		<result column="sanswer.surveyAnswer17Count" property="courseActiveSurveyAnswer.surveyAnswer17Count"/>
+		<result column="sanswer.surveyAnswer18Count" property="courseActiveSurveyAnswer.surveyAnswer18Count"/>
+		<result column="sanswer.surveyAnswer19Count" property="courseActiveSurveyAnswer.surveyAnswer19Count"/>
+		<result column="sanswer.surveyAnswer20Count" property="courseActiveSurveyAnswer.surveyAnswer20Count"/>
+	</resultMap>
+	
+	<select id="getChoiceAnswerResult" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSurveyAnswerVO" resultMap="choiceAnswerResultMap">
+/* UIUnivCourseActiveSurveyAnswer.getChoiceAnswerResult */
+SELECT SUM(
+		   CASE WHEN sanswer.cs_survey_answer1_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer1Count" ,	
+       SUM(
+		   CASE WHEN sanswer.cs_survey_answer2_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer2Count" ,	
+       SUM(
+		   CASE WHEN sanswer.cs_survey_answer3_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer3Count" ,	
+       SUM(
+		   CASE WHEN sanswer.cs_survey_answer4_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer4Count" ,	
+       SUM(
+		   CASE WHEN sanswer.cs_survey_answer5_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer5Count" ,	
+       SUM(
+		   CASE WHEN sanswer.cs_survey_answer6_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer6Count" ,	
+       SUM(
+		   CASE WHEN sanswer.cs_survey_answer7_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer7Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer8_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer8Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer9_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer9Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer10_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer10Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer11_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer11Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer12_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer12Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer13_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer13Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer14_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer14Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer15_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer15Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer16_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer16Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer17_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer17Count",
+		 SUM(
+		   CASE WHEN sanswer.cs_survey_answer18_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer18Count",
+		SUM(
+		   CASE WHEN sanswer.cs_survey_answer19_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer19Count",
+  		 SUM(
+		   CASE WHEN sanswer.cs_survey_answer20_yn = 'Y'
+		   THEN 1 ELSE 0
+		    END
+		   ) AS "sanswer.surveyAnswer20Count"
+  FROM cs_course_active_survey_answer sanswer
+ INNER JOIN cs_course_active_survey_paper_answer panswer
+    ON sanswer.cs_survey_paper_answer_seq = panswer.cs_survey_paper_answer_seq		    	
+   AND panswer.cs_delete_yn = 'N'
+   AND panswer.cs_course_active_survey_seq = #{courseActiveSurveySeq}
+ WHERE sanswer.cs_delete_yn = 'N'
+   AND sanswer.cs_survey_seq = #{surveySeq}
+	</select>
+	
+	<resultMap id="essayAnswerResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseActiveSurveyAnswerRS">
+		<result column="sanswer.essayAnswer" property="courseActiveSurveyAnswer.essayAnswer"/>
+		<result column="sanswer.regMemberName" property="courseActiveSurveyAnswer.regMemberName"/>
+	</resultMap>
+	
+	<select id="getEssayAnswerResult" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseActiveSurveyAnswerVO" resultMap="essayAnswerResultMap">
+/* UIUnivCourseActiveSurveyAnswer.getEssayAnswerResult */
+SELECT sanswer.cs_essay_answer AS "sanswer.essayAnswer",
+		(SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = sanswer.cs_reg_member_seq
+       ) AS "sanswer.regMemberName"
+  FROM cs_course_active_survey_answer sanswer
+ INNER JOIN cs_course_active_survey_paper_answer panswer
+    ON sanswer.cs_survey_paper_answer_seq = panswer.cs_survey_paper_answer_seq		    	
+   AND panswer.cs_delete_yn = 'N'
+   AND panswer.cs_course_active_survey_seq = #{courseActiveSurveySeq}
+ WHERE sanswer.cs_delete_yn = 'N'
+   AND sanswer.cs_survey_seq = #{surveySeq}
+   AND sanswer.cs_survey_item_type_cd = #{surveyItemTypeCd}
+	</select>
+
+</mapper>

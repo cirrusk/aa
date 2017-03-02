@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.lms.dwTarget.service.impl.LmsDwTargetMapper">
+
+	<sql id="selectLmsDwTargetWhere">
+		WHERE 1 = 1
+			AND A.DWMONTH = #{searchdwmonth}
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.UID LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND B.NAME LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			</if>
+	</sql>
+	
+	<select id="selectLmsDwTargetCount" parameterType="reqBox" resultType="int">
+		/* selectLmsDwTargetCount */
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM MEMBERDW A LEFT OUTER JOIN MEMBER B
+		ON A.UID = B.UID
+		<include refid="selectLmsDwTargetWhere" />
+	</select>
+	
+	<!-- 시험지 관리 목록 -->
+	<select id="selectLmsDwTargetList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsDwTargetList */
+		SELECT 
+			#{totalCount} - ROW_NUM + 1 AS NO 
+			, AA.*
+		FROM (
+			SELECT 
+				ROW_NUMBER() OVER (ORDER BY A.UID DESC) AS ROW_NUM , 
+				A.UID, 
+				B.NAME,
+				A.BUSINESSSTATUSCODE1, 
+				A.BUSINESSSTATUSCODE2,
+				A.BUSINESSSTATUSCODE3,
+				A.BUSINESSSTATUSCODE4
+			FROM MEMBERDW A LEFT OUTER JOIN MEMBER B
+			ON A.UID = B.UID
+			<include refid="selectLmsDwTargetWhere"/>
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<update id="mergeDwTargetExcelAjax" parameterType="reqBox">
+		MERGE MEMBERDW AS A
+		USING (
+			SELECT
+				#{dwyear} AS DWYEAR,
+				#{dwmonth} AS DWMONTH,
+				#{uid} AS UID,
+				#{businessstatuscode1} AS BUSINESSSTATUSCODE1,
+				#{businessstatuscode2} AS BUSINESSSTATUSCODE2,
+				#{businessstatuscode3} AS BUSINESSSTATUSCODE3,
+				#{businessstatuscode4} AS BUSINESSSTATUSCODE4
+		) AS B
+		ON (
+			A.DWMONTH = B.DWYEAR + B.DWMONTH 
+			AND A.UID = B.UID
+		)
+		WHEN NOT MATCHED THEN
+			INSERT (
+				DWMONTH, UID, BUSINESSSTATUSCODE1, BUSINESSSTATUSCODE2, BUSINESSSTATUSCODE3, BUSINESSSTATUSCODE4
+			) VALUES (
+				B.DWYEAR + B.DWMONTH, B.UID, B.BUSINESSSTATUSCODE1, B.BUSINESSSTATUSCODE2, B.BUSINESSSTATUSCODE3, B.BUSINESSSTATUSCODE4
+			)
+		WHEN MATCHED THEN
+			UPDATE SET 
+				A.BUSINESSSTATUSCODE1 = B.BUSINESSSTATUSCODE1
+				, A.BUSINESSSTATUSCODE2 = B.BUSINESSSTATUSCODE2
+				, A.BUSINESSSTATUSCODE3 = B.BUSINESSSTATUSCODE3
+				, A.BUSINESSSTATUSCODE4 = B.BUSINESSSTATUSCODE4 
+			;
+	</update>
+	
+</mapper>

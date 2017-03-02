@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivSurveySubjectMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveySubjectVO">
+		<selectKey resultType="Long" keyProperty="surveySubjectSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivSurveySubjectMapper.insert */
+INSERT INTO cs_survey_subject
+	(
+		cs_survey_paper_seq ,
+		cs_survey_title ,
+		cs_survey_paper_type_cd , 
+		cs_survey_subject_type_cd ,
+		cs_start_dtime ,
+		cs_end_dtime ,
+		cs_start_day ,
+		cs_end_day ,
+		cs_access_menu ,
+		cs_mandatory_yn ,
+		cx_use_yn,
+		cs_reg_member_seq ,
+		cs_reg_dtime ,
+		cs_reg_ip ,
+		cs_upd_member_seq ,
+		cs_upd_dtime ,
+		cs_upd_ip	
+	)
+	VALUES
+	(
+		#{surveyPaperSeq, jdbcType=NUMERIC} ,
+		#{surveyTitle, jdbcType=VARCHAR} ,
+		#{surveyPaperTypeCd, jdbcType=VARCHAR} ,
+		#{surveySubjectTypeCd, jdbcType=VARCHAR} ,
+		#{startDtime, jdbcType=VARCHAR} ,
+		#{endDtime, jdbcType=VARCHAR} ,
+		#{startDay, jdbcType=VARCHAR} ,
+		#{endDay, jdbcType=VARCHAR} ,
+		#{accessMenu, jdbcType=VARCHAR} ,
+		#{mandatoryYn, jdbcType=VARCHAR} ,
+		#{useYn, jdbcType=VARCHAR} ,
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+		dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)        
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveySubjectVO">
+/* UIUnivSurveySubjectMapper.update */
+UPDATE cs_survey_subject
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       <if test='surveyTitle != null'>
+       ,cs_survey_title = #{surveyTitle, jdbcType=VARCHAR}
+       </if>
+       <if test='surveyPaperTypeCd != null'> 
+	   ,cs_survey_paper_type_cd = #{surveyPaperTypeCd, jdbcType=VARCHAR}
+	   </if>
+	   <if test='surveyPaperSeq != null'> 
+	   ,cs_survey_paper_seq = #{surveyPaperSeq, jdbcType=NUMERIC}
+	   </if>
+       <if test='surveySubjectTypeCd != null'>  
+	   ,cs_survey_subject_type_cd = #{surveySubjectTypeCd, jdbcType=VARCHAR}
+	   </if>
+       <if test='startDtime != null'> 
+	   ,cs_start_dtime = #{startDtime, jdbcType=VARCHAR}
+	   </if>
+       <if test='endDtime != null'> 
+	   ,cs_end_dtime = #{endDtime, jdbcType=VARCHAR}
+	   </if>
+	   <if test='startDay != null'>
+	   ,cs_start_day = #{startDay, jdbcType=VARCHAR}
+	   </if>
+	   <if test='endDay != null'>
+	   ,cs_end_day = #{endDay, jdbcType=VARCHAR}
+	   </if>
+       <if test='accessMenu != null'> 
+	   ,cs_access_menu = #{accessMenu, jdbcType=VARCHAR}
+	   </if>
+       <if test='mandatoryYn != null'> 
+	   ,cs_mandatory_yn = #{mandatoryYn, jdbcType=VARCHAR}
+	   </if>
+	   <if test='useYn != null'> 
+	   ,cx_use_yn = #{useYn, jdbcType=VARCHAR}
+	   </if>  
+ WHERE cs_delete_yn = 'N'
+   AND cs_survey_subject_seq = #{surveySubjectSeq}       
+	</update>
+	
+	<update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveySubjectVO">
+/* UIUnivSurveySubjectMapper.delete */
+UPDATE cs_survey_subject 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_delete_yn = 'N'
+   AND cs_survey_subject_seq = #{surveySubjectSeq}	
+	</update>
+	
+	<update id="deleteByCourseActiveSeq" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveySubjectVO">
+/* UIUnivSurveySubjectMapper.deleteByCourseActiveSeq */
+UPDATE A 
+   SET A.cs_delete_yn = 'Y', 
+       A.cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}, 
+       A.cs_upd_ip = #{updIp, jdbcType=VARCHAR}, 
+       A.cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+  FROM cs_survey_subject A, 
+       (SELECT ss.cs_survey_subject_seq, 
+              ss.cs_survey_paper_seq, 
+              cs_survey_title, 
+              cs_survey_paper_type_cd, 
+              cs_survey_subject_type_cd, 
+              cs_access_menu, 
+              cs_mandatory_yn, 
+              cs_use_count 
+         FROM cs_survey_subject ss 
+   INNER JOIN cs_course_active_survey cas 
+           ON cas.cs_delete_yn = 'N' 
+          AND ss.cs_survey_subject_seq = cas.cs_survey_subject_seq 
+          AND cas.cs_course_active_seq = #{courseActiveSeq}
+          AND ss.cs_survey_subject_type_cd = '${CD.SURVEY_SUBJECT_TYPE.COURSE}'
+        WHERE ss.cs_delete_yn = 'N' 
+       ) B 
+ WHERE A.cs_survey_subject_seq = B.cs_survey_subject_seq 
+   AND A.cs_delete_yn = 'N' 
+	</update>
+	
+	<resultMap id="listCopyResultMap" type="com._4csoft.aof.ui.univ.vo.UIUnivSurveySubjectVO">
+		<result column="cs_survey_subject_seq"      property="surveySubjectSeq"   />
+		<result column="cs_survey_paper_seq"        property="surveyPaperSeq"     />
+		<result column="cs_survey_title"         	property="surveyTitle"        />
+		<result column="cs_survey_paper_type_cd"    property="surveyPaperTypeCd"  />
+		<result column="cs_survey_subject_type_cd"  property="surveySubjectTypeCd"/>
+		<result column="cs_mandatory_yn"         	property="mandatoryYn"      />
+		<result column="cs_access_menu"         	property="accessMenu"       />
+		<result column="cs_use_count"         		property="useCount"         />
+		<result column="cs_start_day"         		property="startDay"         />
+		<result column="cs_end_day"         		property="endDay"           />
+		<result column="cx_use_yn"         			property="useYn"           />
+	</resultMap>
+	
+	<select id="getListCopy" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivSurveySubjectVO" resultMap="listCopyResultMap">
+/* UIUnivSurveySubjectMapper.getListCopy */
+SELECT ss.cs_survey_subject_seq,
+	   ss.cs_survey_paper_seq, 
+       cs_survey_title, 
+       cs_survey_paper_type_cd, 
+       cs_survey_subject_type_cd, 
+       cs_access_menu, 
+       cs_mandatory_yn,
+       cs_use_count,
+       cs_start_day,
+       cs_end_day,
+       cx_use_yn
+  FROM cs_survey_subject ss 
+   INNER JOIN cs_course_active_survey cas 
+       ON cas.cs_delete_yn = 'N' 
+   AND ss.cs_survey_subject_seq = cas.cs_survey_subject_seq 
+   AND cas.cs_course_active_seq = #{sourceCourseActiveSeq}
+   AND ss.cs_survey_subject_type_cd = '${CD.SURVEY_SUBJECT_TYPE.COURSE}'
+ WHERE ss.cs_delete_yn = 'N'	
+	</select>
+	
+</mapper>

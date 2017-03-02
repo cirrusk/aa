@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.baseClauseAgreement.service.impl.BaseClauseAgreementMapper">
+
+	<!-- 약관 동의 현황 리스트 조회 -->
+	<select id="baseClauseAgreementListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT * FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM, AA.* FROM( 
+				SELECT
+					CASE 
+						WHEN MB.UID  IS NOT NULL AND PC.TARGETCODEORDER &gt; 1 THEN CONCAT(MB.NAME, ' (', A.MEMBERNO, ')' )
+						WHEN MB.UID  IS NOT NULL AND PC.TARGETCODEORDER = 1 THEN CONCAT(MB.NAME, ' (', A.MEMBERNO, ')' )
+						ELSE CONCAT(MB.NAME, ' (', A.MEMBERNO, ')' )
+					 END  AS RESERVEPERSON
+					, CASE
+						WHEN PC.TARGETCODEORDER &gt; 1  THEN 'ABO' /* M03 */
+						WHEN PC.TARGETCODEORDER = 1 THEN 'Member' /* M04 */
+			            ELSE 'ABO'
+					  END AS DIVISIONMEMVERNAME
+					, C.CODENAME AS TYPENAME
+					, B.TITLE
+					, B.VERSION
+<!-- 					, D.CODENAME AS STATUSNAME  -->
+					, CASE A.STATUSCODE
+						WHEN 'B01' THEN '동의'
+						WHEN 'B02' THEN '미동의'
+						ELSE '비동의'
+					  END STATUSNAME
+					, Format(A.AGREEDATETIME, N'yyyy-MM-dd HH:mm:ss') as AGREEDATETIME
+					, B.TYPECODE
+					, A.STATUSCODE
+					FROM RSVCLAUSEHISTORY A
+						INNER JOIN RSVCLAUSEINFO B
+							ON(A.CLAUSESEQ = B.CLAUSESEQ)
+						INNER JOIN COMMONCODE C
+							ON(B.TYPECODE = C.COMMONCODESEQ)
+<!-- 						INNER JOIN COMMONCODE D -->
+<!-- 							ON(A.STATUSCODE = D.COMMONCODESEQ) -->
+						INNER JOIN MEMBER MB
+							ON(A.MEMBERNO = MB.UID)
+						INNER JOIN V_TARGETCODE_NONMEM PC
+							ON (MB.GROUPS = PC.TARGETCODESEQ)
+				WHERE 
+					C.CODEMASTERSEQ = 'CL2'
+<!-- 					AND D.CODEMASTERSEQ = 'YN9' -->
+					AND PC.TARGETMASTERSEQ = 'PINCODE'
+				<if test="searchClauseTypeCode != null and ! searchClauseTypeCode.equals('') ">
+					AND B.TYPECODE = #{searchClauseTypeCode}
+				</if>
+				<!-- 회원구분(컬럼값만 입력 하면 됨) -->
+				<if test="searchDivisionMemverCode == 'M01' and searchDivisionMemverCode.equals('M01') ">
+					AND A.MEMBERNO IS NULL
+				</if>
+				<if test="searchDivisionMemverCode == 'M02' and searchDivisionMemverCode.equals('M02') ">
+					AND A.MEMBERNO IS NULL
+				</if>
+				<if test="searchDivisionMemverCode == 'M03' and searchDivisionMemverCode.equals('M03') ">
+					AND PC.TARGETCODEORDER &gt; 1
+				</if>
+				<if test="searchDivisionMemverCode == 'M04' and searchDivisionMemverCode.equals('M04') ">
+					AND PC.TARGETCODEORDER = 1
+				</if>
+				<if test="searchAgreeStrDate != null and ! searchAgreeStrDate.equals('') ">
+					AND A.AGREEDATETIME &gt;= CONCAT(#{searchAgreeStrDate}, ' 00:00:00')
+				</if>
+				<if test="searchAgreeEndDate != null and ! searchAgreeEndDate.equals('') ">
+					AND A.AGREEDATETIME &lt;= CONCAT(#{searchAgreeEndDate}, ' 23:59:59')
+				</if>
+				<if test="searchAgreementCode == 'B01' and  searchAgreementCode.equals('B01') ">
+					AND 1=1
+				</if>
+				<if test="searchAgreementCode == 'B02' and  searchAgreementCode.equals('B02') ">
+					AND  A.STATUSCODE IS NULL
+				</if>
+				<if test="searchAgreementCode == 'B03' and  searchAgreementCode.equals('B03') ">
+					AND  A.STATUSCODE IS NULL
+				</if>
+				<!--얘약자 검색(컬럼만 추가 하면됨)  -->
+				<if test="searchSearchAccountTypeKey == 'T01' and searchSearchAccountTypeKey.equals('T01') ">
+					AND (
+						MB.NAME LIKE CONCAT('%', #{searchSearchAccountTypeValue}, '%')
+					)
+				</if>
+				
+				<if test="searchSearchAccountTypeKey == 'T02' and searchSearchAccountTypeKey.equals('T02') ">
+					AND A.MEMBERNO = #{searchSearchAccountTypeValue}
+				</if>
+			) AS AA
+		) AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 약관동의 현황 리스트 카운트 -->
+	<select id="baseClauseAgreementListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*) FROM(
+			SELECT
+				CASE 
+					WHEN MB.UID  IS NOT NULL AND PC.TARGETCODEORDER &gt; 1 THEN CONCAT(MB.NAME, ' (', A.MEMBERNO, ')' )
+					WHEN MB.UID  IS NOT NULL AND PC.TARGETCODEORDER = 1 THEN CONCAT(MB.NAME, ' (', A.MEMBERNO, ')' )
+					ELSE CONCAT(MB.NAME, ' (', A.MEMBERNO, ')' ) 
+				 END AS RESERVEPERSON
+				, CASE
+					WHEN PC.TARGETCODEORDER &gt; 1  THEN 'ABO' /* M03 */
+					WHEN PC.TARGETCODEORDER = 1 THEN 'Member' /* M04 */
+					ELSE 'ABO' /* M03 */
+				  END AS DIVISIONMEMVERNAME
+				, B.TYPECODE
+				, C.CODENAME AS TYPENAME
+				, B.TITLE
+				, B.VERSION
+				, A.AGREEDATETIME
+				, A.STATUSCODE
+				, CASE A.STATUSCODE
+					WHEN 'B01' THEN '동의'
+					WHEN 'B02' THEN '미동의'
+					ELSE '비동의'
+				  END STATUSNAME
+<!-- 				, D.CODENAME AS STATUSNAME  -->
+			FROM RSVCLAUSEHISTORY A
+				INNER JOIN RSVCLAUSEINFO B
+					ON(A.CLAUSESEQ = B.CLAUSESEQ)
+				INNER JOIN COMMONCODE C
+					ON(B.TYPECODE = C.COMMONCODESEQ)
+<!-- 				INNER JOIN COMMONCODE D -->
+<!-- 					ON(A.STATUSCODE = D.COMMONCODESEQ) -->
+				INNER JOIN MEMBER MB
+					ON(A.MEMBERNO = MB.UID)
+				INNER JOIN V_TARGETCODE_NONMEM PC
+					ON (MB.GROUPS = PC.TARGETCODESEQ)
+			WHERE 
+				C.CODEMASTERSEQ = 'CL2'
+<!-- 				AND D.CODEMASTERSEQ = 'YN9' -->
+				AND PC.TARGETMASTERSEQ = 'PINCODE'
+			<if test="searchClauseTypeCode != null and ! searchClauseTypeCode.equals('') ">
+				AND B.TYPECODE = #{searchClauseTypeCode}
+			</if>
+			<if test="searchDivisionMemverCode == 'M01' and searchDivisionMemverCode.equals('M01') ">
+				AND A.MEMBERNO IS NULL
+			</if>
+			<if test="searchDivisionMemverCode == 'M02' and searchDivisionMemverCode.equals('M02') ">
+				AND A.MEMBERNO IS NULL
+			</if>
+			<if test="searchDivisionMemverCode == 'M03' and searchDivisionMemverCode.equals('M03') ">
+				AND PC.TARGETCODEORDER &gt; 1
+			</if>
+			<if test="searchDivisionMemverCode == 'M04' and searchDivisionMemverCode.equals('M04') ">
+				AND PC.TARGETCODEORDER = 1
+			</if>
+			<if test="searchAgreeStrDate != null and ! searchAgreeStrDate.equals('') ">
+				AND A.AGREEDATETIME &gt;= CONCAT(#{searchAgreeStrDate}, ' 00:00:00')
+				
+			</if>
+			<if test="searchAgreeEndDate != null and ! searchAgreeEndDate.equals('') ">
+				AND A.AGREEDATETIME &lt;= CONCAT(#{searchAgreeEndDate}, ' 23:59:59')
+			</if>
+			<if test="searchAgreementCode == 'B01' and  searchAgreementCode.equals('B01') ">
+				AND 1=1
+			</if>
+			<if test="searchAgreementCode == 'B02' and  searchAgreementCode.equals('B02') ">
+				AND  A.STATUSCODE IS NULL
+			</if>
+			<if test="searchAgreementCode == 'B03' and  searchAgreementCode.equals('B03') ">
+				AND  A.STATUSCODE IS NULL
+			</if>
+			<!--얘약자 검색(컬럼만 추가 하면됨)  -->
+			<if test="searchSearchAccountTypeKey == 'T01' and searchSearchAccountTypeKey.equals('T01') ">
+				AND (
+					MB.NAME LIKE CONCAT('%', #{searchSearchAccountTypeValue}, '%')
+				)
+			</if>
+			<if test="searchSearchAccountTypeKey == 'T02' and searchSearchAccountTypeKey.equals('T02') ">
+				AND A.MEMBERNO = #{searchSearchAccountTypeValue}
+			</if>
+		) AS BB
+	</select>
+	
+	<!-- 약관 관리 등록 -->
+	<insert id="baseClauseInsertAjax" parameterType="reqBox">
+		<selectKey resultType="int" keyProperty="popClausVersion" order="BEFORE">
+			SELECT 
+				ISNULL((MAX(VERSION)),0)+1 AS VERSION 
+			FROM RSVCLAUSEINFO 
+			WHERE TYPECODE = #{popClauseTypeCode}
+		</selectKey>
+		INSERT INTO RSVCLAUSEINFO(
+			  [CONTENT]
+			, TITLE
+			, TYPECODE
+			, MANDATORYCODE
+			, VERSION
+			, INSERTUSER
+			, INSERTDATE
+		)VALUES(
+			 #{popClauseContent}
+			,#{popClauseTitle}
+			,#{popClauseTypeCode}
+			,#{popMandatoryCode}
+			,#{popClausVersion}
+			,#{sessionAccount}
+			, Getdate()
+		)
+	</insert>
+	
+
+</mapper>

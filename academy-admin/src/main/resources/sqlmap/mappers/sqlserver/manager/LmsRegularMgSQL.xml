@@ -1,0 +1,1894 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.regularMg.service.impl.LmsRegularMgMapper">
+	<!-- 정규과정 목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsRegularMgWhere">
+		WHERE USEFLAG = 'Y'  AND COURSETYPE = 'R'
+			<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+				AND A.CATEGORYID = #{searchcategoryid }
+			</if>
+			<if test='searchedustatus != null and !searchedustatus.equals("")'>
+				AND A.EDUSTATUS = DBO.F_CMM_CODENAME('LMSEDUSTATUS',#{searchedustatus })
+			</if>
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR COURSECONTENT LIKE '%'+#{searchtext }+'%' OR SEARCHWORD LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</sql>
+	
+	<!-- 정규과정 목록 카운트 -->
+	<select id="selectLmsRegularMgCount" parameterType="reqBox" resultType="int">
+		/* selectLmsRegularCount */
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM (
+						      SELECT 
+						      *
+						      ,CASE 
+						          WHEN getDate() <![CDATA[ > ]]> ENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS05')
+						          WHEN getDate() <![CDATA[ >= ]]> STARTDATE AND getDate() <![CDATA[ <=]]> ENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS04')
+						          WHEN getDate() <![CDATA[ > ]]> REQUESTENDDATE AND getDate() <![CDATA[ <]]> STARTDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS03')
+						          WHEN getDate() <![CDATA[ >= ]]>REQUESTSTARTDATE AND getDate() <![CDATA[ <= ]]> REQUESTENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS02')
+						          WHEN getDate() <![CDATA[ < ]]> REQUESTSTARTDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS01')
+						        END AS EDUSTATUS 
+						        FROM LMSCOURSE
+				        ) A
+		<include refid="selectLmsRegularMgWhere" />
+	</select>
+	
+	<!-- 정규과정 목록 -->
+	<select id="selectLmsRegularMgList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsRegularMgList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+		, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE 
+		, (SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= AA.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+	    , (SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= AA.COURSEID AND FINISHFLAG = 'Y') AS FINISHCOUNT
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY A.COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				A.COURSEID ,
+				A.CATEGORYID ,
+				A.COURSENAME ,
+				A.STARTDATE ,
+				A.ENDDATE ,
+				A.EDUSTATUS AS EDUSTATUS
+			FROM (
+						      SELECT 
+						      *
+						      ,CASE 
+						          WHEN getDate() <![CDATA[ > ]]> ENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS05')
+						          WHEN getDate() <![CDATA[ >= ]]> STARTDATE AND getDate() <![CDATA[ <=]]> ENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS04')
+						          WHEN getDate() <![CDATA[ > ]]> REQUESTENDDATE AND getDate() <![CDATA[ <]]> STARTDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS03')
+						          WHEN getDate() <![CDATA[ >= ]]>REQUESTSTARTDATE AND getDate() <![CDATA[ <= ]]> REQUESTENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS02')
+						          WHEN getDate() <![CDATA[ < ]]> REQUESTSTARTDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS01')
+						        END AS EDUSTATUS 
+						        FROM LMSCOURSE
+				        ) A
+			<include refid="selectLmsRegularMgWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 교육상태 코드리스트 조회 -->
+	<select id="selectLmsEduStatusCodeList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsEduStatusCodeList */
+		SELECT
+			COMMONCODESEQ ,
+			CODENAME
+		FROM COMMONCODE
+		WHERE USEYN = 'Y'
+			AND CODEMASTERSEQ = 'LMSEDUSTATUS'
+		ORDER BY CODEORDER ASC
+	</select>
+	
+	<!-- 정규과정 운영 엑셀 다운 -->
+	<select id="selectLmsRegularMgListExcelDown" parameterType="reqBox" resultType="hashmap">
+		/*selectLmsRegularMgListExcelDown*/
+		SELECT ROW_NUM AS 'NO' 
+		, AA.EDUSTATUS
+		, AA.COURSENAME
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+		, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE 
+		, (SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= AA.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+	    , (SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= AA.COURSEID AND FINISHFLAG = 'Y') AS FINISHCOUNT
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY A.COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				A.COURSEID ,
+				A.CATEGORYID ,
+				A.COURSENAME ,
+				A.STARTDATE ,
+				A.ENDDATE ,
+				A.EDUSTATUS AS EDUSTATUS
+			FROM (
+						      SELECT 
+						      *
+						      ,CASE 
+						          WHEN getDate() <![CDATA[ > ]]> ENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS05')
+						          WHEN getDate() <![CDATA[ >= ]]> STARTDATE AND getDate() <![CDATA[ <=]]> ENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS04')
+						          WHEN getDate() <![CDATA[ > ]]> REQUESTENDDATE AND getDate() <![CDATA[ <]]> STARTDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS03')
+						          WHEN getDate() <![CDATA[ >= ]]>REQUESTSTARTDATE AND getDate() <![CDATA[ <= ]]> REQUESTENDDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS02')
+						          WHEN getDate() <![CDATA[ < ]]> REQUESTSTARTDATE THEN dbo.F_CMM_CODENAME('LMSEDUSTATUS','LMSEDUSTATUS01')
+						        END AS EDUSTATUS 
+						        FROM LMSCOURSE
+				        ) A
+			<include refid="selectLmsRegularMgWhere" />
+		) AA
+		ORDER BY AA.ROW_NUM ASC
+	</select>
+	
+	<!-- 정규과정Mg 상세 Info -->
+	<select id="lmsRegularMgDetail" parameterType="reqBox" resultType="dataBox">
+		/*lmsRegularMgDetail*/
+		SELECT
+	   		A.COURSEID
+			,A.COURSENAME
+			,FORMAT(A.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+	   		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+		  	,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND FINISHFLAG = 'Y') AS FINISHCOUNT
+		FROM	
+    	(
+     		 SELECT * FROM LMSCOURSE WHERE USEFLAG = 'Y'  AND COURSETYPE = 'R'
+    	) A 
+    	INNER JOIN LMSREGULAR B ON(A.COURSEID = B.COURSEID)
+    	WHERE A.COURSEID = #{courseid}
+	</select>
+	
+	<!-- 정규과정 스텝 목록 -->
+	<select id="selectLmsRegularMgStepList" parameterType="reqBox" resultType="dataBox">
+	/*selectLmsRegularMgStepList*/
+		SELECT 
+			COURSEID ,
+			STEPSEQ ,
+			STEPNAME ,
+			STEPORDER ,
+			STEPCOUNT ,
+			MUSTFLAG 
+		FROM
+		LMSSTEP
+		WHERE COURSEID = #{courseid}
+		ORDER BY STEPORDER ASC
+	</select>
+	
+	<!-- 정규과정 스텝유닛 목록 -->
+	<select id="selectLmsRegularStepMgUnitList" parameterType="reqBox" resultType="dataBox">
+	/*selectLmsRegularStepMgUnitList*/
+		SELECT
+			CASE 
+				WHEN B.COURSETYPE='O' THEN '온라인' 
+				WHEN B.COURSETYPE='F' THEN '오프라인' 
+				WHEN B.COURSETYPE='L' THEN '라이브'
+				WHEN B.COURSETYPE='D' THEN '교육자료'
+				WHEN B.COURSETYPE='V' THEN '설문'
+				WHEN B.COURSETYPE='T' THEN '시험'
+			END AS COURSETYPENAME 
+			,FORMAT(B.STARTDATE, 'yyyy-MM-dd')  + ' ~ ' + FORMAT(B.ENDDATE, 'yyyy-MM-dd') AS EDUDATE 
+			,CASE WHEN B.COURSETYPE='F' THEN '['+C.APNAME+'] ' ELSE '' END + B.COURSENAME AS COURSENAME  
+			,B.COURSEID 
+       		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= B.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+			,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= B.COURSEID AND FINISHFLAG= 'Y') AS FINISHCOUNT
+			,CASE
+          		WHEN B.STARTDATE <![CDATA[ > ]]> getDate() THEN '교육대기'
+          		WHEN B.STARTDATE <![CDATA[ <= ]]> getDate() AND B.ENDDATE <![CDATA[>]]>getDate() THEN '교육중'
+          	 ElSE '교육완료'
+        	 END AS EDUSTATUS
+      	 	,A.STEPSEQ 
+			,CASE
+			 	WHEN A.MUSTFLAG = 'N' THEN '선택'
+			 	WHEN A.MUSTFLAG = 'Y' THEN '필수'
+			 END AS COURSEMUSTFLAG 
+			,A.UNITORDER
+		FROM LMSSTEPUNIT A INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID)
+				LEFT OUTER JOIN LMSOFFLINE C ON (B.COURSEID = C.COURSEID)
+		WHERE A.COURSEID = #{courseid}
+		ORDER BY A.STEPSEQ ASC, A.UNITORDER ASC
+	
+	</select>
+	
+	<!-- 교육신청자 탭 리스트 -->
+	<select id="lmsRegularMgApplicantListAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgApplicantListAjax*/
+	SELECT
+		<if test='totalCount != null and !totalCount.equals("")'>
+			#{totalCount} - ROW_NUM +1 AS NO,
+		</if>
+		*
+	FROM
+	(SELECT
+		ROW_NUMBER() OVER( ORDER BY AAA.UID DESC) AS ROW_NUM
+		,*
+	FROM
+		(
+			SELECT
+			   AA.*
+			   ,BB.APNAME
+			   ,BB.APSEQ
+			FROM
+			   (
+			   		SELECT 
+				    	A.UID
+				    	,B.NAME
+				    	,ISNULL((SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETCODESEQ = A.PINCODE AND TARGETMASTERSEQ='PINCODE'),
+				    		(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETCODESEQ = '0' AND TARGETMASTERSEQ='PINCODE')
+				    	) AS PINCODE
+				   		,CASE
+						 	WHEN A.REQUESTCHANNEL = 'O' THEN '온라인'
+							WHEN A.REQUESTCHANNEL = 'M' THEN '매뉴얼'
+							WHEN A.REQUESTCHANNEL = 'D' THEN '현장등록'
+						 END AS REQUESTCHANNEL
+				   		,FORMAT(A.REQUESTDATE, 'yyyy-MM-dd HH:mm') AS REQUESTDATE 
+				    	,CASE
+				    		WHEN TOGETHERREQUESTFLAG = 'Y' THEN '신청'
+				    		ELSE CASE WHEN ISNULL(B.PARTNERINFOSSN,'') = '' THEN '부사업자없음' ELSE '미신청' END
+				    	END AS TOGETHERREQUESTFLAG
+			   		FROM LMSSTUDENT A
+			   		INNER JOIN MEMBER B
+			   		ON(A.UID = B.UID)
+					WHERE A.COURSEID=#{courseid} AND A.REQUESTFLAG='Y'
+					<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+						AND A.PINCODE = #{searchpinlevel}
+					</if>
+					<if test='searchtext != null and !searchtext.equals("")'>
+						<if test='searchmemberinfo.equals("")'>
+							AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+						</if>
+					 	<if test='searchmemberinfo.equals("1")'>
+					 		AND A.UID LIKE '%'+#{searchtext }+'%'
+					 	</if>
+					 	<if test='searchmemberinfo.equals("2")'>
+					 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+					 	</if>
+					</if>
+        	) AA 
+		     LEFT OUTER JOIN 
+		   	(
+				 SELECT 
+					B.APNAME
+					,B.APSEQ
+					,C.UID 
+				 FROM
+			     (
+			   		SELECT 
+				    STEPCOURSEID 
+				    FROM LMSSTEPUNIT 
+				    WHERE COURSEID=#{courseid}
+			 	 ) A 
+				 INNER JOIN LMSOFFLINE B 
+				 ON(A.STEPCOURSEID=B.COURSEID) 
+				 INNER JOIN LMSSTUDENT C 
+				 ON(B.COURSEID = C.COURSEID)
+				 WHERE C.REQUESTFLAG='Y'
+				 GROUP BY B.APNAME, C.UID, B.APSEQ
+		  	) BB
+        	ON(AA.UID=BB.UID)
+        ) AAA
+        ) AAAA
+        <if test='firstIndex != null and !firstIndex.equals("")'>
+			WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+		</if>
+        
+	</select>
+	
+	<!-- 교육신청자 탭 리스트 카운트 -->
+	<select id="lmsRegularMgApplicantListCount" parameterType="reqBox" resultType="int">
+	/*lmsRegularMgApplicantListCount*/
+	SELECT  
+			COUNT(*) AS TOTAL_CNT
+	FROM LMSSTUDENT
+	WHERE COURSEID=#{courseid} AND REQUESTFLAG='Y'
+	</select>
+	
+	<!-- PINCODE LIST 조회  -->
+	<select id="selectLmsPinCodeList" parameterType="reqBox" resultType="dataBox">
+		/*selectLmsPinCodeList*/
+		SELECT TARGETCODESEQ, TARGETCODENAME AS CASETWO FROM TARGETCODE WHERE TARGETMASTERSEQ='PINCODE'
+		ORDER BY TARGETCODEORDER ASC
+	</select>
+	
+	<!-- 정규과정 취소중 하위 과정에 오프라인이 있을 경우 좌석 제거 -->
+	<select id="deleteLmsOfflineMgSeat"  parameterType="reqBox">
+	/*deleteLmsOfflineMgSeat*/
+	DELETE FROM LMSSEATSTUDENT
+	WHERE EXISTS
+	(
+		SELECT 
+			C.SEATSEQ 
+		FROM LMSSTEPUNIT A 
+			INNER JOIN LMSOFFLINE B ON(A.STEPCOURSEID = B.COURSEID) 
+			INNER JOIN LMSSEATSTUDENT C ON(B.COURSEID = C.COURSEID) 
+		WHERE A.COURSEID=#{targetcourseid} AND C.UID = #{uid}
+	) AND UID = #{uid}
+	</select>
+	
+	<!-- 개별 좌석 제거 -->
+	<select id="deleteLmsOfflineMgSeatEach"  parameterType="reqBox">
+	/*deleteLmsOfflineMgSeatEach*/
+	DELETE FROM LMSSEATSTUDENT
+	WHERE COURSEID=#{stepcourseid} AND UID=#{uid}
+	</select>
+	
+	<!-- 정규과정 하위 과정 수강 취소 (LMSSTUDENT 테이블) -->
+	<update id="lmsRegularMgApplicantLmsStudentDelete" parameterType="reqBox">
+	/*lmsRegularMgApplicantStepCourseDelete*/
+		UPDATE LMSSTUDENT
+		SET FINISHFLAG = 'N',REQUESTFLAG='N',TOGETHERREQUESTFLAG='N',TESTFLAG='N'
+		WHERE COURSEID=#{targetcourseid} AND UID = #{uid}
+	</update>
+	
+	<!-- 정규과정 하위 과정 수강 취소 (LMSSTEPUNIT 테이블) -->
+	<update id="lmsRegularMgApplicantLmsStepUnitDelete" parameterType="reqBox">
+	/*lmsRegularMgApplicantLmsStepUnitDelete*/
+	UPDATE LMSSTEPFINISH
+	SET FINISHFLAG = 'N'
+	WHERE COURSEID=#{courseid} AND UID=#{uid}
+	</update>
+	
+	<!-- 정규과정 수강 취소 -->
+	<update id="lmsRegularMgApplicantDeleteAjax" parameterType="reqBox">
+	/*lmsRegularMgApplicantDeleteAjax*/
+	UPDATE LMSSTUDENT
+	SET FINISHFLAG = 'N',REQUESTFLAG='N',TOGETHERREQUESTFLAG='N'
+	WHERE COURSEID=#{courseid} AND UID = #{uid}
+	</update>
+	
+	<!-- //정규과정 내에 오프라인 과정이 있을 경우 apList가져오기 -->
+	<select id="lmsRegularMgApplicantPopApList" parameterType="reqBox" resultType="dataBox">
+		/*lmsRegularMgApplicantPopApList*/
+		SELECT 
+			C.APSEQ, 
+			C.APNAME
+		FROM LMSSTEPUNIT A
+			INNER JOIN LMSCOURSE B ON(A.STEPCOURSEID = B.COURSEID AND B.COURSETYPE='F' AND B.USEFLAG='Y') 
+			INNER JOIN LMSOFFLINE C ON (B.COURSEID = C.COURSEID)
+		WHERE A.COURSEID = #{courseid}
+		GROUP BY C.APSEQ, C.APNAME
+		ORDER BY C.APNAME ASC
+	
+	</select>
+	
+	<!-- //applicant팝용 정보 -->
+	<select id="selectLmsRegularMgApplicantPopDetail" parameterType="reqBox" resultType="dataBox">
+	/*selectLmsRegularMgApplicantPopDetail*/
+	 SELECT
+		A.COURSEID
+		, A.COURSENAME
+		, B.TOGETHERFLAG
+	FROM LMSCOURSE A 
+		LEFT OUTER JOIN LMSREGULAR B ON (A.COURSEID = B.COURSEID)
+	WHERE A.COURSEID=#{courseid}
+	</select>
+	
+	<!-- 정규과정Mg Detail Applicant pop 카운트 -->
+	<select id="selectLmsRegularMgDetailApplicantPopCount" resultType="int">
+	/*selectLmsRegularMgDetailApplicantPopCount*/
+	SELECT  
+			COUNT(*) AS TOTAL_CNT
+	FROM MEMBER
+			<trim prefix="WHERE"  prefixOverrides="AND">
+				<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+						AND GROUPS = #{searchpinlevel}
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchmemberinfo.equals("")'>
+						AND ( UID LIKE '%'+#{searchtext }+'%' OR NAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchmemberinfo.equals("1")'>
+				 		AND UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchmemberinfo.equals("2")'>
+				 		AND NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+			</trim>
+	</select>
+	
+	<!-- //정규과정Mg 상세 applicant Pop 목록 -->
+	<select id="selectLmsRegularMgDetailApplicantPop" parameterType="reqBox" resultType="dataBox">
+	/*selectLmsRegularMgDetailApplicantPop*/
+	SELECT
+		#{totalCount} - ROW_NUM +1 AS NO
+		,*
+		,(SELECT ISNULL(TARGETCODENAME,'-') FROM TARGETCODE WHERE  TARGETCODESEQ = A.GROUPS AND TARGETMASTERSEQ='PINCODE') AS PINCODE
+		FROM
+		(
+			SELECT
+				ROW_NUMBER() OVER( ORDER BY A.UID DESC) AS ROW_NUM
+				,A.UID
+				,A.NAME
+				,A.GROUPS
+				,(SELECT TOGETHERFLAG FROM LMSREGULAR WHERE COURSEID = #{courseid}) TOGETHERFLAG
+				,'' AS TOGETHERREQUESTFLAG
+				,'' AS APSEQ
+				,A.PARTNERINFOSSN
+					,CASE WHEN ISNULL(B.REQUESTFLAG, 'N') = 'Y' THEN '신청' ELSE '' END AS REQUESTFLAGYN
+				FROM 
+					MEMBER A
+						LEFT  OUTER JOIN LMSSTUDENT B ON (A.UID = B.UID AND B.COURSEID = #{courseid } AND B.REQUESTFLAG = 'Y')
+			<trim prefix="WHERE"  prefixOverrides="AND">
+				<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+						AND A.GROUPS = #{searchpinlevel}
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchmemberinfo.equals("")'>
+						AND ( A.UID LIKE '%'+#{searchtext }+'%' OR A.NAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchmemberinfo.equals("1")'>
+				 		AND A.UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchmemberinfo.equals("2")'>
+				 		AND A.NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+			</trim>
+  	) A
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- //단계 수료(LMSSTEPFINISH) 추가 -->
+	<insert id="lmsRegularMgApplicantAddStep" parameterType="reqBox">
+		/*lmsRegularMgApplicantAddStep*/
+		MERGE LMSSTEPFINISH AS A
+			USING (SELECT COURSEID, STEPSEQ, CONVERT(VARCHAR(11), #{uid}) AS UID, CASE WHEN MUSTFLAG='Y' THEN 'N' ELSE 'Y' END AS FINISHFLAG FROM LMSSTEP WHERE COURSEID = #{courseid}) AS B
+			ON ( A.COURSEID = B.COURSEID AND A.STEPSEQ = B.STEPSEQ AND A.UID=B.UID )
+		WHEN NOT MATCHED THEN
+			INSERT(COURSEID, STEPSEQ, UID, FINISHFLAG) VALUES(B.COURSEID, B.STEPSEQ, B.UID, B.FINISHFLAG)
+		WHEN MATCHED THEN
+			UPDATE SET A.FINISHFLAG = B.FINISHFLAG;
+	</insert>
+	
+	<!-- 하위과정 List -->
+	<select id="lmsRegularMgChildrenCourseList" parameterType="reqBox" resultType="dataBox">
+		/*lmsRegularMgChildrenCourseList*/
+		SELECT COURSEID, COURSETYPE
+			FROM LMSCOURSE A
+			WHERE COURSEID = #{courseid} 
+			UNION ALL
+			SELECT A.STEPCOURSEID AS COURSEID , B.COURSETYPE
+			FROM LMSSTEPUNIT A
+				INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID AND B.COURSETYPE != 'F')
+			WHERE A.COURSEID = #{courseid}
+			UNION ALL
+			SELECT A.STEPCOURSEID AS COURSEID , B.COURSETYPE
+			FROM LMSSTEPUNIT A
+				INNER JOIN LMSCOURSE B ON (A.STEPCOURSEID = B.COURSEID AND B.COURSETYPE = 'F')
+				INNER JOIN LMSOFFLINE C ON (B.COURSEID = C.COURSEID AND C.APSEQ=#{apseq})
+			WHERE A.COURSEID = #{courseid}
+	</select>
+	
+	<!-- //과정이 오프라인인 하위과정 신청 -->
+	<insert id="lmsRegularMgApplicantAddOffline" parameterType="reqBox">
+	/*lmsRegularMgApplicantAddOffline*/
+		MERGE LMSSTUDENT AS A
+		USING (SELECT MAX(COURSEID) AS COURSEID, MAX(UID) AS UID  FROM LMSSTUDENT WHERE COURSEID=#{targetcourseid} AND UID=#{uid} ) AS B
+		ON ( A.COURSEID = B.COURSEID AND A.UID=B.UID )
+		WHEN NOT MATCHED THEN
+		INSERT(COURSEID,UID,REQUESTFLAG,REQUESTDATE,TOGETHERREQUESTFLAG,PINCODE,REQUESTCHANNEL,FINISHFLAG)
+		VALUES(#{targetcourseid}, #{uid}, 'Y', getDate(), #{togetherrequestflag}, 
+		<choose>
+			<when test='pincode != null and !pincode.equals("")'>
+				#{pincode}
+			</when>
+			<otherwise>
+				(SELECT GROUPS FROM MEMBER WHERE UID=#{uid})
+			</otherwise>
+		</choose>
+		, 'M', 'N')
+		WHEN MATCHED THEN
+		UPDATE SET A.TOGETHERREQUESTFLAG = #{togetherrequestflag}, A.REQUESTFLAG = 'Y', A.REQUESTDATE = GETDATE();
+	</insert>
+	
+	<!--//과정이 오프라인이 아닌 하위과정 신청  -->
+	<insert id="lmsRegularMgApplicantAddNoOffline" parameterType="reqBox" >
+	/*lmsRegularMgApplicantAddNoOffline*/
+		MERGE LMSSTUDENT AS A
+		USING (SELECT MAX(COURSEID) AS COURSEID, MAX(UID) AS UID  FROM LMSSTUDENT WHERE COURSEID=#{targetcourseid} AND UID=#{uid} ) AS B
+		ON ( A.COURSEID = B.COURSEID AND A.UID=B.UID )
+		WHEN NOT MATCHED THEN
+		INSERT(COURSEID,UID,REQUESTFLAG,REQUESTDATE,PINCODE,REQUESTCHANNEL,FINISHFLAG)
+		VALUES(#{targetcourseid}, #{uid}, 'Y', getDate(),
+		<choose>
+			<when test='pincode != null and !pincode.equals("")'>
+				#{pincode}
+			</when>
+			<otherwise>
+				(SELECT GROUPS FROM MEMBER WHERE UID=#{uid})
+			</otherwise>
+		</choose>
+		 , 'M', 'N')
+		WHEN MATCHED THEN
+		UPDATE SET A.REQUESTFLAG = 'Y', A.REQUESTDATE = GETDATE();
+	</insert>
+	
+	<!-- UID존재 여부 CHECK -->
+	<select id="lmsRegularMgAboNumberCheck" parameterType="reqBox" resultType="String">
+	/*lmsRegularMgAboNumberCheck*/
+	SELECT ISNULL((SELECT 'Y' FROM MEMBER WHERE UID=#{uid}),'N') AS RESULT
+	</select>
+	
+	<!-- 교육장소 존재 여부 Check -->
+	<select id="lmsRegularMgAddApplicantCheckApseq" parameterType="reqBox" resultType="String">
+	/*lmsRegularMgAddApplicantCheckApseq*/
+		SELECT
+		ISNULL(
+		(SELECT
+		'Y'
+		FROM
+		(SELECT
+			C.APSEQ
+		FROM LMSSTEPUNIT A
+			INNER JOIN LMSCOURSE B ON(A.STEPCOURSEID = B.COURSEID AND B.COURSETYPE='F' AND B.USEFLAG='Y') 
+			INNER JOIN LMSOFFLINE C ON (B.COURSEID = C.COURSEID)
+		WHERE A.COURSEID = #{courseid}
+		GROUP BY C.APSEQ
+		) AA
+		WHERE APSEQ = #{apseq}
+		),'N') AS RESULT
+	</select>
+	
+	<!-- 교육장소 존재 여부 Check -->
+	<select id="lmsRegularMgDetailStepCourseList" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailStepCourseList*/
+	
+	SELECT 
+		STEPCOURSEID
+		,(
+		SELECT 
+		CASE WHEN L.COURSETYPE = 'F' THEN '['+F.APNAME+'] ' ELSE '' END + L.COURSENAME AS COURSENAME
+		FROM LMSCOURSE L 
+			LEFT OUTER JOIN LMSOFFLINE F ON (L.COURSEID = F.COURSEID)
+		WHERE L.COURSEID = A.STEPCOURSEID
+		) AS STEPCOURSENAME 
+	FROM LMSSTEPUNIT A 
+	WHERE A.COURSEID=#{courseid} AND A.STEPSEQ=#{stepseq}
+		ORDER BY A.UNITORDER ASC
+	</select>
+	
+	<!-- courseType 조회 -->
+	<select id="lmsRegularMgChagedCourseType"  parameterType="reqBox" resultType="String">
+	/*lmsRegularMgChagedCourseType*/
+	SELECT COURSETYPE FROM LMSCOURSE WHERE COURSEID=#{stepcourseid}
+	</select>
+	
+	<!-- 온라인 과정 정보 조회 -->
+	<select id="lmsRegularMgOnlineLiveDataInfo" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgOnlineLiveDataInfo*/
+	SELECT 
+			FORMAT(A.STARTDATE, 'yyyy-MM-dd')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd') AS EDUDATE 
+			,A.COURSETYPE 
+			,A.COURSEID 
+       		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+			,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND FINISHFLAG= 'Y') AS FINISHCOUNT
+	FROM LMSCOURSE A
+	WHERE COURSEID=#{stepcourseid}
+	
+	</select>
+	
+	<!-- 단계 정보 조회 -->
+	<select id="lmsRegularMgDetailStepInfo" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailStepInfo*/
+	SELECT 
+		COUNT(STEPCOURSEID) AS TOTALCOURSECOUNT
+		,(SELECT 
+			COUNT(STEPCOURSEID) 
+		FROM LMSSTEPUNIT 
+		WHERE COURSEID=#{courseid} AND STEPSEQ=#{stepseq} AND MUSTFLAG='Y'
+		) AS MUSTCOURSECOUNT
+	 FROM LMSSTEPUNIT 
+	 WHERE COURSEID=#{courseid} AND STEPSEQ = #{stepseq}
+	
+	</select>
+	
+	<!-- //step Student 리스트 -->
+	<select id="lmsRegularMgDetailStepStudentListAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailStepStudentListAjax*/
+	SELECT
+	#{totalCount} - ROW_NUM +1 AS NO
+	,*
+	FROM
+	(	
+		SELECT 
+			ROW_NUMBER() OVER( ORDER BY B.UID DESC) AS ROW_NUM
+			,B.UID
+			,(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETCODESEQ = B.PINCODE AND TARGETMASTERSEQ='PINCODE') AS PINCODE
+			,(SELECT FINISHFLAG FROM LMSSTEPFINISH WHERE COURSEID=#{courseid} AND B.UID=UID AND STEPSEQ=#{stepseq}) AS FINISHFLAG 
+			,C.NAME
+		FROM LMSSTEPUNIT A 
+		INNER JOIN LMSSTUDENT B 
+		ON( A.STEPCOURSEID = B.COURSEID) 
+		INNER JOIN MEMBER C
+		ON(C.UID = B.UID)
+		WHERE A.COURSEID=#{courseid} AND A.STEPSEQ=#{stepseq} AND B.REQUESTFLAG='Y' 
+		<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+				AND B.PINCODE = #{searchpinlevel}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchmemberinfo.equals("")'>
+				AND ( B.UID LIKE '%'+#{searchtext }+'%' OR C.NAME LIKE '%'+#{searchtext }+'%' )  
+			</if>
+		 	<if test='searchmemberinfo.equals("1")'>
+		 		AND B.UID LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchmemberinfo.equals("2")'>
+		 		AND C.NAME LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		</if>
+		GROUP BY B.UID , B.PINCODE ,C.NAME
+	) AA
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- //이수 과정수 조회 -->
+	<select id="lmsRegularMgDetailStepStudentFinishCount" parameterType="reqBox" resultType="int">
+	/*lmsRegularMgDetailStepStudentFinishCount*/
+	SELECT 
+		COUNT(*)  AS FINISHCOUNT
+	FROM LMSSTEPUNIT A 
+	INNER JOIN LMSSTUDENT B 
+	ON( A.STEPCOURSEID = B.COURSEID) 
+	WHERE A.COURSEID=#{courseid} AND B.UID=#{uid} AND B.REQUESTFLAG='Y' AND B.FINISHFLAG='Y' AND A.STEPSEQ=#{stepseq}
+	</select>
+	
+	<!-- step Student 리스트 카운트 -->
+	<select id="lmsRegularMgDetailStepStudentListCount" parameterType="reqBox" resultType="int">
+	/*lmsRegularMgDetailStepStudentListCount*/
+	SELECT 
+		COUNT(*) AS TOTAL_CNT 
+	FROM 
+	(
+		SELECT 
+			ROW_NUMBER() OVER( ORDER BY B.UID DESC) AS ROW_NUM
+			,B.UID
+			,B.PINCODE
+			,C.NAME
+		FROM LMSSTEPUNIT A 
+		INNER JOIN LMSSTUDENT B 
+		ON( A.STEPCOURSEID = B.COURSEID) 
+		INNER JOIN MEMBER C
+		ON(C.UID = B.UID)
+		WHERE A.COURSEID=#{courseid} AND A.STEPSEQ=#{stepseq} AND B.REQUESTFLAG='Y' 
+		<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+				AND B.PINCODE = #{searchpinlevel}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchmemberinfo.equals("")'>
+				AND ( B.UID LIKE '%'+#{searchtext }+'%' OR C.NAME LIKE '%'+#{searchtext }+'%' )  
+			</if>
+		 	<if test='searchmemberinfo.equals("1")'>
+		 		AND B.UID LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchmemberinfo.equals("2")'>
+		 		AND C.NAME LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		</if>
+		GROUP BY B.UID , B.PINCODE ,C.NAME
+	) AS AA
+	
+	</select>
+	
+	<!-- / 교육과정 탭 Online,Live,Data Course Student리스트 카운트 -->
+	<select id="lmsRegularMgOnlineLiveDataStudentListAjaxCount"  parameterType="reqBox" resultType="int">
+	/*lmsRegularMgOnlineLiveDataStudentListAjaxCount*/
+	
+	SELECT 
+		COUNT(*) AS TOTAL_CNT
+	FROM LMSSTUDENT A 
+	INNER JOIN MEMBER B 
+	ON(A.UID = B.UID)
+	WHERE A.COURSEID = #{stepcourseid} AND REQUESTFLAG='Y'
+	<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+				AND A.PINCODE = #{searchpinlevel}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchmemberinfo.equals("")'>
+				AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+			</if>
+		 	<if test='searchmemberinfo.equals("1")'>
+		 		AND A.UID LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchmemberinfo.equals("2")'>
+		 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		</if>
+	
+	</select>
+	
+	<!-- / 교육과정 탭 Online,Live,Data Course Student리스트 -->
+	<select id="lmsRegularMgOnlineLiveDataStudentListAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgOnlineLiveDataStudentListAjax*/
+	SELECT
+	#{totalCount} - ROW_NUM +1 AS NO
+	,*
+	, AA.FINISHFLAG AS BEFOREFINISHFLAG
+	FROM
+	(
+	SELECT 
+		ROW_NUMBER() OVER( ORDER BY A.UID DESC) AS ROW_NUM
+		,A.UID
+		,B.NAME
+		,(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETCODESEQ = A.PINCODE AND TARGETMASTERSEQ='PINCODE') AS PINCODE
+		,FORMAT(A.FINISHDATE, 'yyyy-MM-dd HH:mm') AS FINISHDATE
+		,A.FINISHFLAG
+	FROM LMSSTUDENT A 
+	INNER JOIN MEMBER B 
+	ON(A.UID = B.UID)
+	WHERE A.COURSEID = #{stepcourseid} AND REQUESTFLAG='Y'
+	<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+				AND A.PINCODE = #{searchpinlevel}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchmemberinfo.equals("")'>
+				AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+			</if>
+		 	<if test='searchmemberinfo.equals("1")'>
+		 		AND A.UID LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchmemberinfo.equals("2")'>
+		 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		</if>
+	) AA
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 정규과정Mg Detail 온라인,라이브,교육자료 과정 수료 처리 -->
+	<update id="lmsRegularMgOnlineLiveDataFinishUpdateAjax" parameterType="reqBox" >
+	/*lmsRegularMgOnlineLiveDataFinishUpdateAjax*/
+	<if test='existFinishDate.equals("N")'>
+	UPDATE 
+		LMSSTUDENT 
+	SET ATTENDFLAG='M',FINISHFLAG=#{finishflag},FINISHDATE=getDate() WHERE COURSEID=#{stepcourseid} and UID=#{uid}
+	</if>
+	<if test='existFinishDate.equals("Y")'>
+		UPDATE 
+			LMSSTUDENT 
+		SET ATTENDFLAG='M',FINISHFLAG=#{finishflag} WHERE COURSEID=#{stepcourseid} and UID=#{uid}
+	</if>
+	</update>
+	
+	<!--하위 과정 수료 할 때 마다 스텝 수료 로직 확인  -->
+	<update id="lmsRegularMgStepFinishFlagUpdate" parameterType="reqBox">
+		/* lmsRegularMgStepFinishFlagUpdate */
+		UPDATE LMSSTEPFINISH SET
+			FINISHFLAG =  (
+				SELECT
+					CASE WHEN AA.MUSTFLAG = 'N' THEN 'Y' ELSE
+						CASE WHEN AA.MUSTCOUNT <![CDATA[ > ]]> AA.MUSTFISNISHCOUNT THEN 'N' ELSE
+							CASE WHEN AA.STEPCOUNT <![CDATA[ > ]]> AA.TOTALFINISHCOUNT THEN 'N' ELSE 'Y' END
+						END
+					END FINISHFLAG
+				FROM (	
+					SELECT
+						A.MUSTFLAG
+						, A.STEPCOUNT
+						, ( SELECT COUNT(*) FROM LMSSTEPUNIT WHERE COURSEID = A.COURSEID AND STEPSEQ = A.STEPSEQ AND MUSTFLAG = 'Y' ) MUSTCOUNT
+						, (
+							SELECT COUNT(*)
+							FROM LMSSTEPUNIT A INNER JOIN LMSSTUDENT B
+							ON A.STEPCOURSEID = B.COURSEID
+							WHERE A.COURSEID = #{courseid}
+							AND B.UID = #{uid}
+							AND A.MUSTFLAG = 'Y'
+							AND B.FINISHFLAG = 'Y'
+						) AS MUSTFISNISHCOUNT
+						, (
+							SELECT COUNT(*)
+							FROM LMSSTEPUNIT A INNER JOIN LMSSTUDENT B
+							ON A.STEPCOURSEID = B.COURSEID
+							WHERE A.COURSEID = #{courseid}
+							AND B.UID = #{uid}
+							AND B.FINISHFLAG = 'Y'
+							AND A.STEPSEQ = #{stepseq}
+						) AS TOTALFINISHCOUNT
+					FROM LMSSTEP A 
+					WHERE A.COURSEID = #{courseid}
+					AND A.STEPSEQ = #{stepseq}
+				) AA
+			)
+		WHERE COURSEID = #{courseid}
+		AND STEPSEQ = #{stepseq}
+		AND UID = #{uid}
+	</update>
+	
+	<!-- 정규과정 수료 여부 -->
+	<update id="lmsRegularMgTotalFinishUpdate" parameterType="reqBox">
+		/* lmsRegularMgTotalFinishUpdate */
+		UPDATE LMSSTUDENT SET
+			FINISHDATE = GETDATE()
+			, FINISHFLAG = ISNULL((
+				SELECT
+					CASE WHEN AA.STEPCOUNT <![CDATA[ <= ]]> AA.FINISHCOUNT THEN 'Y' ELSE 'N' END
+				FROM (
+					SELECT
+						FINISHFLAG
+						, (
+							SELECT COUNT(*) STEPCOUNT
+							FROM LMSSTEP
+							WHERE COURSEID = #{courseid}
+						) STEPCOUNT
+						, (
+							SELECT COUNT(*)
+							FROM LMSSTEPFINISH
+							WHERE COURSEID = #{courseid}
+							AND UID = #{uid}
+							AND FINISHFLAG = 'Y'
+						) FINISHCOUNT
+					FROM LMSSTUDENT
+					WHERE COURSEID = #{courseid}
+					AND UID = #{uid}
+				) AA
+			),'N') 
+		WHERE COURSEID = #{courseid}
+		AND UID = #{uid}
+	</update>
+	
+	<!-- 오프라인 과정 정보 조회 -->
+	<select id="lmsRegularMgOfflineCourseInfo" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgOfflineCourseInfo*/
+	SELECT 
+			FORMAT(A.STARTDATE, 'yyyy-MM-dd')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd') AS EDUDATE 
+			,A.COURSETYPE 
+			,A.COURSEID
+			,A.COURSENAME 
+       		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+			,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND FINISHFLAG= 'Y') AS FINISHCOUNT
+	FROM LMSCOURSE A
+	WHERE COURSEID=#{stepcourseid}
+	</select>
+	
+	<!-- 수료날짜 있는지 체크하기 -->
+	<select id="lmsRegularMgExistFinishDateCheck" parameterType="reqBox" resultType="String">
+	/*lmsRegularMgExistFinishDateCheck*/
+	SELECT 
+		CASE
+			WHEN FINISHDATE IS NULL THEN 'N'
+			ELSE 'Y'
+		END AS EXISTFINISHDATE
+	FROM 
+		LMSSTUDENT
+	WHERE
+		COURSEID=#{stepcourseid} 
+		AND UID=#{uid}
+	</select>
+	
+	<!-- //시험 과정 정보 조회 -->
+	<select id="lmsRegularMgTestCourseInfo" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgTestCourseInfo*/
+	SELECT 
+		FORMAT(A.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE 
+		,A.COURSETYPE 
+		,A.COURSEID 
+		, ((SELECT (TESTCOUNT*TESTPOINT) FROM LMSTESTSUBMIT WHERE COURSEID=A.COURSEID AND ANSWERTYPE='1')+(SELECT (TESTCOUNT*TESTPOINT) FROM LMSTESTSUBMIT WHERE COURSEID=A.COURSEID AND ANSWERTYPE='2')) OBJECTPOINT
+		,(SELECT (TESTCOUNT*TESTPOINT) FROM LMSTESTSUBMIT WHERE COURSEID=A.COURSEID AND ANSWERTYPE='3') SUBJECTPOINT
+		,B.PASSPOINT
+		,B.TESTTYPE
+		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND FINISHFLAG= 'Y') AS FINISHCOUNT
+	FROM LMSCOURSE A
+	INNER JOIN LMSTEST B
+	ON(A.COURSEID = B.COURSEID)
+	WHERE A.COURSEID=#{stepcourseid}
+	
+	</select>
+	
+	<!-- 교육과정 탭 Test Student리스트 카운트 -->
+	<select id="lmsRegularMgTestListAjaxCount" parameterType="reqBox" resultType="int">
+	/*lmsRegularMgTestListAjaxCount*/
+	SELECT 
+		COUNT(*)
+	FROM LMSSTUDENT A 
+	INNER JOIN MEMBER B 
+	ON(A.UID = B.UID)
+	WHERE COURSEID=#{stepcourseid} AND REQUESTFLAG='Y'
+	<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+				AND A.PINCODE = #{searchpinlevel}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchmemberinfo.equals("")'>
+				AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+			</if>
+		 	<if test='searchmemberinfo.equals("1")'>
+		 		AND A.UID LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchmemberinfo.equals("2")'>
+		 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		</if>
+	
+	</select>
+	
+	
+	<!-- 교육과정 탭 Test Student리스트 -->
+	<select id="lmsRegularMgTestListAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgTestListAjax*/
+	SELECT
+	#{totalCount} - ROW_NUM +1 AS NO
+	,*
+	, AA.SUBJECTPOINT AS BEFORESUBJECTPOINT
+	, AA. OBJECTPOINT AS BEFOREOBJECTPOINT
+	, AA.FINISHFLAG AS BEFOREFINISHFLAG
+	FROM
+	(	
+	SELECT 
+		<if test="order != null">
+	 	ROW_NUMBER() OVER( ORDER BY ${order}) AS ROW_NUM
+		</if>
+		<if test="order == null">
+		ROW_NUMBER() OVER( ORDER BY B.UID DESC) AS ROW_NUM
+		</if>
+		,A.UID
+		,B.NAME
+		,(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETCODESEQ = A.PINCODE AND TARGETMASTERSEQ='PINCODE') AS PINCODE
+		,FORMAT(A.STUDYDATE, 'yyyy-MM-dd') AS STUDYDATE
+		,ISNULL(A.STUDYFLAG,'') AS STUDYFLAG
+		,ISNULL(A.SUBJECTPOINT,0) AS SUBJECTPOINT
+		,ISNULL(A.OBJECTPOINT,0) AS OBJECTPOINT
+		,A.FINISHFLAG
+	FROM LMSSTUDENT A 
+	INNER JOIN MEMBER B 
+	ON(A.UID = B.UID)
+	WHERE COURSEID=#{stepcourseid} AND REQUESTFLAG='Y'
+	<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+				AND A.PINCODE = #{searchpinlevel}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchmemberinfo.equals("")'>
+				AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+			</if>
+		 	<if test='searchmemberinfo.equals("1")'>
+		 		AND A.UID LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchmemberinfo.equals("2")'>
+		 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		</if>
+	) AA
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	
+	<!-- 스텝 하위  Test 과정 수료 처리 -->
+	<update id="lmsRegularMgTestFinishUpdateAjax" parameterType="reqBox" >
+		/*lmsRegularMgTestFinishUpdateAjax*/
+		<choose>
+			<when test='existFinishDate.equals("N") and finishflag.equals("Y")'>
+				UPDATE LMSSTUDENT SET 
+					TESTFLAG = 'Y'
+					, ATTENDFLAG='M'
+					, FINISHFLAG=#{finishflag}
+					, FINISHDATE=getDate()
+					, SUBJECTPOINT=#{subjectpoint}
+					, OBJECTPOINT=#{objectpoint} 
+				WHERE COURSEID=#{stepcourseid} 
+				AND UID=#{uid}
+			</when>
+			<otherwise>
+				UPDATE LMSSTUDENT SET 
+					TESTFLAG = 'Y'
+					, ATTENDFLAG='M'
+					, FINISHFLAG=#{finishflag}
+					, SUBJECTPOINT=#{subjectpoint}
+					, OBJECTPOINT=#{objectpoint} 
+				WHERE COURSEID=#{stepcourseid} 
+				AND UID=#{uid}
+			</otherwise>
+		</choose>
+	</update>
+	
+	<!-- //시험 정보 가져오기 -->
+	<select id="lmsRegularMgDetailTestStudentInfo" parameterType="reqBox" resultType="dataBox"> 
+	/*lmsRegularMgDetailTestStudentInfo*/
+		SELECT
+		  (SELECT COURSENAME FROM LMSCOURSE WHERE COURSEID=A.COURSEID) COURSENAME
+		  ,ISNULL(SUBJECTPOINT,0) AS SUBJECTPOINT
+		  ,ISNULL(OBJECTPOINT,0) AS OBJECTPOINT
+		  ,(ISNULL(SUBJECTPOINT,0) + ISNULL(OBJECTPOINT,0)) AS TOTALPOINT
+		  ,(SELECT NAME FROM MEMBER WHERE UID=A.UID) AS NAME
+		FROM LMSSTUDENT A 
+		WHERE COURSEID=#{stepcourseid} AND UID=#{uid}
+	
+	</select>
+	
+	
+
+	<!-- 문제 리스트 가져오기 -->
+	<select id="lmsRegularMgDetailTestList" parameterType="reqBox" resultType="dataBox"> 
+	/*lmsRegularMgDetailTestList*/
+		SELECT 
+		  ROW_NUMBER() OVER( ORDER BY B.TESTPOOLID DESC) AS NO
+		  ,B.TESTPOOLID
+		  ,B.TESTPOOLNAME
+		  ,B.OBJECTANSWER
+		  ,B.SUBJECTANSWER
+		  ,B.ANSWERTYPE
+		  ,A.SUBJECTANSWER AS STUDENTSUBJECTANSWER
+		  ,A.OBJECTANSWER AS STUDENTOBJECTANSWER
+		  ,A.TESTPOOLPOINT
+		FROM LMSTESTANSWER A 
+		INNER JOIN LMSTESTPOOL B
+		  ON (A.TESTPOOLID = B.TESTPOOLID)
+		WHERE A.COURSEID=#{stepcourseid} AND A.UID=#{uid}
+	
+	</select>
+	
+
+<!--  -->
+	<select id="lmsRegularMgDetailTestAnswerList"  parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailTestAnswerList*/
+		SELECT 
+			* 
+		FROM LMSTESTPOOLANSWER
+		<if test="testpoolids != null and !testpoolids.equals('')">
+			WHERE TESTPOOLID IN
+			<foreach collection="testpoolids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+		</if>
+	</select>
+	
+	<!-- 정규과정 스탬프 procedure -->
+	<insert id="lmsRegularMgStampInsert" parameterType="reqBox">
+		/* lmsRegularMgStampInsert */
+		EXEC DBO.SP_LMS_STAMPREGULAR #{uid}, #{courseid}, ''
+	</insert>
+	
+	<!-- 오프라인,온라인,교육자료 -->
+	<insert id="lmsRegularMgOnlineOfflineDataStampInsert" parameterType="reqBox">
+		/* lmsRegularMgOnlineOfflineDataStampInsert */
+		<if test='stampid.equals("5")'>
+		EXEC DBO.SP_LMS_STAMPONLINE #{uid}, #{stampid},''
+		</if>
+		<if test='stampid.equals("6")'>
+		EXEC DBO.SP_LMS_STAMPOFFLINE #{uid}, #{stampid}, ''
+		</if>
+		<if test='stampid.equals("7")'>
+		EXEC DBO.SP_LMS_STAMPDATA #{uid}, #{stampid}, ''
+		</if>
+	</insert>
+	
+	<!-- 주관식 점수 엑셀 등록 Pop -->
+	<select id="lmsRegularMgDetailTestSubjectExcelPop" parameterType="reqBox" resultType="String">
+	/*lmsRegularMgDetailTestSubjectExcelPop*/
+		SELECT COURSENAME FROM LMSCOURSE WHERE COURSEID=#{stepcourseid}
+	</select>
+	
+	<!-- 엑셀 주관식 점수 등록 -->
+	<update id="lmsRegularMgTestSubjectExcelAjax" parameterType="reqBox" >
+	/*lmsRegularMgTestSubjectExcelAjax*/
+		UPDATE LMSSTUDENT SET
+			TESTFLAG = 'Y' 
+			, ATTENDFLAG='M'
+			,SUBJECTPOINT=#{subjectpoint} 
+		WHERE COURSEID=#{stepcourseid} 
+		AND UID=#{uid}
+	</update>
+	
+	<!-- test수료여부 확인 -->
+	<select id="lmsRegularMgTestFinishFlagCheck" parameterType="reqBox" resultType="String">
+	/*lmsRegularMgTestFinishFlagCheck*/
+	SELECT 
+		'Y' AS FINISHFLAG 
+	FROM LMSTEST 
+	WHERE COURSEID=#{stepcourseid} 
+	AND PASSPOINT <![CDATA[ <= ]]> 
+	(SELECT (ISNULL(SUBJECTPOINT,0) + ISNULL(OBJECTPOINT,0)) AS TOTALPOINT FROM LMSSTUDENT WHERE COURSEID=#{stepcourseid} AND UID=#{uid})
+	
+	</select>
+	
+	<!-- test수료 처리-->
+	<update id="lmsRegularMgTestFinishFlagUpdate" parameterType="reqBox">
+	/*lmsRegularMgTestFinishFlagUpdate*/
+		<choose>
+			<when test='existFinishDate.equals("N")'>
+				UPDATE 
+					LMSSTUDENT 
+				SET ATTENDFLAG='M',FINISHFLAG=#{finishflag},FINISHDATE=getDate() WHERE COURSEID=#{stepcourseid} and UID=#{uid}
+			</when>
+			<otherwise>
+				UPDATE 
+					LMSSTUDENT 
+				SET ATTENDFLAG='M',FINISHFLAG=#{finishflag} WHERE COURSEID=#{stepcourseid} and UID=#{uid}
+			</otherwise>
+		</choose>
+	</update>
+	
+	<!-- 시험 신청자 List -->
+	<select id="lmsRegularMgTestStudentList" parameterType="reqBox" resultType="String">
+	/*lmsRegularMgTestStudentList*/
+	SELECT 
+		'Y' AS UIDCHECK
+	FROM LMSSTUDENT A 
+	WHERE COURSEID=#{stepcourseid} AND REQUESTFLAG='Y' AND UID = #{uid}
+	</select>
+	
+	<!-- studyFlag가 Y일때 객관식 재채점 -->
+	<update id="lmsRegularMgTestObjectRemarkingY"	parameterType="reqBox" >
+	/*lmsRegularMgTestObjectRemarkingY*/
+		UPDATE A
+			SET 
+				A.POINT = A.TESTPOOLPOINT
+		FROM LMSTESTANSWER A 
+		INNER JOIN LMSTESTPOOL B
+		ON (A.TESTPOOLID = B.TESTPOOLID AND A.OBJECTANSWER = B.OBJECTANSWER)
+		WHERE A.COURSEID = #{stepcourseid}
+		AND A.UID IN <foreach collection="yUids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+		AND B.ANSWERTYPE IN ('1','2')
+	</update>
+	
+	<!--studyFlag가 N일때 객관식 재채점  -->
+	<update id="lmsRegularMgTestObjectRemarkingN" parameterType="reqBox" >
+	/*lmsRegularMgTestObjectRemarkingN*/
+	UPDATE LMSSTUDENT
+	SET OBJECTPOINT = 0
+	WHERE COURSEID = #{stepcourseid} 
+	AND UID IN <foreach collection="nUids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+	
+	<!-- 주관식 개별 채점 정보  -->
+	<select id="lmsRegularMgDetailTestSubjectAnswerPop" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailTestSubjectAnswerPop*/
+	SELECT
+		(SELECT COUNT(UID) FROM LMSSTUDENT WHERE COURSEID=#{stepcourseid}) AS TOTALCOUNT
+		,(SELECT COUNT(UID) FROM LMSSTUDENT WHERE COURSEID=#{stepcourseid} AND FINISHDATE IS NOT NULL) AS MARKEDCOUNT
+		,ISNULL(SUBJECTPOINT,0) AS SUBJECTPOINT
+		,ISNULL(OBJECTPOINT,0) AS OBJECTPOINT
+		,(ISNULL(SUBJECTPOINT,0) + ISNULL(OBJECTPOINT,0)) AS TOTALPOINT
+		,(SELECT NAME FROM MEMBER WHERE UID=A.UID) AS NAME
+	FROM LMSSTUDENT A 
+	WHERE COURSEID=#{stepcourseid} AND UID=#{uid}
+	</select>
+	
+	<!-- 개인별 주관식 답안지 -->
+	<select id="lmsRegularMgDetailEachTestSubjectAnswer" resultType="dataBox" parameterType="reqBox">
+	/*lmsRegularMgDetailEachTestSubjectAnswer*/
+		SELECT 
+		  ROW_NUMBER() OVER( ORDER BY B.TESTPOOLID DESC) AS NO
+		  ,B.TESTPOOLID
+		  ,B.TESTPOOLNAME
+		  ,B.SUBJECTANSWER
+		  ,A.SUBJECTANSWER AS STUDENTSUBJECTANSWER
+		  ,A.TESTPOOLPOINT
+		  ,A.POINT
+		  ,A.ANSWERSEQ
+		FROM LMSTESTANSWER A 
+		INNER JOIN LMSTESTPOOL B
+		  ON (A.TESTPOOLID = B.TESTPOOLID)
+		WHERE A.COURSEID=#{stepcourseid} AND A.UID=#{uid} AND B.ANSWERTYPE='3'
+	</select>
+	
+	<!--주관식 점수 update  -->
+	<update id="lmsRegularMgDetailEachSubjectPointUpdate" parameterType="reqBox">
+	/*lmsRegularMgDetailEachSubjectPointUpdate*/
+	UPDATE LMSTESTANSWER SET POINT = #{subjectpoint}
+	WHERE COURSEID=#{stepcourseid} AND UID=#{uid} AND ANSWERSEQ=#{answerseq} AND TESTPOOLID=#{testpoolid}
+	
+	</update>
+	
+	<!-- 주관식 합계 점수 LMSSTUDENT테이블에 UPDATE -->
+	<update id="lmsRegularMgDetailSubjectPointUpdate" parameterType="reqBox">
+	/*lmsRegularMgDetailSubjectPointUpdate*/
+	UPDATE LMSSTUDENT SET
+			TESTFLAG = 'Y'
+			, SUBJECTPOINT = ISNULL((
+				SELECT 
+					SUM(ISNULL(A.POINT,0))
+				FROM LMSTESTANSWER A INNER JOIN LMSTESTPOOL B
+				ON A.TESTPOOLID = B.TESTPOOLID
+				WHERE A.COURSEID = #{stepcourseid}
+				AND A.UID = #{uid}
+				AND B.ANSWERTYPE = '3'
+			),0)
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+	
+	</update>
+	<!-- 객관식 합계 점수 LMSSTUDENT테이블에 UPDATE -->
+	<update id="lmsRegularMgTestObjectPointSum" parameterType="reqBox">
+	/*lmsRegularMgTestObjectPointSum*/
+	UPDATE LMSSTUDENT SET
+			OBJECTPOINT = ISNULL((
+				SELECT 
+					SUM(ISNULL(A.POINT,0))
+				FROM LMSTESTANSWER A INNER JOIN LMSTESTPOOL B
+				ON A.TESTPOOLID = B.TESTPOOLID
+				WHERE A.COURSEID = #{stepcourseid}
+				AND A.UID = #{uid}
+				AND B.ANSWERTYPE IN('1','2')
+			),0)
+		WHERE COURSEID = #{stepcourseid}
+		AND UID = #{uid}
+	
+	</update>
+	
+	<!--오프라인  출석처리하기 -->
+	<update id="updateLmsRegularMgAttendHandle" parameterType="reqBox">
+	/*updateLmsRegularMgAttendHandle*/
+	<choose>
+		<when test='existfinishdate.equals("Y")'>
+			UPDATE LMSSTUDENT SET ATTENDFLAG=#{attendflag},FINISHFLAG=#{finishflag},STUDYFLAG='Y',STUDYDATE=getDate() WHERE COURSEID=#{stepcourseid} and UID=#{uid}
+		</when>
+		<otherwise>
+			UPDATE LMSSTUDENT SET ATTENDFLAG=#{attendflag},FINISHDATE=getDate(),FINISHFLAG=#{finishflag},STUDYFLAG='Y',STUDYDATE=getDate() WHERE COURSEID=#{stepcourseid} and UID=#{uid}
+		</otherwise>
+	</choose>
+	</update>
+	
+	<!--오프라인 부사업자 출석처리하기 -->
+	<update id="updateLmsRegularMgAttendHandleTogether" parameterType="reqBox">
+	/*updateLmsRegularMgAttendHandleTogether*/
+			UPDATE LMSSTUDENT SET TESTFLAG='A' WHERE COURSEID=#{stepcourseid} and UID=#{uid}
+	</update>
+	
+	<!-- 정규과정 수강생인지 확인 -->
+	<select id="lmsRegularMgAttendRegisterCheck" parameterType="reqBox" resultType="String">
+	/*lmsRegularMgAttendRegisterCheck*/
+	SELECT ISNULL((SELECT 'Y' FROM LMSSTUDENT WHERE UID=#{uid} AND COURSEID=#{stepcourseid} AND REQUESTFLAG='Y' GROUP BY UID),'N') AS RESULT
+	</select>
+	
+	<!-- 동반자허용과정인지 CHECK -->
+	<select id="lmsRegularMgAttendBarcodeTogetherFlagCheck" resultType="String" parameterType="reqBox">
+	/*lmsRegularMgAttendBarcodeTogetherFlagCheck*/
+	SELECT TOGETHERFLAG FROM LMSOFFLINE WHERE COURSEID=#{stepcourseid}
+	</select>
+	
+	<!-- 동반자신청여부 CHECK -->
+	<select id="lmsRegularMgAttendBarcodeTogetherFinalCheck" resultType="String" parameterType="reqBox">
+	/*lmsRegularMgAttendBarcodeTogetherFinalCheck*/
+	SELECT 
+		CASE WHEN ISNULL(TOGETHERREQUESTFLAG,'') = '' THEN 'N' ELSE TOGETHERREQUESTFLAG END TOGETHERREQUESTFLAG 
+	FROM LMSSTUDENT WHERE COURSEID=#{stepcourseid} AND UID=#{uid}
+	</select>
+	
+	<!-- 바코드 팝업 창 confirm구역에 보여줄 리스트 조회하기 -->
+	<select id="lmsRegularMgAttendBarcodeConfirmInfo" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgAttendBarcodeConfirmInfo*/
+		SELECT UID,NAME,ISNULL(MAINNAME, '') AS MAINNAME,PARTNERINFONAME,SSN,PARTNERINFOSSN FROM MEMBER WHERE UID=#{uid};
+	</select>
+	
+	<!--  //좌석배정 안 된 좌석 가져오기 -->
+	<select id="lmsRegularMgAttendBarcodeNoAssignSeatGet" parameterType="reqBox" resultType="String">
+	/*lmsRegularMgAttendBarcodeNoAssignSeatGet*/
+	SELECT 
+		MIN(A.SEATSEQ) 
+	FROM 
+	(
+		SELECT 
+			COURSEID
+			,SEATSEQ 
+		FROM LMSSEAT 
+		WHERE COURSEID= #{stepcourseid} and SEATTYPE=#{seattype} AND SEATUSEFLAG='Y'
+	) A 
+	LEFT OUTER JOIN LMSSEATSTUDENT B 
+	ON(A.SEATSEQ = B.SEATSEQ AND A.COURSEID = B.COURSEID) 
+	WHERE B.UID IS NULL
+	</select>
+	
+	<!-- //VIP회원인지 CHECK -->
+	<select id="lmsRegularMgAttendBarcodePinlevelGet" parameterType="reqBox" resultType="String">
+		/*lmsRegularMgAttendBarcodePinlevelGet*/
+		SELECT GROUPS FROM MEMBER WHERE UID=#{uid}
+	</select>
+	
+	<!-- Seat Register Count 조회 -->
+	<select id="lmsRegularMgAttendBarcodeSeatRegisterCount" parameterType="reqBox" resultType="int">
+		/*lmsRegularMgAttendBarcodeSeatRegisterCount*/
+		SELECT 
+			ISNULL(MAX(
+			CASE WHEN TESTFLAG='A' THEN 2
+						WHEN FINISHFLAG='Y' THEN 1
+						ELSE 0 END ) , 0) AS CNT
+		 FROM LMSSTUDENT WHERE UID=#{uid} AND COURSEID=#{stepcourseid}
+		
+		/* 기존 좌석 수로 출결 처리하던것을 이것으로 함
+		SELECT COUNT(*) FROM LMSSEATSTUDENT WHERE UID={uid} AND COURSEID={stepcourseid}
+		*/
+	</select>
+	
+	<!-- //좌석 배정 -->
+	<select id="lmsRegularMgAttendBarcodeSeatRegister" parameterType="reqBox">
+	/*lmsRegularMgAttendBarcodeSeatRegister*/
+	INSERT INTO LMSSEATSTUDENT(COURSEID,UID,SEATSEQ,REGISTRANTDATE)
+	VALUES(#{stepcourseid},#{uid},#{seatseq},getDate())
+	</select>
+	
+	<!-- 회원정보 조회 -->
+	<select id="lmsRegularMgAttendBarcodeMemberInfo" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgAttendBarcodeMemberInfo*/
+	SELECT 
+		UID
+		,NAME
+		,ISNULL(MAINNAME, '') AS MAINNAME
+		,ISNULL(PARTNERINFONAME,'') AS PARTNERINFONAME
+		,GROUPS
+		,(SELECT SEATNUMBER FROM LMSSEAT WHERE SEATSEQ=#{seatseq} AND COURSEID=#{stepcourseid}) AS SEATNUMBER
+	 FROM MEMBER 
+	 WHERE UID=#{uid}
+	</select>
+	
+	<!--정규과정Mg 오프라인 상세 -->
+	<select id="selectLmsRegularMgOfflineDetail" parameterType="reqBox" resultType="dataBox">
+		/*selectLmsRegularMgOfflineDetail */
+		SELECT
+		A.COURSENAME
+		, FORMAT(A.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+		, B.APNAME
+		FROM LMSCOURSE A LEFT OUTER JOIN LMSOFFLINE B
+		ON A.COURSEID = B.COURSEID
+		WHERE A.COURSEID=#{stepcourseid}
+	</select>
+	
+	<!-- //alert용 회원정보 조회 -->
+	<select id="lmsRegularMgAttendBarcodeNoAppllicantInfo" parameterType="reqBox" resultType="dataBox">
+		/*lmsRegularMgAttendBarcodeNoAppllicantInfo*/
+		SELECT 
+			UID
+			,(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETCODESEQ=GROUPS AND TARGETMASTERSEQ='PINCODE') AS PINCODE
+			,NAME 
+			,ISNULL(MAINNAME, '') AS MAINNAME
+		FROM MEMBER
+		WHERE UID=#{uid}
+	</select>
+	
+	<!-- 설문 과정 정보 조회 -->
+	<select id="lmsRegularMgServeyCourseInfo" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgServeyCourseInfo*/
+	SELECT 
+			FORMAT(A.STARTDATE, 'yyyy-MM-dd hh:mm')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd hh:mm') AS EDUDATE 
+			,A.COURSEID 
+       		,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND REQUESTFLAG= 'Y') AS REQUESTCOUNT
+			,(SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID= A.COURSEID AND FINISHFLAG= 'Y') AS FINISHCOUNT
+	FROM LMSCOURSE A
+	WHERE COURSEID=#{stepcourseid}
+	
+	</select>
+	
+	<!-- 질문리스트가져오기 -->
+	<select id="lmsRegularMgDetailSurveyList" parameterType="reqBox" resultType="dataBox">
+		/*lmsRegularMgDetailSurveyList*/
+		SELECT * FROM LMSSURVEY WHERE COURSEID=#{stepcourseid} ORDER BY SURVEYSEQ
+	</select>
+	
+	<!-- 척도평균 -->
+	<select id="lmsRegularMgDetailSurveyAvgSampleValue" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailSurveyAvgSampleValue*/
+		SELECT
+			CONVERT(NUMERIC(2,1),(SUM(B.SAMPLEVALUE)*1.0)/COUNT(AA.SURVEYSEQ)) AS AVGVALUE
+			,AA.SURVEYSEQ
+		FROM
+		(  
+			SELECT
+				A.COURSEID
+				,A.SURVEYSEQ
+				,A.UID
+				,A.OBJECTRESPONSE
+			FROM
+				LMSSURVEYRESPONSE A
+			INNER JOIN
+				LMSSURVEY C
+			ON(A.COURSEID = C.COURSEID AND A.SURVEYSEQ = C.SURVEYSEQ)
+			WHERE 
+				A.COURSEID=#{stepcourseid} 
+				AND C.SURVEYTYPE=1
+		) AA
+		LEFT OUTER JOIN 
+			LMSSURVEYSAMPLE B
+		ON 
+			(AA.COURSEID = B.COURSEID 
+				AND AA.SURVEYSEQ=B.SURVEYSEQ 
+				AND B.SAMPLESEQ = AA.OBJECTRESPONSE
+			)
+		GROUP BY AA.SURVEYSEQ
+	</select>
+	
+	<!-- Object 보기 지문 리스트 가져오기 -->
+	<select id="lmsRegularMgDetailSurveySampleObjectList" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailSurveySampleObjectList*/
+	WITH SAMPLECNT AS(
+		SELECT 
+			AA.COURSEID
+			, AA.SURVEYSEQ
+			, AA.SAMPLESEQ
+			,BB.SAMPLENAME
+			, COUNT(*) CNT
+		FROM 
+		(
+		 SELECT
+			  COURSEID
+			  , SURVEYSEQ
+			  , OBJECTRESPONSE
+			  ,RIGHT(LEFT(T.OBJECTRESPONSE,Number-1)
+			  ,CHARINDEX(',',REVERSE(LEFT(','+T.OBJECTRESPONSE,Number-1)))) AS SAMPLESEQ
+		 FROM
+		  master..spt_values,
+		  LMSSURVEYRESPONSE T
+		 WHERE
+		  Type = 'P' AND Number BETWEEN 1 AND LEN(T.OBJECTRESPONSE)+1
+		  AND
+		  (SUBSTRING(T.OBJECTRESPONSE,Number,1) = ',' OR SUBSTRING(T.OBJECTRESPONSE,Number,1)  = '') 
+		  AND COURSEID= #{stepcourseid}
+		  AND OBJECTRESPONSE <![CDATA[<>]]> '' 
+		) AA
+		INNER JOIN LMSSURVEYSAMPLE BB ON(BB.COURSEID=AA.COURSEID AND BB.SURVEYSEQ=AA.SURVEYSEQ AND AA.SAMPLESEQ=BB.SAMPLESEQ)
+		GROUP BY AA.COURSEID, AA.SURVEYSEQ, AA.SAMPLESEQ, BB.SAMPLENAME
+		)
+		,TOTALCNT AS(
+		SELECT 
+			AA.COURSEID
+			, AA.SURVEYSEQ
+			, COUNT(*) CNT
+		FROM 
+		(
+		 SELECT
+			COURSEID
+			, SURVEYSEQ
+			, OBJECTRESPONSE
+			,RIGHT(LEFT(T.OBJECTRESPONSE,Number-1)
+			,CHARINDEX(',',REVERSE(LEFT(','+T.OBJECTRESPONSE,Number-1)))) AS SAMPLESEQ
+		 FROM
+		  master..spt_values,
+		  LMSSURVEYRESPONSE T
+		 WHERE
+		  Type = 'P' AND Number BETWEEN 1 AND LEN(T.OBJECTRESPONSE)+1
+		  AND
+		  (SUBSTRING(T.OBJECTRESPONSE,Number,1) = ',' OR SUBSTRING(T.OBJECTRESPONSE,Number,1)  = '') 
+		  AND COURSEID= #{stepcourseid}
+		  AND OBJECTRESPONSE <![CDATA[<>]]> '' 
+		) AA
+		GROUP BY AA.COURSEID, AA.SURVEYSEQ
+		)
+	SELECT 
+		A.COURSEID
+		, A.SURVEYSEQ
+		, A.SAMPLESEQ
+		, A.SAMPLENAME
+		, A.CNT
+		, CONVERT(numeric(3,0),((A.CNT*1.0/B.CNT)*100)) AS PCT 
+	FROM SAMPLECNT A 
+	INNER JOIN TOTALCNT B 
+	ON(A.COURSEID=B.COURSEID AND A.SURVEYSEQ = B.SURVEYSEQ)
+	</select>
+	
+	<!-- Subject 보기,지문 리스트 가져오기 -->
+	<select id="lmsRegularMgDetailSurveySampleSubjectList" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailSurveySampleSubjectList*/
+	SELECT
+	  A.SURVEYSEQ
+	  ,B.SUBJECTRESPONSE
+	FROM
+	(SELECT 
+	  * 
+	FROM LMSSURVEY 
+	WHERE COURSEID=#{stepcourseid} AND SURVEYTYPE IN(3,4)
+	) A
+	INNER JOIN LMSSURVEYRESPONSE B ON(B.COURSEID=A.COURSEID AND B.SURVEYSEQ = A.SURVEYSEQ)
+	</select>
+	
+	<!-- 설문 대상자 리스트 -->
+	<select id="lmsRegularMgDetailSurveyCourseListAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsRegularMgDetailSurveyCourseListAjax*/
+	
+	SELECT
+	#{totalCount} - ROW_NUM +1 AS NO
+	,*
+	FROM
+	(	
+		SELECT 
+			ROW_NUMBER() OVER( ORDER BY A.FINISHFLAG DESC) AS ROW_NUM
+			,A.UID
+		    ,B.NAME
+		    ,(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETCODESEQ=A.PINCODE AND TARGETMASTERSEQ='PINCODE') AS PINCODE
+		    ,A.FINISHDATE
+		    ,A.FINISHFLAG
+		FROM LMSSTUDENT A 
+		INNER JOIN MEMBER B 
+		ON(A.UID = B.UID)
+		WHERE COURSEID=#{stepcourseid} AND REQUESTFLAG='Y'
+		<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+					AND A.PINCODE = #{searchpinlevel}
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchmemberinfo.equals("")'>
+					AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchmemberinfo.equals("1")'>
+			 		AND A.UID LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchmemberinfo.equals("2")'>
+			 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+			 	</if>
+			</if>
+	) AA
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}	
+	</select>
+	
+	<!-- 설문 토탈 카운트 -->
+	<select id="lmsRegularMgDetailSurveyCourseListCount" resultType="int" parameterType="reqBox">
+	/*lmsRegularMgDetailSurveyCourseListCount*/
+	SELECT 
+		COUNT(*)
+	FROM LMSSTUDENT A 
+	INNER JOIN MEMBER B 
+	ON(A.UID = B.UID)
+	WHERE COURSEID=#{stepcourseid} AND REQUESTFLAG='Y'
+	<if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+				AND A.PINCODE = #{searchpinlevel}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			<if test='searchmemberinfo.equals("")'>
+				AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+			</if>
+		 	<if test='searchmemberinfo.equals("1")'>
+		 		AND A.UID LIKE '%'+#{searchtext }+'%'
+		 	</if>
+		 	<if test='searchmemberinfo.equals("2")'>
+		 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+		 	</if>
+		</if>
+	</select>
+	
+	<!-- 정규과정 스탶 정보 읽기 -->
+ <select id="selectLmsStepList" parameterType="reqBox" resultType="dataBox">
+  /*selectLmsStepList*/
+  SELECT STEPSEQ
+   , MUSTFLAG
+   , CASE WHEN MUSTFLAG = 'Y' THEN '필수' ELSE '선택' END MUSTFLAGNAME
+  FROM LMSSTEP
+  WHERE COURSEID = #{courseid}
+  ORDER BY STEPSEQ ASC
+ </select>
+ 
+ <!-- 수료자 및 수강생 갯수 -->
+ <select id="selectRegularMgFinishTotal" parameterType="reqBox" resultType="dataBox">
+  /*selectRegularMgFinishTotal*/
+  SELECT
+   ISNULL(( 
+    SELECT COUNT(*) CNT
+    FROM LMSSTUDENT
+    WHERE COURSEID = #{courseid}
+    AND REQUESTFLAG = 'Y'
+    AND FINISHFLAG = 'Y'
+    ),'0'
+   ) AS FINISHCNT ,
+   ISNULL((
+    SELECT COUNT(*) CNT
+    FROM LMSSTUDENT
+    WHERE COURSEID = #{courseid}
+    AND REQUESTFLAG = 'Y'
+    ),0
+   ) AS TOTALCNT
+ </select>
+ 
+ <!-- 수료자 갯수 카운트 -->
+ <select id="lmsRegularMgFinishListCount" parameterType="reqBox" resultType="int">
+  /*lmsRegularMgFinishListCount*/
+	  SELECT
+	   	COUNT(*) AS CNT
+	  FROM
+	  	 LMSSTUDENT A INNER JOIN MEMBER B
+	  ON A.UID = B.UID
+	  WHERE 
+	  	A.COURSEID = #{courseid}
+	  	AND A.REQUESTFLAG = 'Y'
+	  <if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+	  AND A.PINCODE = #{searchpinlevel}
+	  </if>
+	  <if test='searchfinishflag != null and !searchfinishflag.equals("")'>
+	  AND A.FINISHFLAG = #{searchfinishflag}
+	  </if>
+	  <if test='searchtext != null and !searchtext.equals("")'>
+	   <if test='searchmemberinfo.equals("")'>
+	    AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+	   </if>
+	    <if test='searchmemberinfo.equals("1")'>
+	     AND A.UID LIKE '%'+#{searchtext }+'%'
+	    </if>
+	    <if test='searchmemberinfo.equals("2")'>
+	     AND B.NAME LIKE '%'+#{searchtext }+'%'   
+	    </if>
+	   </if>
+    
+ </select>
+ 
+ <!-- 수료자 읽기 -->
+ <select id="lmsRegularMgFinishListAjax" parameterType="reqBox" resultType="dataBox">
+  /*lmsRegularMgFinishListAjax*/
+  SELECT 
+   	#{totalCount} - ROW_NUM + 1 AS NO 
+   	, AAA.*
+   	, AAA.FINISHFLAG AS BEFOREFINISHFLAG
+  FROM (
+   SELECT
+    	ROW_NUMBER() OVER( ORDER BY AA.UID DESC) AS ROW_NUM
+    	, AA.*
+   FROM (
+    SELECT
+	     A.UID
+	     , A.PINCODE
+	     , (SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETMASTERSEQ='PINCODE' AND TARGETCODESEQ = A.PINCODE) AS PINCODENAME
+	     , ISNULL(A.FINISHFLAG,'N') FINISHFLAG
+	     , CASE WHEN ISNULL(A.FINISHFLAG,'N') = 'N' THEN '미수료' ELSE '수료' END AS FINISHFLAGNAME 
+	     , B.NAME
+    FROM 
+    	LMSSTUDENT A 
+    INNER JOIN MEMBER B
+    ON A.UID = B.UID
+    WHERE 
+    	A.COURSEID = #{courseid}
+	    AND A.REQUESTFLAG = 'Y'
+	    <if test='searchpinlevel != null and !searchpinlevel.equals("")'>
+	    AND A.PINCODE = #{searchpinlevel}
+	    </if>
+	    <if test='searchfinishflag != null and !searchfinishflag.equals("")'>
+	    AND A.FINISHFLAG = #{searchfinishflag}
+	    </if>
+	    <if test='searchtext != null and !searchtext.equals("")'>
+	     <if test='searchmemberinfo.equals("")'>
+	      AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+	     </if>
+	      <if test='searchmemberinfo.equals("1")'>
+	       AND A.UID LIKE '%'+#{searchtext }+'%'
+	      </if>
+	      <if test='searchmemberinfo.equals("2")'>
+	       AND B.NAME LIKE '%'+#{searchtext }+'%'   
+	      </if>
+	     </if>
+	   ) AA
+  ) AAA
+ </select>
+ 
+ <select id="lmsRegularMgFinishStepList" parameterType="reqBox" resultType="dataBox">
+  /*lmsRegularMgFinishStepList*/
+		SELECT T.* ,
+			CASE WHEN STEPCOUNT = 0 THEN 
+				CASE WHEN GETDATE() > STEPENDDATE THEN 'O' 
+					WHEN STEPFINISHCOUNT > 0 THEN 'O' 
+				ELSE '-' END
+			WHEN STEPFINISHFLAG = 'Y' THEN 'O' 
+			ELSE 'X' END
+			AS FINISHFLAGNAME
+		FROM (
+			  SELECT
+				   A.UID
+				   , B.STEPSEQ
+				   , C.FINISHFLAG
+				   , C.FINISHFLAG AS STEPFINISHFLAG
+				   , B.STEPCOUNT
+				   , (SELECT COUNT(*) FROM LMSSTUDENT S1 INNER JOIN LMSSTEPUNIT S2 ON (S1.COURSEID = S2.COURSEID) WHERE S1.UID = A.UID AND S2.STEPSEQ = B.STEPSEQ AND S1.COURSEID = A.COURSEID AND FINISHFLAG='Y') AS STEPFINISHCOUNT
+				   , (SELECT MAX(S2.ENDDATE) FROM LMSSTEPUNIT S1 INNER JOIN LMSCOURSE S2 ON (S1.STEPCOURSEID = S2.COURSEID) WHERE S1.COURSEID = A.COURSEID) AS STEPENDDATE
+			  FROM LMSSTUDENT A INNER JOIN LMSSTEP B
+				  ON A.COURSEID = B.COURSEID LEFT OUTER JOIN LMSSTEPFINISH C
+				  ON B.COURSEID = C.COURSEID
+			  			AND B.STEPSEQ = C.STEPSEQ
+			  			AND A.UID = C.UID
+			  WHERE 
+			  	A.COURSEID = #{courseid}
+			  	AND A.REQUESTFLAG = 'Y'
+		  ) T
+		ORDER BY UID, STEPSEQ ASC
+ </select> 
+ 
+ <!-- 설문 답변 가져오기 -->
+ <select id="lmsRegularMgDetailSurveyResponseList1Pop" parameterType="reqBox" resultType="dataBox">
+ /*lmsRegularMgDetailSurveyResponseList1Pop*/
+	SELECT 
+		A.SURVEYSEQ
+		,A.SURVEYNAME
+		,A.SURVEYTYPE
+		,(SELECT SAMPLEVALUE FROM LMSSURVEYSAMPLE WHERE COURSEID=A.COURSEID AND SURVEYSEQ = A.SURVEYSEQ AND SAMPLESEQ = B.OBJECTRESPONSE) AS SAMPLEVALUE
+		,B.OBJECTRESPONSE
+		,B.SUBJECTRESPONSE
+		,C.OPINIONCONTENT
+		,D.SAMPLENAME
+	FROM 
+		LMSSURVEY A 
+	INNER JOIN LMSSURVEYRESPONSE B 
+		ON (A.COURSEID = B.COURSEID AND A.SURVEYSEQ = B.SURVEYSEQ)
+	LEFT OUTER JOIN LMSSURVEYOPINION C
+		ON (A.COURSEID = C.COURSEID AND B.UID = C.UID AND B.SURVEYSEQ = C.SURVEYSEQ)
+	LEFT OUTER JOIN LMSSURVEYSAMPLE D
+		ON (A.COURSEID = D.COURSEID AND A.SURVEYSEQ = D.SURVEYSEQ AND B.OBJECTRESPONSE = D.SAMPLESEQ)
+	WHERE 
+		A.COURSEID = #{stepcourseid} AND A.SURVEYTYPE != 2 AND B.UID = #{uid}
+	UNION ALL
+	SELECT 
+		SURVEYSEQ
+		,SURVEYNAME
+		,SURVEYTYPE
+		,'0' AS SAMPLEVALUE
+		,'0' AS OBJECTRESPONSE
+		,'0' AS SUBJECTRESPONSE
+		,'0' AS OPINIONCONTENT
+		,'0' AS SAMPLENAME
+	FROM 
+		LMSSURVEY
+	WHERE 
+		COURSEID = #{stepcourseid} 
+		AND SURVEYTYPE = 2
+	ORDER BY SURVEYSEQ
+ </select>
+ 
+ <!-- 선다형 답변 가져오기 -->
+ <select id="lmsRegularMgDetailSurveyResponseList2Value" parameterType="reqBox" resultType="dataBox">
+ /*lmsRegularMgDetailSurveyResponseList2Value*/
+	SELECT
+		AA.SURVEYSEQ
+		,AA.SURVEYNAME
+		,AA.SURVEYTYPE
+		,BB.SAMPLEVALUE
+		,BB.SAMPLENAME
+		,AA.OBJECTRESPONSE
+		,AA.SUBJECTRESPONSE
+		,CC.OPINIONCONTENT
+	FROM (
+		SELECT
+			A.COURSEID
+			, A.SURVEYSEQ
+			, B.SURVEYNAME
+			, A.SUBJECTRESPONSE
+			,  A.UID
+			, B.SURVEYTYPE
+			,RIGHT(LEFT(A.OBJECTRESPONSE,Number-1)
+			,CHARINDEX(',',REVERSE(LEFT(','+A.OBJECTRESPONSE,Number-1)))) AS OBJECTRESPONSE
+		FROM
+			master..spt_values,
+			LMSSURVEYRESPONSE A
+		INNER JOIN LMSSURVEY B ON (A.COURSEID = B.COURSEID AND A.SURVEYSEQ = B.SURVEYSEQ)
+		WHERE
+			Type = 'P' AND Number BETWEEN 1 AND LEN(A.OBJECTRESPONSE)+1
+			AND
+			(SUBSTRING(A.OBJECTRESPONSE,Number,1) = ',' OR SUBSTRING(A.OBJECTRESPONSE,Number,1)  = '') 
+			AND A.COURSEID= #{stepcourseid}
+			AND A.OBJECTRESPONSE <![CDATA[<>]]> ''
+			AND B.SURVEYTYPE = 2
+			AND A.UID=#{uid}
+	) AA
+	INNER JOIN LMSSURVEYSAMPLE BB 
+		ON (AA.COURSEID = BB.COURSEID AND AA.SURVEYSEQ = BB.SURVEYSEQ AND AA.OBJECTRESPONSE = BB.SAMPLESEQ)
+	LEFT OUTER JOIN LMSSURVEYOPINION CC 
+		ON (AA.COURSEID = CC.COURSEID AND AA.UID=CC.UID AND AA.SURVEYSEQ=CC.SURVEYSEQ)
+ </select>
+ 
+ <!-- 설문용 정보 -->
+ <select id="lmsRegularMgDetailSurveyResponsePopInfo" parameterType="reqBox" resultType="dataBox">
+ /*lmsRegularMgDetailSurveyResponsePopInfo*/
+ 	SELECT UID,NAME FROM MEMBER WHERE UID=#{uid}
+ </select>
+ 
+ <!-- 정규과정 수료날짜 조회 -->
+ <select id="lmsRegularMgExistFinishDateCheckR" resultType="String" parameterType="reqBox">
+ /*lmsRegularMgExistFinishDateCheckR*/
+ 	SELECT 
+		CASE
+			WHEN FINISHDATE IS NULL THEN 'N'
+			ELSE 'Y'
+		END AS EXISTFINISHDATE
+	FROM 
+		LMSSTUDENT
+	WHERE
+		COURSEID=#{courseid} 
+		AND UID=#{uid}
+ </select>
+ 
+ <!--  -->
+ <select id="lmsRegularMgFinishUpdateAjax" parameterType="reqBox">
+ /*lmsRegularMgFinishUpdateAjax*/
+ <if test='existFinishDate.equals("N")'>
+	UPDATE 
+		LMSSTUDENT 
+	SET ATTENDFLAG='M',FINISHFLAG=#{finishflag},FINISHDATE=getDate() WHERE COURSEID=#{courseid} and UID=#{uid}
+	</if>
+	<if test='existFinishDate.equals("Y")'>
+		UPDATE 
+			LMSSTUDENT 
+		SET ATTENDFLAG='M',FINISHFLAG=#{finishflag} WHERE COURSEID=#{courseid} and UID=#{uid}
+	</if>
+ </select>
+ 
+ <!-- 좌석등록 되어있는지 Check  -->
+ <select id="lmsRegularMgAttendBarcodeCheckSeatRegister" resultType="String" parameterType="reqBox">
+ /*lmsRegularMgAttendBarcodeCheckSeatRegister*/
+ 	SELECT
+		ISNULL
+		(
+			(
+				SELECT 
+				  'Y' 
+				FROM LMSSEAT 
+				WHERE COURSEID= #{stepcourseid}
+				GROUP BY COURSEID
+			)
+			,'N'
+		) AS RESULT
+ 
+ </select>
+ 
+<!-- 동반자허용과정인지 조회 -->
+<select id="selectLmsRegularMgOfflineTogetherFlag" parameterType="reqBox" resultType="String">
+	/*selectLmsRegularMgOfflineTogetherFlag*/
+	SELECT TOGETHERFLAG FROM LMSOFFLINE WHERE COURSEID=#{stepcourseid}
+</select>
+
+<!-- 출석자인지 아닌지 조회하기 -->
+<select id="selectLmsRegularMgOfflineFinishFlag" parameterType="reqBox" resultType="String">
+	/*selectLmsRegularMgOfflineFinishFlag*/
+	SELECT 
+		CASE
+			WHEN FINISHFLAG IS NULL THEN 'N'
+			ELSE FINISHFLAG
+		END AS FINISHFLAG
+	FROM LMSSTUDENT
+	WHERE COURSEID=#{stepcourseid} and UID=#{uid}
+</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

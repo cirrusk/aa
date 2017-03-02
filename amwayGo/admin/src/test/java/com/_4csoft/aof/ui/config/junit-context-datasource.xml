@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="egov.propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:/egovframework/egovProps/globals.properties</value>
+            </list>
+        </property>
+    </bean>
+
+	<!-- DataSource -->
+    <!-- 
+	<alias name="dataSource-${Globals.DbType}" alias="egov.dataSource" />
+     -->
+     
+    <alias name="dataSource-mssql" alias="egov.dataSource" />
+    
+    <!--   
+	<alias name="dataSource-jndi" alias="egov.dataSource" />
+	-->
+
+	<!-- MySQL -->
+	<bean id="dataSource-mysql" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}" />
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+	</bean>
+
+	<!-- Oracle -->
+	<bean id="dataSource-oracle" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}" />
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+	</bean>
+
+	<!-- Altibase -->
+	<bean id="dataSource-altibase" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}" />
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+	</bean>
+
+	<!-- Tibero -->
+	<bean id="dataSource-tibero" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${Globals.DriverClassName}"/>
+		<property name="url" value="${Globals.Url}" />
+		<property name="username" value="${Globals.UserName}"/>
+		<property name="password" value="${Globals.Password}"/>
+	</bean>
+
+    <!-- cubrid -->
+    <bean id="dataSource-cubrid" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${Globals.DriverClassName}"/>
+        <property name="url" value="${Globals.Url}" />
+        <property name="username" value="${Globals.UserName}"/>
+        <property name="password" value="${Globals.Password}"/>
+    </bean>
+
+    <!-- mssql -->
+    <bean id="dataSource-mssql" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+        <property name="url" value="jdbc:sqlserver://211.56.10.14:1433;databaseName=aof5univ" />
+        <property name="username" value="aof5univ"/>
+        <property name="password" value="aof51234"/>
+    </bean>
+    
+    <!-- jndi -->
+    <bean id="dataSource-jndi" class="org.springframework.jndi.JndiObjectFactoryBean">
+        <property name="jndiName" value="java:comp/env/${Globals.jndiName}" />
+    </bean>
+
+</beans>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.trainingFee.util.service.impl.TrainingFeeUtilMapper">
+	
+	<select id="selectSMSLogListCount" parameterType="reqBox" resultType="int">
+		SELECT   COUNT(*) AS TOTAL_CNT
+          FROM   dbo.TRFEESMS A
+          JOIN   DBO.MEMBER B ON A.DEPABO_NO = B.UID
+         WHERE   1=1
+          <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+		 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+		 		AND A.DEPABO_NO = #{searchDepositNm } 
+		 	</if>
+		 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+		 		AND B.NAME LIKE '%'+#{searchDepositNm }+'%' 
+		 	</if>
+		 </if>
+		  <if test="fromConfrimDt != null and !fromConfrimDt.equals('') ">
+              AND   CONVERT(VARCHAR, A.REGISTRANTDATE, 112) BETWEEN REPLACE(#{fromConfrimDt}, '-','') AND REPLACE(#{toConfrimDt},'-','')
+             </if>
+	</select>
+	
+	<select id="selectSMSLogList" parameterType="reqBox" resultType="dataBox">
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM (
+						SELECT   A.DEPABO_NO
+						       , B.NAME
+							   , CONVERT(VARCHAR, A.SENDDATE, 120) AS SENDDATE
+							   , A.NOTETEXT
+							   , A.SMSTEXT
+							   , A.MODIFIER
+							   , A.MODIFYDATE
+							   , A.REGISTRANT
+							   , CONVERT(VARCHAR, A.REGISTRANTDATE, 120) AS REGISTRANTDATE
+				          FROM   dbo.TRFEESMS A
+				          JOIN   DBO.MEMBER B ON A.DEPABO_NO = B.UID
+				         WHERE   1=1
+				          <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+						 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+						 		AND A.DEPABO_NO = #{searchDepositNm } 
+						 	</if>
+						 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+						 		AND B.NAME LIKE '%'+#{searchDepositNm }+'%' 
+						 	</if>
+						 </if>
+						  <if test="fromConfrimDt != null and !fromConfrimDt.equals('') ">
+			               AND   CONVERT(VARCHAR, A.REGISTRANTDATE, 112) BETWEEN REPLACE(#{fromConfrimDt}, '-','') AND REPLACE(#{toConfrimDt},'-','')
+			              </if>
+				          ) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+				          
+	</select>
+	
+	<select id="selectSystemLogListCount" parameterType="reqBox" resultType="int">
+		SELECT   COUNT(*) AS TOTAL_CNT
+          FROM   dbo.TRFEESYSTEMLOG A
+				          JOIN   DBO.MEMBER B ON A.ABO_NO = B.UID
+				         WHERE   1=1
+				          <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+						 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+						 		AND A.ABO_NO = #{searchDepositNm } 
+						 	</if>
+						 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+						 		AND B.NAME LIKE '%'+#{searchDepositNm }+'%' 
+						 	</if>
+						 </if>
+						  <if test="fromConfrimDt != null and !fromConfrimDt.equals('') ">
+			               AND   CONVERT(VARCHAR, A.REGISTRANTDATE, 112) BETWEEN REPLACE(#{fromConfrimDt}, '-','') AND REPLACE(#{toConfrimDt},'-','')
+			              </if>
+	</select>
+	
+	<select id="selectSystemLogList" parameterType="reqBox" resultType="dataBox">
+		SELECT BB.*
+		  FROM (
+				  SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+				    	, AA.*
+				  FROM (
+						SELECT   A.ABO_NO
+						       , B.NAME
+							   , A.SYSTEMID
+							   , dbo.F_CMM_CODENAME('TR9', A.SYSTEMTYPE) AS SYSTEMTYPE
+							   , dbo.F_CMM_CODENAME('TR10', A.EVENTID) AS EVENTID
+							   , A.SYSTEMTEXT
+							   , A.MODIFIER
+							   , A.MODIFYDATE
+							   , A.REGISTRANT
+							   , CONVERT(VARCHAR, A.REGISTRANTDATE, 120) AS REGISTRANTDATE
+				          FROM   dbo.TRFEESYSTEMLOG A
+				          JOIN   DBO.MEMBER B ON A.ABO_NO = B.UID
+				         WHERE   1=1
+				          <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+						 	<if test="searchDepSchType.equalsIgnoreCase('1') ">
+						 		AND A.ABO_NO = #{searchDepositNm } 
+						 	</if>
+						 	<if test="searchDepSchType.equalsIgnoreCase('2') ">
+						 		AND B.NAME LIKE '%'+#{searchDepositNm }+'%' 
+						 	</if>
+						 </if>
+						  <if test="fromConfrimDt != null and !fromConfrimDt.equals('') ">
+			               AND   CONVERT(VARCHAR, A.REGISTRANTDATE, 112) BETWEEN REPLACE(#{fromConfrimDt}, '-','') AND REPLACE(#{toConfrimDt},'-','')
+			              </if>
+				          ) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+				          
+	</select>
+	
+</mapper>

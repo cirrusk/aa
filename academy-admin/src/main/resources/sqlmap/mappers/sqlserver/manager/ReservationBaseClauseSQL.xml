@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.baseClause.service.impl.BaseClauseMapper">
+
+	<!-- 약관관리 리스트 조회 -->
+	<select id="baseClauseListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT * FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM, AA.* FROM( 
+				SELECT 
+					  A.CLAUSESEQ
+					, C.CODENAME AS MANDATORYNAME
+					, A.TITLE
+					, B.CODENAME AS TYPENAME
+					, A.VERSION
+					, A.INSERTUSER
+					, Format(A.INSERTDATE, N'yyyy-MM-dd HH:mm:ss') AS INSERTDATE
+					, A.TYPECODE
+					, A.MANDATORYCODE
+				FROM RSVCLAUSEINFO A
+					INNER JOIN COMMONCODE B
+						ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'CL2')
+					INNER JOIN COMMONCODE C
+						ON(A.MANDATORYCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'CL1')
+				WHERE 1=1
+				<if test="searchStateCode != null and ! searchStateCode.equals('') ">
+					AND A.TYPECODE = #{searchStateCode}
+				</if>
+			) AS AA
+		) AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 약관관리 리스트 카운트 -->
+	<select id="baseClauseListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*) FROM(
+			SELECT 
+				  A.CLAUSESEQ
+				, A.TITLE
+				, A.TYPECODE
+				, A.MANDATORYCODE
+				, A.VERSION
+				, A.INSERTUSER
+				, A.INSERTDATE
+				, B.CODENAME AS TYPENAME
+				, C.CODENAME AS MANDATORYNAME
+			FROM RSVCLAUSEINFO A
+				INNER JOIN COMMONCODE B
+					ON(A.TYPECODE = B.COMMONCODESEQ AND B.CODEMASTERSEQ = 'CL2')
+				INNER JOIN COMMONCODE C
+					ON(A.MANDATORYCODE = C.COMMONCODESEQ AND C.CODEMASTERSEQ = 'CL1')
+			WHERE 1=1
+			<if test="searchStateCode != null and ! searchStateCode.equals('') ">
+				AND A.TYPECODE = #{searchStateCode}
+			</if>
+		) AS BB
+	</select>
+	
+	<!-- 약관 관리 등록 -->
+	<insert id="baseClauseInsertAjax" parameterType="reqBox">
+		<selectKey resultType="int" keyProperty="popClausVersion" order="BEFORE">
+			SELECT 
+				ISNULL((MAX(VERSION)),0)+1 AS VERSION 
+			FROM RSVCLAUSEINFO 
+			WHERE TYPECODE = #{popClauseTypeCode}
+		</selectKey>
+		INSERT INTO RSVCLAUSEINFO(
+			  [CONTENT]
+			, TITLE
+			, TYPECODE
+			, MANDATORYCODE
+			, VERSION
+			, INSERTUSER
+			, INSERTDATE
+		)VALUES(
+			 #{popClauseContent}
+			,#{popClauseTitle}
+			,#{popClauseTypeCode}
+			,#{popMandatoryCode}
+			,#{popClausVersion}
+			,#{sessionAccount}
+			, Getdate()
+		)
+	</insert>
+	
+	<select id="baseClauseDatail" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			  A.TITLE
+			, A.[CONTENT]
+			, A.CLAUSESEQ
+			, A.TYPECODE
+			, A.MANDATORYCODE
+		FROM RSVCLAUSEINFO  A
+		WHERE A.CLAUSESEQ = #{clauseseq}
+	</select>
+	
+	<update id="baseClauseUpdate" parameterType="reqBox">
+		UPDATE RSVCLAUSEINFO
+			SET
+				 [CONTENT] = #{popClauseContent} 
+				,TITLE = #{popClauseTitle}
+				,TYPECODE = #{popClauseTypeCode}
+				,MANDATORYCODE = #{popMandatoryCode}
+				,UPDATEUSER = #{sessionAccount}
+				,UPDATEDATE = GETDATE()
+		WHERE CLAUSESEQ = #{clauseseq} 
+	</update>
+
+</mapper>

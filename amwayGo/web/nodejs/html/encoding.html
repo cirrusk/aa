@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>encoding test</title>
+<script type="text/javascript">
+doEncoding = function(type) {
+	var form = document.forms["FormEncoding"];
+	
+	if (form.elements["key"].value == "") {
+		alert("Key 값을 입력하십시오")
+		return;
+	}
+	if (form.elements["text"].value == "") {
+		alert("Text 값을 입력하십시오")
+		return;
+	}
+	
+	form.elements["type"].value = type;
+	form.submit();
+}
+
+</script>
+<style type="text/css">
+.input-text {width:300px; border:solid 1px #cdcdcd;}
+.iframe     {width:300px; height:100px; border:solid 1px #cdcdcd;}
+th          {background-color:#cdcdcd; padding:3px;}
+</style>
+</head>
+<body>
+
+    <form name="FormEncoding" method="post" action="/encoding" target="frame-result">
+        <input type="hidden" name="type" value="encoding">
+        <table>
+        <colgroup>
+            <col style="width:100px;"/>
+            <col style="width:auto;"/>
+        </colgroup>
+        <tbody>
+        <tr>
+            <th>Algorithm</th>
+            <td><input type="radio" name="algorithm" value="des-ede3" checked="checked">triple-des</td>
+        </tr>
+        <tr>
+            <th>Output</th>
+            <td>
+                <input type="radio" name="output" value="base64" checked="checked">base64 
+                <input type="radio" name="output" value="hex">hex
+            </td>
+        </tr>
+        <tr>
+            <th>Key</th>
+            <td><input type="text" name="key" class="input-text"></td>
+        </tr>
+        <tr>
+            <th>Text</th>
+            <td><input type="text" name="text" class="input-text"></td>
+        </tr>
+        <tr>
+            <td colspan="2" style="text-align:right;">
+                <button onclick="doEncoding('encoding')">encoding</button>
+                <button onclick="doEncoding('decoding')">decoding</button>
+            </td>
+        </tr>
+        <tr>
+            <th>결과</th>
+            <td><iframe name="frame-result" class="iframe" frameborder="0"></iframe></td>
+        </tr>
+        
+        </tbody>
+        </table>
+    </form>
+
+</body>
+</html>

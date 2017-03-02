@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.BookmarkMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIBookmarkVO">
+	/* UIBookmarkMapper.insert */
+	INSERT INTO cs_bookmark
+	       ( 
+			cs_menu_seq,
+			cs_member_seq,
+			cs_rolegroup_seq,
+			cs_course_active_seq,
+			cs_reg_member_seq,
+			cs_upd_member_seq,
+			cs_reg_dtime,
+			cs_upd_dtime,
+			cs_reg_ip,
+			cs_upd_ip
+	       ) 
+	       VALUES 
+	       ( 
+	           #{menuSeq, jdbcType=NUMERIC},
+	           #{memberSeq, jdbcType=NUMERIC},
+			   #{roleGroupSeq, jdbcType=NUMERIC},
+			   #{courseActiveSeq, jdbcType=NUMERIC},
+	           #{regMemberSeq, jdbcType=NUMERIC} ,
+			   #{updMemberSeq, jdbcType=NUMERIC} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+			   dbo.FN_NOW_TO_CHAR() ,
+	           #{regIp, jdbcType=VARCHAR} ,
+	           #{updIp, jdbcType=VARCHAR}
+	       )
+    </insert>
+	
+	<update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIBookmarkVO" >
+	/* UIBookmarkMapper.delete */
+	UPDATE cs_bookmark 
+	   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() , 
+	   	   cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+	       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} , 
+	       cs_delete_yn = 'Y' 
+	 WHERE cs_bookmark_seq = #{bookMarkSeq}
+	       AND cs_delete_yn = 'N'
+	</update>
+	
+	<delete id="drop" parameterType="Long">
+	/* UIBookmarkMapper.drop */
+		DELETE FROM cs_bookmark
+		WHERE cs_bookmark_seq = #{bookMarkSeq}
+	</delete>
+		
+    <resultMap id="getListResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIBookmarkRS">
+        <result column="book.bookMarkSeq"    	property="bookMark.bookMarkSeq" 		/>
+        <result column="book.memberSeq"      	property="bookMark.memberSeq"  			/>
+        <result column="book.courseActiveSeq" 	property="bookMark.courseActiveSeq"     />
+        <result column="book.menuSeq"         	property="bookMark.menuSeq"  			/>
+        <result column="menu.menuId"         	property="menu.menuId"  			    />
+        <result column="menu.menuName"       	property="menu.menuName"     			/>
+        <result column="menu.url"             	property="menu.url"         			/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.UIBookmarkVO" resultMap="getListResultMap">
+	/* UIBookmarkMapper.getList */
+	SELECT
+		book.cs_bookmark_seq		AS "book.bookMarkSeq",
+		book.cs_member_seq			AS "book.memberSeq",
+		book.cs_course_active_seq	AS "book.courseActiveSeq",
+		book.cs_menu_seq			AS "book.menuSeq",
+		menu.cs_menu_id				AS "menu.menuId",
+		menu.cs_menu_name			AS "menu.menuName",
+		menu.cs_url					AS "menu.url"
+	FROM cs_bookmark book
+		INNER JOIN cs_menu menu
+		ON menu.cs_menu_seq = book.cs_menu_seq
+		AND menu.cs_delete_yn = 'N'
+		AND menu.cs_display_yn = 'Y'
+	WHERE book.cs_delete_yn = 'N'
+		AND book.cs_member_seq = #{memberSeq}
+		AND book.cs_rolegroup_seq = #{roleGroupSeq}	
+	</select>
+	
+   	<select id="countByMenuId" parameterType="com._4csoft.aof.ui.infra.vo.UIBookmarkVO" resultType="int">
+   	/* UIBookmarkMapper.countByMenuId */
+		SELECT
+			COUNT(*)
+		FROM cs_bookmark book
+			INNER JOIN cs_menu menu
+			ON menu.cs_menu_seq = book.cs_menu_seq
+			AND menu.cs_delete_yn = 'N'
+			AND menu.cs_display_yn = 'Y'
+		WHERE book.cs_delete_yn = 'N'
+			AND book.cs_member_seq = #{memberSeq}
+			AND book.cs_rolegroup_seq = #{roleGroupSeq}
+			AND book.cs_menu_seq = #{menuSeq}
+   	</select>
+   	
+</mapper>

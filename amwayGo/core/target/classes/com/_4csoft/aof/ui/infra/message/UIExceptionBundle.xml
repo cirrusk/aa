@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <entry key="exception.notfound.page">원하시는 페이지를 찾을수 없습니다</entry>
+    <entry key="exception.invalid.session">세션이 없습니다</entry>
+    <entry key="exception.access.denied">접근권한이 없습니다</entry>
+    <entry key="exception.access.classroom.denied">강의실 접근권한이 없습니다</entry>
+    <entry key="exception.data.required">필수데이터({0})가 없습니다</entry>
+    <entry key="exception.data.exist">동일한 데이터({0})가 존재합니다</entry>
+    <entry key="exception.data.child.exist">하위 데이터({0})가 존재합니다</entry>
+    <entry key="exception.process.file">파일 처리 도중 오류가 발생하였습니다</entry>
+    <entry key="exception.invalid.parameter">파라미터가 유효하지 않습니다</entry>
+    <entry key="exception.invalid.data">데이터가 유효하지 않습니다</entry>
+    <entry key="exception.invalid.code">코드값이 유효하지 않습니다</entry>
+    <entry key="exception.invalid.secure">보안값이 유효하지 않습니다</entry>
+    <entry key="exception.invalid.license">라이센스가 유효하지 않습니다</entry>
+    <entry key="exception.etc">오류가 발생하였습니다</entry>
+    <entry key="exception.data.integer">데이터({0})는 Integer만 허용합니다</entry>
+    <entry key="exception.data.long">데이터({0})는 Long만 허용합니다</entry>
+    <entry key="exception.data.float">데이터({0})는 Float만 허용합니다</entry>
+    <entry key="exception.data.double">데이터({0})는 Double만 허용합니다</entry>
+    <entry key="exception.data.number">데이터({0})는 숫자만 허용합니다</entry>
+    <entry key="exception.data.alphabet">데이터({0})는 알파벳만 허용합니다</entry>
+    <entry key="exception.data.hangul">데이터({0})는 한글만 허용합니다</entry>
+    <entry key="exception.data.ssn">데이터({0})가 주민번호 형식이 아닙니다</entry>
+    <entry key="exception.data.frn">데이터({0})가 외국인번호 형식이 아닙니다</entry>
+    <entry key="exception.data.email">데이터({0})가 이메일 형식이 아닙니다</entry>
+    <entry key="exception.data.notag">데이터({0})는 태그를 포함할 수 없습니다</entry>
+    <entry key="exception.data.nospace">데이터({0})는 공백문자 포함할 수 없습니다</entry>
+    <entry key="exception.data.maxlength">데이터({0})가 최대 길이({1})를 초과하였습니다</entry>
+    <entry key="exception.data.minlength">데이터({0})가 최소 길이({1})에 미달하였습니다</entry>
+    <entry key="exception.data.fixlength">데이터({0})의 길이({1})가 일치하지 않습니다</entry>
+    
+</properties>

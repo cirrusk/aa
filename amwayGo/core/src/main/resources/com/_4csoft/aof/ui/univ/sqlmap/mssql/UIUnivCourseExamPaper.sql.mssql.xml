@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseExamPaperMapper">
+
+	<insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperVO">
+		<selectKey resultType="Long" keyProperty="examPaperSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseExamPaperMapper.insert */
+INSERT INTO cs_course_exam_paper
+	(
+		cs_course_master_seq ,
+		cs_exam_paper_type_cd ,
+		cs_onoff_cd ,
+		cs_prof_member_seq ,
+		cs_exam_paper_title ,
+		cs_description ,
+		cs_paper_count ,
+		cs_random_yn ,
+		cs_shuffle_yn ,
+		cs_score_type_cd ,
+		cs_group_key ,
+		cs_exam_paper_score ,
+		cs_reg_member_seq ,
+        cs_reg_dtime ,
+        cs_reg_ip ,
+        cs_upd_member_seq ,
+        cs_upd_dtime ,
+        cs_upd_ip
+	)
+	VALUES
+	(
+		#{courseMasterSeq, jdbcType=NUMERIC} ,
+		#{examPaperTypeCd, jdbcType=VARCHAR} ,
+		#{onOffCd, jdbcType=VARCHAR} ,
+		#{profMemberSeq, jdbcType=NUMERIC} ,
+		#{examPaperTitle, jdbcType=VARCHAR} ,
+		#{description, jdbcType=VARCHAR} ,
+		#{paperCount, jdbcType=NUMERIC} ,
+		#{randomYn, jdbcType=VARCHAR} ,
+		#{shuffleYn, jdbcType=VARCHAR} ,
+		#{scoreTypeCd, jdbcType=VARCHAR} ,
+		#{groupKey, jdbcType=VARCHAR} ,
+		#{examPaperScore, jdbcType=NUMERIC} ,
+		#{regMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{regIp, jdbcType=VARCHAR} ,
+        #{updMemberSeq, jdbcType=NUMERIC} ,
+        dbo.FN_NOW_TO_CHAR() ,
+        #{updIp, jdbcType=VARCHAR}
+	)	
+	</insert>
+	
+	<update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperVO">
+/* UIUnivCourseExamPaperMapper.update */
+UPDATE cs_course_exam_paper 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       <if test='courseMasterSeq != null'>
+       ,cs_course_master_seq = #{courseMasterSeq, jdbcType=NUMERIC}
+       </if>
+       <if test='examPaperTypeCd != null'>
+       ,cs_exam_paper_type_cd = #{examPaperTypeCd, jdbcType=VARCHAR}
+       </if>
+       <if test='onOffCd != null'>
+       ,cs_onoff_cd = #{onOffCd, jdbcType=VARCHAR}
+       </if>
+       <if test='profMemberSeq != null'>
+       ,cs_prof_member_seq = #{profMemberSeq, jdbcType=NUMERIC}
+       </if>
+       <if test='useCount != null'>
+       ,cs_use_count = #{useCount, jdbcType=NUMERIC}
+       </if>
+       <if test='useYn != null'>
+       ,cs_use_yn = #{useYn, jdbcType=VARCHAR}
+       </if>
+       <if test='examPaperTitle != null'>
+       ,cs_exam_paper_title = #{examPaperTitle, jdbcType=VARCHAR}
+       </if>
+       <if test='description != null'>
+       ,cs_description = #{description, jdbcType=VARCHAR}
+       </if>
+       <if test='paperCount != null'>
+       ,cs_paper_count = #{paperCount, jdbcType=NUMERIC}
+       </if>
+       <if test='randomYn != null'>
+       ,cs_random_yn = #{randomYn, jdbcType=VARCHAR}
+       </if>
+       <if test='shuffleYn != null'>
+       ,cs_shuffle_yn = #{shuffleYn, jdbcType=VARCHAR}
+       </if>
+       <if test='scoreTypeCd != null'>
+       ,cs_score_type_cd = #{scoreTypeCd, jdbcType=VARCHAR}
+       </if>
+       <if test='examPaperScore != null'>
+       ,cs_exam_paper_score = #{examPaperScore, jdbcType=NUMERIC}
+       </if>
+       <if test='groupKey != null'>
+	   ,cs_group_key = #{groupKey, jdbcType=VARCHAR}
+	   </if>
+       <if test='openYn != null'>
+	   ,cs_open_yn = #{openYn, jdbcType=VARCHAR}
+	   </if>
+ WHERE cs_exam_paper_seq = #{examPaperSeq} 
+   AND cs_delete_yn = 'N'       	
+	</update>
+	
+	<update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperVO">
+/* UIUnivCourseExamPaperMapper.delete */
+UPDATE cs_course_exam_paper 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() 
+ WHERE cs_exam_paper_seq = #{examPaperSeq} 
+   AND cs_delete_yn = 'N'	
+	</update>
+	
+	<update id="updateUseCount" parameterType="Long">
+/* UIUnivCourseExamPaperMapper.updateUseCount */
+UPDATE cs_course_exam_paper 
+   SET cs_use_count = 
+       (SELECT COUNT(*) 
+         FROM cs_course_active_exam_paper 
+        WHERE cs_exam_paper_seq = #{examPaperSeq} 
+          AND cs_delete_yn = 'N'
+       ) 
+ WHERE cs_exam_paper_seq = #{examPaperSeq} 
+   AND cs_delete_yn = 'N'	
+	</update>
+	
+	<update id="updateRandomOption" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseExamPaperVO">
+/* UIUnivCourseExamPaperMapper.updateRandomOption */
+UPDATE cs_course_exam_paper 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_random_option = #{randomOption} 
+ WHERE cs_exam_paper_seq = #{examPaperSeq} 
+       AND cs_delete_yn = 'N'	
+	</update>
+	
+	<resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamPaperRS">
+		<result column="cep.examPaperSeq"        property="courseExamPaper.examPaperSeq"     />
+	    <result column="cep.courseMasterSeq"     property="courseExamPaper.courseMasterSeq"  />
+	    <result column="cep.examPaperTypeCd"     property="courseExamPaper.examPaperTypeCd"  />
+	    <result column="cep.onOffCd"             property="courseExamPaper.onOffCd"          />
+	    <result column="cep.profMemberSeq"       property="courseExamPaper.profMemberSeq"    />
+	    <result column="cep.useCount"            property="courseExamPaper.useCount"         />
+	    <result column="cep.useYn"               property="courseExamPaper.useYn"            />
+	    <result column="cep.examPaperTitle"      property="courseExamPaper.examPaperTitle"   />
+	    <result column="cep.description"         property="courseExamPaper.description"      />
+	    <result column="cep.paperCount"          property="courseExamPaper.paperCount"       />
+	    <result column="cep.randomYn"            property="courseExamPaper.randomYn"         />
+	    <result column="cep.shuffleYn"           property="courseExamPaper.shuffleYn"        />
+	    <result column="cep.scoreTypeCd"         property="courseExamPaper.scoreTypeCd"      />
+	    <result column="cep.examPaperScore"      property="courseExamPaper.examPaperScore"   />
+	    <result column="cep.groupKey"            property="courseExamPaper.groupKey"         />
+	    <result column="cep.openYn"              property="courseExamPaper.openYn"           />
+	    <result column="cep.randomOption"        property="courseExamPaper.randomOption"     />
+	    <result column="cep.deleteYn"            property="courseExamPaper.deleteYn"         />
+	    <result column="cep.regMemberSeq"        property="courseExamPaper.regMemberSeq"     />
+	    <result column="cep.regDtime"            property="courseExamPaper.regDtime"         />
+	    <result column="cep.regIp"               property="courseExamPaper.regIp"            />
+	    <result column="cep.updMemberSeq"        property="courseExamPaper.updMemberSeq"     />
+	    <result column="cep.updDtime"            property="courseExamPaper.updDtime"         />
+	    <result column="cep.updIp"               property="courseExamPaper.updIp"            />
+	    <result column="cm.courseMasterSeq"      property="courseMaster.courseMasterSeq"     />
+	    <result column="cm.categoryOrganizationSeq"  property="courseMaster.categoryOrganizationSeq"         />
+	    <result column="cm.courseTitle"          property="courseMaster.courseTitle"         />
+	    <result column="cm.introduction"         property="courseMaster.introduction"        />
+	    <result column="cm.goal"                 property="courseMaster.goal"                />
+	    <result column="cm.useCount"             property="courseMaster.useCount"            />
+	    <result column="cep.regMemberName"       property="courseExamPaper.regMemberName"    />
+	    <result column="cep.updMemberName"       property="courseExamPaper.updMemberName"    />
+	    <result column="cep.profMemberName"      property="courseExamPaper.profMemberName"   />
+	    <result column="cep.examCount"      	 property="courseExamPaper.examCount"   	 />
+	</resultMap>
+	
+	<select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UIUnivCourseExamPaperMapper.getDetail */
+SELECT cep.cs_exam_paper_seq			AS "cep.examPaperSeq" ,
+       cep.cs_course_master_seq 		AS "cep.courseMasterSeq" ,
+	   cep.cs_exam_paper_type_cd 		AS "cep.examPaperTypeCd" ,
+	   cep.cs_onoff_cd 					AS "cep.onOffCd" ,
+	   cep.cs_prof_member_seq 			AS "cep.profMemberSeq" ,
+	   cep.cs_use_count 				AS "cep.useCount" ,
+	   cep.cs_use_yn 					AS "cep.useYn" ,
+	   cep.cs_exam_paper_title 			AS "cep.examPaperTitle" ,
+	   cep.cs_description 				AS "cep.description" ,
+	   cep.cs_paper_count 				AS "cep.paperCount" ,
+	   cep.cs_random_yn 				AS "cep.randomYn" ,
+	   cep.cs_shuffle_yn 				AS "cep.shuffleYn" ,
+	   cep.cs_score_type_cd 			AS "cep.scoreTypeCd" ,
+	   cep.cs_exam_paper_score 			AS "cep.examPaperScore" ,
+	   cep.cs_group_key 				AS "cep.groupKey" ,
+	   cep.cs_open_yn					AS "cep.openYn" ,
+	   cep.cs_random_option				AS "cep.randomOption",
+	   cep.cs_delete_yn					AS "cep.deleteYn" ,
+	   cep.cs_reg_member_seq 			AS "cep.regMemberSeq" ,
+	   cep.cs_reg_dtime 				AS "cep.regDtime" ,
+	   cep.cs_reg_ip 					AS "cep.regIp" ,
+	   cep.cs_upd_member_seq 			AS "cep.updMemberSeq" ,
+	   cep.cs_upd_dtime 				AS "cep.updDtime" ,
+	   cep.cs_upd_ip 					AS "cep.updIp" ,
+	   cm.cs_course_master_seq    	    AS "cm.courseMasterSeq" ,
+       cm.cs_category_organization_seq  AS "cm.categoryOrganizationSeq" ,
+       cm.cs_course_title          	    AS "cm.courseTitle" ,
+       cm.cs_introduction         	    AS "cm.introduction" ,
+       cm.cs_goal                 	    AS "cm.goal" ,
+       cm.cs_use_count            	    AS "cm.useCount" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = cep.cs_reg_member_seq
+       ) AS "cep.regMemberName" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = cep.cs_upd_member_seq
+       ) AS "cep.updMemberName" ,
+       (SELECT cs_member_name 
+         FROM cs_member 
+        WHERE cs_member_seq = cep.cs_prof_member_seq
+       ) AS "cep.profMemberName" ,
+       (
+       SELECT COUNT(*)
+         FROM cs_course_exam_paper_element element
+        WHERE element.cs_exam_paper_seq = cep.cs_exam_paper_seq
+          AND element.cs_delete_yn = 'N'
+       ) AS "cep.examCount"
+  FROM cs_course_exam_paper cep 
+ INNER JOIN cs_course_master cm 
+    ON cm.cs_course_master_seq = cep.cs_course_master_seq 
+   AND cm.cs_delete_yn = 'N'
+ WHERE cep.cs_exam_paper_seq = #{examPaperSeq} 
+   AND cep.cs_delete_yn = 'N'        	
+	</select>
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseExamPaperRS">
+		<result column="cep.examPaperSeq"        property="courseExamPaper.examPaperSeq"     />
+	    <result column="cep.courseMasterSeq"     property="courseExamPaper.courseMasterSeq"  />
+	    <result column="cep.examPaperTypeCd"     property="courseExamPaper.examPaperTypeCd"  />
+	    <result column="cep.onOffCd"             property="courseExamPaper.onOffCd"          />
+	    <result column="cep.profMemberSeq"       property="courseExamPaper.profMemberSeq"    />
+	    <result column="cep.useCount"            property="courseExamPaper.useCount"         />
+	    <result column="cep.useYn"               property="courseExamPaper.useYn"            />
+	    <result column="cep.examPaperTitle"      property="courseExamPaper.examPaperTitle"   />
+	    <result column="cep.description"         property="courseExamPaper.description"      />
+	    <result column="cep.paperCount"          property="courseExamPaper.paperCount"       />
+	    <result column="cep.randomYn"            property="courseExamPaper.randomYn"         />
+	    <result column="cep.shuffleYn"           property="courseExamPaper.shuffleYn"        />
+	    <result column="cep.scoreTypeCd"         property="courseExamPaper.scoreTypeCd"      />
+	    <result column="cep.examPaperScore"      property="courseExamPaper.examPaperScore"   />
+	    <result column="cep.groupKey"            property="courseExamPaper.groupKey"         />
+	    <result column="cep.openYn"              property="courseExamPaper.openYn"           />
+	    <result column="cep.deleteYn"            property="courseExamPaper.deleteYn"         />
+	    <result column="cep.regMemberSeq"        property="courseExamPaper.regMemberSeq"     />
+	    <result column="cep.regDtime"            property="courseExamPaper.regDtime"         />
+	    <result column="cep.regIp"               property="courseExamPaper.regIp"            />
+	    <result column="cep.updMemberSeq"        property="courseExamPaper.updMemberSeq"     />
+	    <result column="cep.updDtime"            property="courseExamPaper.updDtime"         />
+	    <result column="cep.updIp"               property="courseExamPaper.updIp"            />
+	    <result column="cm.courseMasterSeq"      property="courseMaster.courseMasterSeq"     />
+	    <result column="cm.categoryOrganizationSeq"  property="courseMaster.categoryOrganizationSeq"         />
+	    <result column="cm.courseTitle"          property="courseMaster.courseTitle"         />
+	    <result column="cm.introduction"         property="courseMaster.introduction"        />
+	    <result column="cm.goal"                 property="courseMaster.goal"                />
+	    <result column="cm.useCount"             property="courseMaster.useCount"            />
+	    <result column="cep.regMemberName"       property="courseExamPaper.regMemberName"    />
+	    <result column="cep.updMemberName"       property="courseExamPaper.updMemberName"    />
+	    <result column="cep.profMemberName"      property="courseExamPaper.profMemberName"   />
+	    <result column="cep.examCount"      	 property="courseExamPaper.examCount"   	 />
+	</resultMap>
+	
+	<select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseExamPaperCondition" resultMap="listResultMap">
+/* UIUnivCourseExamPaperMapper.getList */
+		<if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "cep.regDtime" ASC</when>
+            <when test='orderby ==-1'>ORDER BY "cep.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "cep.examPaperTitle" ASC</when>
+            <when test='orderby ==-2'>ORDER BY "cep.examPaperTitle" DESC</when>
+            <when test='orderby == 3'>ORDER BY "cep.examPaperTypeCd" ASC</when>
+            <when test='orderby ==-3'>ORDER BY "cep.examPaperTypeCd" DESC</when>
+            <when test='orderby == 4'>ORDER BY "cep.useCount" ASC</when>
+            <when test='orderby ==-4'>ORDER BY "cep.useCount" DESC</when>
+            <when test='orderby == 5'>ORDER BY "cm.courseTitle" ASC</when>
+            <when test='orderby ==-5'>ORDER BY "cm.courseTitle" DESC</when>
+            <otherwise>ORDER BY "cep.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT cep.cs_exam_paper_seq			AS "cep.examPaperSeq" ,
+       cep.cs_course_master_seq 		AS "cep.courseMasterSeq" ,
+	   cep.cs_exam_paper_type_cd 		AS "cep.examPaperTypeCd" ,
+	   cep.cs_onoff_cd 					AS "cep.onOffCd" ,
+	   cep.cs_prof_member_seq 			AS "cep.profMemberSeq" ,
+	   cep.cs_use_count 				AS "cep.useCount" ,
+	   cep.cs_use_yn 					AS "cep.useYn" ,
+	   cep.cs_exam_paper_title 			AS "cep.examPaperTitle" ,
+	   cep.cs_description 				AS "cep.description" ,
+	   cep.cs_paper_count 				AS "cep.paperCount" ,
+	   cep.cs_random_yn 				AS "cep.randomYn" ,
+	   cep.cs_shuffle_yn 				AS "cep.shuffleYn" ,
+	   cep.cs_score_type_cd 			AS "cep.scoreTypeCd" ,
+	   cep.cs_exam_paper_score 			AS "cep.examPaperScore" ,
+	   cep.cs_group_key 				AS "cep.groupKey" ,
+	   cep.cs_open_yn					AS "cep.openYn" ,
+	   cep.cs_delete_yn					AS "cep.deleteYn" ,
+	   cep.cs_reg_member_seq 			AS "cep.regMemberSeq" ,
+	   cep.cs_reg_dtime 				AS "cep.regDtime" ,
+	   cep.cs_reg_ip 					AS "cep.regIp" ,
+	   cep.cs_upd_member_seq 			AS "cep.updMemberSeq" ,
+	   cep.cs_upd_dtime 				AS "cep.updDtime" ,
+	   cep.cs_upd_ip 					AS "cep.updIp" ,
+	   cm.cs_course_master_seq    	    AS "cm.courseMasterSeq" ,
+       cm.cs_category_organization_seq  AS "cm.categoryOrganizationSeq" ,
+       cm.cs_course_title               AS "cm.courseTitle" ,
+       cm.cs_introduction         	    AS "cm.introduction" ,
+       cm.cs_goal                 	    AS "cm.goal" ,
+       cm.cs_use_count            	    AS "cm.useCount" ,
+       m1.cs_member_name				AS "cep.regMemberName" ,
+       m2.cs_member_name				AS "cep.updMemberName" ,
+       m3.cs_member_name				AS "cep.profMemberName" ,
+       (
+       SELECT COUNT(*)
+         FROM cs_course_exam_paper_element element
+        WHERE element.cs_exam_paper_seq = cep.cs_exam_paper_seq
+          AND element.cs_delete_yn = 'N'
+       ) AS "cep.examCount"
+  FROM cs_course_exam_paper cep 
+ INNER JOIN cs_course_master cm 
+    ON cm.cs_course_master_seq = cep.cs_course_master_seq 
+   AND cm.cs_delete_yn = 'N'
+ INNER JOIN cs_member m1
+ 	ON m1.cs_member_seq = cep.cs_reg_member_seq
+ INNER JOIN cs_member m2
+ 	ON m2.cs_member_seq = cep.cs_upd_member_seq
+ INNER JOIN cs_member m3
+ 	ON m3.cs_member_seq = cep.cs_prof_member_seq
+ WHERE cep.cs_delete_yn = 'N'
+		<if test='srchExamPaperTypeCd != null and !srchExamPaperTypeCd.equals("")'>
+   AND cep.cs_exam_paper_type_cd = #{srchExamPaperTypeCd}
+		</if>          
+		<if test='srchUseYn != null and !srchUseYn.equals("")'>
+   AND cep.cs_use_yn = #{srchUseYn}
+		</if>
+		<choose>
+			<when test='srchOpenYn != null and !srchOpenYn.equals("")'>
+	AND cep.cs_open_yn = #{srchOpenYn}
+			</when>
+			<otherwise>
+				<if test='srchCourseMasterSeq != null and !srchCourseMasterSeq.equals("")'>
+		   AND cep.cs_course_master_seq = #{srchCourseMasterSeq}
+				</if>
+				<if test='srchProfMemberSeq != null and !srchProfMemberSeq.equals("")'>
+		   AND cep.cs_prof_member_seq = #{srchProfMemberSeq}
+				</if>
+			</otherwise>
+		</choose>          
+		<if test='srchProfSessionMemberSeq != null and !srchProfSessionMemberSeq.equals("")'>
+   AND (cep.cs_prof_member_seq = #{srchProfSessionMemberSeq} OR cep.cs_open_yn = 'Y')
+		</if>
+		<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+	AND (
+		cep.cs_prof_member_seq IN (
+									SELECT 
+										sub.cs_prof_member_seq 
+									FROM 
+										cs_course_active_lecturer sub
+									WHERE sub.cs_delete_yn = 'N' 
+									  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+									GROUP BY sub.cs_prof_member_seq
+									)
+		 OR cep.cs_reg_member_seq = #{srchAssistMemberSeq}
+		 OR cep.cs_open_yn = 'Y')
+		</if>
+		<if test='srchOnOffCd != null and !srchOnOffCd.equals("")'>
+   AND cep.cs_onoff_cd = #{srchOnOffCd}
+		</if>
+		<if test='srchWord != null and !srchWord.equals("")'>
+			<if test='srchKey.equals("title")'>
+   AND cep.cs_exam_paper_title LIKE '%' + #{srchWordDB} + '%'				
+			</if>
+			<if test='srchKey.equals("description")'>
+   AND cep.cs_description LIKE '%' + #{srchWordDB} + '%'				
+			</if>
+		</if>          
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>        	
+	</select>
+	
+	<select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseExamPaperCondition" resultType="int">
+/* UIUnivCourseExamPaperMapper.countList */
+SELECT COUNT(*)
+  FROM cs_course_exam_paper cep 
+ INNER JOIN cs_course_master cm 
+    ON cm.cs_course_master_seq = cep.cs_course_master_seq 
+   AND cm.cs_delete_yn = 'N'
+ INNER JOIN cs_member m1
+ 	ON m1.cs_member_seq = cep.cs_reg_member_seq
+ INNER JOIN cs_member m2
+ 	ON m2.cs_member_seq = cep.cs_upd_member_seq
+ INNER JOIN cs_member m3
+ 	ON m3.cs_member_seq = cep.cs_prof_member_seq
+ WHERE cep.cs_delete_yn = 'N'
+		<if test='srchExamPaperTypeCd != null and !srchExamPaperTypeCd.equals("")'>
+   AND cep.cs_exam_paper_type_cd = #{srchExamPaperTypeCd}
+		</if>          
+		<if test='srchUseYn != null and !srchUseYn.equals("")'>
+   AND cep.cs_use_yn = #{srchUseYn}
+		</if>          
+		<choose>
+			<when test='srchOpenYn != null and !srchOpenYn.equals("")'>
+	AND cep.cs_open_yn = #{srchOpenYn}
+			</when>
+			<otherwise>
+				<if test='srchCourseMasterSeq != null and !srchCourseMasterSeq.equals("")'>
+		   AND cep.cs_course_master_seq = #{srchCourseMasterSeq}
+				</if>
+				<if test='srchProfMemberSeq != null and !srchProfMemberSeq.equals("")'>
+		   AND cep.cs_prof_member_seq = #{srchProfMemberSeq}
+				</if>
+			</otherwise>
+		</choose>          
+		<if test='srchProfSessionMemberSeq != null and !srchProfSessionMemberSeq.equals("")'>
+   AND (cep.cs_prof_member_seq = #{srchProfSessionMemberSeq} OR cep.cs_open_yn = 'Y')
+		</if>
+		<if test='srchAssistMemberSeq != null and !srchAssistMemberSeq.equals("")'>
+	AND (
+		cep.cs_prof_member_seq IN (
+									SELECT 
+										sub.cs_prof_member_seq 
+									FROM 
+										cs_course_active_lecturer sub
+									WHERE sub.cs_delete_yn = 'N' 
+									  AND sub.cs_member_seq = #{srchAssistMemberSeq}
+									GROUP BY sub.cs_prof_member_seq
+									)
+		 OR cep.cs_reg_member_seq = #{srchAssistMemberSeq}
+		 OR cep.cs_open_yn = 'Y')
+		</if>
+		<if test='srchProfSessionMemberSeq != null and !srchProfSessionMemberSeq.equals("")'>
+   AND (cep.cs_prof_member_seq = #{srchProfSessionMemberSeq} OR cep.cs_open_yn = 'Y')
+		</if>
+		<if test='srchOnOffCd != null and !srchOnOffCd.equals("")'>
+   AND cep.cs_onoff_cd = #{srchOnOffCd}
+		</if>
+		<if test='srchWord != null and !srchWord.equals("")'>
+			<if test='srchKey.equals("title")'>
+   AND cep.cs_exam_paper_title LIKE '%' + #{srchWordDB} + '%'				
+			</if>
+			<if test='srchKey.equals("description")'>
+   AND cep.cs_description LIKE '%' + #{srchWordDB} + '%'				
+			</if>
+		</if>	
+	</select>
+	
+</mapper>

@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.baseRule.service.impl.BaseRuleMapper">
+
+	<!-- 누적예약타입 리스트 조회 -->
+	<select id="baseRuleListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT * FROM(
+			SELECT 
+				  ROW_NUMBER() OVER (ORDER BY INSERTDATE DESC) AS ROW_NUM
+				, CASE AA.CONSTRAINTTYPE
+					WHEN 'C01' THEN CONCAT(ISNULL(AA.PINTREATRANGENAME, 'N') , '|',ISNULL(AA.CITYGROUPNAME, 'N') , '|',ISNULL(AA.AGETREATNAME, 'N'))
+					WHEN 'C02' THEN AA.TARGETGROUPNAME
+					ELSE AA.PPNAME +' ['+ AA.TYPENAME + ']'
+					END AS ROLE
+				, AA.GLOBALDAILYCOUNT
+				, AA.GLOBALWEEKLYCOUNT
+				, AA.GLOBALMONTHLYCOUNT
+				, AA.PPDAILYCOUNT
+				, AA.PPWEEKLYCOUNT
+				, AA.PPMONTHLYCOUNT
+				, AA.STATUSNAME
+				, AA.UPDATEDATE
+				, AA.UPDATEUSER
+				, AA.SETTINGSEQ 
+				, AA.CONSTRAINTTYPE
+				, AA.INSERTDATE
+			FROM( 
+				SELECT 
+					  A.SETTINGSEQ
+					, B.PPNAME
+					, C.TARGETGROUPNAME
+					, D.TARGETCODENAME AS AGETREATNAME
+					, E.TARGETCODENAME + ' (이상)'AS PINTREATRANGENAME
+					, F.CITYGROUPNAME
+					, A.GLOBALDAILYCOUNT
+					, A.GLOBALWEEKLYCOUNT
+					, A.GLOBALMONTHLYCOUNT
+					, A.PPDAILYCOUNT
+					, A.PPWEEKLYCOUNT
+					, A.PPMONTHLYCOUNT
+					, A.CONSTRAINTTYPE
+					, A.STATUSCODE
+					, A.INSERTDATE
+					, G.CODENAME AS STATUSNAME
+					, ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER
+					, ISNULL(Format(A.UPDATEDATE, N'yyyy-MM-dd HH:mm:ss'), Format(A.INSERTDATE, N'yyyy-MM-dd HH:mm:ss')) AS UPDATEDATE
+					, STUFF(( SELECT '/' + C.TYPENAME
+						FROM RSVSPECIALPPMAP B
+						LEFT OUTER JOIN RSVTYPEINFO C
+							ON(B.TYPESEQ = C.TYPESEQ)
+						WHERE (A.SETTINGSEQ = B.SETTINGSEQ)
+						GROUP BY B.SETTINGSEQ, C.TYPENAME
+						FOR XML PATH ('')),1,1,''
+						) AS TYPENAME
+				FROM   RSVCONSTRAINT A
+					LEFT OUTER JOIN RSVPPINFO B
+						ON(A.PPSEQ = B.PPSEQ)
+					LEFT OUTER JOIN RSVROLEGROUP C
+						ON(A.GROUPSEQ = C.GROUPSEQ)
+					LEFT OUTER JOIN TARGETCODE D
+						ON(A.AGETREATCODE = D.TARGETCODESEQ AND D.TARGETMASTERSEQ= 'AGECODE')
+					LEFT OUTER JOIN V_TARGETCODE_NONMEM E
+						ON(A.PINTREATRANGE = E.TARGETCODESEQ AND E.TARGETMASTERSEQ = 'PINCODE')
+					LEFT OUTER JOIN RSVCITYGROUPMASTER F
+						ON(A.CITYTREATCODE = F.CITYGROUPCODE)
+					INNER JOIN COMMONCODE G
+						ON(A.STATUSCODE = G.COMMONCODESEQ AND G.CODEMASTERSEQ = 'YN3')
+				WHERE 1=1
+				 <if test="searchStateCode != null and ! searchStateCode.equals('') ">
+					AND A.STATUSCODE = #{searchStateCode}
+				</if>
+			) AS AA
+		) AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 누적예약타입 리스트 카운트 -->
+	<select id="baseRuleListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*) FROM(
+			SELECT 
+				  A.SETTINGSEQ
+				, B.PPNAME
+				, C.TARGETGROUPNAME
+				, D.TARGETCODENAME AS AGETREATNAME
+				, E.TARGETCODENAME + ' (이상)'AS PINTREATRANGENAME
+				, F.CITYGROUPNAME
+				, A.GLOBALDAILYCOUNT
+				, A.GLOBALWEEKLYCOUNT
+				, A.GLOBALMONTHLYCOUNT
+				, A.PPDAILYCOUNT
+				, A.PPWEEKLYCOUNT
+				, A.PPMONTHLYCOUNT
+				, A.STATUSCODE
+				, G.CODENAME AS STATUSNAME
+				, A.CONSTRAINTTYPE
+				, ISNULL(A.UPDATEUSER, A.INSERTUSER) AS UPDATEUSER
+				, ISNULL(A.UPDATEDATE, A.INSERTDATE) AS UPDATEDATE
+				, STUFF(( SELECT '/' + C.TYPENAME
+					FROM RSVSPECIALPPMAP B
+					LEFT OUTER JOIN RSVTYPEINFO C
+						ON(B.TYPESEQ = C.TYPESEQ)
+					WHERE (A.SETTINGSEQ = B.SETTINGSEQ)
+					GROUP BY B.SETTINGSEQ, C.TYPENAME
+					FOR XML PATH ('')),1,1,''
+					) AS TYPENAME
+			FROM   RSVCONSTRAINT A
+				LEFT OUTER JOIN RSVPPINFO B
+					ON(A.PPSEQ = B.PPSEQ)
+				LEFT OUTER JOIN RSVROLEGROUP C
+					ON(A.GROUPSEQ = C.GROUPSEQ)
+				LEFT OUTER JOIN TARGETCODE D
+					ON(A.AGETREATCODE = D.TARGETCODESEQ AND D.TARGETMASTERSEQ= 'AGECODE')
+				LEFT OUTER JOIN V_TARGETCODE_NONMEM E
+					ON(A.PINTREATRANGE = E.TARGETCODESEQ AND E.TARGETMASTERSEQ = 'PINCODE')
+				LEFT OUTER JOIN RSVCITYGROUPMASTER F
+					ON(A.CITYTREATCODE = F.CITYGROUPCODE)
+				INNER JOIN COMMONCODE G
+					ON(A.STATUSCODE = G.COMMONCODESEQ AND G.CODEMASTERSEQ = 'YN3')
+			WHERE 1=1
+			 <if test="searchStateCode != null and ! searchStateCode.equals('') ">
+				AND A.STATUSCODE = #{searchStateCode}
+			</if>
+		) AS BB
+	</select>
+	
+	<!-- 누적 예약타입 등록 -->
+	<insert id="baseRuleInsertAjax" parameterType="reqBox">
+		INSERT INTO RSVCONSTRAINT (
+			  INSERTDATE
+			, INSERTUSER
+			 <if test="popPpMonthlyCount != null and popPpMonthlyCount != '' ">
+				, PPMONTHLYCOUNT
+			</if>
+			 <if test="popPpWeeklyCount != null and popPpWeeklyCount != '' ">
+				, PPWEEKLYCOUNT
+			</if>
+			 <if test="popPpDalyCount != null and popPpDalyCount != '' ">
+				, PPDAILYCOUNT
+			</if>
+			 <if test="popGlobalMonthlyCount != null and popGlobalMonthlyCount != '' ">
+				, GLOBALMONTHLYCOUNT
+			</if>
+			 <if test="popGlobalWeeklyCount != null and popGlobalWeeklyCount != '' ">
+				, GLOBALWEEKLYCOUNT
+			</if>
+			 <if test="popGlobalDalyCount != null and popGlobalDalyCount != '' ">
+				, GLOBALDAILYCOUNT
+			</if>
+			
+			, AGETREATCODE
+			, CITYTREATCODE
+			, PINTREATRANGE
+			, CONSTRAINTTYPE
+			, STATUSCODE
+			, GROUPSEQ
+		)VALUES(
+			GETDATE()
+			,#{sessionAccount}
+			
+			 <if test="popPpMonthlyCount != null and popPpMonthlyCount != '' ">
+				, #{popPpMonthlyCount}
+			</if>
+			 <if test="popPpWeeklyCount != null and popPpWeeklyCount != '' ">
+				, #{popPpWeeklyCount}
+			</if>
+			 <if test="popPpDalyCount != null and popPpDalyCount != '' ">
+				, #{popPpDalyCount}
+			</if>
+			 <if test="popGlobalMonthlyCount != null and popGlobalMonthlyCount != '' ">
+				, #{popGlobalMonthlyCount}
+			</if>
+			 <if test="popGlobalWeeklyCount != null and popGlobalWeeklyCount != '' ">
+				, #{popGlobalWeeklyCount}
+			</if>
+			 <if test="popGlobalDalyCount != null and popGlobalDalyCount != '' ">
+				, #{popGlobalDalyCount}
+			</if>
+			, #{popAgeTreatCode}
+			, #{popCityTreatCode}
+			, #{popPinTreatRange}
+			, #{popConstraintType}
+			, #{statuscode}
+			, CASE #{popRoleGroupCode}
+				WHEN '' THEN NULL
+				WHEN NULL THEN NULL
+				ELSE #{popRoleGroupCode}
+			END
+		)
+	</insert>
+	
+	<!-- 누적 예약타입 상세보기 -->
+	<select id="baseRuleDetailAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			  A.SETTINGSEQ
+			, A.CONSTRAINTTYPE
+			, A.PINTREATRANGE
+			, A.CITYTREATCODE
+			, A.AGETREATCODE
+			, A.GROUPSEQ
+			, A.PPSEQ
+			, A.GLOBALDAILYCOUNT
+			, A.GLOBALWEEKLYCOUNT
+			, A.GLOBALMONTHLYCOUNT
+			, A.PPDAILYCOUNT
+			, A.PPWEEKLYCOUNT
+			, A.PPMONTHLYCOUNT
+			, A.STATUSCODE
+			, B.PPNAME
+			, STUFF(( 
+				SELECT 
+					',' + CC.TYPESEQ
+				FROM RSVSPECIALPPMAP BB
+					INNER JOIN(
+						SELECT 
+							CAST(TYPESEQ AS VARCHAR) AS TYPESEQ
+						FROM RSVSPECIALPPMAP
+					)AS CC
+					ON(BB.TYPESEQ = CC.TYPESEQ)
+						WHERE (A.SETTINGSEQ = BB.SETTINGSEQ)
+						GROUP BY CC.TYPESEQ
+				FOR XML PATH('')
+			),1,1,'') AS TYPESEQ
+		FROM RSVCONSTRAINT A
+			LEFT OUTER JOIN RSVPPINFO B
+				ON(A.PPSEQ = B.PPSEQ)
+		WHERE A.SETTINGSEQ = #{settingseq}
+	</select>
+	
+	<!-- 누적 예약 타입 수정 -->
+	<update id="baseRuleUpdateAjax" parameterType="reqBox">
+		UPDATE RSVCONSTRAINT
+			SET
+				  CONSTRAINTTYPE = #{afterConstrainttype}
+				, PINTREATRANGE = #{popPinTreatRange}
+				, CITYTREATCODE = #{popCityTreatCode}
+				, AGETREATCODE = #{popAgeTreatCode} 
+				, GROUPSEQ = #{popRoleGroupCode}
+				, PPSEQ = #{popPpSeq}
+				, GLOBALDAILYCOUNT = CASE WHEN #{popGlobalDalyCount} = '' THEN NULL ELSE #{popGlobalDalyCount} END
+				, GLOBALWEEKLYCOUNT  = CASE WHEN #{popGlobalWeeklyCount} = '' THEN NULL ELSE #{popGlobalWeeklyCount} END
+				, GLOBALMONTHLYCOUNT = CASE WHEN #{popGlobalMonthlyCount} = '' THEN NULL ELSE #{popGlobalMonthlyCount} END
+				, PPDAILYCOUNT  = CASE WHEN #{popPpDalyCount} = '' THEN NULL ELSE #{popPpDalyCount} END
+				, PPWEEKLYCOUNT = CASE WHEN #{popPpWeeklyCount} = '' THEN NULL ELSE #{popPpWeeklyCount} END
+				, PPMONTHLYCOUNT = CASE WHEN #{popPpMonthlyCount} = '' THEN NULL ELSE #{popPpMonthlyCount} END
+				, STATUSCODE = #{statuscode}
+				, UPDATEUSER = #{sessionAccount}
+				, UPDATEDATE = GETDATE()
+		WHERE SETTINGSEQ = #{settingseq}
+	</update>
+	
+	<!-- 룸타입 조회 -->
+	<select id="searchPpToRoomTypeList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			  DISTINCT
+			  TYPESEQ
+			, TYPENAME
+		FROM RSVTYPEINFO
+		WHERE RSVTYPECODE = 'R01'
+			AND STATUSCODE = 'B01'
+	</select>
+	
+	<!-- 제한 기준 타입 코드가 C03일경우 등록쿼리 -->
+	<insert id="ppToRoomTypeInsertAjax" parameterType="reqBox">
+		<selectKey resultType="String" keyProperty="settingseq" order="AFTER">
+			SELECT IDENT_CURRENT('RSVCONSTRAINT')
+		</selectKey>
+		INSERT INTO RSVCONSTRAINT(
+			  CONSTRAINTTYPE
+			, PPSEQ
+			<if test="popGlobalDalyCount != null and popGlobalDalyCount != '' ">
+				, GLOBALDAILYCOUNT
+			</if>
+			<if test="popGlobalWeeklyCount != null and popGlobalWeeklyCount != '' ">
+				, GLOBALWEEKLYCOUNT
+			</if>
+			<if test="popGlobalMonthlyCount != null and popGlobalMonthlyCount != '' ">
+				, GLOBALMONTHLYCOUNT
+			</if>
+			<if test="popPpDalyCount != null and popPpDalyCount != '' ">
+				, PPDAILYCOUNT
+			</if>
+			<if test="popPpWeeklyCount != null and popPpWeeklyCount != '' ">
+				, PPWEEKLYCOUNT
+			</if>
+			<if test="popPpMonthlyCount != null and popPpMonthlyCount != '' ">
+				, PPMONTHLYCOUNT
+			</if>
+			, STATUSCODE
+			, INSERTUSER
+			, INSERTDATE
+		)VALUES(
+			  #{popConstraintType}
+			, #{ppSeq}
+			
+			<if test="popGlobalDalyCount != null and popGlobalDalyCount != '' ">
+				, #{popGlobalDalyCount}
+			</if>
+			<if test="popGlobalWeeklyCount != null and popGlobalWeeklyCount != '' ">
+				, #{popGlobalWeeklyCount}
+			</if>
+			 <if test="popGlobalMonthlyCount != null and popGlobalMonthlyCount != '' ">
+				, #{popGlobalMonthlyCount}
+			</if>
+			<if test="popPpDalyCount != null and popPpDalyCount != '' ">
+				, #{popPpDalyCount}
+			</if>
+			<if test="popPpWeeklyCount != null and popPpWeeklyCount != '' ">
+				, #{popPpWeeklyCount}
+			</if>
+			<if test="popPpMonthlyCount != null and popPpMonthlyCount != '' ">
+				, #{popPpMonthlyCount}
+			</if>
+			, #{statuscode}
+			, #{sessionAccount}
+			, GETDATE()
+		)
+	</insert>
+	
+	<!-- 특정 교육장 맵핑 테이블 등록 -->
+	<insert id="rsvSpecialPpMapInsert" parameterType="java.util.Map">
+		INSERT INTO RSVSPECIALPPMAP(
+			  SETTINGSEQ
+			, TYPESEQ
+		)VALUES(
+			  #{settingseq}
+			, #{typeseq}
+		)
+	</insert>
+	
+	<!-- 특정 교육장 삭제 -->
+	<delete id="ppToRoomTypeDeleteAjax" parameterType="reqBox">
+		DELETE FROM RSVSPECIALPPMAP 
+		WHERE SETTINGSEQ = #{settingseq}
+	</delete>
+
+</mapper>

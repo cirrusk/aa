@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.lcms.mapper.LcmsItemMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsItemVO">
+        <selectKey resultType="Long" keyProperty="itemSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UILcmsItemMapper.insert */
+INSERT INTO cs_lcms_item 
+       ( 
+           cs_organization_seq ,
+           cs_sort_order ,
+           cs_level ,
+           cs_title ,
+           cs_identifier ,
+           cs_parameters ,
+           cs_data_from_lms ,
+           cs_time_limit_action ,
+           cs_min_normalized_measure ,
+           cs_attempt_duration_limit ,
+           cs_completion_threshold ,
+           cs_completion_type ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{organizationSeq, jdbcType=NUMERIC} ,
+           #{sortOrder, jdbcType=NUMERIC} ,
+           #{level, jdbcType=NUMERIC} ,
+           #{title, jdbcType=VARCHAR} ,
+           #{identifier, jdbcType=VARCHAR} ,
+           #{parameters, jdbcType=VARCHAR} ,
+           #{dataFromLms, jdbcType=VARCHAR} ,
+           #{timeLimitAction, jdbcType=VARCHAR} ,
+           #{minNormalizedMeasure, jdbcType=VARCHAR} ,
+           #{attemptDurationLimit, jdbcType=VARCHAR} ,
+           #{completionThreshold, jdbcType=VARCHAR} ,
+           #{completionType, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       )
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsItemVO">
+/* UILcmsItemMapper.update */
+UPDATE cs_lcms_item 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+        <if test='title != null and !title.equals("")'>
+       ,cs_title = #{title, jdbcType=VARCHAR}
+        </if>
+        <if test='sortOrder != null and !sortOrder.equals("")'>
+       ,cs_sort_order = #{sortOrder, jdbcType=NUMERIC}
+        </if>
+        <if test='completionThreshold != null and !completionThreshold.equals("")'>
+       ,cs_completion_threshold = #{completionThreshold, jdbcType=VARCHAR}
+        </if>
+        <if test='completionType != null and !completionType.equals("")'>
+       ,cs_completion_type = #{completionType, jdbcType=VARCHAR}
+        </if>
+  WHERE cs_item_seq = #{itemSeq}
+        AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.lcms.vo.UILcmsItemVO">
+/* UILcmsItemMapper.delete */
+UPDATE cs_lcms_item 
+   SET cs_delete_yn = 'Y' ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+ WHERE cs_item_seq = #{itemSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsItemRS">
+        <result column="item.itemSeq"              property="item.itemSeq" />
+        <result column="item.organizationSeq"      property="item.organizationSeq" />
+        <result column="item.sortOrder"            property="item.sortOrder" />
+        <result column="item.level"                property="item.level" />
+        <result column="item.title"                property="item.title" />
+        <result column="item.identifier"           property="item.identifier" />
+        <result column="item.parameters"           property="item.parameters" />
+        <result column="item.dataFromLms"          property="item.dataFromLms" />
+        <result column="item.timeLimitAction"      property="item.timeLimitAction" />
+        <result column="item.minNormalizedMeasure" property="item.minNormalizedMeasure" />
+        <result column="item.attemptDurationLimit" property="item.attemptDurationLimit" />
+        <result column="item.completionThreshold"  property="item.completionThreshold" />
+        <result column="item.completionType"  	   property="item.completionType" />
+        <result column="item.deleteYn"             property="item.deleteYn" />
+        <result column="item.regMemberSeq"         property="item.regMemberSeq" />
+        <result column="item.regDtime"             property="item.regDtime" />
+        <result column="item.regIp"                property="item.regIp" />
+        <result column="item.updMemberSeq"         property="item.updMemberSeq" />
+        <result column="item.updDtime"             property="item.updDtime" />
+        <result column="item.updIp"                property="item.updIp" />
+        <result column="ir.resourceSeq"            property="itemResource.resourceSeq" />
+        <result column="ir.identifier"             property="itemResource.identifier" />
+        <result column="ir.scormType"              property="itemResource.scormType" />
+        <result column="ir.resourceType"           property="itemResource.resourceType" />
+        <result column="ir.href"                   property="itemResource.href" />
+        <result column="ir.base"                   property="itemResource.base" />
+    </resultMap>
+    <select id="getList" parameterType="Long" resultMap="listResultMap">
+/* UILcmsItemMapper.getList */
+SELECT item.cs_item_seq               AS "item.itemSeq" ,
+       item.cs_organization_seq       AS "item.organizationSeq" ,
+       item.cs_sort_order             AS "item.sortOrder" ,
+       item.cs_level                  AS "item.level" ,
+       item.cs_title                  AS "item.title" ,
+       item.cs_identifier             AS "item.identifier" ,
+       item.cs_parameters             AS "item.parameters" ,
+       item.cs_data_from_lms          AS "item.dataFromLms" ,
+       item.cs_time_limit_action      AS "item.timeLimitAction" ,
+       item.cs_min_normalized_measure AS "item.minNormalizedMeasure" ,
+       item.cs_attempt_duration_limit AS "item.attemptDurationLimit" ,
+       item.cs_completion_threshold   AS "item.completionThreshold" ,
+       item.cs_completion_type		  AS "item.completionType" ,
+       item.cs_delete_yn              AS "item.deleteYn" ,
+       item.cs_reg_member_seq         AS "item.regMemberSeq" ,
+       item.cs_reg_dtime              AS "item.regDtime" ,
+       item.cs_reg_ip                 AS "item.regIp" ,
+       item.cs_upd_member_seq         AS "item.updMemberSeq" ,
+       item.cs_upd_dtime              AS "item.updDtime" ,
+       item.cs_upd_ip                 AS "item.updIp" ,
+       ir.cs_resource_seq             AS "ir.resourceSeq" ,
+       ir.cs_identifier               AS "ir.identifier" ,
+       ir.cs_scorm_type               AS "ir.scormType" ,
+       ir.cs_resource_type            AS "ir.resourceType" ,
+       ir.cs_href                     AS "ir.href" ,
+       ir.cs_base                     AS "ir.base" 
+  FROM cs_lcms_item item 
+ INNER JOIN cs_lcms_item_resource ir 
+    ON ir.cs_item_seq = item.cs_item_seq 
+       AND ir.cs_delete_yn = 'N'
+ WHERE item.cs_organization_seq = #{organizationSeq} 
+       AND item.cs_delete_yn = 'N'
+ORDER BY item.cs_sort_order ASC
+    </select>
+
+    <select id="getMaxSortOrder" parameterType="Long" resultType="Long">
+/* UILcmsItemMapper.getMaxSortOrder */
+SELECT item.sort_order + 1 
+  FROM (SELECT ISNULL(MAX(cs_sort_order), -1) AS sort_order 
+          FROM cs_lcms_item 
+         WHERE cs_organization_seq = #{organizationSeq} 
+               AND cs_delete_yn = 'N'
+       ) item
+    </select>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsItemRS">
+        <result column="item.itemSeq"               property="item.itemSeq" />
+        <result column="item.organizationSeq"       property="item.organizationSeq" />
+        <result column="item.sortOrder"             property="item.sortOrder" />
+        <result column="item.level"                 property="item.level" />
+        <result column="item.title"                 property="item.title" />
+        <result column="item.identifier"            property="item.identifier" />
+        <result column="item.parameters"            property="item.parameters" />
+        <result column="item.dataFromLms"           property="item.dataFromLms" />
+        <result column="item.timeLimitAction"       property="item.timeLimitAction" />
+        <result column="item.minNormalizedMeasure"  property="item.minNormalizedMeasure" />
+        <result column="item.attemptDurationLimit"  property="item.attemptDurationLimit" />
+        <result column="item.completionThreshold"   property="item.completionThreshold" />
+        <result column="item.completionType"   		property="item.completionType" />
+        <result column="item.deleteYn"              property="item.deleteYn" />
+        <result column="item.regMemberSeq"          property="item.regMemberSeq" />
+        <result column="item.regDtime"              property="item.regDtime" />
+        <result column="item.regIp"                 property="item.regIp" />
+        <result column="item.updMemberSeq"          property="item.updMemberSeq" />
+        <result column="item.updDtime"              property="item.updDtime" />
+        <result column="item.updIp"                 property="item.updIp" />
+        <result column="ir.resourceSeq"             property="itemResource.resourceSeq" />
+        <result column="ir.identifier"              property="itemResource.identifier" />
+        <result column="ir.scormType"               property="itemResource.scormType" />
+        <result column="ir.resourceType"            property="itemResource.resourceType" />
+        <result column="ir.href"                    property="itemResource.href" />
+        <result column="ir.base"                    property="itemResource.base" />
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UILcmsItemMapper.getDetail */
+SELECT item.cs_item_seq                 AS "item.itemSeq" ,
+       item.cs_organization_seq         AS "item.organizationSeq" ,
+       item.cs_sort_order               AS "item.sortOrder" ,
+       item.cs_level                    AS "item.level" ,
+       item.cs_title                    AS "item.title" ,
+       item.cs_identifier               AS "item.identifier" ,
+       item.cs_parameters               AS "item.parameters" ,
+       item.cs_data_from_lms            AS "item.dataFromLms" ,
+       item.cs_time_limit_action        AS "item.timeLimitAction" ,
+       item.cs_min_normalized_measure   AS "item.minNormalizedMeasure" ,
+       item.cs_attempt_duration_limit   AS "item.attemptDurationLimit" ,
+       item.cs_completion_threshold     AS "item.completionThreshold" ,
+       item.cs_completion_type			AS "item.completionType" ,
+       item.cs_delete_yn                AS "item.deleteYn" ,
+       item.cs_reg_member_seq           AS "item.regMemberSeq" ,
+       item.cs_reg_dtime                AS "item.regDtime" ,
+       item.cs_reg_ip                   AS "item.regIp" ,
+       item.cs_upd_member_seq           AS "item.updMemberSeq" ,
+       item.cs_upd_dtime                AS "item.updDtime" ,
+       item.cs_upd_ip                   AS "item.updIp" ,
+       ir.cs_resource_seq               AS "ir.resourceSeq" ,
+       ir.cs_identifier                 AS "ir.identifier" ,
+       ir.cs_scorm_type                 AS "ir.scormType" ,
+       ir.cs_resource_type              AS "ir.resourceType" ,
+       ir.cs_href                       AS "ir.href" ,
+       ir.cs_base                       AS "ir.base" 
+  FROM cs_lcms_item item 
+ INNER JOIN cs_lcms_item_resource ir 
+    ON ir.cs_item_seq = item.cs_item_seq 
+       AND ir.cs_delete_yn = 'N'
+ WHERE item.cs_item_seq = #{itemSeq} 
+       AND item.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="detailByIdentifierResultMap" type="com._4csoft.aof.ui.lcms.vo.resultset.UILcmsItemRS">
+        <result column="item.itemSeq"               property="item.itemSeq" />
+        <result column="item.organizationSeq"       property="item.organizationSeq" />
+        <result column="item.sortOrder"             property="item.sortOrder" />
+        <result column="item.level"                 property="item.level" />
+        <result column="item.title"                 property="item.title" />
+        <result column="item.identifier"            property="item.identifier" />
+        <result column="item.parameters"            property="item.parameters" />
+        <result column="item.dataFromLms"           property="item.dataFromLms" />
+        <result column="item.timeLimitAction"       property="item.timeLimitAction" />
+        <result column="item.minNormalizedMeasure"  property="item.minNormalizedMeasure" />
+        <result column="item.attemptDurationLimit"  property="item.attemptDurationLimit" />
+        <result column="item.completionThreshold"   property="item.completionThreshold" />
+        <result column="item.deleteYn"              property="item.deleteYn" />
+        <result column="item.regMemberSeq"          property="item.regMemberSeq" />
+        <result column="item.regDtime"              property="item.regDtime" />
+        <result column="item.regIp"                 property="item.regIp" />
+        <result column="item.updMemberSeq"          property="item.updMemberSeq" />
+        <result column="item.updDtime"              property="item.updDtime" />
+        <result column="item.updIp"                 property="item.updIp" />
+        <result column="ir.resourceSeq"             property="itemResource.resourceSeq" />
+        <result column="ir.identifier"              property="itemResource.identifier" />
+        <result column="ir.scormType"               property="itemResource.scormType" />
+        <result column="ir.resourceType"            property="itemResource.resourceType" />
+        <result column="ir.href"                    property="itemResource.href" />
+        <result column="ir.base"                    property="itemResource.base" />
+    </resultMap>
+    <select id="getDetailByIdentifier" parameterType="map" resultMap="detailByIdentifierResultMap">
+/* UILcmsItemMapper.getDetailByIdentifier */
+SELECT item.cs_item_seq                 AS "item.itemSeq" ,
+       item.cs_organization_seq         AS "item.organizationSeq" ,
+       item.cs_sort_order               AS "item.sortOrder" ,
+       item.cs_level                    AS "item.level" ,
+       item.cs_title                    AS "item.title" ,
+       item.cs_identifier               AS "item.identifier" ,
+       item.cs_parameters               AS "item.parameters" ,
+       item.cs_data_from_lms            AS "item.dataFromLms" ,
+       item.cs_time_limit_action        AS "item.timeLimitAction" ,
+       item.cs_min_normalized_measure   AS "item.minNormalizedMeasure" ,
+       item.cs_attempt_duration_limit   AS "item.attemptDurationLimit" ,
+       item.cs_completion_threshold     AS "item.completionThreshold" ,
+       item.cs_delete_yn                AS "item.deleteYn" ,
+       item.cs_reg_member_seq           AS "item.regMemberSeq" ,
+       item.cs_reg_dtime                AS "item.regDtime" ,
+       item.cs_reg_ip                   AS "item.regIp" ,
+       item.cs_upd_member_seq           AS "item.updMemberSeq" ,
+       item.cs_upd_dtime                AS "item.updDtime" ,
+       item.cs_upd_ip                   AS "item.updIp" ,
+       ir.cs_resource_seq               AS "ir.resourceSeq" ,
+       ir.cs_identifier                 AS "ir.identifier" ,
+       ir.cs_scorm_type                 AS "ir.scormType" ,
+       ir.cs_resource_type              AS "ir.resourceType" ,
+       ir.cs_href                       AS "ir.href" ,
+       ir.cs_base                       AS "ir.base" 
+  FROM cs_lcms_item item 
+ INNER JOIN cs_lcms_item_resource ir 
+    ON ir.cs_item_seq = item.cs_item_seq 
+       AND ir.cs_delete_yn = 'N'
+ WHERE item.cs_identifier = #{identifier} 
+       AND item.cs_organization_seq = #{organizationSeq} 
+       AND item.cs_delete_yn = 'N'
+    </select>
+    
+    <select id="getListByOrganizationSeq" parameterType="map" resultType="com._4csoft.aof.ui.lcms.vo.UILcmsItemVO">
+/* UILcmsItemMapper.getListByOrganizationSeq */
+SELECT item.cs_item_seq               AS "itemSeq" ,
+       item.cs_organization_seq       AS "organizationSeq" ,
+       item.cs_sort_order             AS "sortOrder" ,
+       item.cs_level                  AS "level" ,
+       item.cs_title                  AS "title" ,
+       item.cs_identifier             AS "identifier" ,
+       item.cs_parameters             AS "parameters" ,
+       item.cs_data_from_lms          AS "dataFromLms" ,
+       item.cs_time_limit_action      AS "timeLimitAction" ,
+       item.cs_min_normalized_measure AS "minNormalizedMeasure" ,
+       item.cs_attempt_duration_limit AS "attemptDurationLimit" ,
+       item.cs_completion_threshold   AS "completionThreshold" ,
+       item.cs_delete_yn              AS "deleteYn" ,
+       item.cs_reg_member_seq         AS "regMemberSeq" ,
+       item.cs_reg_dtime              AS "regDtime" ,
+       item.cs_reg_ip                 AS "regIp" ,
+       item.cs_upd_member_seq         AS "updMemberSeq" ,
+       item.cs_upd_dtime              AS "updDtime" ,
+       item.cs_upd_ip                 AS "updIp"
+  FROM cs_lcms_item item 
+ WHERE item.cs_organization_seq = #{organizationSeq} 
+       AND item.cs_delete_yn = 'N'
+ORDER BY item.cs_sort_order ASC
+    </select>
+
+</mapper>

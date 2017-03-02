@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.systemCode.service.impl.SystemCodeMapper">
+
+    <select id="codeListScope" parameterType="reqBox" resultType="dataBox">
+        SELECT  CODEMASTERSEQ AS CODE
+             , CODEMASTERNAME AS NAME
+        FROM CODEMASTER
+    </select>
+
+    <!-- 시스템코드 리스트 카운트 -->
+    <select id="systemCodeListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(CODEMASTERSEQ) AS TOTAL_CNT
+		FROM CODEMASTER
+        WHERE 1=1
+        <if test="codemasterseq != null and !codemasterseq.equals('')">
+            AND CODEMASTERSEQ = #{codemasterseq}
+        </if>
+        <if test="workCmm != null and !workCmm.equals('')">
+            AND WORKSCOPE LIKE ('%${workCmm}%')
+        </if>
+        <if test="workLms != null and !workLms.equals('')">
+            AND WORKSCOPE LIKE ('%${workLms}%')
+        </if>
+        <if test="workRsv != null and !workRsv.equals('')">
+            AND WORKSCOPE LIKE ('%${workRsv}%')
+        </if>
+        <if test="workFee != null and !workFee.equals('')">
+            AND WORKSCOPE LIKE ('%${workFee}%')
+        </if>
+	</select>
+
+    <select id="systemCodeList" parameterType="reqBox" resultType="dataBox">
+        SELECT AI. ROW_NUM
+             , AI.CODEMASTERSEQ
+             , AI.WORKSCOPE
+             , AI.CODEMASTERNAME
+             , AI.CODEMASTERACCOUNT
+             , AI.MODIFYDATE
+        FROM (
+                SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType} ) AS ROW_NUM
+                     ,  CODEMASTERSEQ
+                     ,  WORKSCOPE
+                     ,  CODEMASTERNAME
+                     ,  CODEMASTERACCOUNT
+                     ,  MODIFYDATE
+                FROM   CODEMASTER
+                WHERE 1=1
+                <if test="codemasterseq != null and !codemasterseq.equals('')">
+                    AND CODEMASTERSEQ = #{codemasterseq}
+                </if>
+                <if test="workCmm != null and !workCmm.equals('')">
+                    AND WORKSCOPE LIKE ('%${workCmm}%')
+                </if>
+                <if test="workLms != null and !workLms.equals('')">
+                    AND WORKSCOPE LIKE ('%${workLms}%')
+                </if>
+                <if test="workRsv != null and !workRsv.equals('')">
+                    AND WORKSCOPE LIKE ('%${workRsv}%')
+                </if>
+                <if test="workFee != null and !workFee.equals('')">
+                    AND WORKSCOPE LIKE ('%${workFee}%')
+                </if>
+            ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+
+    <select id="systemCodeListPop" parameterType="reqBox" resultType="dataBox">
+        SELECT CODEMASTERSEQ
+             , WORKSCOPE
+             , WORKSCOPE
+             , CASE WHEN WORKSCOPE LIKE ('%CMM%') THEN 'CMM'
+             	END AS WORKCMM
+             , CASE WHEN WORKSCOPE LIKE ('%LMS%') THEN 'LMS'
+             	END AS WORKLMS
+             , CASE WHEN WORKSCOPE LIKE ('%RSV%') THEN 'RSV'
+               END AS WORKRSV
+             , CASE WHEN WORKSCOPE LIKE ('%FEE%') THEN 'FEE'
+               END AS WORKFEE
+             , CODEMASTERACCOUNT
+             , CODEMASTERNAME
+        FROM   CODEMASTER
+        WHERE  CODEMASTERSEQ = #{codemasterseq}
+    </select>
+
+    <insert id="systemCodeInsert" parameterType="reqBox">
+        INSERT INTO CODEMASTER (
+               CODEMASTERSEQ
+             , WORKSCOPE
+             , CODEMASTERNAME
+             , CODEMASTERACCOUNT
+             , REGISTRANT
+             , REGISTRANTDATE
+             , MODIFIER
+             , MODIFYDATE
+             , USEYN
+        ) VALUES (
+        	#{codemasterseq}
+        	, #{workscope}
+        	, #{codemastername}
+        	, #{codemasteraccount}
+        	, #{sysId}
+	        , Getdate()
+	        , #{sysId}
+	        , Getdate()
+	        , 'Y'
+        )
+    </insert>
+
+    <update id="systemCodeUpdate"  parameterType="reqBox">
+        UPDATE CODEMASTER SET
+               WORKSCOPE = #{workscope}
+             , CODEMASTERNAME = #{codemastername}
+             , CODEMASTERACCOUNT = #{codemasteraccount}
+             , MODIFIER = #{sysId}
+             , MODIFYDATE = Getdate()
+        WHERE  CODEMASTERSEQ = #{codemasterseq}
+    </update>
+
+    <select id="existyn" parameterType="reqBox" resultType="int">
+         SELECT COUNT(CODEMASTERSEQ) AS CODEMASTERSEQ
+           FROM COMMONCODE
+          WHERE CODEMASTERSEQ = #{codemasterseq}
+    </select>
+
+    <delete id="systemCodeDelete"  parameterType="reqBox">
+        DELETE FROM CODEMASTER
+        WHERE CODEMASTERSEQ = #{codemasterseq}
+    </delete>
+
+
+    <select id="codeListDetail" parameterType="reqBox" resultType="dataBox">
+        SELECT CODEMASTERSEQ
+              , WORKSCOPE
+              , CODEMASTERNAME
+        FROM CODEMASTER
+        WHERE CODEMASTERSEQ = #{codemasterseq}
+    </select>
+
+    <select id="systemCodeDetail" parameterType="reqBox" resultType="dataBox">
+        SELECT ROW_NUMBER() OVER( ORDER BY CODEORDER ASC ) AS ROW_NUM
+             ,  COMMONCODESEQ
+             ,  CODENAME
+             ,  CODEACCOUNT
+             ,  USEYN
+             ,  CODEORDER
+             ,  '' AS NEWORDER
+        FROM   COMMONCODE
+        WHERE  CODEMASTERSEQ = #{codemasterseq}
+    </select>
+
+    <select id="systemCodeDetailPop" parameterType="reqBox" resultType="dataBox">
+        SELECT CODEMASTERSEQ
+             , COMMONCODESEQ
+             , CODENAME
+             , CODEACCOUNT
+             , CODEORDER
+             , USEYN
+             , CASEONE
+             , CASETWO
+        FROM   COMMONCODE
+        WHERE  CODEMASTERSEQ = #{codemasterseq}
+        AND    COMMONCODESEQ = #{commoncodeseq}
+    </select>
+
+    <insert id="systemCodeDetailInsert" parameterType="reqBox">
+        INSERT INTO COMMONCODE (
+                COMMONCODESEQ
+              , CODEMASTERSEQ
+              , CODENAME
+              , CODEACCOUNT
+              , USEYN
+              , CASEONE
+              , CASETWO
+              , MODIFIER
+              , MODIFYDATE
+              , REGISTRANT
+              , REGISTRANTDATE
+        ) VALUES (
+                #{commoncodeseq}
+              , #{codemasterseq}
+              , #{codename}
+              , #{codeaccount}
+              , #{useyn}
+              , #{caseone}
+              , #{casetwo}
+              , #{sysId}
+              , Getdate()
+              , #{sysId}
+              , Getdate()
+        )
+    </insert>
+
+    <update id="systemCodeDetailUpdate"  parameterType="reqBox">
+        UPDATE COMMONCODE SET
+               COMMONCODESEQ = #{commoncodeseq}
+             , CODENAME = #{codename}
+             , CODEACCOUNT = #{codeaccount}
+             , USEYN = #{useyn}
+             , CASEONE = #{caseone}
+             , CASETWO = #{casetwo}
+             , MODIFIER = #{sysId}
+             , MODIFYDATE = Getdate()
+        WHERE  CODEMASTERSEQ = #{codemasterseq}
+        AND COMMONCODESEQ = #{commoncodeseq}
+    </update>
+
+    <delete id="systemCodeDetailDelete"  parameterType="reqBox">
+        DELETE FROM COMMONCODE
+        WHERE CODEMASTERSEQ = #{codemasterseq}
+        AND COMMONCODESEQ = #{commoncodeseq}
+    </delete>
+
+    <update id="systemCodeDetailOrder"  parameterType="reqBox">
+        UPDATE COMMONCODE SET
+               CODEORDER = ${codeorder}
+        WHERE CODEMASTERSEQ = #{codemasterseq}
+        AND COMMONCODESEQ = #{commoncodeseq}
+    </update>
+
+</mapper>

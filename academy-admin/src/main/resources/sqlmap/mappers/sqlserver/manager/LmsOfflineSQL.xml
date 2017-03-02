@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.offline.service.impl.LmsOfflineMapper">
+	
+	<!-- 오프라인 목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsOfflineWhere">
+		WHERE A.USEFLAG = 'Y' AND COURSETYPE='F'
+			<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+				AND A.CATEGORYID = #{searchcategoryid }
+			</if>
+			<if test='searchopenflag != null and !searchopenflag.equals("")'>
+				AND A.OPENFLAG = #{searchopenflag }
+			</if>
+			<if test='searchapseq != null and !searchapseq.equals("")'>
+				AND B.APSEQ = #{searchapseq }
+			</if>
+			<if test='searchpenaltyflag != null and !searchpenaltyflag.equals("")'>
+				AND B.PENALTYFLAG = #{searchpenaltyflag }
+			</if>
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR A.COURSECONTENT LIKE '%'+#{searchtext }+'%' OR A.SEARCHWORD LIKE '%'+#{searchtext }+'%' OR A.THEMENAME LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("4")'>
+			 		AND A.THEMENAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</sql>
+	
+	<!-- 오프라인 목록 카운트 -->
+	<select id="selectLmsOfflineCount" parameterType="reqBox" resultType="int">
+		/* selectLmsOfflineCount */
+		SELECT  
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSCOURSE A
+			INNER JOIN LMSOFFLINE B ON(A.COURSEID = B.COURSEID)
+		<include refid="selectLmsOfflineWhere" />
+	</select>
+	
+	<!-- 오프라인 목록 -->
+	<select id="selectLmsOfflineList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsOfflineList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, CASE WHEN AA.OPENFLAG='Y' THEN '공개' WHEN AA.OPENFLAG='N' THEN '비공개' WHEN AA.OPENFLAG='C' THEN '정규공개' END AS OPENFLAGNAME
+		, CASE WHEN AA.PENALTYFLAG='Y' THEN '적용' WHEN AA.PENALTYFLAG='N' THEN '비적용' END AS PENALTYFLAGNAME
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME 
+		, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+		, (SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID = AA.COURSEID AND REQUESTFLAG='Y' ) AS STUDENTCOUNT
+		, (SELECT COUNT(*) FROM LMSSTEPUNIT WHERE STEPCOURSEID = AA.COURSEID) AS UNITCOUNT
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY A.COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				A.COURSEID ,
+				A.CATEGORYID ,
+				A.THEMENAME ,
+				A.COURSENAME ,
+				B.APNAME ,
+				A.STARTDATE AS STARTDATE ,
+				A.ENDDATE AS ENDDATE ,
+				A.OPENFLAG  ,
+				B.PENALTYFLAG
+			FROM LMSCOURSE A
+				INNER JOIN LMSOFFLINE B ON(A.COURSEID = B.COURSEID)
+			<include refid="selectLmsOfflineWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 오프라인 목록 엑셀다운로드 -->
+	<select id="selectLmsOfflineListExcelDown" parameterType="reqBox" resultType="hashmap">
+		/* selectLmsOfflineListExcelDown */
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY A.COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS NO , 
+				A.COURSEID ,
+				A.THEMENAME ,
+				A.COURSENAME ,
+				B.APNAME ,
+				CASE WHEN A.OPENFLAG='Y' THEN '공개' WHEN A.OPENFLAG='N' THEN '비공개' WHEN A.OPENFLAG='C' THEN '정규공개' END AS OPENFLAGNAME ,
+				CASE WHEN B.PENALTYFLAG='Y' THEN '적용' WHEN B.PENALTYFLAG='N' THEN '비적용' END AS PENALTYFLAGNAME ,
+				DBO.F_LMS_CATEGORY_TREENAME(A.CATEGORYID) AS CATEGORYTREENAME ,
+				FORMAT(A.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(A.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE 
+			FROM LMSCOURSE A
+				INNER JOIN LMSOFFLINE B ON(A.COURSEID = B.COURSEID)
+			<include refid="selectLmsOfflineWhere" />
+	</select>
+	
+	<!-- 오프라인 삭제(상세 정보는 삭제 하지 않는다.) -->
+ 	<update id="deleteLmsOffline" parameterType="reqBox">
+		/* deleteLmsOffline */
+		UPDATE LMSOFFLINE
+			SET
+				 COURSEID = COURSEID 
+		WHERE COURSEID  IN
+			<foreach collection="courseids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+
+	<!-- 오프라인 상세 -->
+	<select id="selectLmsOffline" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsOffline */
+			SELECT
+				PLACEFLAG ,
+				TOGETHERFLAG ,
+				PENALTYFLAG ,
+				PENALTYTERM ,
+				APSEQ ,
+				APNAME ,
+				ROOMSEQ ,
+				ROOMNAME ,
+				LIMITCOUNT ,
+				DETAILCONTENT ,
+				TARGETDETAIL ,
+				NOTE ,
+				LINKTITLE ,
+				LINKURL ,
+				PENALTYNOTE ,
+				CANCELTERM
+			FROM LMSOFFLINE
+			WHERE COURSEID = #{courseid}
+	</select>
+	
+	<!-- 오프라인 등록 -->
+ 	<insert id="insertLmsOffline" parameterType="reqBox">
+		/* insertLmsOffline */
+			INSERT INTO LMSOFFLINE(
+				COURSEID ,
+				PLACEFLAG ,
+				TOGETHERFLAG ,
+				PENALTYFLAG ,
+				PENALTYTERM ,
+				APSEQ ,
+				APNAME ,
+				ROOMSEQ ,
+				ROOMNAME ,
+				LIMITCOUNT ,
+				DETAILCONTENT ,
+				TARGETDETAIL ,
+				NOTE ,
+				LINKTITLE ,
+				LINKURL ,
+				PENALTYNOTE ,
+				CANCELTERM 
+				)
+			VALUES(
+				#{maxcourseid} ,
+				#{placeflag} ,
+				#{togetherflag} ,
+				#{penaltyflag} ,
+				#{penaltyterm} ,
+				#{apseq} ,
+				#{apname} ,
+				#{roomseq} ,
+				#{roomname} ,
+				#{limitcount} ,
+				#{detailcontent} ,
+				#{targetdetail} ,
+				#{note} ,
+				#{linktitle} ,
+				#{linkurl} ,
+				#{penaltynote} ,
+				#{cancelterm}
+				)
+	</insert>
+
+	<!-- 오프라인 업데이트 -->
+ 	<update id="updateLmsOffline" parameterType="reqBox">
+		/* updateLmsOffline */
+			UPDATE LMSOFFLINE SET
+				PLACEFLAG			=	#{	placeflag	} ,
+				TOGETHERFLAG	=	#{	togetherflag	} ,
+				PENALTYFLAG		=	#{	penaltyflag	} ,
+				PENALTYTERM		=	#{	penaltyterm	} ,
+				APSEQ					=	#{	apseq	} ,
+				APNAME				=	#{	apname	} ,
+				ROOMSEQ				=	#{	roomseq	} ,
+				ROOMNAME			=	#{	roomname	} ,
+				LIMITCOUNT			=	#{	limitcount	} ,
+				DETAILCONTENT	=	#{	detailcontent	} ,
+				TARGETDETAIL		=	#{	targetdetail	} ,
+				NOTE						=	#{	note	} ,
+				LINKTITLE				=	#{	linktitle	} ,
+				LINKURL					=	#{	linkurl	} ,
+				PENALTYNOTE		=	#{	penaltynote	} ,
+				CANCELTERM		=	#{	cancelterm	} 
+			WHERE COURSEID 	=	#{courseid} 
+	</update>
+
+</mapper>

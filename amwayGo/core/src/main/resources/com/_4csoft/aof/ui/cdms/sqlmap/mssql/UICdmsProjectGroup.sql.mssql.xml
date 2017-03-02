@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsProjectGroupMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectGroupVO">
+        <selectKey resultType="Long" keyProperty="projectGroupSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsProjectGroup.insert */
+INSERT INTO cs_cdms_project_group 
+       ( 
+           cs_group_name ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{groupName, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectGroupVO">
+/* UICdmsProjectGroup.update */
+UPDATE cs_cdms_project_group 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_group_name = #{groupName, jdbcType=VARCHAR}
+ WHERE cs_project_group_seq = #{projectGroupSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="delete" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectGroupVO">
+/* UICdmsProjectGroup.delete */
+UPDATE cs_cdms_project_group 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_project_group_seq = #{projectGroupSeq} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getDetail_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectGroupRS">
+        <result column="projGroup.projectGroupSeq"      property="projectGroup.projectGroupSeq"/>
+        <result column="projGroup.groupName"            property="projectGroup.groupName"/>
+        <result column="projGroup.deleteYn"             property="projectGroup.deleteYn"/>
+        <result column="projGroup.regMemberSeq"         property="projectGroup.regMemberSeq"/>
+        <result column="projGroup.regDtime"             property="projectGroup.regDtime"/>
+        <result column="projGroup.regIp"                property="projectGroup.regIp"/>
+        <result column="projGroup.updMemberSeq"         property="projectGroup.updMemberSeq"/>
+        <result column="projGroup.updDtime"             property="projectGroup.updDtime"/>
+        <result column="projGroup.updIp"                property="projectGroup.updIp"/>
+        <result column="projGroup.projectCount"         property="projectGroup.projectCount"/>
+        <result column="projGroup.updMemberName"        property="projectGroup.updMemberName"/>
+        <collection column="projGroup.projectGroupSeq"  property="listMember" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectMemberRS" select="com._4csoft.aof.cdms.mapper.CdmsProjectMemberMapper.getListByProjectGroup"/>
+        <collection column="projGroup.projectGroupSeq"  property="listCompany" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectCompanyRS" select="com._4csoft.aof.cdms.mapper.CdmsProjectCompanyMapper.getListByProjectGroup"/>
+    </resultMap>
+
+    <select id="getDetail" parameterType="Long" resultMap="getDetail_result">
+/* UICdmsProjectGroup.getDetail */
+SELECT projGroup.cs_project_group_seq     AS "projGroup.projectGroupSeq" ,
+       projGroup.cs_group_name            AS "projGroup.groupName" ,
+       projGroup.cs_delete_yn             AS "projGroup.deleteYn" ,
+       projGroup.cs_reg_member_seq        AS "projGroup.regMemberSeq" ,
+       projGroup.cs_reg_dtime             AS "projGroup.regDtime" ,
+       projGroup.cs_reg_ip                AS "projGroup.regIp" ,
+       projGroup.cs_upd_member_seq        AS "projGroup.updMemberSeq" ,
+       projGroup.cs_upd_dtime             AS "projGroup.updDtime" ,
+       projGroup.cs_upd_ip                AS "projGroup.updIp" ,
+       (SELECT COUNT(*)
+          FROM cs_cdms_project
+         WHERE cs_project_group_seq = projGroup.cs_project_group_seq
+           AND cs_delete_yn = 'N'
+       ) AS "projGroup.projectCount" ,
+       (SELECT umem.cs_member_name FROM cs_member umem WHERE umem.cs_member_seq = projGroup.cs_upd_member_seq) AS "projGroup.updMemberName" 
+  FROM cs_cdms_project_group projGroup
+ WHERE projGroup.cs_project_group_seq = #{projectGroupSeq} 
+       AND projGroup.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectGroupRS">
+        <result column="projGroup.projectGroupSeq"      property="projectGroup.projectGroupSeq"/>
+        <result column="projGroup.groupName"            property="projectGroup.groupName"/>
+        <result column="projGroup.deleteYn"             property="projectGroup.deleteYn"/>
+        <result column="projGroup.regMemberSeq"         property="projectGroup.regMemberSeq"/>
+        <result column="projGroup.regDtime"             property="projectGroup.regDtime"/>
+        <result column="projGroup.regIp"                property="projectGroup.regIp"/>
+        <result column="projGroup.updMemberSeq"         property="projectGroup.updMemberSeq"/>
+        <result column="projGroup.updDtime"             property="projectGroup.updDtime"/>
+        <result column="projGroup.updIp"                property="projectGroup.updIp"/>
+        <result column="projGroup.projectCount"         property="projectGroup.projectCount"/>
+        <result column="projGroup.regMemberName"        property="projectGroup.regMemberName"/>
+        <collection column="projGroup.projectGroupSeq"  property="listMember" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectMemberRS" select="com._4csoft.aof.cdms.mapper.CdmsProjectMemberMapper.getListByProjectGroup"/>
+        <collection column="projGroup.projectGroupSeq"  property="listCompany" javaType="List" 
+            ofType="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectCompanyRS" select="com._4csoft.aof.cdms.mapper.CdmsProjectCompanyMapper.getListByProjectGroup"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsProjectGroupCondition" resultMap="listResultMap">
+/* UICdmsProjectGroup.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY "projGroup.regDtime" ASC</when>
+            <when test='orderby == -1'>ORDER BY "projGroup.regDtime" DESC</when>
+            <when test='orderby == 2'>ORDER BY "projGroup.groupName" ASC</when>
+            <when test='orderby == -2'>ORDER BY "projGroup.groupName" DESC</when>
+            <otherwise>ORDER BY "projGroup.regDtime" DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+	SELECT projGroup.cs_project_group_seq     AS "projGroup.projectGroupSeq" ,
+	       projGroup.cs_group_name            AS "projGroup.groupName" ,
+	       projGroup.cs_delete_yn             AS "projGroup.deleteYn" ,
+	       projGroup.cs_reg_member_seq        AS "projGroup.regMemberSeq" ,
+	       projGroup.cs_reg_dtime             AS "projGroup.regDtime" ,
+	       projGroup.cs_reg_ip                AS "projGroup.regIp" ,
+	       projGroup.cs_upd_member_seq        AS "projGroup.updMemberSeq" ,
+	       projGroup.cs_upd_dtime             AS "projGroup.updDtime" ,
+	       projGroup.cs_upd_ip                AS "projGroup.updIp" ,
+	       (SELECT COUNT(*)
+	          FROM cs_cdms_project
+	         WHERE cs_project_group_seq = projGroup.cs_project_group_seq
+	           AND cs_delete_yn = 'N'
+	       ) AS "projGroup.projectCount" ,
+	       mem.cs_member_name AS "projGroup.regMemberName" 
+      FROM cs_cdms_project_group projGroup
+INNER JOIN cs_member mem
+        ON mem.cs_member_seq = projGroup.cs_reg_member_seq
+     WHERE projGroup.cs_delete_yn = 'N'
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("groupName")'>
+       AND projGroup.cs_group_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsProjectGroupCondition" resultType="int">
+/* UICdmsProjectGroup.countList */
+SELECT COUNT(*) 
+  FROM cs_cdms_project_group projGroup
+ WHERE projGroup.cs_delete_yn = 'N'
+        <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("groupName")'>
+       AND projGroup.cs_group_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+        </if>
+    </select>
+
+    <select id="countGroupName" parameterType="map" resultType="int">
+/* UICdmsProjectGroup.countGroupName */
+SELECT COUNT(*) 
+  FROM cs_cdms_project_group 
+ WHERE cs_group_name = #{groupName} 
+       AND cs_delete_yn = 'N'
+        <if test='projectGroupSeq != null and !projectGroupSeq.equals("")'>
+       AND cs_project_group_seq != #{projectGroupSeq}
+        </if>
+    </select>
+    
+    <select id="getDetailMyGroup" parameterType="map" resultType="Long">
+/* UICdmsProjectGroup.getDetailMyGroup */
+SELECT top 1
+	   projGroup.cs_project_group_seq
+  FROM cs_cdms_project_group projGroup 
+   INNER JOIN cs_cdms_project proj 
+       ON projGroup.cs_project_group_seq = proj.cs_project_group_seq 
+       AND proj.cs_delete_yn = 'N' 
+   INNER JOIN cs_cdms_project_member projMember 
+       ON projMember.cs_project_seq = proj.cs_project_seq 
+       AND projMember.cs_project_group_seq = proj.cs_project_group_seq 
+       AND projMember.cs_delete_yn = 'N' 
+ WHERE projGroup.cs_delete_yn = 'N' 
+       AND projMember.cs_member_seq = #{memberSeq} 
+ GROUP BY projGroup.cs_project_group_seq,
+       projGroup.cs_reg_dtime 
+ORDER BY projGroup.cs_reg_dtime desc    
+    </select>
+
+</mapper>

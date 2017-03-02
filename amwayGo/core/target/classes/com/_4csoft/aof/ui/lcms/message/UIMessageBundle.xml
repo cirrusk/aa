@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="필드:콘텐츠:학습자선택">학습자선택</entry>
+    <entry key="필드:콘텐츠:분류">분류</entry>
+    <entry key="필드:콘텐츠:분류명">분류명</entry>
+    <entry key="필드:콘텐츠:콘텐츠소유자">콘텐츠 소유자</entry>
+    <entry key="필드:콘텐츠:콘텐츠">콘텐츠</entry>
+    <entry key="필드:콘텐츠:소유자">소유자</entry>
+    <entry key="필드:콘텐츠:콘텐츠그룹명">콘텐츠 그룹명</entry>
+    <entry key="필드:콘텐츠:차시제목">차시제목</entry>
+    <entry key="필드:콘텐츠:주차제목">주차제목</entry>
+    <entry key="필드:콘텐츠:강제목">강제목</entry>
+    <entry key="필드:콘텐츠:교시제목">교시제목</entry>
+    <entry key="필드:콘텐츠:상태">상태</entry>
+    <entry key="필드:콘텐츠:설명">설명</entry>
+    <entry key="필드:콘텐츠:구분">구분</entry>
+    <entry key="필드:콘텐츠:크기">크기</entry>
+    <entry key="필드:콘텐츠:가로">가로</entry>
+    <entry key="필드:콘텐츠:세로">세로</entry>
+    <entry key="필드:콘텐츠:시작파일">시작파일</entry>
+    <entry key="필드:콘텐츠:메타데이터">메타데이터</entry>
+    <entry key="필드:콘텐츠:버전">버전</entry>
+    <entry key="필드:콘텐츠:변경내역">변경내역</entry>
+    <entry key="필드:콘텐츠:파일경로">파일경로</entry>
+    <entry key="필드:콘텐츠:새파일">새파일</entry>
+    <entry key="필드:콘텐츠:새폴더">새폴더</entry>
+    <entry key="필드:콘텐츠:학습완료기준">학습완료기준</entry>
+    <entry key="필드:콘텐츠:링크정보">링크정보</entry>
+    <entry key="필드:콘텐츠:콘텐츠구분">콘텐츠구분</entry>
+    <entry key="필드:콘텐츠:콘텐츠크기">콘텐츠크기</entry>
+    <entry key="필드:콘텐츠:파일구분">파일구분</entry>
+    <entry key="필드:콘텐츠:학습자">학습자</entry>
+    <entry key="필드:콘텐츠:학습기간">학습기간</entry>
+    <entry key="필드:콘텐츠:학습기간시작일">학습기간 시작일</entry>
+    <entry key="필드:콘텐츠:학습기간종료일">학습기간 종료일</entry>
+    <entry key="필드:콘텐츠:학습일">학습일</entry>
+    <entry key="필드:콘텐츠:최종학습일">최종학습일</entry>
+    <entry key="필드:콘텐츠:최종학습일시">최종 학습일시</entry>
+    <entry key="필드:콘텐츠:학습횟수">학습횟수</entry>
+    <entry key="필드:콘텐츠:학습시간">학습시간</entry>
+    <entry key="필드:콘텐츠:진도율">진도율</entry>
+    <entry key="필드:콘텐츠:학습완료">학습완료</entry>
+    <entry key="필드:콘텐츠:사용중인콘텐츠">사용중인 콘텐츠</entry>
+    <entry key="필드:콘텐츠:운영과정">운영과정</entry>
+    <entry key="필드:콘텐츠:활용수">활용수</entry>
+    <entry key="필드:콘텐츠:차시">차시</entry>
+    <entry key="필드:콘텐츠:주차">주차</entry>
+    <entry key="필드:콘텐츠:강">강</entry>
+    <entry key="필드:콘텐츠:교시">교시</entry>
+    <entry key="필드:콘텐츠:제목">제목</entry>
+    <entry key="필드:콘텐츠:키워드">키워드</entry>
+    <entry key="필드:콘텐츠:데이터주제">데이터주제</entry>
+    <entry key="필드:콘텐츠:데이터값">데이터값</entry>
+    <entry key="필드:콘텐츠:리소스">리소스</entry>
+    <entry key="필드:콘텐츠:주차수">주차수</entry>
+    
+    <entry key="글:콘텐츠:학습하기">학습하기</entry>
+    <entry key="글:콘텐츠:1단계">1단계</entry>
+    <entry key="글:콘텐츠:2단계">2단계</entry>
+    <entry key="글:콘텐츠:3단계">3단계</entry>
+    <entry key="글:콘텐츠:4단계">4단계</entry>
+    <entry key="글:콘텐츠:차시콘텐츠구분선택">차시 콘텐츠 구분선택</entry>
+    <entry key="글:콘텐츠:주차콘텐츠구분선택">주차 콘텐츠 구분선택</entry>
+    <entry key="글:콘텐츠:강콘텐츠구분선택">강 콘텐츠 구분선택</entry>
+    <entry key="글:콘텐츠:교시콘텐츠구분선택">교시 콘텐츠 구분선택</entry>
+    <entry key="글:콘텐츠:파일선택">파일선택</entry>
+    <entry key="글:콘텐츠:차시정보입력">차시 정보입력</entry>
+    <entry key="글:콘텐츠:주차정보입력">주차 정보입력</entry>
+    <entry key="글:콘텐츠:강정보입력">강 정보입력</entry>
+    <entry key="글:콘텐츠:교시정보입력">교시 정보입력</entry>
+    <entry key="글:콘텐츠:메타데이터등록">메타 데이터 등록</entry>
+    <entry key="글:콘텐츠:메타데이터수정">메타 데이터 수정</entry>
+    <entry key="글:콘텐츠:업로드">업로드</entry>
+    <entry key="글:콘텐츠:서버파일">서버파일</entry>
+    <entry key="글:콘텐츠:파일을선택하십시오">파일을 선택하십시오</entry>
+    <entry key="글:콘텐츠:콘텐츠신규등록">콘텐츠 신규등록</entry>
+    <entry key="글:콘텐츠:차시신규등록">차시 신규등록</entry>
+    <entry key="글:콘텐츠:주차신규등록">주차 신규등록</entry>
+    <entry key="글:콘텐츠:차시추가">차시추가</entry>
+    <entry key="글:콘텐츠:주차추가">주차추가</entry>
+    <entry key="글:콘텐츠:강추가">강추가</entry>
+    <entry key="글:콘텐츠:교시추가">교시추가</entry>
+    <entry key="글:콘텐츠:검색">검색</entry>
+    <entry key="글:콘텐츠:차시검색">차시검색</entry>
+    <entry key="글:콘텐츠:주차검색">주차검색</entry>
+    <entry key="글:콘텐츠:차시관리에서등록한데이터를검색하여추가하기">차시관리에서 등록한 데이터를 검색하여 추가하기</entry>
+    <entry key="글:콘텐츠:주차관리에서등록한데이터를검색하여추가하기">주차관리에서 등록한 데이터를 검색하여 추가하기</entry>
+    <entry key="글:콘텐츠:미리보기">미리보기</entry>
+    <entry key="글:콘텐츠:리소스관리">리소스관리</entry>
+    <entry key="글:콘텐츠:리소스">리소스</entry>
+    <entry key="글:콘텐츠:파일목록">파일목록</entry>
+    <entry key="글:콘텐츠:파일상세정보">파일상세정보</entry>
+    <entry key="글:콘텐츠:복원하시겠습니까">복원하시겠습니까?</entry>
+    <entry key="글:콘텐츠:복원되었습니다">복원되었습니다</entry>
+    <entry key="글:콘텐츠:변경내역이없습니다">변경내역이 없습니다</entry>
+    <entry key="글:콘텐츠:분">분</entry>
+    <entry key="글:콘텐츠:초">초</entry>
+    <entry key="글:콘텐츠:로그">로그</entry>
+    <entry key="글:콘텐츠:시작">시작</entry>
+    <entry key="글:콘텐츠:데이터">데이터</entry>
+    <entry key="글:콘텐츠:종료">종료</entry>
+    <entry key="글:콘텐츠:초기화되었습니다">초기화 되었습니다</entry>
+    <entry key="글:콘텐츠:초기화되지않았습니다">초기화되지 않았습니다</entry>
+    <entry key="글:콘텐츠:정상종료되었습니다">정상종료 되었습니다</entry>
+    <entry key="글:콘텐츠:종료되지않았습니다">종료되지 않았습니다</entry>
+    <entry key="글:콘텐츠:학습이력정보가정상적으로처리되었습니다">학습이력정보가 정상적으로 처리 되었습니다</entry>
+    <entry key="글:콘텐츠:학습이력정보가정상적으로처리되지않았습니다">학습이력정보가 정상적으로 처리되지 않았습니다</entry>
+    <entry key="글:콘텐츠:정보입력">정보입력</entry>
+    <entry key="글:콘텐츠:동영상URL">동영상URL</entry>
+    <entry key="글:콘텐츠:TAG">TAG</entry>
+    <entry key="글:콘텐츠:데이터형식이정확하지않아오류가발생하였습니다">데이터 형식이 정확하지 않아 오류가 발생하였습니다</entry>
+    <entry key="글:콘텐츠:완료">완료</entry>
+    <entry key="글:콘텐츠:미완료">미완료</entry>
+    <entry key="글:콘텐츠:관리자의미리보기이력입니다">관리자의 미리보기 이력입니다</entry>
+    <entry key="글:콘텐츠:표준">표준</entry>
+    <entry key="글:콘텐츠:비표준">비표준</entry>
+    <entry key="글:콘텐츠:학습완료기준설명1">학습완료기준의 값이 1.0보다 작으면 학습자의 진도율(progress_measure)을 비교하여 학습완료 여부가 결정됩니다. 진도율은 콘텐츠 내에서 스크립트로 셋팅을 하셔야 합니다</entry>
+    <entry key="글:콘텐츠:학습완료기준설명2">학습완료기준의 값이 1.0보다 크면 학습자의 학습누적시간(session_time)을 비교하여 학습완료 여부가 결정됩니다. 학습누적시간은 자동으로 계산됩니다</entry>
+    <entry key="글:콘텐츠:학습완료기준설명3">학습완료기준의 값이 없거나 0이면 학습자의 학습량에 관계없이 학습완료처리가 됩니다</entry>
+    <entry key="글:콘텐츠:회">회</entry>
+    <entry key="글:콘텐츠:해당차시는사용중이기때문에삭제할수없습니다">해당 차시는 사용중이기 때문에 삭제할 수 없습니다</entry>
+    <entry key="글:콘텐츠:해당주차는사용중이기때문에삭제할수없습니다">해당 주차는 사용중이기 때문에 삭제할 수 없습니다</entry>
+    <entry key="글:콘텐츠:분류선택">분류선택</entry>
+    <entry key="글:콘텐츠:일일진도율">일일진도율</entry>
+    <entry key="글:콘텐츠:자동">자동</entry>
+    <entry key="글:콘텐츠:준비중인강좌입니다">준비중인강좌입니다</entry>
+    <entry key="글:콘텐츠:매핑">매핑</entry>
+    <entry key="글:콘텐츠:동영상URL도움말"><![CDATA[
+mms://주소/VOD/sample.wmv, http://주소/VOD/sample.wmv <br> 등과 같이 동영상의 url을 입력합니다
+	]]></entry>
+    <entry key="글:콘텐츠:TAG도움말"><![CDATA[
+다음과 같이 object, embed 등의 태그를 이용한 형식으로 입력합니다<br> 
+&lt;object id="videoPlay" class="media" classid="clsid:6BF52A52-394A-11d3-B153-00C04F79FAA6" type="application/x-oleobject" width="450" height="400"><br> 
+	&nbsp;&nbsp;&nbsp;&lt;param name="url" value="mms://주소/VOD/sample.wmv"><br>  
+	&nbsp;&nbsp;&nbsp;&lt;param name="uiMode" value="full"><br>  
+	&nbsp;&nbsp;&nbsp;&lt;embed width="450" height="400" url="mms://주소/VOD/sample.wmv" type="application/x-ms-wmp" showcontrols="false" uimode="full" wmode="transparent"><br>
+&lt;/object>
+	]]></entry>
+    <entry key="글:콘텐츠:유투브">유투브</entry>
+    <entry key="글:콘텐츠:검색키워드">검색키워드</entry>
+    <entry key="글:콘텐츠:이름을입력후Enter키를누르십시오">이름을 입력 후 Enter키를 누르십시오</entry>
+    <entry key="글:콘텐츠:콘텐츠소유자변경">콘텐츠소유자 변경</entry>
+    <entry key="글:콘텐츠:변경하고자하는콘텐츠를선택하셨습니다">변경 하고자 하는 콘텐츠를 선택하셨습니다</entry>
+    <entry key="글:콘텐츠:아래에새로운콘텐츠소유자를입력하시기바랍니다">아래에 새로운 콘텐츠 소유자를 입력하시기 바랍니다</entry>
+    <entry key="글:콘텐츠:콘텐츠일괄매핑">콘텐츠 일괄매핑</entry>
+    <entry key="글:콘텐츠:주차매핑">주차매핑</entry>
+    <entry key="글:콘텐츠:리소스를다운로드하시겠습니까">리소스를 다운로드 하시겠습니까?</entry>
+    <entry key="글:콘텐츠:진도율은100%이하로등록가능합니다">진도율은 100% 이하로 등록 가능합니다.</entry>
+    <entry key="글:콘텐츠:유효하지않은데이터입니다">유효하지 않은 데이터입니다.</entry>
+    
+    <entry key="버튼:콘텐츠:차시추가">차시추가</entry>
+    <entry key="버튼:콘텐츠:주차추가">주차추가</entry>
+	<entry key="버튼:콘텐츠:리소스다운로드">리소스다운로드</entry>
+    <entry key="버튼:콘텐츠:강추가">강추가</entry>
+    <entry key="버튼:콘텐츠:교시추가">교시추가</entry>
+    <entry key="버튼:콘텐츠:순서저장">순서저장</entry>
+    <entry key="버튼:콘텐츠:복원">복원</entry>
+    <entry key="버튼:콘텐츠:차시관리">차시관리</entry>
+    <entry key="버튼:콘텐츠:주차관리">주차관리</entry>
+    <entry key="버튼:콘텐츠:학습자선택">학습자선택</entry>
+    <entry key="버튼:콘텐츠:학습종료">학습종료</entry>
+    <entry key="버튼:콘텐츠:로그지우기">로그지우기</entry>
+    
+</properties>

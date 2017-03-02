@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.univ.mapper.UnivCourseMasterMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseMasterVO">
+    <selectKey resultType="Long" keyProperty="courseMasterSeq" order="AFTER">
+SELECT @@IDENTITY
+    </selectKey>
+/* UnivCourseMasterMapper.insert */
+INSERT INTO cs_course_master 
+       ( 
+           cs_category_organization_seq,
+           cs_course_title,
+           cs_introduction,
+           cs_goal,
+           cs_use_count,
+           cs_mig_course_master_seq,
+           cs_complete_division_cd,
+           cs_course_status_cd,
+           cs_mig_lasttime,
+           cs_delete_yn,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+    SELECT #{categoryOrganizationSeq, jdbcType=NUMERIC} ,
+           #{courseTitle, jdbcType=VARCHAR} ,
+           #{introduction, jdbcType=VARCHAR} ,
+           #{goal, jdbcType=VARCHAR} ,
+           0,
+           #{migCourseMasterSeq, jdbcType=VARCHAR} ,
+           #{completeDivisionCd, jdbcType=VARCHAR} ,
+           #{courseStatusCd, jdbcType=VARCHAR} ,
+           #{migLastTime, jdbcType=VARCHAR} ,
+           'N',
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+    </insert>
+
+    <update id="update" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseMasterVO">
+/* UnivCourseMasterMapper.update */
+UPDATE cs_course_master 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC}
+       ,cs_upd_dtime = dbo.FN_NOW_TO_CHAR()
+       ,cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+        <if test='courseTitle != null'>
+       ,cs_course_title = #{courseTitle, jdbcType=VARCHAR} 
+        </if>
+        <if test='introduction != null'>
+       ,cs_introduction = #{introduction, jdbcType=VARCHAR}
+        </if>
+        <if test='goal != null'>
+       ,cs_goal = #{goal, jdbcType=VARCHAR}
+        </if>
+        <if test='useCount != null'>
+       ,cs_use_count = #{useCount, jdbcType=NUMERIC}
+        </if>
+        <if test='courseStatusCd != null'>
+        ,cs_course_status_cd = #{courseStatusCd, jdbcType=VARCHAR}
+        </if>
+        <if test='migLastTime != null'>
+        ,cs_mig_lasttime  = #{migLastTime, jdbcType=VARCHAR}
+        </if>
+ WHERE cs_course_master_seq = #{courseMasterSeq} 
+   AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="updateUseCount" parameterType="Long">
+/* UnivCourseMasterMapper.updateUseCount */
+UPDATE cs_course_master 
+   SET cs_use_count = 
+       (SELECT COUNT(*) 
+         FROM cs_course_active 
+        WHERE cs_course_master_seq = #{courseMasterSeq, jdbcType=NUMERIC} 
+          AND cs_delete_yn = 'N' 
+       ) 
+ WHERE cs_course_master_seq = #{courseMasterSeq} 
+   AND cs_delete_yn = 'N'  
+    </update>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseMasterVO">
+/* UnivCourseMasterMapper.delete */
+UPDATE cs_course_master 
+   SET cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y'  
+ WHERE cs_course_master_seq = #{courseMasterSeq} 
+   AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseMasterRS">
+		<result column="cs_course_master_seq"       property="courseMaster.courseMasterSeq"/>
+		<result column="cs_category_organization_seq" property="courseMaster.categoryOrganizationSeq"/>
+		<result column="cs_course_title"            property="courseMaster.courseTitle"/>
+		<result column="cs_introduction"            property="courseMaster.introduction" />
+        <result column="cs_goal"                    property="courseMaster.goal"/>
+        <result column="cs_use_count"               property="courseMaster.useCount"/>
+        <result column="cs_mig_course_master_seq"   property="courseMaster.migCourseMasterSeq"/>
+        <result column="cs_complete_division_cd"    property="courseMaster.completeDivisionCd"/>
+        <result column="cs_course_status_cd"        property="courseMaster.courseStatusCd"/>
+        <result column="cs_mig_lasttime"            property="courseMaster.migLastTime"/>
+		<result column="cs_delete_yn"               property="courseMaster.deleteYn"/>
+		<result column="cs_reg_member_seq "         property="courseMaster.regMemberSeq"/>
+		<result column="cs_reg_dtime"               property="courseMaster.regDtime"/>
+		<result column="cs_reg_ip"                  property="courseMaster.regIp"/>
+		<result column="cs_upd_member_seq"          property="courseMaster.updMemberSeq"/>
+		<result column="cs_upd_dtime"               property="courseMaster.updDtime"/>
+		<result column="cs_upd_ip"                  property="courseMaster.updIp"/>
+        <result column="cs_category_string"         property="category.categoryString"/>
+        <result column="cs_category_type_cd"        property="category.categoryTypeCd"/>
+    </resultMap>
+    <select id="getDetail" parameterType="Long" resultMap="detailResultMap">
+/* UnivCourseMasterMapper.getDetail */
+SELECT cm.cs_course_master_seq,
+       cm.cs_category_organization_seq,
+       cm.cs_course_title,
+       cm.cs_introduction,
+       cm.cs_goal,
+       cm.cs_use_count,
+       cm.cs_mig_course_master_seq,
+       cm.cs_complete_division_cd,
+       cm.cs_course_status_cd,
+       cm.cs_mig_lasttime,
+       cm.cs_delete_yn,
+       cm.cs_reg_member_seq ,
+       cm.cs_reg_dtime ,
+       cm.cs_reg_ip ,
+       cm.cs_upd_member_seq ,
+       cm.cs_upd_dtime ,
+       cm.cs_upd_ip,
+       c.cs_category_string,
+       c.cs_category_type_cd
+  FROM cs_course_master cm
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+   AND c.cs_category_seq = cm.cs_category_organization_seq
+ WHERE cm.cs_course_master_seq = #{courseMasterSeq}
+   AND cm.cs_delete_yn = 'N'
+    </select>
+
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseMasterRS">
+		<result column="cs_course_master_seq"       property="courseMaster.courseMasterSeq"/>
+        <result column="cs_category_organization_seq" property="courseMaster.categoryOrganizationSeq"/>
+        <result column="cs_course_title"            property="courseMaster.courseTitle"/>
+        <result column="cs_use_count"               property="courseMaster.useCount"/>
+        <result column="cs_mig_course_master_seq"   property="courseMaster.migCourseMasterSeq"/>
+        <result column="cs_complete_division_cd"    property="courseMaster.completeDivisionCd"/>
+        <result column="cs_course_status_cd"        property="courseMaster.courseStatusCd"/>
+        <result column="cs_mig_lasttime"            property="courseMaster.migLastTime"/>
+        <result column="cs_delete_yn"               property="courseMaster.deleteYn"/>
+        <result column="cs_reg_member_seq "         property="courseMaster.regMemberSeq"/>
+        <result column="cs_reg_dtime"               property="courseMaster.regDtime"/>
+        <result column="cs_reg_ip"                  property="courseMaster.regIp"/>
+        <result column="cs_upd_member_seq"          property="courseMaster.updMemberSeq"/>
+        <result column="cs_upd_dtime"               property="courseMaster.updDtime"/>
+        <result column="cs_upd_ip"                  property="courseMaster.updIp"/>
+        <result column="cs_category_string"         property="category.categoryString"/>
+        <result column="cs_category_type_cd"        property="category.categoryTypeCd"/>
+    </resultMap>
+    <select id="getList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseMasterCondition" resultMap="listResultMap">
+/* UnivCourseMasterMapper.getList */
+        <if test='currentPage != 0'>
+SELECT Z.* FROM (SELECT Row_Number() OVER (
+        <choose>
+            <when test='orderby == 1'>ORDER BY cs_reg_dtime ASC</when>
+            <when test='orderby == -1'>ORDER BY cs_reg_dtime DESC</when>
+            <when test='orderby == 2'>ORDER BY cs_course_title ASC</when>
+            <when test='orderby == -2'>ORDER BY cs_course_title DESC</when>
+            <when test='orderby == 3'>ORDER BY cs_complete_division_cd ASC</when>
+            <when test='orderby == -3'>ORDER BY cs_complete_division_cd DESC</when>
+            <when test='orderby == 4'>ORDER BY cs_course_status_cd ASC</when>
+            <when test='orderby == -4'>ORDER BY cs_course_status_cd DESC</when>
+            <when test='orderby == 5'>ORDER BY cs_use_count ASC</when>
+            <when test='orderby == -5'>ORDER BY cs_use_count DESC</when>
+            <otherwise>ORDER BY cs_reg_dtime DESC</otherwise>
+        </choose>
+) AS rownumber, * FROM (
+        </if>
+SELECT cm.cs_course_master_seq,
+       cm.cs_category_organization_seq,
+       cm.cs_course_title,
+       cm.cs_use_count,
+       cm.cs_mig_course_master_seq,
+       cm.cs_complete_division_cd,
+       cm.cs_course_status_cd,
+       cm.cs_mig_lasttime,
+       cm.cs_delete_yn,
+       cm.cs_reg_member_seq ,
+       cm.cs_reg_dtime ,
+       cm.cs_reg_ip ,
+       cm.cs_upd_member_seq ,
+       cm.cs_upd_dtime ,
+       cm.cs_upd_ip,
+       c.cs_category_string ,
+       c.cs_category_type_cd
+  FROM cs_course_master cm
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+       <if test='srchCategoryTypeCd != null and !srchCategoryTypeCd.equals("")'>
+   AND c.cs_category_type_cd = #{srchCategoryTypeCd}     
+       </if>
+       <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   AND c.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+       </if>
+   AND c.cs_category_seq = cm.cs_category_organization_seq
+ WHERE cm.cs_delete_yn = 'N'
+        <if test='srchCompleteDivisionCd != null and !srchCompleteDivisionCd.equals("")'>
+   AND cm.cs_complete_division_cd = #{srchCompleteDivisionCd}
+        </if>
+        <if test='srchCourseStatusCd != null and !srchCourseStatusCd.equals("")'>
+   AND cm.cs_course_status_cd = #{srchCourseStatusCd}
+        </if>
+        <if test='srchCategoryOrganizationSeq != null and !srchCategoryOrganizationSeq.equals("")'>
+   AND cm.cs_category_organization_seq = #{srchCategoryOrganizationSeq}
+        </if>
+        <if test='srchNotInCategoryTypeCd != null and !srchNotInCategoryTypeCd.equals("")'>
+   AND c.cs_category_type_cd != #{srchNotInCategoryTypeCd}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+   AND cm.cs_course_title LIKE '%' + #{srchWordDB} + '%'
+        </if>
+        <if test='currentPage != 0'>
+) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countList" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseMasterCondition" resultType="int">
+/* UnivCourseMasterMapper.countList */
+SELECT COUNT(*) 
+  FROM cs_course_master cm
+ INNER JOIN cs_category c
+    ON c.cs_delete_yn = 'N'
+       <if test='srchCategoryTypeCd != null and !srchCategoryTypeCd.equals("")'>
+   AND c.cs_category_type_cd = #{srchCategoryTypeCd}     
+       </if>
+       <if test='srchCategoryName != null and !srchCategoryName.equals("")'>
+   AND c.cs_category_string LIKE '%' + #{srchCategoryNameDB} + '%'
+       </if>
+   AND c.cs_category_seq = cm.cs_category_organization_seq
+ WHERE cm.cs_delete_yn = 'N'
+        <if test='srchCompleteDivisionCd != null and !srchCompleteDivisionCd.equals("")'>
+   AND cm.cs_complete_division_cd = #{srchCompleteDivisionCd}
+        </if>
+        <if test='srchCourseStatusCd != null and !srchCourseStatusCd.equals("")'>
+   AND cm.cs_course_status_cd = #{srchCourseStatusCd}
+        </if>
+        <if test='srchCategoryOrganizationSeq != null and !srchCategoryOrganizationSeq.equals("")'>
+   AND cm.cs_category_organization_seq = #{srchCategoryOrganizationSeq}
+        </if>
+        <if test='srchNotInCategoryTypeCd != null and !srchNotInCategoryTypeCd.equals("")'>
+   AND c.cs_category_type_cd != #{srchNotInCategoryTypeCd}
+        </if>
+        <if test='srchWord != null and !srchWord.equals("")'>
+   AND cm.cs_course_title LIKE '%' + #{srchWordDB} + '%'
+        </if>
+    </select>
+    
+    <select id="getUseCount" parameterType="Long" resultType="Long">
+/* UnivCourseMasterMapper.getUseCount */
+SELECT cs_use_count
+  FROM cs_course_master 
+ WHERE cs_course_master_seq = #{courseMasterSeq}
+   AND cs_delete_yn = 'N'
+    </select>
+</mapper>

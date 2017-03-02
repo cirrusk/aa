@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<decorators defaultdir="/WEB-INF/view/decorator">
+
+    <excludes>
+        <pattern>/**/*.js</pattern>
+        <pattern>/**/*.css</pattern>
+        <pattern>/**/*.swf</pattern>
+        <pattern>/**/*.cab</pattern>
+        <pattern>/**/*.gif</pattern>
+        <pattern>/**/*.jpg</pattern>
+        <pattern>/**/*.png</pattern>
+        <pattern>/**/*.html</pattern>
+        <pattern>/**/response*</pattern>
+        <pattern>/**/json.*</pattern>
+    </excludes>
+
+    <decorator name="script" page="script.jsp" >
+        <pattern>/**/insert*</pattern>
+        <pattern>/**/update*</pattern>
+        <pattern>/**/delete*</pattern>
+        <pattern>/**/save*</pattern>
+    </decorator>
+    
+    <decorator name="ajax" page="ajax.jsp">
+        <pattern>/**/ajax.*</pattern>
+    </decorator>
+
+    <decorator name="iframe" page="iframe.jsp">
+        <pattern>/**/iframe.*</pattern>
+    </decorator>
+
+    <decorator name="popup" page="popup.jsp">
+        <pattern>/**/popup.*</pattern>
+    </decorator>
+
+    <decorator name="default" page="default.jsp">
+        <pattern>*</pattern>
+    </decorator>
+    
+    <decorator name="defaultOcw" page="defaultOcw.jsp">
+        <pattern>/**/ocw/*</pattern>
+    </decorator>
+
+    <decorator name="blank" page="blank.jsp" />
+
+    <decorator name="learning" page="learning.jsp" />
+
+    <decorator name="nodesign" page="nodesign.jsp" />
+
+    <decorator name="main" page="main.jsp" />
+
+    <decorator name="classroom" page="classroom.jsp" />
+
+    <decorator name="guideApi" page="guideApi.jsp"/>
+    <decorator name="classroom-layer" page="classroomLayer.jsp" />
+    <decorator name="classroom-iframe" page="classroomIframe.jsp" />
+    <decorator name="classroom-popup" page="classroomPopup.jsp" />
+
+</decorators>

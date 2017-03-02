@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.commoncode.service.impl.ManageCodeMapper">
+
+	<select id="getPageCntList" parameterType="java.util.Map" resultType="egovMap">
+        /* CommonCodeSQL.xml  getPageCntList  */
+        SELECT   REPLACE(STR(A.MINOR_CD),' ','') AS MINOR_CD
+               , A.CD_NAME
+          FROM (
+            SELECT 30 AS MINOR_CD, '30' AS CD_NAME
+            UNION
+            SELECT 50 AS MINOR_CD, '50' AS CD_NAME
+            UNION
+            SELECT 100 AS MINOR_CD, '100' AS CD_NAME
+            UNION
+            SELECT 200 AS MINOR_CD, '200' AS CD_NAME
+            UNION
+            SELECT 300 AS MINOR_CD, '300' AS CD_NAME
+            UNION
+            SELECT 500 AS MINOR_CD, '500' AS CD_NAME ) A
+         ORDER BY A.MINOR_CD ASC
+	</select>
+	
+	<select id="getTimeList" parameterType="java.util.Map" resultType="egovMap">
+		/* CommonCodeSQL.xml  getTimeList  */
+        SELECT   REPLACE(STR(A.MINOR_CD),' ','') AS MINOR_CD
+               , A.CD_NAME
+          FROM ( SELECT 10 AS MINOR_CD, '10' AS CD_NAME UNION
+	             SELECT 11 AS MINOR_CD, '11' AS CD_NAME UNION
+	             SELECT 12 AS MINOR_CD, '12' AS CD_NAME UNION
+	             SELECT 13 AS MINOR_CD, '13' AS CD_NAME UNION
+	             SELECT 14 AS MINOR_CD, '14' AS CD_NAME UNION
+	             SELECT 15 AS MINOR_CD, '15' AS CD_NAME UNION
+	             SELECT 16 AS MINOR_CD, '16' AS CD_NAME UNION
+	             SELECT 17 AS MINOR_CD, '17' AS CD_NAME UNION
+	             SELECT 18 AS MINOR_CD, '18' AS CD_NAME UNION
+	             SELECT 19 AS MINOR_CD, '19' AS CD_NAME UNION
+	             SELECT 20 AS MINOR_CD, '20' AS CD_NAME UNION
+	             SELECT 21 AS MINOR_CD, '21' AS CD_NAME UNION
+	             SELECT 22 AS MINOR_CD, '22' AS CD_NAME UNION
+	             SELECT 23 AS MINOR_CD, '23' AS CD_NAME UNION
+	             SELECT 24 AS MINOR_CD, '24' AS CD_NAME ) A
+      ORDER BY   A.MINOR_CD ASC
+	</select>
+	
+	<select id="getCodeList" parameterType="java.util.Map" resultType="egovMap">
+		SELECT   COMMONCODESEQ AS MINOR_CD
+		       , CODENAME AS CD_NAME
+		  FROM DBO.COMMONCODE
+		 WHERE CODEMASTERSEQ = #{majorCd}
+		   <if test="except != null and !except.equalsIgnoreCase('') ">
+		   AND COMMONCODESEQ ${except}
+		   </if>
+		   AND USEYN='Y'
+	</select>
+	
+	<insert id="insertSmsMailQueue" parameterType="reqBox">
+		SET XACT_ABORT ON
+		INSERT INTO KRWD308.ums.dbo.SMS_IBO_NO_MAILQUEUE
+               ( TO_ID
+               , CONTENT
+               , TO_NAME
+               , TO_PHONE
+               , FROM_NAME
+               , FROM_PHONE
+               , SMS_STATUS
+               , REG_DATE
+               , SMS_TYPE
+               , DEPT_CODE
+               , SVC_CODE
+               , SMS_FLAG
+               , SVC_DT_CODE)
+        VALUES ( #{toId}
+               , #{content}
+               , #{toName}
+               , #{toPhone}
+               , '한국암웨이'
+               , '1588-0080'
+               , 1
+               , GETDATE()
+               , 4
+               , '5'
+               , '44'
+               , 'S' 
+               , '3')
+       SET XACT_ABORT OFF
+	</insert>
+
+    <insert id="memberDropUpdate" parameterType="java.util.Map">
+        EXEC DBO.SP_MEMBERDROP_MAPPING
+    </insert>
+
+    <insert id="selectCurrentAdd" parameterType="java.util.Map">
+        <selectKey resultType="integer" keyProperty="logseq" order="BEFORE">
+            SELECT ISNULL(MAX(SEQ),0)+1 FROM TB_AI_PRIVATE_LOG
+        </selectKey>
+        INSERT INTO TB_AI_PRIVATE_LOG (
+              SEQ
+            , INFONUM
+            , USERID
+            , MENUCODE
+            , PAGEURL
+            , LOGKIND
+            , LOGDETAIL
+            , REGDT
+            , CIP
+        ) VALUES (
+              #{logseq}
+            , 'AI'
+            , #{adno}
+            , #{menucode}
+            , #{pageurl}
+            , #{logkind}
+            , #{logdetail}
+            , Getdate()
+            , #{conip}
+        )
+    </insert>
+
+</mapper>

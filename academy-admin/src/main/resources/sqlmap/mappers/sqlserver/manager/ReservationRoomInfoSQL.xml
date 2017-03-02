@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.roomInfo.service.impl.RoomInfoMapper">
+
+	<!-- 해당 pp 시설타입 목록 조회 -->
+	<select id="roomTypeListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT DISTINCT
+			DATEPART(YY, GETDATE()) AS TOYEAR,
+			DATEPART(MM, GETDATE()) AS TOMONTH,
+			E.ROOMSEQ,
+			E.ROOMNAME,
+			STUFF(( SELECT ',' + C.TYPENAME
+				FROM RSVROOMINFO A
+ 					INNER JOIN RSVROOMTYPEMAP B
+					ON(A.STATUSCODE = 'B01' 
+						AND A.ROOMSEQ = B.ROOMSEQ)
+					INNER JOIN RSVTYPEINFO C
+					ON(B.TYPESEQ = C.TYPESEQ)
+				WHERE A.ROOMSEQ = E.ROOMSEQ
+				GROUP BY A.ROOMSEQ, C.TYPENAME
+				ORDER BY A.ROOMSEQ
+				FOR XML PATH('')
+			), 1, 1, '') AS TYPENAME
+		FROM
+			RSVPPINFO D
+			INNER JOIN RSVROOMINFO E
+			ON(D.PPSEQ = E.PPSEQ
+				AND D.PPSEQ = #{ppSeq}
+				AND E.STATUSCODE = 'B01')
+			INNER JOIN RSVROOMTYPEMAP F
+			ON(E.ROOMSEQ = F.ROOMSEQ)
+			INNER JOIN RSVTYPEINFO G
+			ON(F.TYPESEQ = G.TYPESEQ)
+		WHERE 1=1
+			<if test='typeSeq != null and !typeSeq.equals("")'>
+				AND G.TYPESEQ = #{typeSeq}
+			</if>
+	</select>
+	
+	<!-- 해당 pp 해당 시설타입 년 월 조회 -->
+	<select id="roomInfoCalendarAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			  CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')), 112) AS YMD
+			, DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS DAY
+			, DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS WEEKDAY
+		FROM
+			MASTER..SPT_VALUES
+		WHERE 
+			TYPE = 'P' 
+			AND NUMBER &gt;= 0
+			AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{year}, #{month}, '01')))
+	</select>
+	
+	<!-- 해당 pp 해당 시설타입 년 월 별 예약 현황 조회 -->
+	<select id="roomInfoListAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT DISTINCT
+			A.YMD,
+			A.DAY,
+			A.WEEKDAY,
+			B.PPSEQ,
+			B.ROOMSEQ,
+			B.RSVSESSIONSEQ,
+			B.ORDERNUMBER,
+			B.SETTYPECODE,
+			B.WORKTYPECODE,
+			B.STARTDATE,
+			B.ENDDATE,
+			CASE
+				WHEN A.YMD BETWEEN B.STARTDATE AND B.ENDDATE THEN B.SESSIONTIME
+				ELSE NULL
+			END AS SESSIONTIME,
+			B.SETDATE,
+			B.SETWEEK,
+			C.RESERVATIONDATE,
+			C.ADMINFIRSTCODE,
+			C.STANDBYNUMBER,
+			0 AS TEMP
+		FROM
+				(SELECT
+					  CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')), 112) AS YMD
+					, DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS DAY
+					, DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS WEEKDAY
+				FROM
+					MASTER..SPT_VALUES
+				WHERE 
+					TYPE = 'P' 
+					AND NUMBER &gt;= 0
+					AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{year}, #{month}, '01')))) A
+			LEFT OUTER JOIN 
+				(SELECT
+					A.PPSEQ,
+					A.ROOMSEQ,
+					B.RSVSESSIONSEQ,
+					B.ORDERNUMBER,
+					A.STARTDATE,
+					A.ENDDATE,
+					B.SETTYPECODE,
+					B.WORKTYPECODE,
+					CONCAT('[', B.SESSIONNAME, '] ', SUBSTRING(B.STARTDATETIME, 1, 2), ':', SUBSTRING(B.STARTDATETIME, 3, 2), '~', SUBSTRING(B.ENDDATETIME, 1, 2), ':', SUBSTRING(B.ENDDATETIME, 3, 2)) AS SESSIONTIME,
+					B.SETDATE,
+					CASE B.SETWEEK
+						WHEN 'W01' THEN 1
+						WHEN 'W02' THEN 2
+						WHEN 'W03' THEN 3
+						WHEN 'W04' THEN 4
+						WHEN 'W05' THEN 5
+						WHEN 'W06' THEN 6
+						WHEN 'W07' THEN 7
+						ELSE NULL
+					END AS SETWEEK
+				FROM
+					RSVROOMINFO A
+					INNER JOIN RSVROOMSESSIONINFO B
+					ON(A.ROOMSEQ = B.ROOMSEQ
+						AND A.PPSEQ = #{ppSeq}
+						AND A.ROOMSEQ = #{roomSeq}
+						AND B.STATUSCODE = 'B01')) B
+			ON(A.YMD = B.SETDATE
+				OR A.WEEKDAY = B.SETWEEK)
+			LEFT OUTER JOIN (
+				SELECT
+					  RESERVATIONDATE
+					, RSVSESSIONSEQ
+					, MAX(ADMINFIRSTCODE) AS ADMINFIRSTCODE
+					, MAX(STANDBYNUMBER) AS STANDBYNUMBER
+				FROM
+					RSVRESERVATIONINFO
+				WHERE
+					RSVTYPECODE = 'R01'
+					AND CANCELCODE = 'B02'
+					AND ROOMSEQ = #{roomSeq}
+				GROUP BY RESERVATIONDATE, RSVSESSIONSEQ) C
+			ON(A.YMD = C.RESERVATIONDATE
+				AND B.RSVSESSIONSEQ = C.RSVSESSIONSEQ)
+      UNION
+		SELECT DISTINCT
+			A.YMD,
+			A.DAY,
+			A.WEEKDAY,
+			B.PPSEQ,
+			B.ROOMSEQ,
+			B.RSVSESSIONSEQ,
+			B.ORDERNUMBER,
+			B.SETTYPECODE,
+			B.WORKTYPECODE,
+			B.STARTDATE,
+			B.ENDDATE,
+			CASE
+				WHEN A.YMD BETWEEN B.STARTDATE AND B.ENDDATE THEN B.SESSIONTIME
+				ELSE NULL
+			END AS SESSIONTIME,
+			B.SETDATE,
+			B.SETWEEK,
+			C.RESERVATIONDATE,
+			C.ADMINFIRSTCODE,
+			C.STANDBYNUMBER,
+			1 AS TEMP
+		FROM
+				(SELECT
+					  CONVERT(VARCHAR, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')), 112) AS YMD
+					, DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) AS DAY
+					, CASE
+						WHEN DATEPART(DD, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) &gt; 
+								DATEPART(DD, DATEADD(MM, 1, CONVERT(DATETIME, CONCAT(#{year}, #{month}, '01')))-8) 
+							AND DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01'))) = 1
+						THEN 8
+						ELSE DATEPART(DW, DATEADD(D, NUMBER, CONCAT(#{year}, #{month}, '01')))
+					END AS WEEKDAY
+				FROM
+					MASTER..SPT_VALUES
+				WHERE 
+					TYPE = 'P' 
+					AND NUMBER &gt;= 0
+					AND NUMBER &lt; DATEPART(DD, DATEADD(DD, NUMBER, CONCAT(#{year}, #{month}, '01')))) A
+			LEFT OUTER JOIN 
+				(SELECT
+					A.PPSEQ,
+					A.ROOMSEQ,
+					B.RSVSESSIONSEQ,
+					B.ORDERNUMBER,
+					A.STARTDATE,
+					A.ENDDATE,
+					B.SETTYPECODE,
+					B.WORKTYPECODE,
+					CONCAT('[', B.SESSIONNAME, '] ', SUBSTRING(B.STARTDATETIME, 1, 2), ':', SUBSTRING(B.STARTDATETIME, 3, 2), '~', SUBSTRING(B.ENDDATETIME, 1, 2), ':', SUBSTRING(B.ENDDATETIME, 3, 2)) AS SESSIONTIME,
+					B.SETDATE,
+					CASE B.SETWEEK
+						WHEN 'W01' THEN 1
+						WHEN 'W02' THEN 2
+						WHEN 'W03' THEN 3
+						WHEN 'W04' THEN 4
+						WHEN 'W05' THEN 5
+						WHEN 'W06' THEN 6
+						WHEN 'W07' THEN 7
+						WHEN 'W08' THEN 8
+						ELSE NULL
+					END AS SETWEEK
+				FROM
+					RSVROOMINFO A
+					INNER JOIN RSVROOMSESSIONINFO B
+					ON(A.ROOMSEQ = B.ROOMSEQ
+						AND A.PPSEQ = #{ppSeq}
+						AND A.ROOMSEQ = #{roomSeq}
+						AND B.STATUSCODE = 'B01')) B
+			ON(A.YMD = B.SETDATE
+				OR A.WEEKDAY = B.SETWEEK)
+			LEFT OUTER JOIN (
+				SELECT
+					  RESERVATIONDATE
+					, RSVSESSIONSEQ
+					, MAX(ADMINFIRSTCODE) AS ADMINFIRSTCODE
+					, MAX(STANDBYNUMBER) AS STANDBYNUMBER
+				FROM
+					RSVRESERVATIONINFO
+				WHERE
+					RSVTYPECODE = 'R01'
+					AND CANCELCODE = 'B02'
+					AND ROOMSEQ = #{roomSeq}
+				GROUP BY RESERVATIONDATE, RSVSESSIONSEQ) C
+			ON(A.YMD = C.RESERVATIONDATE
+				AND B.RSVSESSIONSEQ = C.RSVSESSIONSEQ)
+      WHERE A.WEEKDAY = 8
+		ORDER BY A.YMD ASC, A.WEEKDAY DESC, B.SETTYPECODE DESC, B.WORKTYPECODE DESC, B.ORDERNUMBER ASC, B.RSVSESSIONSEQ, C.STANDBYNUMBER DESC
+	</select>
+	
+	<!-- 시설 예약현황 운영자 예약 정보 조회 -->
+	<select id="roomInfoAdminReservationSelectAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT DISTINCT
+			A.PPSEQ,
+			A.PPNAME,
+			STUFF(( SELECT ',' + H.TYPENAME
+				FROM RSVROOMINFO F
+ 					INNER JOIN RSVROOMTYPEMAP G
+					ON(F.STATUSCODE = 'B01' 
+						AND F.ROOMSEQ = G.ROOMSEQ)
+					INNER JOIN RSVTYPEINFO H
+					ON(G.TYPESEQ = H.TYPESEQ)
+				WHERE F.ROOMSEQ = B.ROOMSEQ
+				GROUP BY F.ROOMSEQ, H.TYPENAME
+				ORDER BY F.ROOMSEQ
+				FOR XML PATH('')
+			), 1, 1, '') AS TYPENAME,
+			B.ROOMSEQ,
+			B.ROOMNAME,
+			C.RSVSESSIONSEQ,
+			C.STARTDATETIME,
+			C.ENDDATETIME,
+			#{sessionDateTime} AS RESERVATIONDATE,
+			CASE C.SETWEEK
+				WHEN 'W01' THEN CONCAT(SUBSTRING(#{sessionDateTime}, 1, 4), '-', SUBSTRING(#{sessionDateTime}, 5, 2), '-', SUBSTRING(#{sessionDateTime}, 7, 2), '(일)')
+				WHEN 'W02' THEN CONCAT(SUBSTRING(#{sessionDateTime}, 1, 4), '-', SUBSTRING(#{sessionDateTime}, 5, 2), '-', SUBSTRING(#{sessionDateTime}, 7, 2), '(월)')
+				WHEN 'W03' THEN CONCAT(SUBSTRING(#{sessionDateTime}, 1, 4), '-', SUBSTRING(#{sessionDateTime}, 5, 2), '-', SUBSTRING(#{sessionDateTime}, 7, 2), '(화)')
+				WHEN 'W04' THEN CONCAT(SUBSTRING(#{sessionDateTime}, 1, 4), '-', SUBSTRING(#{sessionDateTime}, 5, 2), '-', SUBSTRING(#{sessionDateTime}, 7, 2), '(수)')
+				WHEN 'W05' THEN CONCAT(SUBSTRING(#{sessionDateTime}, 1, 4), '-', SUBSTRING(#{sessionDateTime}, 5, 2), '-', SUBSTRING(#{sessionDateTime}, 7, 2), '(목)')
+				WHEN 'W06' THEN CONCAT(SUBSTRING(#{sessionDateTime}, 1, 4), '-', SUBSTRING(#{sessionDateTime}, 5, 2), '-', SUBSTRING(#{sessionDateTime}, 7, 2), '(금)')
+				WHEN 'W07' THEN CONCAT(SUBSTRING(#{sessionDateTime}, 1, 4), '-', SUBSTRING(#{sessionDateTime}, 5, 2), '-', SUBSTRING(#{sessionDateTime}, 7, 2), '(토)')
+			END AS WEEKNAME,
+			CONCAT('[', C.SESSIONNAME, '] ', SUBSTRING(C.STARTDATETIME, 1, 2), ':', SUBSTRING(C.STARTDATETIME, 3, 2), '~', SUBSTRING(C.ENDDATETIME, 1, 2), ':', SUBSTRING(C.ENDDATETIME, 3, 2)) AS SESSIONTIME,
+			CONCAT((SELECT MANAGENAME FROM MANAGER WHERE ADNO = #{sessionAccount}), '(', #{sessionAccount}, ')') AS MANAGENAME
+		FROM 
+			RSVPPINFO A
+			INNER JOIN RSVROOMINFO B
+			ON(A.PPSEQ = B.PPSEQ)
+			INNER JOIN RSVROOMSESSIONINFO C
+			ON(B.ROOMSEQ = C.ROOMSEQ
+				AND C.RSVSESSIONSEQ = #{rsvSessionSeq})
+			INNER JOIN RSVROOMTYPEMAP D
+			ON(B.ROOMSEQ = D.ROOMSEQ)
+			INNER JOIN RSVTYPEINFO E
+			ON(D.TYPESEQ = E.TYPESEQ)
+	</select>
+	
+	<!-- 시설 예약현황 운영자 예약 -->
+	<insert id="roomInfoAdminReservationInsertAjax" parameterType="reqBox">
+		INSERT INTO RSVRESERVATIONINFO (
+			  ACCOUNT
+			, TYPESEQ
+			, STARTDATETIME
+			, ENDDATETIME
+			, STANDBYNUMBER
+			, COOKMASTERCODE
+			, NOSHOWCODE
+			, PARTNERTYPECODE
+			, RSVTYPECODE
+			, PARTNERID
+			, PURCHASEDATE
+			, PAYMENTSTATUSCODE
+			, PAYMENTAMOUNT
+			, PAYMENTDATE
+			, PAYMENTOPTIONCODE
+			, PAYMENTINTERNALCODE
+			, PPSEQ
+			, ROOMSEQ
+			, RESERVATIONDATE
+			, EXPSESSIONSEQ
+			, RSVSESSIONSEQ
+			, ADMINFIRSTCODE
+			, INSERTUSER
+			, INSERTDATE
+			, UPDATEUSER
+			, UPDATEDATE
+			, EXPSEQ
+			, ADMINFIRSTREASONCODE
+			, ADMINFIRSTREASON
+			, CANCELCODE
+			, CANCELDATETIME
+		) VALUES (
+			  #{sessionAccount}
+			, NULL
+			, #{startDateTime}
+			, #{endDateTime}
+			, NULL
+			, 'R02'
+			, 'R01'
+			, 'R01'
+			, 'R01'
+			, NULL
+			, GETDATE()
+			, 'P04'
+			, NULL
+			, NULL
+			, NULL
+			, NULL
+			, #{ppSeq}
+			, #{roomSeq}
+			, #{reservationDate}
+			, NULL
+			, #{rsvSessionSeq}
+			, 'R01'
+			, #{sessionAccount}
+			, GETDATE()
+			, NULL
+			, NULL
+			, NULL
+			, NULL
+			, #{adminfirstreason}
+			, 'B02'
+			, NULL
+		)
+	</insert>
+	
+	<!-- 시설 예약현황 운영자 예약 조회 -->
+	<select id="roomInfoAdminReservationCancelSelectAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			A.RSVSEQ
+			, CONCAT(SUBSTRING(A.RESERVATIONDATE, 1, 4), '-', SUBSTRING(A.RESERVATIONDATE, 5, 2), '-', SUBSTRING(A.RESERVATIONDATE, 7, 2),
+				CASE DATEPART(DW, CONVERT(CHAR(8), A.RESERVATIONDATE, 112))
+					WHEN 1 THEN '(일)'
+					WHEN 2 THEN '(월)'
+					WHEN 3 THEN '(화)'
+					WHEN 4 THEN '(수)'
+					WHEN 5 THEN '(목)'
+					WHEN 6 THEN '(금)'
+					WHEN 7 THEN '(토)'
+					ELSE NULL
+				END 
+			) AS RESERVATIONDATE
+			, B.SESSIONNAME
+			, CONCAT(SUBSTRING(B.STARTDATETIME, 1, 2), ':', SUBSTRING(B.STARTDATETIME, 3, 2), '~', SUBSTRING(B.ENDDATETIME, 1, 2), ':', SUBSTRING(B.ENDDATETIME, 3, 2)) AS SESSIONTIME
+			, A.ACCOUNT
+			, Format(A.PURCHASEDATE, N'yyyy-MM-dd HH:mm:ss') AS PURCHASEDATE
+		FROM
+			RSVRESERVATIONINFO A
+			INNER JOIN RSVROOMSESSIONINFO B
+			ON(A.RSVSESSIONSEQ = B.RSVSESSIONSEQ
+				AND A.CANCELCODE = 'B02'
+				AND A.ADMINFIRSTCODE = 'R01')
+		WHERE
+			A.PPSEQ = #{ppSeq}
+			AND A.ROOMSEQ = #{roomSeq}
+			AND A.RESERVATIONDATE 
+				BETWEEN CONVERT(CHAR(8), CONCAT(#{year}, #{month}, '01'), 112) 
+				AND CONVERT(CHAR(8), DATEADD(MONTH,1,CONVERT(DATETIME, CONCAT(#{year}, #{month}, '01')))-DAY(CONVERT(DATETIME, CONCAT(#{year}, #{month}, '01'))), 112)
+		ORDER BY A.RESERVATIONDATE ASC, B.ORDERNUMBER ASC
+	</select>
+	
+	<!-- 시설 예약현황 운영자 예약 취소 -->
+	<update id="roomInfoAdminReservationCancelUpdateAjax" parameterType="reqBox">
+		UPDATE RSVRESERVATIONINFO SET
+			  CANCELCODE = 'B01'
+			, CANCELDATETIME = GETDATE()
+			, UPDATEUSER = #{sessionAccount}
+			, UPDATEDATE = GETDATE()
+		WHERE RSVSEQ = #{rsvSeq}
+	</update>
+	
+	<!-- pp, 시설, 년, 월, 일 정보 조회 -->
+	<select id="roomInfoSessionSelectAjax" parameterType="reqBox" resultType="dataBox">
+		SELECT DISTINCT
+			A.PPSEQ,
+			C.PPNAME,
+			B.ROOMSEQ,
+			STUFF(( SELECT ',' + G.TYPENAME
+				FROM RSVROOMINFO E
+ 					INNER JOIN RSVROOMTYPEMAP F
+					ON(E.STATUSCODE = 'B01' 
+						AND E.ROOMSEQ = F.ROOMSEQ)
+					INNER JOIN RSVTYPEINFO G
+					ON(F.TYPESEQ = G.TYPESEQ)
+				WHERE E.ROOMSEQ = A.ROOMSEQ
+				GROUP BY E.ROOMSEQ, G.TYPENAME
+				ORDER BY E.ROOMSEQ
+				FOR XML PATH('')
+			), 1, 1, '') AS TYPENAME,
+			A.ROOMNAME,
+			#{year} AS YEAR,
+			#{month} AS MONTH,
+			#{day} AS DAY,
+   			CONCAT(#{year}, '-', #{month}, '-', #{day},
+   				CASE DATEPART(DW, CONCAT(#{year}, #{month}, #{day}))
+   					WHEN 1 THEN '(일)'
+   					WHEN 2 THEN '(월)'
+   					WHEN 3 THEN '(화)'
+   					WHEN 4 THEN '(수)'
+   					WHEN 5 THEN '(목)'
+   					WHEN 6 THEN '(금)'
+   					WHEN 7 THEN '(토)'
+   					ELSE NULL
+   				END 
+			) AS RESERVATIONDATE,
+			A.STARTDATE,
+			A.ENDDATE
+		FROM
+			RSVROOMINFO A
+			INNER JOIN RSVROOMTYPEMAP B
+			ON(A.ROOMSEQ = B.ROOMSEQ
+				AND A.PPSEQ = #{ppSeq}
+				AND A.ROOMSEQ = #{roomSeq})
+			INNER JOIN RSVPPINFO C
+			ON (C.PPSEQ = A.PPSEQ)
+			INNER JOIN RSVTYPEINFO D
+			ON(B.TYPESEQ =D.TYPESEQ)
+	</select>
+	
+	<!-- pp, 시설, 년, 월, 일 세션 정보 목록 조회 -->
+	<select id="roomInfoSessionListAjax" parameterType="reqBox" resultType="dataBox">
+		/* ReservationRoomInfoSQL.roomInfoSessionListAjax */
+        SELECT 
+            CONVERT(varchar, A.RESERVATIONDATE, 112) AS YMD,
+            DATEPART(DD, A.RESERVATIONDATE) AS DAY,
+            DATEPART(DW, A.RESERVATIONDATE) AS WEEKDAY,
+            A.PPSEQ,
+            B.PPNAME,
+            B.ROOMSEQ,
+            B.ROOMNAME,
+            CASE WHEN C.TYPENAME IS NULL THEN '[관리자]' ELSE C.TYPENAME END AS TYPENAME, 
+            CASE DATEPART(DW, A.RESERVATIONDATE) 
+                WHEN 1 THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120)+'(일)'
+                WHEN 2 THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120)+'(월)'
+                WHEN 3 THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120)+'(화)'
+                WHEN 4 THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120)+'(수)'
+                WHEN 5 THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120)+'(목)'
+                WHEN 6 THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120)+'(금)'
+                WHEN 7 THEN CONVERT(VARCHAR(10), CONVERT(DATETIME, A.RESERVATIONDATE), 120)+'(토)'
+                ELSE NULL
+            END RESERVATIONDAY,
+            A.RSVSESSIONSEQ,
+            D.ORDERNUMBER,
+            D.SETTYPECODE,
+            D.WORKTYPECODE,
+            D.SESSIONNAME,
+            B.STARTDATE,
+            B.ENDDATE,
+            CASE
+                WHEN CONVERT(varchar, A.RESERVATIONDATE, 112) BETWEEN B.STARTDATE AND B.ENDDATE THEN D.SESSIONTIME
+                ELSE NULL
+            END AS SESSIONTIME,
+            D.STARTDATETIME,
+            D.ENDDATETIME,
+            D.SETDATE,
+            D.SETWEEK,
+            A.RSVSEQ,
+            A.CODENAME AS RESERVATIONSTATUS,
+            A.RESERVATIONDATE,
+            CONVERT(varchar, A.PURCHASEDATE, 120) AS PURCHASEDATE,
+            A.ADMINFIRSTCODE,
+            A.ADMINFIRSTREASON,
+            CASE
+                WHEN A.ADMINFIRSTCODE = 'R01' THEN '운영자'
+                WHEN A.ACCOUNT IS NULL THEN '비회원'
+                WHEN E.GROUPS = '0' THEN '일반회원'
+                ELSE 'ABO'
+            END AS MEMBERTYPE,
+            CASE
+                WHEN A.ADMINFIRSTCODE = 'R01' THEN F.MANAGENAME
+                WHEN A.ACCOUNT IS NULL THEN A.NONMEMBER
+                ELSE E.USERNAME
+            END AS RSVNAME,
+            A.ACCOUNT AS ABONO,
+            CASE
+                WHEN A.ADMINFIRSTCODE = 'R01' THEN '-'
+                WHEN A.ACCOUNT IS NULL THEN '-'
+                ELSE E.TARGETCODENAME
+            END AS PIN
+        FROM (
+            SELECT 
+                AA.*,
+                BB.CODENAME
+            FROM RSVRESERVATIONINFO AA
+                , COMMONCODE BB
+            WHERE AA.PAYMENTSTATUSCODE = BB.COMMONCODESEQ
+            AND BB.CODEMASTERSEQ = 'PM1'
+            AND BB.COMMONCODESEQ != 'P03'   /* 예약취소는 제외 */
+            AND AA.CANCELCODE = 'B02'       /* 유효한 예약만 = 취소된건은 제외 */
+            AND AA.RESERVATIONDATE = CONCAT(#{year}, #{month}, #{day})
+            AND AA.PPSEQ = #{ppSeq}
+            AND AA.ROOMSEQ = #{roomSeq}
+        ) A
+        LEFT OUTER JOIN ( 
+            /* RSVROOMINFO 테이블에 PPSEQ는 NULL이면 안됨 */
+            SELECT A.ROOMSEQ, A.ROOMNAME, A.PPSEQ, B.PPNAME, A.STARTDATE, A.ENDDATE
+            FROM RSVROOMINFO A
+            , RSVPPINFO B
+            WHERE A.PPSEQ = B.PPSEQ
+        ) B
+        ON (A.ROOMSEQ = B.ROOMSEQ)
+        LEFT OUTER JOIN  (
+            SELECT
+                TYPESEQ, TYPENAME
+            FROM RSVTYPEINFO
+        ) C
+        ON (A.TYPESEQ = C.TYPESEQ)
+        LEFT OUTER JOIN (
+            SELECT RSVSESSIONSEQ, ORDERNUMBER,SETTYPECODE,WORKTYPECODE,SESSIONNAME,STARTDATETIME,ENDDATETIME,SETDATE,SETWEEK,
+                   CONCAT(SUBSTRING(STARTDATETIME, 1, 2), ':', SUBSTRING(STARTDATETIME, 3, 2), '~', SUBSTRING(ENDDATETIME, 1, 2), ':', SUBSTRING(ENDDATETIME, 3, 2)) AS SESSIONTIME
+            FROM RSVROOMSESSIONINFO
+        ) D
+        ON (A.RSVSESSIONSEQ = D.RSVSESSIONSEQ)
+        LEFT OUTER JOIN (
+            SELECT AA.UID, AA.GROUPS, AA.NAME AS USERNAME, BB.TARGETCODENAME 
+            FROM MEMBER AA
+            , V_TARGETCODE_NONMEM BB
+            WHERE AA.GROUPS = BB.TARGETCODESEQ
+        ) E
+        ON (A.ACCOUNT = E.UID)
+        LEFT OUTER JOIN (
+            SELECT ADNO, MANAGENAME FROM MANAGER
+        ) F
+        ON ( A.ACCOUNT = F.ADNO)
+        ORDER BY B.STARTDATE ASC, D.STARTDATETIME ASC
+         
+        /* ORDER BY CONVERT(varchar, A.RESERVATIONDATE, 112) ASC, DATEPART(DW, A.RESERVATIONDATE) DESC, D.SESSIONNAME ASC, D.ORDERNUMBER ASC, D.SETTYPECODE DESC, D.WORKTYPECODE DESC */
+	</select>
+	
+		
+	<!-- 파티션룸 체크  -->
+	<select id="partitionCheck" parameterType="reqBox" resultType="String">
+		SELECT 
+			CASE
+				WHEN #{roomSeq} = (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomSeq})
+				THEN 'true'
+				WHEN #{roomSeq} != (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomSeq})
+				THEN 'false'
+				ELSE NULL
+			END AS PARTITIONCHECK
+	</select>
+	
+	<!-- 넘어온 roomseq의 parentroomseq를 parentroomseq로 갖는 roomseq 조회 -->
+	<select id="partitionRoomSeqList" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			ROOMSEQ
+		FROM
+			RSVSAMEROOMINFO A
+		WHERE
+			PARENTROOMSEQ = (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomSeq})
+			AND ROOMSEQ != (SELECT PARENTROOMSEQ FROM RSVSAMEROOMINFO WHERE ROOMSEQ = #{roomSeq})
+	</select>
+	
+	<!-- 넘어온 roomseq의 parentroomseq를 parentroomseq로 갖는 roomseq 조회 -->
+	<select id="partitionRoomParentSeqList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			PARENTROOMSEQ AS ROOMSEQ
+		FROM 
+			RSVSAMEROOMINFO 
+		WHERE 
+			ROOMSEQ = #{roomSeq}
+	</select>
+	
+</mapper>

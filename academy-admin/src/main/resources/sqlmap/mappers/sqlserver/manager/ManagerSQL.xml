@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.login.service.impl.LoginMapper">
+
+	<insert id="loginMergeManager" parameterType="reqBox">
+		/*loginMergeManager*/
+		MERGE MANAGER AS A
+			USING (
+				SELECT #{adno} AS ADNO
+			) AS B
+			ON ( A.ADNO = B.ADNO )
+		WHEN NOT MATCHED THEN
+			INSERT(
+				ADNO 
+			) VALUES(
+				B.ADNO
+			)
+			;
+	</insert>
+
+	<select id="selectManagerAuthList" parameterType="reqBox" resultType="dataBox">
+		/*selectManagerAuthList*/
+		SELECT A.MENUCODE, A.MENUAUTH, B.LINKURL, C.APSEQ
+		FROM MANAGERMENU A
+			INNER JOIN MENUCODE B ON (A.SYSTEMCODE = B.SYSTEMCODE AND A.MENUCODE = B.MENUCODE)
+			INNER JOIN MANAGER C ON (A.ADNO = C.ADNO)
+		WHERE A.ADNO = #{adno}
+	</select>
+
+	<insert id="loginLogInsert" parameterType="reqBox">
+		/*loginMergeManager*/
+		<selectKey resultType="integer" keyProperty="logseq" order="BEFORE">
+			SELECT ISNULL(MAX(SEQ),0)+1 FROM TB_AI_LOGIN_LOG
+		</selectKey>
+		INSERT INTO TB_AI_LOGIN_LOG (
+			  SEQ
+		    , INFONUM
+			, USERID
+		    , LOGKIND
+		    , LOGDETAIL
+			, REGDT
+			, CIP
+		) VALUES (
+			  #{logseq}
+		    , 'AI'
+			, #{adno}
+		    , #{logkind}
+			, #{logdetail}
+			, Getdate()
+			, #{conip}
+		)
+	</insert>
+
+</mapper>

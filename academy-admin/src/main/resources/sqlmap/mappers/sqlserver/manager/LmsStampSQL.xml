@@ -1,0 +1,847 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.lmsStamp.service.impl.LmsStampMapper">
+	
+	<!-- 스탬프목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsStampWhere">
+		WHERE USEFLAG = 'Y'
+			<if test='searchstamptype != null and !searchstamptype.equals("")'>
+				AND STAMPTYPE = #{searchstamptype}
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test="searchtype.equals('')">
+					AND ( STAMPNAME LIKE '%'+#{searchtext }+'%' OR STAMPCONDITION LIKE '%'+#{searchtext }+'%' OR STAMPCONTENT LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND STAMPNAME LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND STAMPCONDITION LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND STAMPCONTENT LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</sql>
+	
+	
+	<!-- 스탬프목록 카운트 -->
+	<select id="selectLmsStampCount" parameterType="reqBox" resultType="int">
+		/* selectLmsStampCount */
+		SELECT  
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSSTAMP
+		<include refid="selectLmsStampWhere" />
+	</select>
+	
+	<!-- 스탬프목록 -->
+	<select id="selectLmsStampList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsStampList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, CASE WHEN AA.STAMPTYPE='N' THEN '일반' WHEN AA.STAMPTYPE='C' THEN '정규과정' WHEN AA.STAMPTYPE='U' THEN '목표달성' END AS STAMPTYPENAME
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY STAMPID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				STAMPID ,
+				STAMPTYPE ,
+				STAMPNAME ,
+				STAMPCONDITION
+			FROM LMSSTAMP
+			<include refid="selectLmsStampWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 스탬프목록 엑셀다운로드 -->
+	<select id="selectLmsStampListExcelDown" parameterType="reqBox" resultType="hashmap">
+		/* selectLmsStampListExcelDown */
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY STAMPID DESC
+					</otherwise>
+				</choose>
+				) AS NO , 
+				STAMPNAME ,
+				STAMPCONDITION,
+				CASE WHEN STAMPTYPE='N' THEN '일반' WHEN STAMPTYPE='C' THEN '정규과정' WHEN STAMPTYPE='U' THEN '목표달성' END AS STAMPTYPENAME
+			FROM LMSSTAMP
+			<include refid="selectLmsStampWhere" />
+	</select>
+	
+	<!-- 스탬프 삭제 -->
+ 	<update id="deleteLmsStamp" parameterType="reqBox">
+		/* deleteLmsStamp */
+		UPDATE LMSSTAMP
+			SET
+				 USEFLAG = 'N' 
+		WHERE STAMPID  IN
+			<foreach collection="stampids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+
+	<!-- 스탬프상세 -->
+	<select id="selectLmsStamp" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsStamp */
+			SELECT
+				STAMPID ,
+				STAMPTYPE ,
+				STAMPNAME ,
+				STAMPCONDITION ,
+				STAMPCONTENT ,
+				REGISTRANTDATE ,
+				MODIFYDATE ,
+				REGISTRANT ,
+				MODIFIER ,
+				USEFLAG ,
+				OFFIMAGE ,
+				ONIMAGE ,
+				OFFIMAGENOTE ,
+				ONIMAGENOTE ,
+				PINCODE ,
+				BONUSCODE 
+			FROM LMSSTAMP
+			WHERE STAMPID = #{stampid}
+	</select>
+	
+	<!-- 스탬프 등록 -->
+ 	<insert id="insertLmsStamp" parameterType="reqBox">
+	    <selectKey resultType="int" keyProperty="maxstampid" order="BEFORE">
+	        SELECT ISNULL(MAX(STAMPID),0)+1 AS MAXSTAMPID FROM LMSSTAMP        
+	    </selectKey> 
+		/* insertLmsStamp */
+			INSERT INTO LMSSTAMP(
+				STAMPID ,
+				STAMPTYPE ,
+				STAMPNAME ,
+				STAMPCONDITION ,
+				STAMPCONTENT ,
+				REGISTRANTDATE ,
+				MODIFYDATE ,
+				REGISTRANT ,
+				MODIFIER ,
+				USEFLAG ,
+				OFFIMAGE ,
+				ONIMAGE ,
+				OFFIMAGENOTE ,
+				ONIMAGENOTE ,
+				PINCODE ,
+				BONUSCODE
+				)
+			VALUES(
+				#{maxstampid} ,
+				#{stamptype} ,
+				#{stampname} ,
+				#{stampcondition} ,
+				#{stampcontent} ,
+				getdate() ,
+				getdate() ,
+				#{adminid} ,
+				#{adminid} ,
+				'Y' ,
+				#{offimagefile} ,
+				#{onimagefile} ,
+				#{offimagenote} ,
+				#{onimagenote} ,
+				#{pincode} ,
+				#{bonuscode}
+				)
+	</insert>
+
+	<!-- 스탬프 업데이트 -->
+ 	<update id="updateLmsStamp" parameterType="reqBox">
+		/* updateLmsStamp */
+			UPDATE LMSSTAMP SET
+				STAMPTYPE = #{stamptype},
+				STAMPNAME = #{stampname},
+				STAMPCONDITION = #{stampcondition},
+				STAMPCONTENT = #{stampcontent},
+				MODIFYDATE = getdate(),
+				MODIFIER = #{adminid},
+				OFFIMAGE = #{offimagefile},
+				ONIMAGE = #{onimagefile},
+				OFFIMAGENOTE = #{offimagenote},
+				ONIMAGENOTE = #{onimagenote},
+				PINCODE = #{pincode},
+				BONUSCODE = #{bonuscode}
+			WHERE STAMPID = #{stampid} 
+	</update>
+
+	<!-- 스탬프 종류 가져오기 -->
+	<select id="seletLmsStampList"  resultType="dataBox">
+	/*seletLmsStampList*/
+	SELECT STAMPID,STAMPNAME FROM LMSSTAMP WHERE USEFLAG='Y'
+	</select>
+	
+	<!-- 회계연도 가져오기 -->
+	<select id="selectLmsStampDate" resultType="int">
+	/*selectLmsStampDate*/
+	SELECT DBO.F_LMS_DFYEAR(getDate()) AS YEAR
+	</select>
+	
+	<!-- 스탬프 통계 정보 가져오기 -->
+	<select id="selectLmsStampRankingInfo" parameterType="reqBox" resultType="dataBox">
+	/*selectLmsStampRankingInfo*/
+	WITH 
+	STAMPCNT AS(
+		SELECT 
+			COUNT(*) AS STAMPCNT 
+		FROM LMSSTAMPOBTAIN A 
+		INNER JOIN MEMBER B
+			ON(A.UID = B.UID)
+		WHERE 
+			1=1
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchstampid != null and !searchstampid.equals("")'>
+					AND A.STAMPID = #{searchstampid}
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+		)
+	,MEMBERCNT AS (
+		SELECT 
+			COUNT(*) AS MEMBERCNT 
+		FROM(
+			SELECT 
+				A.UID 
+			FROM LMSSTAMPOBTAIN A
+			INNER JOIN MEMBER B
+				ON(A.UID = B.UID)
+			WHERE 
+				1=1
+				<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchstampid != null and !searchstampid.equals("")'>
+					AND A.STAMPID = #{searchstampid}
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+			GROUP BY A.UID
+			) 
+		AA
+		)
+	SELECT * FROM MEMBERCNT JOIN STAMPCNT ON 1=1
+	
+	</select>
+	
+	<!-- 회원 목록 -->
+	<select id="lmsStampMemberListAjax" resultType="dataBox" parameterType="reqBox">
+	/*lmsStampMemberListAjax*/
+	SELECT
+		*
+	FROM
+	(
+		SELECT
+			RANK() OVER(ORDER BY STAMPCNT DESC) AS RANK
+			,ROW_NUMBER() OVER(ORDER BY STAMPCNT DESC) AS ROW_NUM
+			,*
+		FROM
+		(
+			SELECT
+			  A.UID
+			  ,B.NAME
+			  ,B.PARTNERINFONAME
+			  ,(SELECT TARGETCODENAME FROM TARGETCODE WHERE TARGETMASTERSEQ = 'PINCODE' AND TARGETCODESEQ=B.GROUPS) AS PINCODE 
+			  ,COUNT(*) OVER(PARTITION BY A.UID) STAMPCNT
+			FROM LMSSTAMPOBTAIN A 
+			INNER JOIN MEMBER B 
+			  ON(B.UID = A.UID)
+			  WHERE 1=1
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchstampid != null and !searchstampid.equals("")'>
+				AND A.STAMPID = #{searchstampid}
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.UID LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+			 	</if>
+			</if>
+		) AA
+		GROUP BY AA.UID, AA.NAME, AA.PARTNERINFONAME, AA.PINCODE, AA.STAMPCNT
+	)AAA 
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 회원목록 카운트 -->
+	<select id="lmsStampMemberListCount" resultType="int" parameterType="reqBox">
+	/*lmsStampMemberListCount*/
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM
+		(
+			SELECT
+						A.UID 
+					FROM LMSSTAMPOBTAIN A 
+					INNER JOIN MEMBER B 
+						ON(B.UID = A.UID)
+			WHERE 1=1
+				<if test='searchstartdate != null and !searchstartdate.equals("")'>
+					AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+				</if>
+				<if test='searchenddate != null and !searchenddate.equals("")'>
+					AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+				</if>
+				<if test='searchstampid != null and !searchstampid.equals("")'>
+					AND A.STAMPID = #{searchstampid}
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+			GROUP BY A.UID
+		) AA
+	</select>
+	
+	<!-- 스탬프 목록 -->
+	<select id="lmsStampKindListAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsStampKindListAjax*/
+	SELECT
+		*
+	FROM
+	(
+	SELECT
+		RANK() OVER(ORDER BY OBTAINCNT DESC) AS RANK
+		,ROW_NUMBER() OVER(  ORDER BY OBTAINCNT DESC) AS ROW_NUM
+		,*
+	FROM
+	(
+		SELECT 
+			B.STAMPID
+			,B.STAMPNAME
+			,B.STAMPTYPE
+			,COUNT(*) AS OBTAINCNT 
+		FROM LMSSTAMP B
+		LEFT OUTER JOIN LMSSTAMPOBTAIN A 
+			ON(B.STAMPID = A.STAMPID)
+		WHERE 1=1
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchstamptype != null and !searchstamptype.equals("")'>
+				AND B.STAMPTYPE = #{searchstamptype}
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( B.STAMPNAME LIKE '%'+#{searchtext }+'%' OR B.STAMPCONTENT LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND B.STAMPNAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND B.STAMPCONTENT LIKE '%'+#{searchtext }+'%'   
+			 	</if>
+			</if>
+		GROUP BY B.STAMPID, B.STAMPNAME, B.STAMPTYPE
+	) AA
+	)AAA
+	WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+			
+	
+	</select>
+	
+	<!-- 스탬프 목록 카운트 -->
+	<select id="lmsStampKindListCount" parameterType="reqBox" resultType="int">
+	/*lmsStampKindListCount*/
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM
+		(
+		SELECT 
+			B.STAMPID
+		FROM LMSSTAMP B 
+		LEFT OUTER JOIN LMSSTAMPOBTAIN A 
+			ON(B.STAMPID = A.STAMPID)
+		WHERE 1=1
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchstamptype != null and !searchstamptype.equals("")'>
+				AND B.STAMPTYPE = #{searchstamptype}
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( B.STAMPNAME LIKE '%'+#{searchtext }+'%' OR B.STAMPCONTENT LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND B.STAMPNAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND B.STAMPCONTENT LIKE '%'+#{searchtext }+'%'   
+			 	</if>
+			</if>
+		GROUP BY B.STAMPID
+		) AA
+	
+	</select>
+	
+	<!-- 스탬프 통계 정보 가져오기(스탬프종류 탭) -->
+	<select id="selectLmsStampKindInfo" resultType="dataBox" parameterType="reqBox">
+	/*selectLmsStampKindInfo*/
+	WITH 
+	STAMPCNT AS(
+		SELECT 
+		 	 COUNT(*) AS STAMPCNT 
+		FROM LMSSTAMPOBTAIN A 
+		INNER JOIN LMSSTAMP B 
+			ON (A.STAMPID = B.STAMPID)
+		WHERE 1=1
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchstamptype != null and !searchstamptype.equals("")'>
+				AND B.STAMPTYPE = #{searchstamptype}
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( B.STAMPNAME LIKE '%'+#{searchtext }+'%' OR B.STAMPCONTENT LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND B.STAMPNAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND B.STAMPCONTENT LIKE '%'+#{searchtext }+'%'   
+			 	</if>
+			</if>
+		)
+	,MEMBERCNT AS (
+			SELECT
+			  	COUNT(*) AS MEMBERCNT
+			FROM
+			(
+				SELECT 
+				  	UID 
+				FROM LMSSTAMPOBTAIN A 
+				INNER JOIN LMSSTAMP B 
+					ON (A.STAMPID = B.STAMPID)
+				WHERE 1=1
+					<if test='searchstartdate != null and !searchstartdate.equals("")'>
+						AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+					</if>
+					<if test='searchenddate != null and !searchenddate.equals("")'>
+						AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+					</if>
+					<if test='searchstamptype != null and !searchstamptype.equals("")'>
+						AND B.STAMPTYPE = #{searchstamptype}
+					</if>
+					<if test='searchtext != null and !searchtext.equals("")'>
+						<if test='searchtype.equals("")'>
+							AND ( B.STAMPNAME LIKE '%'+#{searchtext }+'%' OR B.STAMPCONTENT LIKE '%'+#{searchtext }+'%' )  
+						</if>
+					 	<if test='searchtype.equals("1")'>
+					 		AND B.STAMPNAME LIKE '%'+#{searchtext }+'%'
+					 	</if>
+					 	<if test='searchtype.equals("2")'>
+					 		AND B.STAMPCONTENT LIKE '%'+#{searchtext }+'%'   
+					 	</if>
+					</if>
+				GROUP BY A.UID
+			) AA
+	)
+	SELECT * FROM MEMBERCNT JOIN STAMPCNT ON 1=1
+	</select>
+	
+	<!-- 스탬프 획득자 목록 -->
+	<select id="lmsStampObtainMemberPopAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsStampObtainMemberPopAjax*/
+		SELECT
+			#{totalCount} - ROW_NUM + 1 AS NO 
+			,AA.*
+		FROM
+		(
+			SELECT
+				ROW_NUMBER() OVER (
+					<choose>
+						<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+							ORDER BY ${sortOrderColumn} ${sortOrderType}
+						</when>
+						<otherwise>
+							ORDER BY A.STAMPID DESC
+						</otherwise>
+					</choose>
+					) AS ROW_NUM
+				,A.UID
+				,B.NAME
+				,B.PARTNERINFONAME
+				,A.OBTAINDATE
+			FROM 
+				LMSSTAMPOBTAIN A 
+			INNER JOIN MEMBER B 
+				ON (A.UID = B.UID)
+			WHERE A.STAMPID = #{stampid}
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+		) AA
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 스탬프 획득자 목록 카운트 -->
+	<select id="lmsStampObtainMemberPopAjaxCount" resultType="int" parameterType="reqBox">
+		/*lmsStampObtainMemberPopAjaxCount*/
+			SELECT
+				COUNT(*)	AS TOTAL_CNT
+			FROM 
+				LMSSTAMPOBTAIN A 
+			INNER JOIN MEMBER B 
+				ON (A.UID = B.UID)
+			WHERE A.STAMPID = #{stampid}
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+	</select>
+	
+	<!-- StampKind Excel  다운로드 -->
+	<select id="lmsStampKindListExcelDown" resultType="hashmap" parameterType="reqBox">
+	/*lmsStampKindListExcelDown*/
+		SELECT
+			RANK() OVER(ORDER BY OBTAINCNT DESC) AS RANK
+			,*
+		FROM
+		(
+			SELECT 
+				B.STAMPNAME
+				,CASE
+					WHEN B.STAMPTYPE = 'N' THEN '일반'
+					WHEN B.STAMPTYPE = 'C' THEN '정규과정'
+				END AS STAMPTYPE
+				,COUNT(*) AS OBTAINCNT 
+			FROM LMSSTAMP B
+			LEFT OUTER JOIN LMSSTAMPOBTAIN A 
+				ON(B.STAMPID = A.STAMPID)
+			WHERE 1=1
+				<if test='searchstartdate != null and !searchstartdate.equals("")'>
+					AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+				</if>
+				<if test='searchenddate != null and !searchenddate.equals("")'>
+					AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+				</if>
+				<if test='searchstamptype != null and !searchstamptype.equals("")'>
+					AND B.STAMPTYPE = #{searchstamptype}
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( B.STAMPNAME LIKE '%'+#{searchtext }+'%' OR B.STAMPCONTENT LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND B.STAMPNAME LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND B.STAMPCONTENT LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+			GROUP BY B.STAMPNAME, B.STAMPTYPE
+		) AA
+	</select>
+	
+	<!-- 스탬프 현황 목록 -->
+	<select id="lmsStampStatusListAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsStampStatusListAjax*/
+		SELECT
+			#{totalCount} - ROW_NUM + 1 AS NO
+			,*
+		FROM
+		(
+			SELECT
+				ROW_NUMBER() OVER(
+				<choose>
+						<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+							ORDER BY ${sortOrderColumn} ${sortOrderType}
+						</when>
+						<otherwise>
+							ORDER BY A.STAMPID DESC
+						</otherwise>
+					</choose>
+				) AS ROW_NUM
+				,A.STAMPNAME
+				,A.STAMPCONDITION 
+				,B.OBTAINDATE
+				,B.UID
+				,C.NAME
+				,C.PARTNERINFONAME
+			FROM 
+				LMSSTAMP A 
+			INNER JOIN LMSSTAMPOBTAIN B 
+				ON(A.STAMPID = B.STAMPID)
+			INNER JOIN MEMBER C
+				ON(B.UID = C.UID)
+			WHERE 1=1
+				<if test='searchstartdate != null and !searchstartdate.equals("")'>
+					AND FORMAT(B.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+				</if>
+				<if test='searchenddate != null and !searchenddate.equals("")'>
+					AND FORMAT(B.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+				</if>
+				<if test='searchstampid != null and !searchstampid.equals("")'>
+					AND A.STAMPID = #{searchstampid}
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( B.UID LIKE '%'+#{searchtext }+'%' OR C.NAME LIKE '%'+#{searchtext }+'%' )  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND B.UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND C.NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+			) AA
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 스탬프 현황 목록 카운트 -->
+	<select id="lmsStampStatusListCount" parameterType="reqBox" resultType="int">
+	/*lmsStampStatusListCount*/
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM 
+		LMSSTAMPOBTAIN A
+		INNER JOIN MEMBER B
+			ON(A.UID = B.UID)
+		WHERE 1=1
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.OBTAINDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchstampid != null and !searchstampid.equals("")'>
+				AND A.STAMPID = #{searchstampid}
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.UID LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+			 	</if>
+			</if>
+	</select>
+	
+	<!-- 페널티 관리 목록 -->
+	<select id="lmsPenaltyManageListAjax" parameterType="reqBox" resultType="dataBox">
+	/*lmsPenaltyManageListAjax*/
+		SELECT
+			#{totalCount} - ROW_NUM + 1 AS NO
+			,*
+		FROM
+		(
+			SELECT
+			 	ROW_NUMBER() OVER(
+				<choose>
+						<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+							ORDER BY A.PENALTYFLAG DESC, ${sortOrderColumn} ${sortOrderType}
+						</when>
+						<otherwise>
+							ORDER BY A.PENALTYFLAG DESC
+						</otherwise>
+					</choose>
+				) AS ROW_NUM
+				,A.UID
+				,A.COURSEID
+				,B.NAME
+				,B.PARTNERINFONAME
+				,C.COURSENAME
+				,FORMAT(A.CLEARDATE, 'yyyy-MM-dd') AS CLEARDATE
+				,A.CLEARNOTE
+				,A.PENALTYFLAG
+				, CASE WHEN A.CLEARDATE > GETDATE() THEN 'N' ELSE 'Y' END AS PENALTYPAST
+			FROM 
+				LMSPENALTY A 
+			INNER JOIN MEMBER B 
+				ON(A.UID = B.UID)
+			INNER JOIN LMSCOURSE C
+				ON(A.COURSEID = C.COURSEID)
+			WHERE 
+				1=1
+				<if test='searchstartdate != null and !searchstartdate.equals("")'>
+					AND FORMAT(A.CLEARDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+				</if>
+				<if test='searchenddate != null and !searchenddate.equals("")'>
+					AND FORMAT(A.CLEARDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+				</if>
+				<if test='searchpenaltystatus != null and !searchpenaltystatus.equals("")'>
+					
+					AND CASE WHEN A.CLEARDATE > GETDATE() THEN 'Y' ELSE 'N' END = #{searchpenaltystatus} 
+				</if>
+				<if test='searchtext != null and !searchtext.equals("")'>
+					<if test='searchtype.equals("")'>
+						AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' OR C.COURSENAME LIKE '%'+#{searchtext }+'%')  
+					</if>
+				 	<if test='searchtype.equals("1")'>
+				 		AND A.UID LIKE '%'+#{searchtext }+'%'
+				 	</if>
+				 	<if test='searchtype.equals("2")'>
+				 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				 	<if test='searchtype.equals("3")'>
+				 		AND C.COURSENAME LIKE '%'+#{searchtext }+'%'   
+				 	</if>
+				</if>
+		) AA
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+
+	<!-- 페널티 관리 목록 카운트 -->
+	<select id="lmsPenaltyManageListCount" parameterType="reqBox" resultType="int">
+			/*lmsPenaltyManageListCount*/
+				SELECT
+				 	COUNT(*)
+				FROM 
+					LMSPENALTY A 
+				INNER JOIN MEMBER B 
+					ON(A.UID = B.UID)
+				INNER JOIN LMSCOURSE C
+					ON(A.COURSEID = C.COURSEID)
+				WHERE 
+					1=1
+					<if test='searchstartdate != null and !searchstartdate.equals("")'>
+						AND FORMAT(A.CLEARDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+					</if>
+					<if test='searchenddate != null and !searchenddate.equals("")'>
+						AND FORMAT(A.CLEARDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+					</if>
+					<if test='searchpenaltystatus != null and !searchpenaltystatus.equals("")'>
+						AND A.PENALTYFLAG = #{searchpenaltystatus}
+					</if>
+					<if test='searchtext != null and !searchtext.equals("")'>
+						<if test='searchtype.equals("")'>
+							AND ( A.UID LIKE '%'+#{searchtext }+'%' OR B.NAME LIKE '%'+#{searchtext }+'%' OR C.COURSENAME LIKE '%'+#{searchtext }+'%')  
+						</if>
+					 	<if test='searchtype.equals("1")'>
+					 		AND A.UID LIKE '%'+#{searchtext }+'%'
+					 	</if>
+					 	<if test='searchtype.equals("2")'>
+					 		AND B.NAME LIKE '%'+#{searchtext }+'%'   
+					 	</if>
+					 	<if test='searchtype.equals("3")'>
+					 		AND C.COURSENAME LIKE '%'+#{searchtext }+'%'   
+					 	</if>
+					</if>
+	
+	</select>
+
+	<!-- 페널티 해제 -->
+	<update id="lmsPenaltyClearAjax" parameterType="reqBox">
+		/*lmsPenaltyClearAjax*/
+		UPDATE LMSPENALTY
+			SET PENALTYFLAG = 'N', CLEARDATE = getDate(), CLEARNOTE = #{clearnote}
+		WHERE COURSEID=#{courseid} AND UID=#{uid}
+	</update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

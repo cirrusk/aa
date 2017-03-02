@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.cdms.mapper.CdmsProjectMemberMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectMemberVO">
+        <selectKey resultType="Long" keyProperty="projectMemberSeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* UICdmsProjectMemberMapper.insert */
+INSERT INTO cs_cdms_project_member 
+       ( 
+           cs_project_seq ,
+           cs_project_group_seq ,
+           cs_member_seq ,
+           cs_member_cdms_type_cd ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip  
+       ) 
+       VALUES 
+       ( 
+           #{projectSeq, jdbcType=NUMERIC} ,
+           #{projectGroupSeq, jdbcType=NUMERIC} ,
+           #{memberSeq, jdbcType=NUMERIC} ,
+           #{memberCdmsTypeCd, jdbcType=VARCHAR} ,
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR} 
+       ) 
+    </insert>
+
+    <insert id="insertCopy" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectMemberVO">
+/* UICdmsProjectMemberMapper.insertCopy */
+INSERT INTO cs_cdms_project_member 
+       ( 
+           cs_project_seq ,
+           cs_project_group_seq ,
+           cs_member_seq ,
+           cs_member_cdms_type_cd ,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip
+       ) 
+SELECT
+       #{newProjectSeq, jdbcType=NUMERIC} ,
+       cs_project_group_seq ,
+       cs_member_seq ,
+       cs_member_cdms_type_cd ,
+       #{regMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{regIp, jdbcType=VARCHAR} ,
+       #{updMemberSeq, jdbcType=NUMERIC} ,
+       dbo.FN_NOW_TO_CHAR() ,
+       #{updIp, jdbcType=VARCHAR} 
+  FROM cs_cdms_project_member
+ WHERE cs_project_seq = #{projectSeq, jdbcType=NUMERIC}
+       AND cs_delete_yn = 'N'
+    </insert>
+
+    <update id="deleteByProject" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectMemberVO">
+/* UICdmsProjectMemberMapper.deleteByProject */
+UPDATE cs_cdms_project_member 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_project_seq = #{projectSeq} 
+       AND cs_member_seq = #{memberSeq} 
+       AND cs_member_cdms_type_cd = #{memberCdmsTypeCd} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <update id="deleteByProjectGroup" parameterType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectMemberVO">
+/* UICdmsProjectMemberMapper.deleteByProjectGroup */
+UPDATE cs_cdms_project_member 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_project_group_seq = #{projectGroupSeq} 
+       AND cs_member_seq = #{memberSeq} 
+       AND cs_member_cdms_type_cd = #{memberCdmsTypeCd} 
+       AND cs_delete_yn = 'N'
+    </update>
+
+    <resultMap id="getListByProject_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectMemberRS">
+        <result column="project.projectMemberSeq"  property="projectMember.projectMemberSeq"/>
+        <result column="project.projectSeq"        property="projectMember.projectSeq"/>
+        <result column="project.memberSeq"         property="projectMember.memberSeq"/>
+        <result column="project.memberCdmsTypeCd"  property="projectMember.memberCdmsTypeCd"/>
+        <result column="member.memberSeq"          property="member.memberSeq"/>
+        <result column="member.memberName"         property="member.memberName"/>
+        <result column="member.memberId"           property="member.memberId"/>
+        <result column="member.nickname"           property="member.nickname"/>
+        <result column="member.photo"              property="member.photo"/>
+        <result column="companyMember.companySeq"  property="companyMember.companySeq"/>
+    </resultMap>
+    <select id="getListByProject" parameterType="Long" resultMap="getListByProject_result">
+/* UICdmsProjectMemberMapper.getListByProject */
+SELECT project.cs_project_member_seq  AS "project.projectMemberSeq" ,
+       project.cs_project_seq         AS "project.projectSeq" ,
+       project.cs_member_seq          AS "project.memberSeq" ,
+       project.cs_member_cdms_type_cd AS "project.memberCdmsTypeCd" ,
+       member.cs_member_seq           AS "member.memberSeq" ,
+       member.cs_member_name          AS "member.memberName" ,
+       member.cs_member_id            AS "member.memberId" ,
+       member.cs_nickname             AS "member.nickname" ,
+       member.cs_photo                AS "member.photo" ,
+       compmemb.cs_company_seq        AS "companyMember.companySeq" 
+  FROM cs_cdms_project_member project
+   INNER JOIN cs_member member 
+       ON member.cs_member_seq = project.cs_member_seq 
+   LEFT OUTER JOIN cs_company_member compmemb 
+       ON member.cs_member_seq = compmemb.cs_member_seq
+      AND compmemb.cs_delete_yn = 'N'
+ WHERE project.cs_project_seq = #{projectSeq} 
+       AND project.cs_delete_yn = 'N'
+ORDER BY member.cs_member_name ASC
+    </select>
+
+    <resultMap id="getListByProjectGroup_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectMemberRS">
+        <result column="project.projectMemberSeq"  property="projectMember.projectMemberSeq"/>
+        <result column="project.projectGroupSeq"   property="projectMember.projectGroupSeq"/>
+        <result column="project.memberSeq"         property="projectMember.memberSeq"/>
+        <result column="project.memberCdmsTypeCd"  property="projectMember.memberCdmsTypeCd"/>
+        <result column="member.memberSeq"          property="member.memberSeq"/>
+        <result column="member.memberName"         property="member.memberName"/>
+        <result column="member.memberId"           property="member.memberId"/>
+        <result column="member.nickname"           property="member.nickname"/>
+        <result column="member.photo"              property="member.photo"/>
+        <result column="companyMember.companySeq"  property="companyMember.companySeq"/>
+    </resultMap>
+    <select id="getListByProjectGroup" parameterType="Long" resultMap="getListByProjectGroup_result">
+/* UICdmsProjectMemberMapper.getListByProjectGroup */
+SELECT project.cs_project_member_seq  AS "project.projectMemberSeq" ,
+       project.cs_project_group_seq   AS "project.projectGroupSeq" ,
+       project.cs_member_seq          AS "project.memberSeq" ,
+       project.cs_member_cdms_type_cd AS "project.memberCdmsTypeCd" ,
+       member.cs_member_seq           AS "member.memberSeq" ,
+       member.cs_member_name          AS "member.memberName" ,
+       member.cs_member_id            AS "member.memberId" ,
+       member.cs_nickname             AS "member.nickname" ,
+       member.cs_photo                AS "member.photo" ,
+       compmemb.cs_company_seq        AS "companyMember.companySeq" 
+  FROM cs_cdms_project_member project
+   INNER JOIN cs_member member 
+       ON member.cs_member_seq = project.cs_member_seq 
+   LEFT OUTER JOIN cs_company_member compmemb 
+       ON member.cs_member_seq = compmemb.cs_member_seq
+      AND compmemb.cs_delete_yn = 'N'
+ WHERE project.cs_project_group_seq = #{projectGroupSeq} 
+       AND project.cs_delete_yn = 'N'
+ORDER BY member.cs_member_name ASC
+    </select>
+    
+    <resultMap id="getListProjectMember_result" type="com._4csoft.aof.ui.cdms.vo.resultset.UICdmsProjectMemberRS">
+        <result column="cs_project_seq"				property="projectMember.projectSeq"			/>
+        <result column="cs_member_cdms_type_cd"		property="projectMember.memberCdmsTypeCd"	/>
+        <result column="cs_project_name"			property="project.projectName"				/>
+        <result column="cs_start_date"				property="project.startDate"				/>
+        <result column="cs_end_date"				property="project.endDate"					/>
+    </resultMap>
+    <select id="getListProjectMember" parameterType="com._4csoft.aof.ui.cdms.vo.condition.UICdmsProjectCondition" resultMap="getListProjectMember_result">
+		/* UICdmsProjectMember.getListProjectMember */
+		SELECT cpm.cs_project_seq, 
+		       cpm.cs_member_cdms_type_cd, 
+		       cp.cs_project_name, 
+		       cp.cs_start_date, 
+		       cp.cs_end_date 
+		  FROM cs_cdms_project_member cpm 
+		   INNER JOIN cs_cdms_project cp 
+		       ON cpm.cs_project_seq = cp.cs_project_seq 
+		       AND cp.cs_delete_yn = 'N' 
+		 WHERE cpm.cs_delete_yn = 'N' 
+		       AND cpm.cs_member_seq = #{srchMemberSeq}
+    </select>
+    
+    <select id="getListByProjectVO" parameterType="Long" resultType="com._4csoft.aof.ui.cdms.vo.UICdmsProjectMemberVO">
+/* UICdmsProjectMemberMapper.getListByProjectVO */
+SELECT project.cs_project_member_seq  AS "projectMemberSeq" ,
+       project.cs_project_group_seq	  AS "projectGroupSeq" ,
+       project.cs_member_seq          AS "memberSeq" ,
+       project.cs_project_seq         AS "projectSeq" ,
+       project.cs_member_cdms_type_cd AS "memberCdmsTypeCd" ,
+       project.cs_delete_yn			  AS "deleteYn" ,
+	   project.cs_reg_member_seq	  AS "regMemberSeq" ,
+	   project.cs_upd_member_seq	  AS "updMemberSeq" ,
+	   project.cs_reg_dtime			  AS "regDtime"	,
+	   project.cs_upd_dtime			  AS "updDtime" ,
+	   project.cs_reg_ip			  AS "regIp" ,
+	   project.cs_upd_ip			  AS "updIp"
+  FROM cs_cdms_project_member project
+ WHERE project.cs_project_seq = #{projectSeq} 
+       AND project.cs_delete_yn = 'N'
+    </select>
+
+</mapper>

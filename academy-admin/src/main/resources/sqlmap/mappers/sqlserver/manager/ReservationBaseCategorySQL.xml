@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.reservation.baseCategory.service.BaseCategoryMapper">
+
+	<!-- 카테고리 리스트 조회 -->
+	<select id="baseCategoryList" parameterType="reqBox" resultType="dataBox">
+		SELECT * FROM(
+			SELECT ROW_NUMBER() OVER (ORDER BY CATEGORYTYPE1 ASC, CATEGORYTYPE2 ASC, CATEGORYTYPE3 ASC) AS ROW_NUM, AA.* FROM(
+				SELECT
+				    B.CATEGORYSEQ,
+                    B.TYPELEVEL,
+				    B.CATEGORYTYPE1,
+				    B.CATEGORYNAME1,
+				    B.CATEGORYTYPE2,
+				    B.CATEGORYNAME2,
+				    B.CATEGORYTYPE3,
+				    B.CATEGORYNAME3,
+                    ISNULL(B.UPDATEUSER, B.INSERTUSER) AS UPDATEUSER,
+   					ISNULL(Format(B.UPDATEDATE, N'yyyy-MM-dd HH:mm:ss'), Format(B.INSERTDATE, N'yyyy-MM-dd HH:mm:ss')) AS UPDATEDATE,
+                    B.STATUSCODE,
+                    C1.CODENAME AS STATUSNAME,
+                    D.REALFILENAME,
+                    D.FILEKEY,
+                    D.UPLOADSEQ
+				FROM RSVTYPEINFO A
+				INNER JOIN RSVBRANDCATEGORY B
+				ON (A.TYPESEQ = B.TYPESEQ)
+                LEFT OUTER JOIN COMMONCODE C1
+                ON (B.STATUSCODE = C1.COMMONCODESEQ AND CODEMASTERSEQ = 'YN3')
+                LEFT JOIN FILEMANAGEMENT D ON D.FILEKEY = B.FILEKEY
+                           AND D.WORK = 'RSVBRAND'
+				WHERE A.RSVTYPECODE = 'R02'
+				/** AND B.CATEGORYTYPE1 = 'E03'
+				AND B.TYPELEVEL > 1 */
+				<if test="statuscode != null and !statuscode.equals('') ">
+					AND B.STATUSCODE = #{statuscode}
+				</if>
+				) AS AA
+			) AS BB
+			WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+			ORDER BY CATEGORYTYPE1 ASC, CATEGORYTYPE2 ASC, CATEGORYTYPE3 ASC
+	</select>
+	
+	<!-- 카테고리 리스트 카운트 -->
+	<select id="baseCategoryListCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*) FROM(
+			SELECT
+			    B.CATEGORYSEQ,
+			    B.TYPELEVEL,
+			    B.CATEGORYTYPE1,
+			    B.CATEGORYNAME1,
+			    B.CATEGORYTYPE2,
+			    B.CATEGORYNAME2,
+			    B.CATEGORYTYPE3,
+			    B.CATEGORYNAME3,
+                B.UPDATEUSER,
+                B.UPDATEDATE
+			FROM RSVTYPEINFO A
+			INNER JOIN RSVBRANDCATEGORY B
+			ON (A.TYPESEQ = B.TYPESEQ)
+			LEFT JOIN FILEMANAGEMENT D ON D.FILEKEY = B.FILEKEY
+                           AND D.WORK = 'RSVBRAND'
+			WHERE A.RSVTYPECODE = 'R02'
+			 /** AND B.CATEGORYTYPE1 = 'E03'
+			  AND B.TYPELEVEL > 1 */
+			<if test="statuscode != null and !statuscode.equals('') ">
+				AND B.STATUSCODE = #{statuscode}
+			</if>
+		) AS BB
+	</select>
+	
+	<select id="parentCategoryInfo" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			A.CATEGORYSEQ,
+			A.TYPESEQ,
+			A.TYPELEVEL,
+			A.CATEGORYTYPE1,
+			A.CATEGORYNAME1,
+			A.CATEGORYTYPE2,
+			A.CATEGORYNAME2,
+			A.CATEGORYTYPE3,
+			A.CATEGORYNAME3,
+			A.STATUSCODE,
+			D.REALFILENAME,
+            D.FILEKEY,
+            D.UPLOADSEQ
+		FROM RSVBRANDCATEGORY A
+		LEFT JOIN FILEMANAGEMENT D ON (D.FILEKEY = A.FILEKEY AND D.WORK = 'RSVBRAND')
+		WHERE CATEGORYSEQ = #{categoryseq}
+	</select>
+	
+	<!-- 카테고리 정보 등록 -->
+	<insert id="baseCategoryInsert" parameterType="reqBox">
+		INSERT INTO RSVBRANDCATEGORY(
+		    TYPESEQ, 
+		    TYPELEVEL, 
+		    CATEGORYTYPE1, 
+		    CATEGORYNAME1, 
+		    CATEGORYTYPE2, 
+		    CATEGORYNAME2, 
+		    CATEGORYTYPE3, 
+		    CATEGORYNAME3, 
+		    FILEKEY,
+		    STATUSCODE,
+		    INSERTUSER,
+		    INSERTDATE
+		) VALUES (
+		    #{typeseq},
+		    #{typelevel},
+		    #{categorytype1},
+		    #{categoryname1},
+		    #{categorytype2},
+		    #{categoryname2},
+		    #{categorytype3},
+		    #{categoryname3},
+		    #{fileKey},
+		    #{statuscode},
+		    #{adminId},
+		    getdate()
+		)
+	</insert>
+	
+	<!-- 카테고리 정보 수정 -->
+	<update id="baseCategoryUpdate" parameterType="reqBox">
+		UPDATE RSVBRANDCATEGORY
+		SET CATEGORYTYPE1 = #{categorytype1}
+		   ,CATEGORYNAME1 = #{categoryname1}
+		   ,CATEGORYTYPE2 = #{categorytype2}
+		   ,CATEGORYNAME2 = #{categoryname2}
+		   ,CATEGORYTYPE3 = #{categorytype3}
+		   ,CATEGORYNAME3 = #{categoryname3}
+		   <if test="fileKey != null and ! fileKey.equals('') ">
+		   ,FILEKEY = #{fileKey}
+		   </if>
+		   ,STATUSCODE = #{statuscode}
+		   ,UPDATEUSER  = #{adminId}
+		   ,UPDATEDATE = getdate()
+		WHERE CATEGORYSEQ = #{categoryseq}
+	</update>
+	
+	<!-- 카테고리 정보 삭제 -->
+	<delete id="baseCategoryDelete" parameterType="reqBox">
+		DELETE FROM RSVTYPEINFO
+		WHERE TYPESEQ = #{popTypeseq}
+	</delete>
+	
+	<select id="isAvailableCategoryTypeCode" parameterType="reqBox" resultType="boolean">
+	SELECT
+	    CASE WHEN COUNT(*) &gt; 0 THEN 'false' ELSE 'true' END AS RESULT
+	  FROM RSVBRANDCATEGORY
+	 WHERE CATEGORYTYPE1 = #{categorytype}
+	    OR CATEGORYTYPE2 = #{categorytype}
+	    OR CATEGORYTYPE3 = #{categorytype}	
+	</select>
+	
+	<update id="updateOneLevelCategoryName" parameterType="reqBox">
+		UPDATE RSVBRANDCATEGORY
+		   SET CATEGORYNAME1 = #{categoryname}
+		 WHERE CATEGORYTYPE1 = #{categorytype}
+	</update>
+	
+	<update id="updateTwoLevelCategoryName" parameterType="reqBox">
+		UPDATE RSVBRANDCATEGORY
+		   SET CATEGORYNAME2 = #{categoryname}
+		 WHERE CATEGORYTYPE2 = #{categorytype}
+	</update>
+	
+	<update id="updateThreeLevelCategoryName" parameterType="reqBox">
+		UPDATE RSVBRANDCATEGORY
+		   SET CATEGORYNAME3 = #{categoryname}
+		 WHERE CATEGORYTYPE3 = #{categorytype}
+	</update>
+	
+	<select id="searchExpTypeSeq" parameterType="reqBox" resultType="dataBox">
+		SELECT    DISTINCT
+				  MAX(TYPESEQ) AS TYPESEQ
+				, TYPENAME
+		FROM RSVTYPEINFO
+<!-- 		WHERE STATUSCODE = 'B01' -->
+		WHERE 1=1
+		<if test="categoryname1 == null or categoryname1.equals('') ">
+			AND TYPENAME LIKE CONCAT(SUBSTRING(#{categoryname}, 1, 2), '%')
+		</if>
+		<if test="categoryname1 != null and !categoryname1.equals('') ">
+			AND TYPENAME LIKE CONCAT(SUBSTRING(#{categoryname1}, 1, 2), '%')
+		</if>
+		GROUP BY TYPENAME
+	</select>
+	
+	<select id="searchCategorty1MaxValue" parameterType="reqBox" resultType="dataBox">
+<!-- 		SELECT RIGHT( REPLICATE('E0', 3) + CAST( ISNULL(MAX(RIGHT(CATEGORYTYPE1, LEN(CATEGORYTYPE1)  -->
+<!-- 				- CHARINDEX('E', CATEGORYTYPE1))), 0)+1 AS VARCHAR(3)), 3 ) AS CATEGORYTYPE1 -->
+<!-- 		FROM RSVBRANDCATEGORY -->
+		SELECT 
+			RIGHT( REPLICATE('E', 3) +  REPLICATE('0', 2 - DATALENGTH(CONVERT(VARCHAR,A.[MAXVALUE])))+CONVERT(VARCHAR,A.[MAXVALUE]), 3) AS CATEGORYTYPE1
+		FROM(
+			SELECT 
+				CAST(CAST( ISNULL(MAX(RIGHT(CATEGORYTYPE1, LEN(CATEGORYTYPE1) - CHARINDEX('E', CATEGORYTYPE1)))+0, 0)+1 AS INT) AS VARCHAR(3))  AS MAXVALUE
+			FROM RSVBRANDCATEGORY
+		) A
+		
+	</select>
+	
+	<select id="searchCategorty2MaxValue"  parameterType="reqBox" resultType="dataBox">
+		SELECT
+			CASE  
+				WHEN LEN(MAX(A.CATEGORYTYPE2)) = 0 THEN CONCAT(MAX(CATEGORYTYPE1), '01')
+				WHEN LEN(MAX(A.CATEGORYTYPE2)) &gt; 0 
+					THEN RIGHT( REPLICATE('E0', 5) + CAST( ISNULL(MAX(RIGHT(A.CATEGORYTYPE2, LEN(A.CATEGORYTYPE2) 
+						- CHARINDEX('E', A.CATEGORYTYPE2))), 0)+1 AS VARCHAR(5)), 5 )
+				ELSE ''
+			END AS CATEGORYTYPE2
+		FROM(
+			SELECT 
+				  MAX(CATEGORYTYPE2) AS CATEGORYTYPE2
+				, MAX(CATEGORYTYPE1) AS CATEGORYTYPE1
+			FROM RSVBRANDCATEGORY 
+			WHERE CATEGORYTYPE1 = #{categorytype1}
+		) AS A
+<!-- 		GROUP BY A.CATEGORYTYPE2 -->
+	</select>
+	
+	
+	<select id="searchCategorty3MaxValue"  parameterType="reqBox" resultType="dataBox">
+		SELECT
+			CASE  
+				WHEN LEN(MAX(A.CATEGORYTYPE3)) = 0 THEN CONCAT(MAX(CATEGORYTYPE2), '01')
+				WHEN LEN(MAX(A.CATEGORYTYPE3)) &gt; 0 
+					THEN RIGHT( REPLICATE('E0', 7) + CAST( ISNULL(MAX(RIGHT(CATEGORYTYPE3, LEN(CATEGORYTYPE3) 
+						- CHARINDEX('E', CATEGORYTYPE3))), 0)+1 AS VARCHAR(7)), 7 ) 
+				ELSE ''
+			END AS CATEGORYTYPE3
+		FROM(
+			SELECT 
+				  MAX(CATEGORYTYPE2) AS CATEGORYTYPE2
+				, MAX(CATEGORYTYPE3) AS CATEGORYTYPE3
+			FROM RSVBRANDCATEGORY 
+<!-- 			WHERE CATEGORYTYPE2 = 'E0601' -->
+			WHERE CATEGORYTYPE2 = #{categorytype2}
+		) AS A
+<!--    GROUP BY A.CATEGORYTYPE2 -->
+	</select>
+</mapper>

@@ -1,0 +1,42 @@
+<%@ page pageEncoding="utf-8" %><%@ page trimDirectiveWhitespaces="true" %><%@
+taglib uri="http://java.sun.com/jsp/jstl/core"        prefix="c"     %><%@
+taglib uri="http://java.sun.com/jsp/jstl/functions"   prefix="fn"    %><%@
+taglib uri="http://java.sun.com/jsp/jstl/fmt"         prefix="fmt"   %><%@ 
+taglib uri="/WEB-INF/config/aof/taglib.functions.tld" prefix="aoffn" %><%@ 
+taglib uri="/WEB-INF/config/aof/taglib.tags.tld"      prefix="aof"   %><%@ 
+taglib uri="http://www.springframework.org/tags"      prefix="spring"%>
+
+<c:set var="isHttps" value="FALSE"/> <%-- 현재 https 페이지인지 TRUE FALSE로 저장 --%>
+<c:set var="domain" value="<%=request.getRequestURL() %>"/>
+<c:set var="httpPort" value=""/>
+<c:set var="httpsPort" value="<%=request.getLocalPort() %>"/>
+<c:set var="httpsPort" value=":${httpsPort}"/>
+<c:set var="appDomainWeb" value="${aoffn:config('domain.web')}"/> <%-- web 서버 주소 --%>
+<c:set var="appSystemDomain" value="${aoffn:config('system.domain')}"/> <%-- 현재(어드민 or 프론트) 서버 주소 --%>
+<c:set var="appHttpsSystemDomain"><c:out value="${fn:replace(aoffn:config('system.domain'), 'http:', 'https:')}"/>:<c:out value="${aoffn:config('https.port')}"/></c:set>
+
+<%-- https 로 페이지 호출이 되었을때 --%>
+<c:if test="${(fn:indexOf(domain,'https:')) ne -1}">
+	<c:set var="isHttps" value="TRUE"/>
+
+	<%-- 기본 http에 서버포트를 사용한 경우에 해당 됩니다. --%>
+	<c:set var="httpPortIndex" value="${(fn:indexOf(fn:replace(appDomainWeb,'http:',''),':'))}"/>
+	<c:if test="${httpPortIndex ne -1}">
+		<c:set var="httpPort" value="${fn:substring(appDomainWeb, httpPortIndex+5, fn:length(appDomainWeb))}"/>
+	</c:if>
+
+	<c:set var="appDomainWeb" value="${fn:replace(appDomainWeb, 'http:', 'https:')}"/>
+	
+	<c:choose>
+		<c:when test="${not empty httpPort}">
+			<c:set var="appDomainWeb" value="${fn:replace(appDomainWeb, httpPort, httpsPort)}"/>
+		</c:when>
+		<c:otherwise>
+			<c:set var="appDomainWeb"><c:out value="${appDomainWeb}"/><c:out value="${httpsPort}"/></c:set>
+		</c:otherwise>
+	</c:choose>
+</c:if>
+
+<c:if test="${aoffn:config('https.use') ne 'TRUE'}">
+	<c:set var="appHttpsSystemDomain" value="${appSystemDomain}"/>
+</c:if>

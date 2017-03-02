@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.targetRule.service.impl.TargetRuleMapper">
+
+    <select id="targetRuleCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(TARGETRULESEQ) AS TOTAL_CNT
+        FROM TARGETRULE
+        WHERE 1=1
+        <if test="targetcodegubun != null and !targetcodegubun.equals('')">
+            AND TARGETCODEGUBUN = #{targetcodegubun}
+        </if>
+        <if test="rulescope != null and !rulescope.equals('')">
+            AND RULESCOPE = #{rulescope}
+        </if>
+    </select>
+
+    <select id="targetRuleList" parameterType="reqBox" resultType="dataBox">
+        SELECT AI.ROW_NUM
+             , AI.TARGETRULESEQ
+             , AI.TARGETCODEGUBUN
+             , AI.TARGETRULENAME
+             , AI.RULEGUBUN
+             , AI.RULESCOPE
+             , AI.RULESTART
+             , AI.RULEEND
+             , AI.REGISTRANT
+             , AI.REGISTRANTDATE
+        FROM (
+                SELECT ROW_NUMBER() OVER( ORDER BY TARGETRULESEQ DESC ) AS ROW_NUM
+                     , TARGETRULESEQ
+                     , CASE WHEN TARGETCODEGUBUN = 'pincode' THEN '핀레벨'
+                            WHEN TARGETCODEGUBUN = 'bonuscode' THEN '보너스레벨'
+                            WHEN TARGETCODEGUBUN = 'agecode' THEN '나이'
+                       END AS TARGETCODEGUBUN
+                     , TARGETRULENAME
+                     , CASE WHEN RULEGUBUN = '0' THEN '전체'
+                            WHEN RULEGUBUN = '1' THEN '예약서비스'
+                            WHEN RULEGUBUN = '2' THEN '교육'
+                       END AS RULEGUBUN
+                     , RULESCOPE
+                     , RULESTART
+                     , RULEEND
+                     , REGISTRANT
+                     , REGISTRANTDATE
+                FROM   TARGETRULE
+                WHERE  1=1
+            <if test="targetcodegubun != null and !targetcodegubun.equals('')">
+                AND TARGETCODEGUBUN = #{targetcodegubun}
+            </if>
+            <if test="rulegubun != null and !rulegubun.equals('')">
+                AND RULEGUBUN = #{rulegubun}
+            </if>
+            ) AS AI
+        WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+    <select id="targetRulePop" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETRULESEQ
+             , CASE WHEN TARGETCODEGUBUN = 'pincode' THEN '핀레벨'
+                    WHEN TARGETCODEGUBUN = 'bonuscode' THEN '보너스레벨'
+                    WHEN TARGETCODEGUBUN = 'agecode' THEN '나이'
+               END AS TARGETCODEGUBUN
+             , TARGETRULENAME
+             , CASE WHEN RULEGUBUN = '0' THEN '전체'
+                    WHEN RULEGUBUN = '1' THEN '예약서비스'
+                    WHEN RULEGUBUN = '2' THEN '교육'
+               END AS RULEGUBUN
+             , CASE WHEN RULESCOPE = 'scope' AND TARGETCODEGUBUN = 'agecode' THEN RULESTART+'~'+RULEEND
+                    WHEN RULESCOPE = 'over'  AND TARGETCODEGUBUN = 'agecode' THEN RULESTART+' 이상'
+                    WHEN RULESCOPE = 'under' AND TARGETCODEGUBUN = 'agecode' THEN RULEEND+' 이하'
+                    WHEN RULESCOPE = 'scope' THEN dbo.F_TARGET_CODENAME(TARGETCODEGUBUN,RULESTART)+'~'+dbo.F_TARGET_CODENAME(TARGETCODEGUBUN,RULEEND)
+                    WHEN RULESCOPE = 'over'  THEN dbo.F_TARGET_CODENAME(TARGETCODEGUBUN,RULESTART)+' 이상'
+                    WHEN RULESCOPE = 'under' THEN dbo.F_TARGET_CODENAME(TARGETCODEGUBUN,RULEEND)+' 이하'
+               END AS RULESCOPE
+             , REGISTRANT
+             , REGISTRANTDATE
+        FROM   TARGETRULE
+        WHERE  TARGETRULESEQ = #{targetruleseq}
+    </select>
+
+    <select id="targetRuleCode" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETCODESEQ AS CODE
+             , TARGETCODENAME AS NAME
+        FROM   TARGETCODE
+        WHERE  TARGETMASTERSEQ = #{targetcodegubun}
+        ORDER BY TARGETCODEORDER ASC
+    </select>
+
+    <select id="targetRuleCheck" parameterType="reqBox" resultType="dataBox">
+        SELECT TARGETRULESEQ
+        FROM   TARGETRULE
+        WHERE  TARGETCODEGUBUN = #{targetcodegubun}
+        AND    TARGETRULENAME = #{targetrulename}
+        AND    RULEGUBUN = #{rulegubun}
+        AND    RULESCOPE = #{rulescope}
+        AND    RULESTART = #{rulestart}
+        AND    RULEEND = #{ruleend}
+    </select>
+
+    <insert id="targetRuleInsert" parameterType="reqBox">
+        <selectKey resultType="integer" keyProperty="targetruleseq" order="BEFORE">
+            SELECT ISNULL(MAX(TARGETRULESEQ),0)+1 FROM TARGETRULE
+        </selectKey>
+        INSERT INTO TARGETRULE (
+               TARGETRULESEQ
+             , TARGETCODEGUBUN
+             , TARGETRULENAME
+             , RULEGUBUN
+             , RULESCOPE
+             , RULESTART
+             , RULEEND
+             , REGISTRANT
+             , REGISTRANTDATE
+             , MODIFIER
+             , MODIFYDATE
+        ) VALUES (
+            #{targetruleseq}
+        	, #{targetcodegubun}
+        	, #{targetrulename}
+            , #{rulegubun}
+            , #{rulescope}
+            , #{rulestart}
+            , #{ruleend}
+        	, #{sessionAccount}
+	        , Getdate()
+	        , #{sessionAccount}
+            , Getdate()
+        )
+    </insert>
+
+
+</mapper>

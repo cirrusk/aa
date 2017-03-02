@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.category.service.impl.LmsCategoryMapper">
+
+	<select id="lmsSelectCategoryList" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			AA.*
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER ( ORDER BY CATEGORYORDER ASC ) AS NO
+				, CATEGORYID
+				, CASE WHEN CATEGORYLEVEL = '1' THEN CATEGORYNAME ELSE '' END CATEGORYNAME1
+				, CASE WHEN CATEGORYLEVEL = '2' THEN CATEGORYNAME ELSE '' END CATEGORYNAME2
+				, CASE WHEN CATEGORYLEVEL = '3' THEN CATEGORYNAME ELSE '' END CATEGORYNAME3
+				, CATEGORYUPID
+				, CATEGORYLEVEL
+				, CASE WHEN OPENFLAG = 'Y' THEN '공개' ELSE '비공개' END OPENFLAG 
+				, CASE WHEN COMPLIANCEFLAG = 'Y' THEN '적용' ELSE '비적용' END COMPLIANCEFLAG
+				, CASE WHEN COPYRIGHTFLAG = 'Y' THEN '적용' ELSE '비적용' END COPYRIGHTFLAG
+				, ( SELECT COUNT(*) FROM LMSCATEGORY WHERE CATEGORYUPID = A.CATEGORYID AND USEFLAG='Y' ) SUBCOUNT
+			FROM LMSCATEGORY A
+			WHERE CATEGORYTYPE = #{searchcoursetype}
+			AND USEFLAG = 'Y'
+		) AA
+	</select>
+	
+	<select id="lmsSelectCategoryExcelList" parameterType="reqBox" resultType="hashmap">
+		SELECT
+			A.*
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER ( ORDER BY CATEGORYORDER ASC ) AS NO
+				, CATEGORYID
+				, CASE WHEN CATEGORYLEVEL = '1' THEN CATEGORYNAME ELSE '' END CATEGORYNAME1
+				, CASE WHEN CATEGORYLEVEL = '2' THEN CATEGORYNAME ELSE '' END CATEGORYNAME2
+				, CASE WHEN CATEGORYLEVEL = '3' THEN CATEGORYNAME ELSE '' END CATEGORYNAME3
+				, CATEGORYUPID
+				, CATEGORYLEVEL
+				, CASE WHEN OPENFLAG = 'Y' THEN '공개' ELSE '비공개' END OPENFLAG 
+				, CASE WHEN COMPLIANCEFLAG = 'Y' THEN '적용' ELSE '비적용' END COMPLIANCEFLAG
+				, CASE WHEN COPYRIGHTFLAG = 'Y' THEN '적용' ELSE '비적용' END COPYRIGHTFLAG
+			FROM LMSCATEGORY
+			WHERE CATEGORYTYPE = #{searchcoursetype}
+			AND USEFLAG = 'Y'
+		) A	
+	</select>
+	
+	<select id="lmsSelectCategoryDetail" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			A.CATEGORYID
+			, A.CATEGORYTYPE
+			, A.CATEGORYNAME
+			, A.CATEGORYCODE
+			, A.CATEGORYUPID
+			, A.CATEGORYLEVEL
+			, A.CATEGORYLEVEL + 1 AS UPCATEGORYLEVEL 
+			, A.OPENFLAG
+			, A.COMPLIANCEFLAG
+			, A.COPYRIGHTFLAG
+			, A.HYBRISMENU
+			, A.CATEGORYORDER
+			, ISNULL(B.CATEGORYNAME,'없음') AS UPCATEGORYNAME
+			, ISNULL(B.CATEGORYCODE, '-') AS UPCATEGORYCODE
+		FROM LMSCATEGORY A LEFT OUTER JOIN LMSCATEGORY B
+		ON A.CATEGORYUPID = B.CATEGORYID
+		WHERE A.CATEGORYID = #{categoryid}
+	</select>
+	
+	<select id="lmsSelectCategoryOrderCount" parameterType="reqBox" resultType="int">
+		SELECT
+			COUNT(*) AS CNT
+		FROM LMSCATEGORY
+		WHERE CATEGORYUPID = #{categoryupid}
+		AND CATEGORYTYPE = #{categorytype}
+		AND USEFLAG = 'Y'
+	</select>
+	
+	<select id="lmsSelectMaxCategoryId" parameterType="reqBox" resultType="int">
+		SELECT ISNULL(MAX(CATEGORYID),0)+1 AS MAXID
+		FROM LMSCATEGORY
+	</select>
+	
+	<select id="lmsSelectCategorySameCodeCount" parameterType="reqBox" resultType="int">
+		SELECT COUNT(*) AS CNT
+		FROM LMSCATEGORY
+		WHERE CATEGORYCODE = #{categorycode}
+		AND USEFLAG = 'Y'
+		<if test='inputtype.equals("up")'>
+			AND CATEGORYID <![CDATA[<>]]> #{categoryid}
+		</if>
+	</select>
+	
+	<insert id="lmsInsertCategoryAjax" parameterType="reqBox">
+		INSERT INTO LMSCATEGORY (
+			CATEGORYID
+			, CATEGORYTYPE
+			, CATEGORYNAME
+			, CATEGORYCODE
+			, CATEGORYUPID
+			, CATEGORYLEVEL
+			, OPENFLAG
+			, COMPLIANCEFLAG
+			, COPYRIGHTFLAG
+			, REGISTRANTDATE
+			, MODIFYDATE
+			, HYBRISMENU
+			, REGISTRANT
+			, MODIFIER
+			, CATEGORYORDER
+        	, USEFLAG
+		) VALUES (
+			#{categoryid}
+			, #{categorytype}
+			, #{categoryname}
+			, #{categorycode}
+			, #{categoryupid}
+			, #{categorylevel}
+			, #{openflag}
+			, #{complianceflag}
+			, #{copyrightflag}
+			, Getdate()
+			, Getdate()
+			, #{hybrismenu}
+			, #{adminid}
+			, #{adminid}
+			, #{categoryorder}
+        	, 'Y'
+		)
+	</insert>
+	
+	<update id="lmsUpdateCategoryAjax" parameterType="reqBox">
+		UPDATE LMSCATEGORY SET
+			CATEGORYNAME = #{categoryname}
+			, OPENFLAG = #{openflag}
+			, COMPLIANCEFLAG = #{complianceflag}
+			, COPYRIGHTFLAG = #{copyrightflag}
+			, MODIFYDATE = Getdate()
+			, HYBRISMENU = #{hybrismenu}
+			, MODIFIER = #{adminid}
+			, CATEGORYCODE = #{categorycode}
+		WHERE CATEGORYID = #{categoryid}
+	</update>
+	
+	<update id="lmsDeleteCategoryAjax" parameterType="reqBox">
+		UPDATE LMSCATEGORY SET
+			USEFLAG = 'N'
+		WHERE CATEGORYID IN
+			<foreach collection="categoryids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+	
+</mapper>

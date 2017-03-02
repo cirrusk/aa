@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.trainingFee.proof.service.impl.TrainingFeeCheckListMapper">
+
+	<select id="selectTrainingFeeCheckListCount" parameterType="reqBox" resultType="int">
+		/* TrainingFeeCheckList.xml  selectTrainingFeeCheckListCount  */
+		WITH PERSONSPAN AS (SELECT   A.GIVEYEAR
+							       , A.GIVEMONTH
+							       , A.SPENDCONFIRMDT
+							       , A.DEPABO_NO
+							       , DBO.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+							       , SUM(B.SPENDAMOUNT) AS SPENDAMOUNT
+							       , A.AS400UPLOADFALG
+							       , A.SPENDTYPE
+							  FROM DBO.TRFEESPEND A
+							INNER JOIN DBO.TRFEESPENDITEM B ON B.GIVEYEAR = A.GIVEYEAR
+							                               AND   B.GIVEMONTH = A.GIVEMONTH
+							                               AND   B.SPENDID = A.SPENDID
+							WHERE A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							  AND A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							  AND A.SPENDTYPE = 'person'
+							  AND A.SPENDCONFIRMFLAG = 'Y'
+							GROUP BY A.GIVEYEAR
+							       , A.GIVEMONTH
+							       , A.SPENDCONFIRMDT
+							       , A.DEPABO_NO
+							       , A.AS400UPLOADFALG
+							       , A.SPENDTYPE)
+			, GROUPSPAN AS (SELECT   A.GIVEYEAR
+							       , A.GIVEMONTH
+							       , B.SPENDCONFIRMDT
+							       , B.DEPABO_NO
+							       , DBO.F_GETABONAME(B.DEPABO_NO) AS DEPABONAME
+							       , SUM(B.SPENDAMOUNT) AS SPENDAMOUNT
+							       , B.AS400UPLOADFALG
+							       , A.SPENDTYPE
+							  FROM DBO.TRFEESPEND A
+							INNER JOIN DBO.TRFEESPENDITEMGROUP B ON B.GIVEYEAR = A.GIVEYEAR
+							                               AND   B.GIVEMONTH = A.GIVEMONTH
+							                               AND   B.SPENDID = A.SPENDID
+							WHERE A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							  AND A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							  AND A.SPENDTYPE = 'group'
+							  AND B.SPENDCONFIRMFLAG = 'Y'
+							GROUP BY A.GIVEYEAR
+							       , A.GIVEMONTH
+							       , B.SPENDCONFIRMDT
+							       , B.DEPABO_NO
+							       , B.AS400UPLOADFALG
+							       , A.SPENDTYPE)
+		SELECT   COUNT(DISTINCT A.DEPABO_NO) AS TOTAL_CNT
+		  FROM (  SELECT   A.GIVEYEAR
+		                 , A.GIVEMONTH
+		                 , A.SPENDCONFIRMDT
+		                 , A.DEPABO_NO
+		                 , A.DEPABONAME
+		                 , A.SPENDAMOUNT
+		                 , A.AS400UPLOADFALG
+		                 , A.SPENDTYPE
+		            FROM   PERSONSPAN A
+		          UNION
+		          SELECT   A.GIVEYEAR
+		                 , A.GIVEMONTH
+		                 , A.SPENDCONFIRMDT
+		                 , A.DEPABO_NO
+		                 , A.DEPABONAME
+		                 , A.SPENDAMOUNT
+		                 , A.AS400UPLOADFALG
+		                 , A.SPENDTYPE
+		            FROM   GROUPSPAN A ) A
+       INNER JOIN   V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+						        AND A.GIVEMONTH = B.GIVEMONTH
+								AND A.DEPABO_NO = B.DEPABO_NO
+        LEFT JOIN   MEMBER C ON A.DEPABO_NO = C.UID
+		 WHERE   1=1
+              <if test="searchDepSchType.equalsIgnoreCase('1') ">
+              	   <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+              		AND   A.DEPABO_NO = #{searchDepositNm}
+              		</if>
+              </if>
+              <if test="searchDepSchType.equalsIgnoreCase('2') ">
+                  <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+              		AND   B.DEPABONAME LIKE '%'+#{searchDepositNm}+'%'
+              		</if>
+              </if>
+              <if test="as400uploadfalg != null and !as400uploadfalg.equals('') ">
+              AND   ISNULL(A.AS400UPLOADFALG,'N') = #{as400uploadfalg}
+              </if>
+              <if test="fromConfrimDt != null and !fromConfrimDt.equals('') ">
+              AND   A.SPENDCONFIRMDT BETWEEN REPLACE(#{fromConfrimDt}, '-','') AND REPLACE(#{toConfrimDt},'-','')
+              </if>
+              <if test="searchBR != null and !searchBR.equals('') ">
+              AND   B.BR = #{searchBR}
+              </if>
+              <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+              AND   B.GROUPCODE = #{searchGrpCd}
+              </if>
+              <if test="searchCode != null and !searchCode.equals('') ">
+              AND   B.CODE = #{searchCode}
+              </if>
+              <if test="searchLoa != null and !searchLoa.equals('') ">
+              AND   B.LOANAMEKOR = #{searchLoa}
+              </if>
+              <if test="searchCPin != null and !searchCPin.equals('') ">
+              AND   B.GROUPS = #{searchCPin}
+              </if>
+              <if test="searchDept != null and !searchDept.equals('') ">
+              AND   B.DEPARTMENT = #{searchDept}
+              </if>
+	</select>
+	
+	<select id="selectTrainingFeeCheckList" parameterType="reqBox" resultType="dataBox">
+		/* TrainingFeeCheckList.xml  selectTrainingFeeCheckList  */
+		WITH PERSONSPAN AS (SELECT   A.GIVEYEAR
+							       , A.GIVEMONTH
+							       , A.SPENDCONFIRMDT
+							       , A.SPENDID
+							       , A.DEPABO_NO
+							       , DBO.F_GETABONAME(A.DEPABO_NO) AS DEPABONAME
+							       , SUM(B.SPENDAMOUNT) AS SPENDAMOUNT
+							       , A.AS400UPLOADFALG
+							       , A.SPENDTYPE
+							  FROM DBO.TRFEESPEND A
+							INNER JOIN DBO.TRFEESPENDITEM B ON B.GIVEYEAR = A.GIVEYEAR
+							                               AND   B.GIVEMONTH = A.GIVEMONTH
+							                               AND   B.SPENDID = A.SPENDID
+							WHERE A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							  AND A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							  AND A.SPENDTYPE = 'person'
+							  AND A.SPENDCONFIRMFLAG = 'Y'
+							GROUP BY A.GIVEYEAR
+							       , A.GIVEMONTH
+							       , A.SPENDCONFIRMDT
+							       , A.DEPABO_NO
+							       , A.SPENDID
+							       , A.AS400UPLOADFALG
+							       , A.SPENDTYPE)
+			, GROUPSPAN AS (SELECT   A.GIVEYEAR
+							       , A.GIVEMONTH
+							       , B.SPENDCONFIRMDT
+							       , A.SPENDID
+							       , B.DEPABO_NO
+							       , DBO.F_GETABONAME(B.DEPABO_NO) AS DEPABONAME
+							       , SUM(B.SPENDAMOUNT) AS SPENDAMOUNT
+							       , B.AS400UPLOADFALG
+							       , A.SPENDTYPE
+							  FROM DBO.TRFEESPEND A
+							INNER JOIN DBO.TRFEESPENDITEMGROUP B ON B.GIVEYEAR = A.GIVEYEAR
+							                               AND   B.GIVEMONTH = A.GIVEMONTH
+							                               AND   B.SPENDID = A.SPENDID
+							WHERE A.GIVEYEAR = SUBSTRING(#{searchGiveYear}, 1, 4)
+							  AND A.GIVEMONTH = SUBSTRING(#{searchGiveYear}, 6, 2)
+							  AND A.SPENDTYPE = 'group'
+							  AND B.SPENDCONFIRMFLAG = 'Y'
+							GROUP BY A.GIVEYEAR
+							       , A.GIVEMONTH
+							       , B.SPENDCONFIRMDT
+							       , A.SPENDID
+							       , B.DEPABO_NO
+							       , B.AS400UPLOADFALG
+							       , A.SPENDTYPE)
+			SELECT BB.*
+			  FROM (
+					  SELECT ROW_NUMBER() OVER (ORDER BY SPENDCONFIRMDT DESC,  ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+					    	, AA.*
+					  FROM (
+							SELECT   A.GIVEYEAR
+				                   , A.GIVEMONTH
+				                   , CONVERT(DATE, A.SPENDCONFIRMDT) AS SPENDCONFIRMDT
+				                   , A.DEPABO_NO
+				                   , A.DEPABONAME
+				                   , SUM(A.SPENDAMOUNT) AS SPENDAMOUNT
+				                   , B.CODE
+								   , 100 AS RATE
+								   , B.BR
+								   , C.QUALIFYDIA
+								   , DBO.F_GETABONAME(C.QUALIFYDIA) AS QUALIFYDIANAME
+								   , B.TRFEE
+				                   , ( SELECT   COUNT(D.ABO_NO)
+										 FROM   TRFEETARGETMONTH D
+										WHERE   D.GIVEYEAR = A.GIVEYEAR
+										  AND   D.GIVEMONTH = A.GIVEMONTH
+										  AND   D.DEPABO_NO = A.DEPABO_NO ) CALCNT
+				                   , A.AS400UPLOADFALG
+				                   , A.SPENDTYPE
+				              FROM (  SELECT   A.GIVEYEAR
+							                 , A.GIVEMONTH
+							                 , A.SPENDCONFIRMDT
+							                 , A.DEPABO_NO
+							                 , A.DEPABONAME
+							                 , A.SPENDAMOUNT
+							                 , A.AS400UPLOADFALG
+							                 , A.SPENDTYPE
+							            FROM   PERSONSPAN A
+							          UNION
+							          SELECT   A.GIVEYEAR
+							                 , A.GIVEMONTH
+							                 , A.SPENDCONFIRMDT
+							                 , A.DEPABO_NO
+							                 , A.DEPABONAME
+							                 , A.SPENDAMOUNT
+							                 , A.AS400UPLOADFALG
+							                 , A.SPENDTYPE
+							            FROM   GROUPSPAN A  ) A
+				        INNER JOIN   V_TRFEETARGET B ON A.GIVEYEAR = B.GIVEYEAR
+											        AND A.GIVEMONTH = B.GIVEMONTH
+													AND A.DEPABO_NO = B.DEPABO_NO
+				         LEFT JOIN   MEMBER C ON A.DEPABO_NO = C.UID
+							 WHERE   1=1
+				               <if test="searchDepSchType.equalsIgnoreCase('1') ">
+				               	   <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+				               		AND   A.DEPABO_NO = #{searchDepositNm}
+				               		</if>
+				               </if>
+				               <if test="searchDepSchType.equalsIgnoreCase('2') ">
+				                   <if test="searchDepositNm != null and !searchDepositNm.equals('') ">
+				               		AND   B.DEPABONAME LIKE '%'+#{searchDepositNm}+'%'
+				               		</if>
+				               </if>
+				               <if test="as400uploadfalg != null and !as400uploadfalg.equals('') ">
+				               AND   ISNULL(A.AS400UPLOADFALG,'N') = #{as400uploadfalg}
+				               </if>
+				               <if test="fromConfrimDt != null and !fromConfrimDt.equals('') ">
+				               AND   A.SPENDCONFIRMDT BETWEEN REPLACE(#{fromConfrimDt}, '-','') AND REPLACE(#{toConfrimDt},'-','')
+				               </if>
+				               <if test="searchBR != null and !searchBR.equals('') ">
+				               AND   B.BR = #{searchBR}
+				               </if>
+				               <if test="searchGrpCd != null and !searchGrpCd.equals('') ">
+				               AND   B.GROUPCODE = #{searchGrpCd}
+				               </if>
+				               <if test="searchCode != null and !searchCode.equals('') ">
+				               AND   B.CODE = #{searchCode}
+				               </if>
+				               <if test="searchLoa != null and !searchLoa.equals('') ">
+				               AND   B.LOANAMEKOR = #{searchLoa}
+				               </if>
+				               <if test="searchCPin != null and !searchCPin.equals('') ">
+				               AND   B.GROUPS = #{searchCPin}
+				               </if>
+				               <if test="searchDept != null and !searchDept.equals('') ">
+				               AND   B.DEPARTMENT = #{searchDept}
+				               </if>
+				          GROUP BY   A.GIVEYEAR
+				                   , A.GIVEMONTH
+				                   , A.SPENDCONFIRMDT
+				                   , A.DEPABO_NO
+				                   , A.DEPABONAME
+				                   , B.CODE
+								   , B.BR
+								   , C.QUALIFYDIA
+								   , B.TRFEE
+				                   , A.AS400UPLOADFALG
+				                   , A.SPENDTYPE
+						) AA   
+				) BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<update id="updateAs400UploadFalg" parameterType="java.util.Map">
+		UPDATE   dbo.TRFEESPEND
+		   SET   AS400UPLOADFALG = #{as400uploadfalg}
+		       , MODIFIER        = #{adminId}
+               , MODIFYDATE      = getdate()
+		 WHERE   GIVEYEAR  = #{giveyear}
+		   AND   GIVEMONTH = #{givemonth}
+		   AND   SPENDID   = #{spendid} 
+		   AND   DEPABO_NO = #{depabono}
+	</update>
+	
+	<update id="updateGroupAs400UploadFalg" parameterType="java.util.Map">
+		UPDATE   dbo.TRFEESPENDITEMGROUP
+		   SET   AS400UPLOADFALG = #{as400uploadfalg}
+		       , MODIFIER        = #{adminId}
+               , MODIFYDATE      = getdate()
+		 WHERE   GIVEYEAR  = #{giveyear}
+		   AND   GIVEMONTH = #{givemonth}
+		   AND   DEPABO_NO = #{depabono}
+		   AND   SPENDID   = #{spendid}
+	</update>
+	
+</mapper>

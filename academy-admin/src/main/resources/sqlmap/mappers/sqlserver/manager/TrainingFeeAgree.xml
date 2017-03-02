@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.trainingFee.agree.service.impl.TrainingFeeWrittenMapper">
+	
+	<select id="selectWrittenListCount" parameterType="reqBox" resultType="int">
+		SELECT   COUNT(*) AS TOTAL_CNT
+          FROM   DBO.TRFEEAGREEMANAGE
+         WHERE   AGREETYPECODE = #{agreetypecode}
+           AND   FISCALYEAR    = #{fiscalyear}
+           <if test="delegtypecode != null and !delegtypecode.equalsIgnoreCase('') ">
+		   AND   DELEGTYPECODE   = #{delegtypecode}
+		   </if>
+	</select>
+	
+	<select id="selectWrittenList" parameterType="reqBox" resultType="dataBox">
+		SELECT   * 
+		  FROM (  SELECT   ROW_NUMBER() OVER (ORDER BY ${sortOrderColumn} ${sortOrderType}) AS ROW_NUM
+			             , AA.* 
+			        FROM ( SELECT   FISCALYEAR
+                                  , AGREEID
+                                  , AGREETYPECODE
+                                  , DELEGTYPECODE
+                                  , dbo.F_CMM_CODENAME('TR5',DELEGTYPECODE) AS AGREETYPENAME
+                                  , AGREETITLE
+                                  , AGREETEXT
+                                  , MODIFIER
+                                  , MODIFYDATE
+                                  , dbo.F_USEADMINNAME(REGISTRANT) AS REGISTRANT
+                                  , REGISTRANTDATE
+                             FROM   DBO.TRFEEAGREEMANAGE
+				            WHERE   AGREETYPECODE = #{agreetypecode}
+				              AND   FISCALYEAR    = #{fiscalyear}
+				              <if test="delegtypecode != null and !delegtypecode.equalsIgnoreCase('') ">
+							  AND   DELEGTYPECODE   = #{delegtypecode}
+							  </if>
+			)AS AA
+		)AS BB
+		WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectWrittenData" parameterType="reqBox" resultType="dataBox">
+		SELECT   FISCALYEAR
+               , AGREEID
+               , AGREETYPECODE
+               , DELEGTYPECODE
+               , AGREETITLE
+               , AGREETEXT
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE
+          FROM   DBO.TRFEEAGREEMANAGE
+         WHERE   AGREETYPECODE = #{agreetypecode}
+           AND   FISCALYEAR    = #{fiscalyear}
+           AND   AGREEID       = #{agreeid}
+	</select>
+	
+	<insert id="saveWrittenEdit" parameterType="reqBox">
+		<selectKey keyProperty="maxagreeid" resultType="String" order="BEFORE">
+		 	SELECT   ISNULL(MAX(AGREEID),0) + 1
+		 	  FROM   dbo.TRFEEAGREEMANAGE
+		 	 WHERE   FISCALYEAR  = #{fiscalyear}
+		</selectKey>
+		INSERT
+		  INTO   DBO.TRFEEAGREEMANAGE
+		       ( FISCALYEAR
+               , AGREEID
+               , AGREETYPECODE
+               , DELEGTYPECODE
+               , AGREETITLE
+               , AGREETEXT
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE )
+        VALUES ( #{fiscalyear}
+               , #{maxagreeid}
+               , #{agreetypecode}
+               , #{delegtypecode}
+               , #{agreetitle}
+               , '${agreetext}'
+               , #{adminId}
+               , GETDATE()
+               , #{adminId}
+               , GETDATE() )
+	</insert>
+	
+</mapper>

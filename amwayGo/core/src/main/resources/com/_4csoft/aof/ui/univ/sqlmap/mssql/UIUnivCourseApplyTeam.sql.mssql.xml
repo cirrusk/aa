@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.univ.mapper.UIUnivCourseApplyMapper">
+    <select id="getListCourseActiveId" parameterType="Long" resultType="String">
+/* UIUnivCourseApply.getListCourseActiveId */
+SELECT mem.CS_MEMBER_ID
+  FROM cs_course_apply app
+  INNER JOIN CS_MEMBER mem
+  ON app.CS_MEMBER_SEQ = mem.CS_MEMBER_SEQ
+ WHERE app.cs_course_active_seq = #{courseActiveSeq}
+   AND app.cs_delete_yn = 'N'
+   AND app.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+    </select> 
+</mapper>

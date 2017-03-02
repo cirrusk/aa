@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.LikeHistoryMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UILikeHistoryVO">
+        <selectKey resultType="Long" keyProperty="likeHistorySeq" order="AFTER">
+SELECT @@IDENTITY
+        </selectKey>
+/* LikeHistoryMapper.insert */
+INSERT INTO cs_like_history 
+       (            
+           cs_reference_seq ,
+           cs_reference_tablename ,
+           cs_member_seq ,
+           cs_delete_yn,
+           cs_reg_member_seq ,
+           cs_reg_dtime ,
+           cs_reg_ip ,
+           cs_upd_member_seq ,
+           cs_upd_dtime ,
+           cs_upd_ip 
+       ) 
+       VALUES 
+       ( 
+           #{referenceSeq, jdbcType=NUMERIC} ,
+           #{referenceTablename, jdbcType=VARCHAR} ,
+           #{memberSeq, jdbcType=NUMERIC} ,
+           'N',
+           #{regMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{regIp, jdbcType=VARCHAR} ,
+           #{updMemberSeq, jdbcType=NUMERIC} ,
+           dbo.FN_NOW_TO_CHAR() ,
+           #{updIp, jdbcType=VARCHAR}
+       ) 
+    </insert>
+    
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UILikeHistoryVO">
+/* LikeHistoryMapper.delete */
+UPDATE cs_like_history 
+   SET cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+       cs_upd_ip = #{updIp, jdbcType=VARCHAR} ,
+       cs_delete_yn = 'Y' 
+ WHERE cs_delete_yn = 'N'
+       AND cs_like_history_seq = #{likeHistorySeq}
+    </update>
+
+
+<update id="updateLiekSum" parameterType="com._4csoft.aof.ui.infra.vo.UILikeHistoryVO">
+/* LikeHistoryMapper.updateLiekSum */
+UPDATE ${referenceTablename} 
+       SET ${referenceSumColumnName}= 
+       (SELECT COUNT(*) 
+         FROM cs_like_history 
+        WHERE cs_reference_tablename=#{referenceTablename} 
+              AND cs_reference_seq=#{referenceSeq} 
+              AND cs_delete_yn='N' 
+       ) 
+ WHERE ${referenceKeyColumnName} = #{referenceSeq}
+    </update>
+    
+    
+    
+    <select id="countiInsertLike" parameterType="com._4csoft.aof.ui.infra.vo.UILikeHistoryVO" resultType="int">
+/* LikeHistoryMapper.countiInsertLike */
+SELECT COUNT(*) 
+  FROM cs_like_history  
+ WHERE cs_delete_yn = 'N'
+        AND cs_reference_tablename = #{referenceTablename}
+        AND cs_reference_seq = #{referenceSeq}
+        AND cs_member_seq = #{memberSeq}
+    </select>
+
+</mapper>

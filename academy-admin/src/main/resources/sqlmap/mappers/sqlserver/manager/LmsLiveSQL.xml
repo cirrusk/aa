@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.live.service.impl.LmsLiveMapper">
+	
+	<!-- 라이브 목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsLiveWhere">
+		WHERE USEFLAG = 'Y'  AND COURSETYPE = 'L'
+			<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+				AND A.CATEGORYID = #{searchcategoryid }
+			</if>
+			<if test='searchopenflag != null and !searchopenflag.equals("")'>
+				AND A.OPENFLAG = #{searchopenflag }
+			</if>
+			<if test='searchstartdate != null and !searchstartdate.equals("")'>
+				AND FORMAT(A.ENDDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+			</if>
+			<if test='searchenddate != null and !searchenddate.equals("")'>
+				AND FORMAT(A.STARTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( A.COURSENAME LIKE '%'+#{searchtext }+'%' OR COURSECONTENT LIKE '%'+#{searchtext }+'%' OR SEARCHWORD LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND A.COURSENAME LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND A.COURSECONTENT LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND A.SEARCHWORD LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</sql>
+	
+	<!-- 라이브 목록 카운트 -->
+	<select id="selectLmsLiveCount" parameterType="reqBox" resultType="int">
+		/* selectLmsLiveCount */
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSCOURSE A
+		<include refid="selectLmsLiveWhere" />
+	</select>
+	
+	<!-- 라이브 목록 -->
+	<select id="selectLmsLiveList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsLiveList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, CASE WHEN AA.OPENFLAG='Y' THEN '공개' WHEN AA.OPENFLAG='N' THEN '비공개' WHEN AA.OPENFLAG='C' THEN '정규공개' END AS OPENFLAGNAME
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+		, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+		, (SELECT COUNT(*) FROM LMSSTUDENT WHERE COURSEID = AA.COURSEID AND REQUESTFLAG='Y' ) AS STUDENTCOUNT 
+		, (SELECT COUNT(*) FROM LMSSTEPUNIT WHERE STEPCOURSEID = AA.COURSEID) AS UNITCOUNT
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY A.COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				A.COURSEID ,
+				A.CATEGORYID ,
+				A.COURSENAME ,
+				A.STARTDATE ,
+				A.ENDDATE ,
+				A.OPENFLAG 
+			FROM LMSCOURSE A
+			<include refid="selectLmsLiveWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+		<!-- 라이브 목록 엑셀다운로드 -->
+	<select id="selectLmsLiveListExcelDown" parameterType="reqBox" resultType="hashmap">
+		/* selectLmsLiveListExcelDown */
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS NO , 
+				COURSEID ,
+				CATEGORYID ,
+				COURSENAME ,
+				FORMAT(STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE,
+				CASE WHEN OPENFLAG='Y' THEN '공개' WHEN OPENFLAG='N' THEN '비공개' WHEN OPENFLAG='C' THEN '정규공개' END AS OPENFLAGNAME ,
+				DBO.F_LMS_CATEGORY_TREENAME(CATEGORYID) AS CATEGORYTREENAME 
+			FROM LMSCOURSE A
+			<include refid="selectLmsLiveWhere" />
+	</select>
+	
+	<!-- 라이브 삭제(상세 정보는 삭제 하지 않는다.) -->
+ 	<update id="deleteLmsLive" parameterType="reqBox">
+		/* deleteLmsLive */
+		UPDATE LMSLIVE
+			SET
+				 COURSEID = COURSEID 
+		WHERE COURSEID  IN
+			<foreach collection="courseids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+
+	<!-- 라이브 상세 -->
+	<select id="selectLmsLive" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsLive */
+			SELECT
+				LIVELINK ,
+				LIVEREPLAYLINK ,
+				REPLAYSTART ,
+				CASE WHEN FORMAT(REPLAYSTART, 'yyyy-MM-dd') = '1900-01-01' THEN ''
+						ELSE FORMAT(REPLAYSTART, 'yyyy-MM-dd') 
+					END AS REPLAYSTARTYYMMDD ,
+				FORMAT(REPLAYSTART, 'HH') AS REPLAYSTARTHH ,
+				FORMAT(REPLAYSTART, 'mm') AS REPLAYSTARTMM ,
+				REPLAYEND ,
+				CASE WHEN FORMAT(REPLAYEND, 'yyyy-MM-dd') = '1900-01-01' THEN ''
+						ELSE FORMAT(REPLAYEND, 'yyyy-MM-dd') 
+					END AS REPLAYENDYYMMDD ,
+				FORMAT(REPLAYEND, 'HH') AS REPLAYENDHH ,
+				FORMAT(REPLAYEND, 'mm') AS REPLAYENDMM ,
+				TARGETDETAIL ,
+				NOTE ,
+				LINKTITLE ,
+				LINKURL ,
+				PENALTYNOTE ,
+				LIMITCOUNT ,
+				CANCELTERM
+			FROM LMSLIVE
+			WHERE COURSEID = #{courseid}
+	</select>
+	
+	<!-- 라이브 등록 -->
+ 	<insert id="insertLmsLive" parameterType="reqBox">
+		/* insertLmsLive */
+			INSERT INTO LMSLIVE(
+				COURSEID ,
+				LIVELINK ,
+				LIVEREPLAYLINK ,
+				REPLAYSTART ,
+				REPLAYEND ,
+				TARGETDETAIL ,
+				NOTE ,
+				LINKTITLE ,
+				LINKURL ,
+				PENALTYNOTE ,
+				LIMITCOUNT ,
+				CANCELTERM
+				)
+			VALUES(
+				#{maxcourseid} ,
+				#{livelink} ,
+				#{livereplaylink} ,
+				#{replaystart} ,
+				#{replayend} ,
+				#{targetdetail} ,
+				#{note} ,
+				#{linktitle} ,
+				#{linkurl} ,
+				#{penaltynote} ,
+				#{limitcount} ,
+				#{cancelterm}
+				)
+	</insert>
+
+	<!-- 라이브 업데이트 -->
+ 	<update id="updateLmsLive" parameterType="reqBox">
+		/* updateLmsLive */
+			UPDATE LMSLIVE SET
+				LIVELINK = #{livelink} ,
+				LIVEREPLAYLINK = #{livereplaylink} ,
+				REPLAYSTART = #{replaystart} ,
+				REPLAYEND = #{replayend} ,
+				TARGETDETAIL = #{targetdetail} ,
+				NOTE = #{note} ,
+				LINKTITLE = #{linktitle} ,
+				LINKURL = #{linkurl} ,
+				PENALTYNOTE = #{penaltynote} ,
+				LIMITCOUNT = #{limitcount} ,
+				CANCELTERM = #{cancelterm} 
+			WHERE COURSEID = #{courseid} 
+	</update>
+
+</mapper>

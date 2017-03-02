@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.univ.mapper.UIUnivCourseQuizAnswerMapper">
+    <insert id="insertCourseQuizAnswer" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseQuizAnswerVO">
+	     <selectKey resultType="Long" keyProperty="courseQuizAnswerSeq" order="AFTER">
+        SELECT @@IDENTITY
+        </selectKey>
+/* UIUnivCourseQuizAnswerMapper.insert */
+INSERT INTO cx_course_quiz_answer 
+       ( 
+			cx_course_active_seq,
+			cx_member_seq,
+			cx_course_apply_seq,
+			cx_quiz_dtime,
+			cx_course_active_prof_seq,
+			cx_exam_item_seq,
+			cx_exam_example_seq,
+			cx_short_answer,
+			cs_delete_yn, 
+			cs_reg_member_seq, 
+			cs_upd_member_seq, 
+			cs_reg_dtime, 
+			cs_upd_dtime, 
+			cs_reg_ip, 
+			cs_upd_ip 
+			<if test='classificationCode != null and !classificationCode.equals("")'>
+              ,CX_CLASSIFICATION_CODE
+            </if>
+       ) 
+    SELECT #{courseActiveSeq,       	jdbcType=NUMERIC},
+           #{memberSeq,   				jdbcType=NUMERIC},
+           #{courseApplySeq, 			jdbcType=NUMERIC},
+           #{quizDtime, 	  			jdbcType=VARCHAR},
+           #{courseActiveProfSeq, 		jdbcType=NUMERIC},
+           #{examItemSeq, 				jdbcType=NUMERIC},
+           #{examExampleSeq, 			jdbcType=NUMERIC},           
+           #{shortAnswer,  				jdbcType=VARCHAR},
+           'N',
+           #{regMemberSeq,   			jdbcType=NUMERIC},
+           #{updMemberSeq,   			jdbcType=NUMERIC},
+           dbo.FN_NOW_TO_CHAR(),
+           dbo.FN_NOW_TO_CHAR(),
+           #{regIp,          			jdbcType=VARCHAR},
+           #{updIp,          			jdbcType=VARCHAR}
+           <if test='classificationCode != null and !classificationCode.equals("")'>
+           ,#{classificationCode,          			jdbcType=VARCHAR}
+           </if>
+           
+            
+    </insert>
+	
+	
+	<resultMap id="listResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseQuizAnswerRS">
+		<result column="cx_exam_item_seq"        		property="courseQuizAnswer.examItemSeq"/>
+		<result column="cs_exam_item_title"        		property="courseExamItem.examItemTitle"/>
+		<result column="cs_exam_item_type_cd"        	property="courseExamItem.examItemTypeCd"/>
+		<result column="cx_course_active_prof_seq"      property="courseQuizAnswer.courseActiveProfSeq"/>
+		<result column="cs_member_name"        			property="member.memberName"/>
+		<result column="cs_course_active_seq"      		property="courseQuizAnswer.courseActiveSeq"/>
+		<result column="cx_quiz_dtime"      			property="courseQuizAnswer.quizDtime"/>
+		<result column="cx_classification_code"      	property="courseQuizAnswer.classificationCode"/>
+	</resultMap>
+	
+	<select id="getListQuiz" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseQuizAnswerCondition" resultMap="listResultMap">
+	/* UIUnivCourseQuizAnswerMapper.getListQuiz */
+	    <if test='currentPage != 0'>
+	SELECT Z.* FROM (SELECT Row_Number() OVER (
+				<choose>
+		            <when test='orderby == 1'>ORDER BY cx_quiz_dtime DESC,cs_exam_item_title ASC</when>
+		            <when test='orderby == -1'>ORDER BY cx_quiz_dtime DESC,cs_exam_item_title DESC</when>
+		            <when test='orderby == 2'>ORDER BY cx_quiz_dtime DESC,cs_exam_item_type_cd ASC</when>
+		            <when test='orderby == -2'>ORDER BY cx_quiz_dtime DESC,cs_exam_item_type_cd DESC</when>
+		            <when test='orderby == 3'>ORDER BY cx_quiz_dtime DESC,cs_member_name ASC</when>
+		            <when test='orderby == -3'>ORDER BY cx_quiz_dtime DESC,cs_member_name DESC</when>
+		            <otherwise>ORDER BY cx_quiz_dtime desc,cs_member_name DESC, cs_exam_item_title ASC</otherwise>
+		        </choose>
+				) AS rownumber, * FROM (
+	    </if>
+		 	SELECT cx_exam_item_seq, 
+			       cs_exam_item_title, 
+			       cs_exam_item_type_cd, 
+			       cx_course_active_prof_seq, 
+			       cs_member_name,
+			       #{srchCourseActiveSeq} AS cs_course_active_seq,
+			       cx_quiz_dtime
+			  FROM 
+			       (SELECT cqa.cx_exam_item_seq, 
+			               cqa.cx_course_active_prof_seq, 
+			               m.cs_member_name,
+			               cx_quiz_dtime
+			          FROM cs_course_apply ca 
+	            INNER JOIN cx_course_quiz_answer cqa 
+		                ON cqa.cx_course_apply_seq = ca.cs_course_apply_seq 
+		               AND cqa.cx_course_active_seq = #{srchCourseActiveSeq}
+		               AND cqa.cs_delete_yn = 'N' 
+		               <if test='srchClassificationCode != null and !srchClassificationCode.equals("")'>
+		               AND cqa.CX_CLASSIFICATION_CODE = #{srchClassificationCode}
+		               </if>
+			    INNER JOIN cs_member m 
+			            ON cqa.cx_course_active_prof_seq = m.cs_member_seq 
+		               AND m.cs_delete_yn = 'N' 
+		                   <if test='srchWord != null and !srchWord.equals("")'>
+				              <if test='srchKey.equals("memberName")'>
+				       AND m.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+				              </if>
+				           </if> 
+			         WHERE ca.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+			           AND ca.cs_delete_yn = 'N'
+			           	  <if test="srchMemberSeq != null and srchMemberSeq > 0L">
+			           	  AND cx_course_active_prof_seq = #{srchMemberSeq}
+			           	  </if>
+			           	  <if test='srchQuizDtime != null and !srchQuizDtime.equals("")'>
+			           	  AND cx_quiz_dtime > #{srchQuizDtime}
+			           	  </if>
+			      GROUP BY cx_exam_item_seq, 
+			               cqa.cx_course_active_prof_seq, 
+			               m.cs_member_name,
+			               cx_quiz_dtime
+			         ) a 
+		   INNER JOIN cs_course_exam_item cei 
+			       ON cei.cs_exam_item_seq = a.cx_exam_item_seq 
+			      AND cei.cs_delete_yn = 'N'
+			      	  <if test='srchWord != null and !srchWord.equals("")'>
+			              <if test='srchKey.equals("title")'>
+			      AND cei.cs_exam_item_title LIKE '%' + #{srchWordDB} + '%'
+			              </if>
+			          </if>
+        <if test='currentPage != 0'>
+	) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+        </if>
+    </select>
+
+    <select id="countListQuiz" parameterType="com._4csoft.aof.ui.univ.vo.condition.UIUnivCourseQuizAnswerCondition" resultType="int">
+/* UIUnivCourseQuizAnswerMapper.countListQuiz */
+	SELECT COUNT(*)
+  	  FROM (
+			SELECT cx_exam_item_seq
+			  FROM 
+			       (SELECT cqa.cx_exam_item_seq, 
+			               cqa.cx_course_active_prof_seq, 
+			               m.cs_member_name 
+			          FROM cs_course_apply ca 
+	            INNER JOIN cx_course_quiz_answer cqa 
+		                ON cqa.cx_course_apply_seq = ca.cs_course_apply_seq 
+		               AND cqa.cx_course_active_seq = #{srchCourseActiveSeq}
+		               AND cqa.cs_delete_yn = 'N' 
+		                <if test='srchClassificationCode != null and !srchClassificationCode.equals("")'>
+		               AND cqa.CX_CLASSIFICATION_CODE = #{srchClassificationCode}
+		               </if>
+			    INNER JOIN cs_member m 
+			            ON cqa.cx_course_active_prof_seq = m.cs_member_seq 
+		               AND m.cs_delete_yn = 'N' 
+		                   <if test='srchWord != null and !srchWord.equals("")'>
+				              <if test='srchKey.equals("memberName")'>
+				       AND m.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+				              </if>
+				           </if> 
+			         WHERE ca.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+			           AND ca.cs_delete_yn = 'N'
+			           <if test="srchMemberSeq != null and srchMemberSeq > 0L">
+		           	  	AND cx_course_active_prof_seq = #{srchMemberSeq}
+		           	   </if>
+		           	   <if test='srchQuizDtime != null and !srchQuizDtime.equals("")'>
+		           	  AND cx_quiz_dtime > #{srchQuizDtime}
+		           	  </if>
+			      GROUP BY cx_exam_item_seq, 
+			               cqa.cx_course_active_prof_seq, 
+			               m.cs_member_name,
+			               cx_quiz_dtime 
+			         ) a 
+		   INNER JOIN cs_course_exam_item cei 
+			       ON cei.cs_exam_item_seq = a.cx_exam_item_seq 
+			      AND cei.cs_delete_yn = 'N'
+			      	  <if test='srchWord != null and !srchWord.equals("")'>
+			              <if test='srchKey.equals("title")'>
+			      AND cei.cs_exam_item_title LIKE '%' + #{srchWordDB} + '%'
+			              </if>
+			          </if>
+           ) a
+    </select>
+    
+    <resultMap id="listQuizAnswerResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseQuizAnswerRS">
+     	<result column="cs_exam_item_seq"        		property="courseExamItem.examItemSeq"/>
+		<result column="cs_exam_seq"        			property="courseExamItem.examSeq"/>
+		<result column="cs_exam_example_seq"        	property="courseExamExample.examExampleSeq"/>
+		<result column="cs_sort_order"      			property="courseExamExample.sortOrder"/>
+		<result column="cs_exam_item_example_title"     property="courseExamExample.examItemExampleTitle"/>
+		<result column="cx_answer_count"        		property="courseQuizAnswer.answerCount"/>
+		<result column="cs_member_count"        		property="courseQuizAnswer.memberCount"/>
+    </resultMap>
+    
+    <select id="getListQuizAnswer" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseQuizAnswerVO" resultMap="listQuizAnswerResultMap">
+	/* UIUnivCourseQuizAnswerMapper.getListQuizAnswer */
+	SELECT d.cs_exam_item_seq,
+	       d.cs_exam_seq,
+	       d.cs_exam_example_seq,
+	       ex.cs_sort_order,
+	       ex.cs_exam_item_example_title,
+	       d.cx_answer_count,
+	       cas.cs_member_count
+	  FROM
+	      (SELECT c.cs_exam_item_seq,
+	              c.cs_exam_seq,
+	              c.cs_exam_example_seq,
+	              SUM(cx_answer_count) AS cx_answer_count
+	         FROM
+	             (SELECT a.cs_exam_item_seq,
+	                     a.cs_exam_seq,
+	                     a.cs_exam_example_seq,
+	                     b.cs_course_apply_seq,
+	                     CASE WHEN cx_exam_example_seq IS NULL
+	                          THEN 0
+	                          ELSE 1 END AS cx_answer_count
+	               FROM
+	                    (SELECT cei.cs_exam_item_seq,
+	                            cee.cs_exam_example_seq,
+	                            cei.cs_exam_seq
+	                       FROM cs_course_exam_item cei
+	                 INNER JOIN cs_course_exam_example cee
+	                         ON cei.cs_exam_item_seq = cee.cs_exam_item_seq
+	                        AND cee.cs_delete_yn = 'N'
+	                      WHERE cei.cs_delete_yn = 'N'
+                            AND cei.cs_exam_item_seq = #{examItemSeq}
+                            AND cei.cs_exam_item_type_cd != '${CD.EXAM_ITEM_TYPE.004}'
+	                     ) a
+	     LEFT OUTER JOIN (SELECT ca.cs_course_apply_seq,
+	                             cqa.cx_exam_example_seq,
+	                             cqa.cx_exam_item_seq
+	                        FROM cs_course_apply ca
+                      INNER JOIN cx_course_quiz_answer cqa
+	                          ON cqa.cx_course_apply_seq = ca.cs_course_apply_seq
+	                         AND cqa.cx_course_active_seq = #{courseActiveSeq}
+	                         AND cqa.cx_course_active_prof_seq = #{courseActiveProfSeq}
+	                         AND cqa.cs_delete_yn = 'N'
+	                         <if test='classificationCode != null and !classificationCode.equals("")'>
+	                         AND cx_classification_code = #{classificationCode}
+	                         </if>
+	                         <if test='quizDtime != null and !quizDtime.equals("")'>
+	                         AND cx_quiz_dtime = #{quizDtime}
+	                         </if>
+	                      WHERE ca.cs_delete_yn = 'N'
+	                            and ca.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+	                     ) b
+	                  ON a.cs_exam_item_seq = b.cx_exam_item_seq
+	                 AND a.cs_exam_example_seq = b.cx_exam_example_seq
+	              ) c
+	     GROUP BY c.cs_exam_item_seq,
+	              c.cs_exam_seq,
+	              c.cs_exam_example_seq
+	       ) d
+INNER JOIN cs_course_exam_example ex
+        ON d.cs_exam_example_seq = ex.cs_exam_example_seq
+	   AND ex.cs_delete_yn = 'N'
+INNER JOIN cs_course_active_summary cas
+	    ON cs_course_active_seq = #{courseActiveSeq}
+  ORDER BY ex.cs_sort_order
+    </select>
+    
+    
+    <resultMap id="listQuizShortAnswerResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseQuizAnswerRS">
+     	<result column="cs_member_seq"        		property="member.memberSeq"/>
+		<result column="cs_member_name"        		property="member.memberName"/>
+		<result column="cx_short_answer"        	property="courseQuizAnswer.shortAnswer"/>
+		<result column="cx_course_quiz_answer_seq"        	property="courseQuizAnswer.courseQuizAnswerSeq"/>
+    </resultMap>
+    
+    <select id="getListQuizShortAnswer" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseQuizAnswerVO" resultMap="listQuizShortAnswerResultMap">
+	/* UIUnivCourseQuizAnswerMapper.getListQuizShortAnswer */
+	SELECT 
+			mem.cs_member_seq,
+			mem.cs_member_name,
+			cqa.cx_short_answer,
+			cqa.cx_course_quiz_answer_seq
+	   FROM cs_course_apply ca 
+		INNER JOIN cx_course_quiz_answer cqa 
+			ON cqa.cx_course_apply_seq = ca.cs_course_apply_seq 
+			AND cqa.cx_course_active_seq = #{courseActiveSeq} 
+			AND cqa.cx_course_active_prof_seq = #{courseActiveProfSeq}
+			AND cqa.cx_exam_item_seq = #{examItemSeq}
+			AND cqa.cs_delete_yn = 'N' 
+			<if test='classificationCode != null and !classificationCode.equals("")'>
+            AND cx_classification_code = #{classificationCode}
+            </if>
+            <if test='quizDtime != null and !quizDtime.equals("")'>
+            AND cx_quiz_dtime = #{quizDtime}
+            </if>
+            <if test='courseQuizAnswerSeq != null and !courseQuizAnswerSeq.equals("")'>
+            AND cqa.cx_course_quiz_answer_seq > #{courseQuizAnswerSeq}
+            </if>
+		INNER JOIN cs_member mem
+			ON ca.cs_member_seq = mem.cs_member_seq
+			AND mem.cs_delete_yn = 'N'
+	  WHERE ca.cs_delete_yn = 'N' 
+			AND ca.cs_apply_status_cd = '${CD.APPLY_STATUS.002}'
+		ORDER by cx_course_quiz_answer_seq desc
+    </select>
+    
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.univ.vo.resultset.UIUnivCourseQuizAnswerRS">
+		<result column="cx_exam_item_seq"        		property="courseQuizAnswer.examItemSeq"/>
+		<result column="cs_exam_item_title"        		property="courseExamItem.examItemTitle"/>
+		<result column="cs_exam_item_type_cd"        	property="courseExamItem.examItemTypeCd"/>
+		<result column="cx_course_active_prof_seq"      property="courseQuizAnswer.courseActiveProfSeq"/>
+		<result column="cs_member_name"        			property="member.memberName"/>
+		<result column="cs_course_active_seq"      		property="courseQuizAnswer.courseActiveSeq"/>
+		<result column="cx_quiz_dtime"      			property="courseQuizAnswer.quizDtime"/>
+		<result column="cx_classification_code"      	property="courseQuizAnswer.classificationCode"/>
+	</resultMap>
+	
+	<select id="getDetailQuiz" parameterType="com._4csoft.aof.ui.univ.vo.UIUnivCourseQuizAnswerVO" resultMap="detailResultMap">
+	/* UIUnivCourseQuizAnswerMapper.getListQuiz */
+
+	 	SELECT cx_exam_item_seq, 
+		       cs_exam_item_title, 
+		       cs_exam_item_type_cd, 
+		       cx_course_active_prof_seq, 
+		       cs_member_name
+		       cx_quiz_dtime
+		  FROM 
+		       (SELECT cqa.cx_exam_item_seq, 
+		               cqa.cx_course_active_prof_seq, 
+		               m.cs_member_name,
+		               cx_quiz_dtime
+		          FROM cs_course_apply ca 
+            INNER JOIN cx_course_quiz_answer cqa 
+	                ON cqa.cx_course_apply_seq = ca.cs_course_apply_seq 
+	               AND cqa.cx_course_active_seq = #{courseActiveSeq}
+	               AND cqa.cs_delete_yn = 'N' 
+	               <if test='classificationCode != null and !classificationCode.equals("")'>
+	               AND cqa.CX_CLASSIFICATION_CODE = #{classificationCode}
+	               </if>
+	               <if test='courseActiveProfSeq != null and !courseActiveProfSeq.equals("")'>
+	               AND cqa.cx_course_active_prof_seq = #{courseActiveProfSeq}
+	               </if>
+	               <if test='quizDtime != null and !quizDtime.equals("")'>
+	               AND cqa.cx_quiz_dtime = #{quizDtime}
+	               </if>
+	               <if test='examItemSeq != null and !examItemSeq.equals("")'>
+	               AND cqa.cx_exam_item_seq = #{examItemSeq}
+	               </if>
+		    INNER JOIN cs_member m 
+		            ON cqa.cx_course_active_prof_seq = m.cs_member_seq 
+	               AND m.cs_delete_yn = 'N' 
+		         WHERE ca.cs_apply_status_cd = '${CD.APPLY_STATUS.002}' 
+		           AND ca.cs_delete_yn = 'N'
+		      GROUP BY cx_exam_item_seq, 
+		               cqa.cx_course_active_prof_seq, 
+		               m.cs_member_name,
+		               cx_quiz_dtime
+		         ) a 
+	   INNER JOIN cs_course_exam_item cei 
+		       ON cei.cs_exam_item_seq = a.cx_exam_item_seq 
+		      AND cei.cs_delete_yn = 'N'
+    </select>
+    
+</mapper>

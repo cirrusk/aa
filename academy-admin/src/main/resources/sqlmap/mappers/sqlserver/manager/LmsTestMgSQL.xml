@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="amway.com.academy.manager.lms.testMg.service.impl.LmsTestMgMapper">
+
+	<select id="selectLmsTestMgCategoryList" resultType="dataBox">
+		SELECT CATEGORYID, CATEGORYNAME 
+		FROM LMSCATEGORY 
+		WHERE CATEGORYTYPE='T'
+		AND USEFLAG='Y'
+		ORDER BY CATEGORYID ASC
+	</select>
+	
+	<!-- 시험지 관리 목록, 시험지 관리 공통 조회조건 -->
+	<sql id="selectLmsTestMgWhere">
+		WHERE USEFLAG = 'Y'
+			AND COURSETYPE = 'T'
+		<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+			AND CATEGORYID = #{searchcategoryid}
+		</if>
+		<if test='searchtext != null and !searchtext.equals("")'>
+			AND COURSENAME LIKE '%' + #{searchtext} + '%'
+		</if>
+		<if test='searchstartdate != null and !searchstartdate.equals("")'>
+			AND FORMAT(ENDDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartdate }
+		</if>
+		<if test='searchenddate != null and !searchenddate.equals("")'>
+			AND FORMAT(STARTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchenddate }
+		</if>
+	</sql>
+	
+	<!-- 시험지 관리 목록 카운트 -->
+	<select id="selectLmsTestMgCount" parameterType="reqBox" resultType="int">
+		/* selectLmsTestMgCount */
+		SELECT
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSCOURSE
+		<include refid="selectLmsTestMgWhere" />
+	</select>
+	
+	<!-- 시험지 관리 목록 -->
+	<select id="selectLmsTestMgList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsTestMgList */
+		SELECT 
+			#{totalCount} - ROW_NUM + 1 AS NO 
+			, AA.*
+			, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+			, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+		FROM (
+			SELECT 
+				ROW_NUMBER() OVER (
+					<choose>
+						<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+							ORDER BY ${sortOrderColumn} ${sortOrderType}
+						</when>
+						<otherwise>
+							ORDER BY A.COURSEID DESC
+						</otherwise>
+					</choose>
+				) AS ROW_NUM , 
+				CATEGORYID, 
+				COURSEID, 
+				COURSENAME,
+				STARTDATE,
+				ENDDATE
+			FROM LMSCOURSE
+			<include refid="selectLmsTestMgWhere"/>
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<select id="selectLmsTestMgExcelList" parameterType="reqBox" resultType="hashmap">
+		SELECT
+			AA.*
+			, AA.ROW_NUM AS NO 
+			, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+			, FORMAT(AA.STARTDATE, 'yyyy-MM-dd HH:mm')  + ' ~ ' + FORMAT(AA.ENDDATE, 'yyyy-MM-dd HH:mm') AS EDUDATE
+		FROM (
+			SELECT
+				ROW_NUMBER() OVER (
+					<choose>
+						<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+							ORDER BY ${sortOrderColumn} ${sortOrderType}
+						</when>
+						<otherwise>
+							ORDER BY COURSEID DESC
+						</otherwise>
+					</choose>
+				) AS ROW_NUM , 
+				CATEGORYID, 
+				COURSEID, 
+				COURSENAME,
+				STARTDATE,
+				ENDDATE
+			FROM LMSCOURSE
+			<include refid="selectLmsTestMgWhere"/>
+		) AA	
+	</select>
+	
+	<select id="selectLmsTestMgDetail" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			A.LIMITTIME
+			, A.PASSPOINT
+			, A.TESTTYPE
+			, (SELECT COUNT(*) FROM LMSTESTANSWER WHERE COURSEID = A.COURSEID) ANSWERTOTAL 
+		FROM LMSTEST A
+		WHERE A.COURSEID = #{courseid} 
+	</select>
+	
+	<select id="selectLmsTestPoolTotalList" parameterType="reqBox" resultType="dataBox">
+		SELECT
+			A.ANSWERTYPE
+			, ISNULL(B.ANSWERCOUNT,0) ANSWERCOUNT
+			, 0 AS TESTCOUNT
+			, 0 AS TESTPOINT
+		FROM
+			( 
+				SELECT 1 AS ANSWERTYPE
+				UNION
+				SELECT 2 AS ANSWERTYPE
+				UNION
+				SELECT 3 AS ANSWERTYPE
+			) A LEFT OUTER JOIN (
+				SELECT
+					ANSWERTYPE
+					, COUNT(*) AS ANSWERCOUNT
+				FROM LMSTESTPOOL
+				WHERE CATEGORYID = #{categoryid}
+				AND USEFLAG = 'Y'
+				GROUP BY ANSWERTYPE
+			) B
+			ON A.ANSWERTYPE = B.ANSWERTYPE
+	</select>
+	
+	<select id="selectLmsTestMgSubmitList" parameterType="reqBox" resultType="dataBox">
+		SELECT 
+			SUBMITSEQ
+			, TESTCOUNT
+			, TESTPOINT
+			, ANSWERTYPE
+		FROM LMSTESTSUBMIT
+		WHERE COURSEID = #{courseid}
+		ORDER BY SUBMITSEQ ASC
+	</select>
+	
+	
+	<insert id="insertLmsTest" parameterType="reqBox">
+		INSERT INTO LMSTEST (
+			COURSEID
+			, LIMITTIME
+			, PASSPOINT
+			, TESTTYPE
+		) VALUES (
+			#{courseid}
+			, #{limittime}
+			, #{passpoint}
+			, #{testtype}
+		)
+	</insert>
+	
+	<insert id="insertLmsTestSubmit" parameterType="reqBox">
+		INSERT INTO LMSTESTSUBMIT (
+			COURSEID
+			, SUBMITSEQ
+			, TESTCOUNT
+			, TESTPOINT
+			, ANSWERTYPE
+		) VALUES (
+			#{courseid}
+			, #{submitseq}
+			, #{testcount}
+			, #{testpoint}
+			, #{answertype}
+		)
+	</insert>
+	
+	<update id="updateLmsTest" parameterType="reqBox">
+		UPDATE LMSTEST SET
+			LIMITTIME = #{limittime}
+			, PASSPOINT = #{passpoint}
+			, TESTTYPE = #{testtype}
+		WHERE COURSEID = #{courseid}
+	</update>
+	
+	<delete id="deleteLmsTestSubmit" parameterType="reqBox">
+		DELETE FROM LMSTESTSUBMIT
+		WHERE COURSEID = #{courseid}
+	</delete>
+	
+</mapper>

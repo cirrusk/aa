@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.file.service.impl.FileUpLoadMapper">
+
+	<!-- 파일(FILE_MANAGERMENT) 상세 조회. -->
+	<select id="selectFileDetail" parameterType="java.util.Map" resultType="egovMap">
+		SELECT   /* file.xml  selectFileDetail  */
+		         WORK
+               , FILEKEY
+               , UPLOADSEQ
+               , REALFILENAME
+               , STOREFILENAME
+               , FILEFULLURL
+               , FILEEXT
+               , MODIFIER
+               , MODIFYDATE
+               , REGISTRANT
+               , REGISTRANTDATE
+          FROM FILEMANAGEMENT A
+         WHERE A.WORK = #{work}
+           AND A.FILEKEY = #{fileKey}
+           AND A.UPLOADSEQ = #{uploadSeq}
+	</select>
+
+	<!-- 파일(FILE_MANAGERMENT) 등록. -->
+	<insert id="insertFile" parameterType="java.util.Map">
+        INSERT INTO /* file.xml  insertFile */
+               FILEMANAGEMENT
+             ( WORK
+             , FILEKEY
+             , UPLOADSEQ
+             , REALFILENAME
+             , STOREFILENAME
+             , FILEFULLURL
+             , FILEEXT
+             , ALTDESC
+             , REGISTRANT
+             , REGISTRANTDATE
+             , MODIFIER
+             , MODIFYDATE )
+        VALUES
+             ( #{grpCd}
+             , #{fileKey}
+             , #{uploadSeq}
+             , #{realFileNm}
+             , #{streFileNm}
+             , #{fileFullUrl}
+             , #{fileExt}
+             , #{altText}
+             , #{userId}
+             , getdate()
+             , #{userId}
+             , getdate() )
+	</insert>
+	
+	<!-- 파일키(FILEKEY) 조회. -->
+	<select id="selectFileKey" parameterType="java.util.Map" resultType="java.lang.Integer">
+		SELECT /* file.xml  selectFileKey */
+			   NEXT VALUE FOR DBO.FILEKEYSEQUENCE
+<!-- 		EHRD_FILEKEY.F_EHRD_FILEKEY(#{grpCd}) -->
+<!-- 		  FROM DUAL -->
+	</select>
+</mapper>

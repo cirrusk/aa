@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.common.batchResult.service.impl.BatchResultMapper">
+
+    <select id="batchResultNameList" parameterType="reqBox" resultType="dataBox">
+        SELECT DISTINCT BATCHNAME AS CODE
+              ,BATCHNAME AS NAME
+        FROM BATCHLOG
+    </select>
+
+    <select id="batchResultListCount" parameterType="reqBox" resultType="int">
+        SELECT COUNT(BATCHLOGSEQ) AS TOTAL_CNT
+        FROM BATCHLOG
+        WHERE 1=1
+        <if test="batchgubun != null and !batchgubun.equals('')">
+            AND BATCHGUBUN = #{batchgubun}
+        </if>
+        <if test="batchlogseq != null and !batchlogseq.equals('')">
+            AND BATCHNAME LIKE ('%${batchlogseq}%')
+        </if>
+        <if test='startday != null and !startday.equals("")'>
+            AND BATCHDATE  <![CDATA[ >= ]]> replace(#{startday},'/','')
+        </if>
+        <if test='endday != null and !endday.equals("")'>
+            AND BATCHDATE  <![CDATA[ <= ]]> replace(#{endday},'/','')
+        </if>
+    </select>
+
+    <select id="batchResultList" parameterType="reqBox" resultType="dataBox">
+       SELECT AI.ROW_NUM
+            , AI.BATCHNAME
+            , AI.BATCHGUBUN
+            , AI.BATCHDATE
+            , AI.BATCHRESULT
+            , AI.BATCHLOGSEQ
+            , AI.STARTDAY
+            , AI.ENDDAY
+       FROM (
+       SELECT ROW_NUMBER() OVER( ORDER BY ${sortOrderColumn} ${sortOrderType} ) AS ROW_NUM
+            , BATCHNAME
+            , BATCHGUBUN
+            , BATCHDATE
+            , BATCHRESULT
+            , BATCHLOGSEQ
+            , BATCHDATE AS STARTDAY
+            , BATCHDATE AS ENDDAY
+       FROM   BATCHLOG
+       WHERE  1=1
+        <if test="batchgubun != null and !batchgubun.equals('')">
+            AND BATCHGUBUN = #{batchgubun}
+        </if>
+        <if test="batchlogseq != null and !batchlogseq.equals('')">
+            AND BATCHNAME LIKE ('%${batchlogseq}%')
+        </if>
+        <if test='startday != null and !startday.equals("")'>
+            AND BATCHDATE  <![CDATA[ >= ]]> replace(#{startday},'/','')
+        </if>
+        <if test='endday != null and !endday.equals("")'>
+            AND BATCHDATE  <![CDATA[ <= ]]> replace(#{endday},'/','')
+        </if>
+
+       ) AS AI
+       WHERE AI.ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+    </select>
+
+</mapper>

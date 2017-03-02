@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="amway.com.academy.manager.lms.data.service.impl.LmsDataMapper">
+	
+	<!-- 교육자료 목록, 카운트 공통 조회조건 -->
+	<sql id="selectLmsDataWhere">
+		WHERE USEFLAG = 'Y' AND COURSETYPE='D'
+			<if test='searchcategoryid != null and !searchcategoryid.equals("")'>
+				AND CATEGORYID = #{searchcategoryid }
+			</if>
+			<if test='searchopenflag != null and !searchopenflag.equals("")'>
+				AND OPENFLAG = #{searchopenflag }
+			</if>
+			<if test='searchdatatype != null and !searchdatatype.equals("")'>
+				AND DATATYPE = #{searchdatatype }
+			</if>
+			<if test='searchstartregistrantdate != null and !searchstartregistrantdate.equals("")'>
+				AND FORMAT(REGISTRANTDATE, 'yyyy-MM-dd') <![CDATA[ >= ]]> #{searchstartregistrantdate }
+			</if>
+			<if test='searchendregistrantdate != null and !searchendregistrantdate.equals("")'>
+				AND FORMAT(REGISTRANTDATE, 'yyyy-MM-dd') <![CDATA[ <= ]]> #{searchendregistrantdate }
+			</if>
+			<if test='searchtext != null and !searchtext.equals("")'>
+				<if test='searchtype.equals("")'>
+					AND ( COURSENAME LIKE '%'+#{searchtext }+'%' OR COURSECONTENT LIKE '%'+#{searchtext }+'%' OR SEARCHWORD LIKE '%'+#{searchtext }+'%' )  
+				</if>
+			 	<if test='searchtype.equals("1")'>
+			 		AND COURSENAME LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("2")'>
+			 		AND COURSECONTENT LIKE '%'+#{searchtext }+'%'  
+			 	</if>
+			 	<if test='searchtype.equals("3")'>
+			 		AND SEARCHWORD LIKE '%'+#{searchtext }+'%'
+			 	</if>
+			</if>
+	</sql>
+	
+	<!-- 교육자료 목록 카운트 -->
+	<select id="selectLmsDataCount" parameterType="reqBox" resultType="int">
+		/* selectLmsDataCount */
+		SELECT  
+			COUNT(*) AS TOTAL_CNT
+		FROM LMSCOURSE A
+		<include refid="selectLmsDataWhere" />
+	</select>
+	
+	<!-- 교육자료 목록 -->
+	<select id="selectLmsDataList" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsDataList */
+		SELECT #{totalCount} - ROW_NUM + 1 AS NO , AA.*
+		, CASE WHEN AA.OPENFLAG='Y' THEN '공개' WHEN AA.OPENFLAG='N' THEN '비공개' WHEN AA.OPENFLAG='C' THEN '정규공개' END AS OPENFLAGNAME
+		, DBO.F_LMS_CATEGORY_TREENAME(AA.CATEGORYID) AS CATEGORYTREENAME
+		, FORMAT(AA.REGISTRANTDATE2, 'yyyy-MM-dd') AS REGISTRANTDATE 
+		, CASE WHEN AA.DATATYPE='M' THEN '동영상' 
+					WHEN AA.DATATYPE='S' THEN '오디오' 
+					WHEN AA.DATATYPE='F' THEN '문서' 
+					WHEN AA.DATATYPE='L' THEN '링크'
+					WHEN AA.DATATYPE='I' THEN '이미지'
+			END AS DATATYPENAME
+		, (SELECT COUNT(*) FROM LMSSTEPUNIT WHERE STEPCOURSEID = AA.COURSEID) AS UNITCOUNT
+		 FROM(
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS ROW_NUM , 
+				COURSEID ,
+				CATEGORYID ,
+				COURSENAME ,
+				REGISTRANTDATE AS  REGISTRANTDATE2,
+				OPENFLAG ,
+				DATATYPE
+			FROM LMSCOURSE A
+			<include refid="selectLmsDataWhere" />
+		) AA WHERE ROW_NUM BETWEEN #{firstIndex} AND #{pageIndex} * #{rowPerPage}
+	</select>
+	
+	<!-- 교육자료 목록 엑셀다운로드 -->
+	<select id="selectLmsDataListExcelDown" parameterType="reqBox" resultType="hashmap">
+		/* selectLmsDataListExcelDown */
+			SELECT
+				ROW_NUMBER() OVER (
+				<choose>
+					<when test="sortOrderColumn != null and !sortOrderColumn.equals('') and sortOrderType != null and !sortOrderType.equals('')">
+						ORDER BY ${sortOrderColumn} ${sortOrderType}
+					</when>
+					<otherwise>
+						ORDER BY COURSEID DESC
+					</otherwise>
+				</choose>
+				) AS NO , 
+				COURSEID ,
+				CATEGORYID ,
+				COURSENAME ,
+				FORMAT(REGISTRANTDATE, 'yyyy-MM-dd') AS REGISTRANTDATE ,
+				CASE WHEN OPENFLAG='Y' THEN '공개' WHEN OPENFLAG='N' THEN '비공개' WHEN OPENFLAG='C' THEN '정규공개' END AS OPENFLAGNAME ,
+				DBO.F_LMS_CATEGORY_TREENAME(CATEGORYID) AS CATEGORYTREENAME ,
+				CASE WHEN A.DATATYPE='M' THEN '동영상' 
+					WHEN A.DATATYPE='S' THEN '오디오' 
+					WHEN A.DATATYPE='F' THEN '문서' 
+					WHEN A.DATATYPE='L' THEN '링크'
+					WHEN A.DATATYPE='I' THEN '이미지'
+				END AS DATATYPENAME
+			FROM LMSCOURSE A
+			<include refid="selectLmsDataWhere" />
+	</select>
+	
+	<!-- 교육자료 삭제(상세 정보는 삭제 하지 않는다.) -->
+ 	<update id="deleteLmsData" parameterType="reqBox">
+		/* deleteLmsData */
+		UPDATE LMSDATA
+			SET
+				 COURSEID = COURSEID 
+		WHERE COURSEID  IN
+			<foreach collection="courseids" item="data" index="i" open="(" close=")" separator=",">#{data}</foreach>
+	</update>
+
+	<!-- 교육자료 상세 -->
+	<select id="selectLmsData" parameterType="reqBox" resultType="dataBox">
+		/* selectLmsData */
+			SELECT
+				PCLINK ,
+				MOBILELINK ,
+				FILELINK ,
+				FILEDOWN ,
+				CASE WHEN CHARINDEX('|' , FILEDOWN) = 0 THEN ''
+						ELSE SUBSTRING(FILEDOWN, 1, CHARINDEX('|' , FILEDOWN)-1 )
+					END AS FILEDOWNREALNAME ,
+				CASE WHEN CHARINDEX('|' , FILEDOWN) = 0 THEN ''
+						ELSE SUBSTRING(FILEDOWN, CHARINDEX('|' , FILEDOWN) + 1, LEN(FILEDOWN) )
+					END AS FILEDOWNSAVEDNAME
+			FROM LMSDATA
+			WHERE COURSEID = #{courseid}
+	</select>
+	
+	<!-- 교육자료 등록 -->
+ 	<insert id="insertLmsData" parameterType="reqBox">
+		/* insertLmsData */
+			INSERT INTO LMSDATA(
+				COURSEID ,
+				PCLINK ,
+				MOBILELINK ,
+				FILELINK ,
+				FILEDOWN
+				)
+			VALUES(
+				#{maxcourseid} ,
+				#{pclink} ,
+				#{mobilelink} ,
+				#{filelink} ,
+				#{filedownfile}
+				)
+	</insert>
+
+	<!-- 교육자료 업데이트 -->
+ 	<update id="updateLmsData" parameterType="reqBox">
+		/* updateLmsData */
+			UPDATE LMSDATA SET
+				PCLINK = #{pclink},
+				MOBILELINK = #{mobilelink},
+				FILELINK = #{filelink},
+				FILEDOWN = #{filedownfile}
+			WHERE COURSEID = #{courseid}
+	</update>
+	
+	<insert id="copyLmsDataAjax" parameterType="reqBox">
+		/* copyLmsDataAjax */
+		INSERT INTO LMSDATA(
+			COURSEID ,
+			PCLINK ,
+			MOBILELINK ,
+			FILELINK ,
+			FILEDOWN
+		)
+		SELECT
+			#{maxcourseid}
+			, PCLINK 
+			, MOBILELINK 
+			, FILELINK 
+			, FILEDOWN
+		FROM LMSDATA
+		WHERE COURSEID = #{courseid}
+	</insert>
+	
+</mapper>

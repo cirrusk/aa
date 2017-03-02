@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.ui.infra.mapper.UIMessageReceiveMapper">
+
+	<!-- 받은쪽지 목록 -->
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMessageReceiveRS">
+        <result column="recv.messageReceiveSeq"   property="messageReceive.messageReceiveSeq" />
+        <result column="recv.regDtime"            property="messageReceive.regDtime" />
+        <result column="send.description"         property="messageSend.description" />
+        <result column="recv.receiveMemberName"   property="receiveMember.memberName" />
+        <result column="send.messageTypeCd"   property="messageSend.messageTypeCd" />
+    </resultMap> 
+    <select id="getListMobile" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageReceiveCondition" resultMap="listResultMap">
+		/* UXMessageReceive.getList */
+		SELECT a.messageSeq AS "recv.messageReceiveSeq", 
+		       a.description AS "send.description", 
+		       a.regDtime AS "recv.regDtime", 
+		       a.memberName AS "recv.receiveMemberName", 
+		       a.messageType AS "send.messageTypeCd"
+		  FROM 
+		       (SELECT sendMessage.messageSendSeq AS "messageSeq" , 
+		              sendMessage.cs_description AS "description" , 
+		              sendMessage.cs_reg_dtime AS "regDtime" , 
+		              recvMessage.receiveMemberName as "memberName", 
+		              'send' as messageType 
+		         FROM 
+		              (SELECT A.cs_message_send_seq AS messageSendSeq , 
+		                     A.cs_description , 
+		                     A.cs_send_member_seq , 
+		                     A.cs_reg_ip , 
+		                     A.cs_send_count , 
+		                     A.cs_reg_dtime 
+		                FROM cs_message_send A 
+		                 INNER JOIN cs_member B 
+		                     ON A.cs_send_member_seq = B.cs_member_seq 
+		                     AND B.cs_delete_yn = 'N' 
+		               WHERE A.cs_send_member_seq = #{srchMemberSeq} 
+		                     AND A.cs_delete_yn = 'N' 
+		                     AND A.cs_message_type_cd = 'MESSAGE_TYPE::MEMO' 
+		              ) sendMessage 
+		          INNER JOIN cs_member sendmem 
+		              ON sendmem.cs_member_seq = sendMessage.cs_send_member_seq 
+		          LEFT OUTER JOIN 
+		              (SELECT A.messageSendSeq AS messageSendSeq , 
+		                     recvmem.cs_member_name AS receiveMemberName , 
+		                     A.receiveMemberSeq , 
+		                     A.readDtime , 
+		                     A.receiveSeq , 
+		                     B.readCount 
+		                FROM 
+		                     (SELECT cs_message_send_seq AS messageSendSeq , 
+		                            min(cs_receive_member_seq ) as receiveMemberSeq , 
+		                            min(cs_read_dtime) as readDtime , 
+		                            min(cs_message_receive_seq) as receiveSeq 
+		                       FROM cs_message_receive 
+		                      GROUP BY cs_message_send_seq 
+		                     ) A 
+		                 INNER JOIN cs_member recvmem 
+		                     ON recvmem.cs_member_seq = A.receiveMemberSeq 
+		                 LEFT OUTER JOIN 
+		                     (SELECT cs_message_send_seq as messageSendSeq , 
+		                            COUNT(cs_message_send_seq) AS readCount 
+		                       FROM cs_message_receive 
+		                      WHERE cs_read_dtime IS NOT NULL 
+		                      GROUP BY cs_message_send_seq 
+		                     ) B 
+		                     ON A.messageSendSeq = B.messageSendSeq 
+		              ) recvMessage 
+		              ON sendMessage.messageSendSeq = recvMessage.messageSendSeq 
+		        WHERE recvMessage.receiveMemberSeq = #{srchTargetMemberSeq} 
+		           UNION ALL 
+		       SELECT recv.cs_message_receive_seq AS "messageSeq", 
+		              send.cs_description AS "description", 
+		              recv.cs_reg_dtime AS "regDtime" , 
+		              memb.cs_member_name AS "memberName", 
+		              'recv' as messageType 
+		         FROM cs_message_receive recv 
+		          INNER JOIN cs_member memrev 
+		              ON memrev.cs_member_seq = recv.cs_receive_member_seq 
+		          INNER JOIN cs_message_send send 
+		              ON send.cs_message_send_seq = recv.cs_message_send_seq 
+		              AND send.cs_message_type_cd = 'MESSAGE_TYPE::MEMO' 
+		          INNER JOIN cs_member memb 
+		              ON memb.cs_member_seq = send.cs_send_member_seq 
+		              AND memb.cs_delete_yn = 'N' 
+		        WHERE recv.cs_delete_yn = 'N' 
+		              AND recv.cs_receive_type_cd != 'MESSAGE_RECEIVE_TYPE::001' 
+		              AND recv.cs_receive_member_seq = #{srchMemberSeq}
+		              AND memb.cs_member_seq = #{srchTargetMemberSeq}
+		       ) a 
+		ORDER BY a.regDtime
+    </select>
+    
+</mapper>

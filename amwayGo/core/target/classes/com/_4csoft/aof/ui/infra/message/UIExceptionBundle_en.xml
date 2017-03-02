@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <entry key="exception.notfound.page">Page cannot be found.</entry>
+    <entry key="exception.invalid.session">No session.</entry>
+    <entry key="exception.access.denied">No access authority.</entry>
+    <entry key="exception.access.classroom.denied">강의실 접근권한이 없습니다</entry>
+    <entry key="exception.data.required">No necessary data {0}.</entry>
+    <entry key="exception.data.exist">There exists same data {0}.</entry>
+    <entry key="exception.data.child.exist">There exists a lower-level data ({0}).</entry>
+    <entry key="exception.process.file">Error occurred during processing.</entry>
+    <entry key="exception.invalid.parameter">파라미터가 유효하지 않습니다</entry>
+    <entry key="exception.invalid.data">데이터가 유효하지 않습니다</entry>
+    <entry key="exception.invalid.code">코드값이 유효하지 않습니다</entry>
+    <entry key="exception.invalid.secure">보안값이 유효하지 않습니다</entry>
+    <entry key="exception.invalid.license">라이센스가 유효하지 않습니다</entry>
+    <entry key="exception.etc">Error occurred.</entry>
+    <entry key="exception.data.integer">Data ({0}) is allowed only for Integer.</entry>
+    <entry key="exception.data.long">Data ({0}) is allowed only for Long.</entry>
+    <entry key="exception.data.float">Data ({0}) is allowed only for Float.</entry>
+    <entry key="exception.data.double">Data ({0}) is allowed only for Double.</entry>
+    <entry key="exception.data.number">Data ({0}) is allowed only for numbers.</entry>
+    <entry key="exception.data.alphabet">Data ({0}) is allowed only for alphabets.</entry>
+    <entry key="exception.data.hangul">Data ({0}) is allowed only for Korean language (hangeul).</entry>
+    <entry key="exception.data.ssn">Data ({0}) is not in the form of national registration number.</entry>
+    <entry key="exception.data.frn">Data ({0}) is not in the form of foreigners' ID.</entry>
+    <entry key="exception.data.email">Data ({0}) is not in the form of email.</entry>
+    <entry key="exception.data.notag">Data ({0}) cannot be included tag.</entry>
+    <entry key="exception.data.nospace">Data ({0}) cannot be included space letter.</entry>
+    <entry key="exception.data.maxlength">Data ({0}) exceed the maximum length ({1}).</entry>
+    <entry key="exception.data.minlength">Data ({0}) is short of the minimum length ({1}).</entry>
+    <entry key="exception.data.fixlength">Data ({0})'s length ({1}) is not matched.</entry>
+
+</properties>

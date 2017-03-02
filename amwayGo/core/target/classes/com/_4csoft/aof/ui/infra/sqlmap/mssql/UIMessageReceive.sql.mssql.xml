@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com._4csoft.aof.infra.mapper.MessageReceiveMapper">
+
+    <insert id="insert" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageReceiveVO">
+        <selectKey resultType="Long" keyProperty="messageReceiveSeq" order="AFTER">
+	SELECT @@IDENTITY
+	        </selectKey>
+	/* MessageReceiveMapper.insert */
+	INSERT INTO cs_message_receive 
+	       ( 
+	           cs_message_send_seq ,
+	           cs_receive_member_seq ,
+			   cs_receive_type_cd,
+	           cs_reg_member_seq ,
+	           cs_reference_info ,
+	           cs_reg_dtime ,
+	           cs_reg_ip ,
+	           cs_upd_member_seq ,
+	           cs_upd_dtime ,
+	           cs_upd_ip 
+	       ) 
+	       VALUES 
+	       ( 
+	           #{messageSendSeq, jdbcType=NUMERIC} ,
+	           #{receiveMemberSeq, jdbcType=NUMERIC} ,
+			   #{receiveTypeCd, jdbcType=VARCHAR} ,
+	           #{regMemberSeq, jdbcType=NUMERIC} ,
+	           #{referenceInfo, jdbcType=VARCHAR} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+	           #{regIp, jdbcType=VARCHAR} ,
+	           #{updMemberSeq, jdbcType=NUMERIC} ,
+	           dbo.FN_NOW_TO_CHAR() ,
+	           #{updIp, jdbcType=VARCHAR} 
+	       )
+    </insert>
+    
+    <!-- 쪽지확인 여부수정 -->
+    <update id="updateRead" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageReceiveVO">
+	/* MessageReceiveMapper.updateRead */
+	UPDATE cs_message_receive 
+	   SET cs_read_dtime = dbo.FN_NOW_TO_CHAR() ,
+	   	   cs_receive_type_cd = #{receiveTypeCd},
+	   	   cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+	   	   cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	 WHERE cs_delete_yn = 'N' 
+	       AND cs_message_receive_seq = #{messageReceiveSeq}
+	       AND cs_receive_type_cd = '${CD.MESSAGE_RECEIVE_TYPE.002}' 
+    </update>
+
+	<!-- 받은쪽지 삭제 -->
+    <update id="delete" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageReceiveVO">
+	/* MessageReceiveMapper.delete */
+	UPDATE cs_message_receive 
+	   SET cs_delete_yn = 'Y' ,
+	       cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+	       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	 WHERE cs_message_receive_seq = #{messageReceiveSeq} 
+	       AND cs_delete_yn = 'N'
+    </update>
+	
+    <update id="deleteSender" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageReceiveVO">
+	/* MessageReceiveMapper.deleteSender */
+	UPDATE cs_message_receive 
+	   SET cs_receive_type_cd = #{receiveTypeCd} ,
+	   	   cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+	       cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	 WHERE cs_message_send_seq = #{messageSendSeq} 
+	       AND cs_delete_yn = 'N'
+    </update>
+    
+    <resultMap id="listReceiveMemberResultMap" type="com._4csoft.aof.ui.infra.vo.UIMemberVO">
+        <result column="cs_receive_member_seq"    property="memberSeq" />
+        <result column="memoCount"                property="memoCount" />
+    </resultMap>
+    
+    <select id="getListUndoMessageReceiver" parameterType="Long" resultMap="listReceiveMemberResultMap">
+    /* MessageReceiveMapper.getListUndoMessageReceiver */
+    SELECT cs_receive_member_seq,
+           -1                     AS memoCount
+      FROM cs_message_receive 
+     WHERE cs_message_send_seq = #{messageSendSeq}
+       AND cs_delete_yn = 'N' 
+    </select>
+    
+    <!-- 받은쪽지 상세 -->
+    <resultMap id="detailResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMessageReceiveRS">
+        <result column="recv.messageReceiveSeq"   property="messageReceive.messageReceiveSeq" />
+        <result column="recv.messageSendSeq"      property="messageReceive.messageSendSeq" />
+        <result column="recv.receiveMemberSeq"    property="messageReceive.receiveMemberSeq" />
+        <result column="recv.readDtime"           property="messageReceive.readDtime" />
+        <result column="recv.regDtime"            property="messageReceive.regDtime" />
+        <result column="send.messageSendSeq"      property="messageSend.messageSendSeq" />
+        <result column="send.sendMemberSeq"       property="messageSend.sendMemberSeq" />
+        <result column="send.description"         property="messageSend.description" />
+        <result column="send.regDtime"            property="messageSend.regDtime" />
+        <result column="send.regIp"               property="messageSend.regIp" />
+        <result column="memb.memberSeq"           property="sendMember.memberSeq" />
+        <result column="memb.memberName"          property="sendMember.memberName" />
+        <result column="memb.memberId"            property="sendMember.memberId" />
+		<collection column="{referenceSeq=recv.messageSendSeq,referenceTablename=referenceTablename}" property="messageSend.attachList" javaType="List" 
+			ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>
+    <select id="getDetail" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageReceiveVO" resultMap="detailResultMap">
+	/* MessageReceiveMapper.getDetail */
+	SELECT recv.cs_message_receive_seq   AS "recv.messageReceiveSeq" ,
+	       recv.cs_message_send_seq      AS "recv.messageSendSeq" ,
+	       recv.cs_receive_member_seq    AS "recv.receiveMemberSeq" ,
+	       recv.cs_read_dtime            AS "recv.readDtime" ,
+	       recv.cs_reg_dtime			 AS "recv.regDtime" ,
+	       send.cs_message_send_seq      AS "send.messageSendSeq" ,
+	       send.cs_send_member_seq       AS "send.sendMemberSeq" ,
+	       send.cs_description           AS "send.description" ,
+	       send.cs_reg_dtime             AS "send.regDtime" ,
+	       send.cs_reg_ip                AS "send.regIp" ,
+	       memb.cs_member_seq            AS "memb.memberSeq" ,
+	       memb.cs_member_name           AS "memb.memberName" ,
+	       memb.cs_member_id             AS "memb.memberId" ,
+	       'cs_message_send' 			 AS "referenceTablename"
+	  FROM cs_message_receive recv 
+	 INNER JOIN cs_message_send send 
+	    ON send.cs_message_send_seq = recv.cs_message_send_seq 
+	 INNER JOIN cs_member memb 
+	    ON memb.cs_member_seq = send.cs_send_member_seq 
+	       AND memb.cs_delete_yn = 'N'
+	 WHERE recv.cs_message_receive_seq = #{messageReceiveSeq} 
+	       AND recv.cs_delete_yn = 'N'
+    </select>
+
+	<!-- 받은쪽지 목록 -->
+    <resultMap id="listResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMessageReceiveRS">
+        <result column="recv.messageReceiveSeq"   property="messageReceive.messageReceiveSeq" />
+        <result column="recv.messageSendSeq"      property="messageReceive.messageSendSeq" />
+        <result column="recv.receiveMemberSeq"    property="messageReceive.receiveMemberSeq" />
+        <result column="recv.readDtime"           property="messageReceive.readDtime" />
+        <result column="recv.regDtime"            property="messageReceive.regDtime" />
+        <result column="send.messageSendSeq"      property="messageSend.messageSendSeq" />
+        <result column="send.sendMemberSeq"       property="messageSend.sendMemberSeq" />
+        <result column="send.description"         property="messageSend.description" />
+        <result column="send.regDtime"            property="messageSend.regDtime" />
+        <result column="send.regIp"               property="messageSend.regIp" />
+        <result column="memb.memberSeq"           property="sendMember.memberSeq" />
+        <result column="memb.memberName"          property="sendMember.memberName" />
+        <result column="memb.memberId"            property="sendMember.memberId" />
+        <result column="recv.receiveMemberName"   property="receiveMember.memberName" />
+        <result column="recv.receiveMemberId"     property="receiveMember.memberId" />
+        <result column="send.attachCount"     	  property="messageSend.attachCount" />        
+    </resultMap> 
+    <select id="getList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageReceiveCondition" resultMap="listResultMap">
+	/* MessageReceiveMapper.getList */
+    <if test='currentPage != 0'>
+	SELECT Z.* FROM (SELECT Row_Number() OVER (
+	        ORDER BY "send.regDtime" DESC
+	) AS rownumber, * FROM (
+	</if>
+	SELECT recv.cs_message_receive_seq   					AS "recv.messageReceiveSeq" ,
+	       recv.cs_message_send_seq      					AS "recv.messageSendSeq" ,
+	       recv.cs_receive_member_seq   					AS "recv.receiveMemberSeq" ,
+	       recv.cs_read_dtime            					AS "recv.readDtime" ,
+	       recv.cs_reg_dtime								AS "recv.regDtime" ,
+	       send.cs_message_send_seq      					AS "send.messageSendSeq" ,
+	       send.cs_send_member_seq       					AS "send.sendMemberSeq" ,
+	       send.cs_description           					AS "send.description" ,
+	       send.cs_reg_dtime             					AS "send.regDtime" ,
+	       send.cs_reg_ip                					AS "send.regIp" ,
+	       memb.cs_member_seq            					AS "memb.memberSeq" ,
+	       memb.cs_member_name           					AS "memb.memberName" ,
+	       memb.cs_member_id             					AS "memb.memberId" ,
+	       memrev.cs_member_name 	                        AS "recv.receiveMemberName",
+		   memrev.cs_member_id 								AS "recv.receiveMemberId",
+		   (SELECT COUNT(*)
+		     FROM cs_attach
+		    WHERE cs_reference_seq = send.cs_message_send_seq	
+		     AND cs_reference_tablename = 'cs_message_send'
+		     AND cs_delete_yn = 'N'
+		    ) 												AS "send.attachCount"		   
+	  FROM cs_message_receive recv 
+	  INNER JOIN cs_member memrev
+	     ON memrev.cs_member_seq = recv.cs_receive_member_seq
+	  INNER JOIN cs_message_send send 
+	     ON send.cs_message_send_seq = recv.cs_message_send_seq
+	        AND send.cs_message_type_cd = #{srchMessageTypeCd}
+	  INNER JOIN cs_member memb 
+	     ON memb.cs_member_seq = send.cs_send_member_seq 
+	        AND  memb.cs_delete_yn = 'N'
+	  WHERE	recv.cs_delete_yn = 'N'
+	  	AND recv.cs_receive_type_cd != '${CD.MESSAGE_RECEIVE_TYPE.001}'
+	  	 <if test='srchReceiveMemberSeq != null and !srchReceiveMemberSeq.equals("")'>
+	  		AND recv.cs_receive_member_seq = #{srchReceiveMemberSeq} 
+	     </if>     
+	     <if test='srchMessageSendSeq != null and !srchMessageSendSeq.equals("")'>
+	     	AND recv.cs_message_send_seq = #{srchMessageSendSeq} 
+	     </if>
+	     <if test='srchWord != null and !srchWord.equals("")'>
+	        <if test='srchKey.equals("message")'>
+	        AND send.cs_description LIKE '%' + #{srchWordDB} + '%'
+	        </if>
+	        <if test='srchKey.equals("sendMemberName")'>
+	        AND memb.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+	        </if>
+	     </if>
+	     <if test='currentPage != 0'>
+	) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+	     </if>
+    </select>
+
+	<!-- 받은쪽지 목록 수 -->
+    <select id="countList" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageReceiveCondition" resultType="int">
+	/* MessageReceiveMapper.countList */
+	SELECT COUNT(*) 
+	  FROM cs_message_receive recv 
+	 INNER JOIN cs_message_send send 
+	    ON send.cs_message_send_seq = recv.cs_message_send_seq
+	       AND send.cs_message_type_cd = #{srchMessageTypeCd}
+	 INNER JOIN cs_member memb 
+	    ON memb.cs_member_seq = send.cs_send_member_seq 
+	       AND  memb.cs_delete_yn = 'N'
+	 WHERE recv.cs_delete_yn = 'N'
+	 	  AND recv.cs_receive_type_cd != '${CD.MESSAGE_RECEIVE_TYPE.001}'
+	   <if test='srchReceiveMemberSeq != null and !srchReceiveMemberSeq.equals("")'>
+	  		AND recv.cs_receive_member_seq = #{srchReceiveMemberSeq} 
+	   </if> 
+	   <if test='srchMessageSendSeq != null and !srchMessageSendSeq.equals("")'>
+	     	AND recv.cs_message_send_seq = #{srchMessageSendSeq} 
+	   </if>	
+       <if test='srchWord != null and !srchWord.equals("")'>
+            <if test='srchKey.equals("message")'>
+       AND send.cs_description LIKE '%' + #{srchWordDB} + '%'
+            </if>
+            <if test='srchKey.equals("sendMemberName")'>
+       AND memb.cs_member_name LIKE '%' + #{srchWordDB} + '%'
+            </if>
+       </if>
+    </select>
+	
+    <select id="countUnread" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageReceiveCondition" resultType="int">
+	/* MessageReceiveMapper.getCountUnread */
+	SELECT COUNT(*) 
+	  FROM cs_message_receive recv 
+	 INNER JOIN cs_message_send send 
+	    ON send.cs_message_send_seq = recv.cs_message_send_seq 
+	 WHERE recv.cs_receive_member_seq = #{srchReceiveMemberSeq}
+	  	   AND send.cs_message_type_cd = #{srchMessageTypeCd}
+		   AND recv.cs_receive_type_cd = '${CD.MESSAGE_RECEIVE_TYPE.002}'  	   
+	       AND recv.cs_delete_yn = 'N'
+    </select>
+    
+    <resultMap id="listByReceiveResultMap" type="com._4csoft.aof.ui.infra.vo.resultset.UIMessageReceiveRS">
+        <result column="recv.messageReceiveSeq"   		property="messageReceive.messageReceiveSeq" />
+        <result column="send.messageSendSeq"   			property="messageSend.messageSendSeq" />
+        <result column="recv.referenceInfo"       		property="messageReceive.referenceInfo" />
+        <result column="recvMember.receiveMemberName"   property="receiveMember.memberName" />
+        <result column="sendMember.sendMemberName"      property="sendMember.memberName" />
+        <result column="send.messageTitle"        		property="messageSend.messageTitle" />
+        <result column="send.description"         		property="messageSend.description" />
+        <result column="recvMember.recvMemberId"        property="receiveMember.memberId" />
+        <result column="cate.categoryName"        		property="category.categoryName" />
+        <result column="send.sendScheduleCd"      		property="messageSend.sendScheduleCd" />
+        <result column="send.scheduleDtime"	      		property="messageSend.scheduleDtime" />
+        <result column="recv.regDtime"            		property="messageReceive.regDtime" />
+        <result column="send.attachCount"            	property="messageSend.attachCount" />
+       	<collection column="{referenceSeq=send.messageSendSeq,referenceTablename=referenceTablename}" property="messageSend.attachList" javaType="List" 
+			ofType="com._4csoft.aof.ui.infra.vo.UIAttachVO" select="com._4csoft.aof.infra.mapper.AttachMapper.getList"/>
+    </resultMap>	 
+    <select id="getListByReceive" parameterType="com._4csoft.aof.ui.infra.vo.condition.UIMessageSendCondition" resultMap="listByReceiveResultMap">
+    /* MessageReceiveMapper.getListByReceive */
+	    <if test='currentPage != 0'>
+		SELECT Z.* FROM (SELECT Row_Number() OVER (
+		        ORDER BY "recv.regDtime" ASC
+		) AS rownumber, * FROM (
+		</if>    
+   	SELECT
+		recv.cs_message_receive_seq			AS "recv.messageReceiveSeq" ,
+		send.cs_message_send_seq			AS "send.messageSendSeq" ,
+		recv.cs_reference_info				AS "recv.referenceInfo" ,
+		recvmember.cs_member_name 			AS "recvMember.receiveMemberName" ,
+		sendmember.cs_member_name 			AS "sendMember.sendMemberName" ,
+		send.cs_message_title				AS "send.messageTitle" ,
+		send.cs_description					AS "send.description" ,
+		recvmember.cs_member_id				AS "recvMember.recvMemberId" ,
+		ISNULL(cate.cs_category_name , '')	AS "cate.categoryName" ,
+		send.cs_send_schedule_cd			AS "send.sendScheduleCd" ,
+		send.cs_schedule_dtime				AS "send.scheduleDtime" ,	
+		recv.cs_reg_dtime					AS "recv.regDtime" ,
+	    'cs_message_send' 			 		AS "referenceTablename" ,
+		(SELECT COUNT(*)
+		 	FROM cs_attach
+		 WHERE cs_reference_seq = send.cs_message_send_seq	
+		 	AND cs_reference_tablename = 'cs_message_send'
+		    AND cs_delete_yn = 'N'
+		 ) 	    						AS "send.attachCount"	
+	FROM cs_message_receive recv
+	INNER JOIN cs_message_send send
+	 ON send.cs_message_send_seq = recv.cs_message_send_seq
+	INNER JOIN cs_member recvMember
+	 ON recv.cs_receive_member_seq = recvMember.cs_member_seq
+	INNER JOIN cs_member sendMember
+	 ON send.cs_send_member_seq = sendMember.cs_member_seq
+	LEFT OUTER JOIN cs_category cate
+	 ON recvMember.cs_category_organization_seq = cate.cs_category_seq
+	WHERE send.cs_message_type_cd = #{srchMessageTypeCd}
+	   <if test='srchSendScheduleCd != null and !srchSendScheduleCd.equals("")'>
+	     	AND send.cs_send_schedule_cd = #{srchSendScheduleCd} 
+	   </if>
+	   <if test='srchScheduleDtime != null and !srchScheduleDtime.equals("")'>
+	     	AND send.cs_schedule_dtime = #{srchScheduleDtime} 
+	   </if>	
+		AND recv.cs_receive_type_cd = '${CD.MESSAGE_RECEIVE_TYPE.001}'	   		
+		AND recv.cs_delete_yn = 'N'
+		AND recv.cs_reference_info IS NOT NULL
+		<if test='currentPage != 0'>
+		) Y ) Z WHERE Z.rownumber BETWEEN #{firstItemNo} + 1 AND #{endItemNo} ORDER BY Z.rownumber
+		</if>
+    </select> 
+    
+    <update id="updateMessageReceiveType" parameterType="com._4csoft.aof.ui.infra.vo.UIMessageReceiveVO">
+	/* MessageReceiveMapper.updateMessageReceiveType */
+	UPDATE cs_message_receive 
+	   SET cs_receive_type_cd = #{receiveTypeCd} ,
+	   	   cs_upd_member_seq = #{updMemberSeq, jdbcType=NUMERIC} ,
+	   	   cs_upd_dtime = dbo.FN_NOW_TO_CHAR() ,
+	       cs_upd_ip = #{updIp, jdbcType=VARCHAR}
+	WHERE  
+	 	cs_message_receive_seq = #{messageReceiveSeq} 
+    </update>    
+    
+</mapper>
